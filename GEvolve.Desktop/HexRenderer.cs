@@ -42,16 +42,19 @@ internal sealed class HexRenderer : IDisposable
         if (_inicializado)
             throw new InvalidOperationException("El renderizador ya fue inicializado.");
 
-        // Siete vértices: centro + seis esquinas; TRIANGLE_FAN cierra
-        // automáticamente el último triángulo con el primer vértice del borde.
+        // Ocho vértices: centro + seis esquinas + primera esquina repetida.
+        // TRIANGLE_FAN necesita cerrar explícitamente el sexto triángulo.
         const float radio = 0.43f;
-        var vertices = new float[14];
+        var vertices = new float[16];
         for (int i = 0; i < 6; i++)
         {
             float angulo = MathF.PI / 3f * i;
             vertices[(i + 1) * 2] = radio * MathF.Sin(angulo);
             vertices[(i + 1) * 2 + 1] = radio * MathF.Cos(angulo);
         }
+
+        vertices[14] = vertices[2];
+        vertices[15] = vertices[3];
 
         int vs = CompilarShader(ShaderType.VertexShader, VertexShader);
         int fs = CompilarShader(ShaderType.FragmentShader, FragmentShader);
@@ -99,7 +102,7 @@ internal sealed class HexRenderer : IDisposable
         GL.BindVertexArray(_vao);
 
         GL.Uniform3(_colorUniform, 0.55f, 0.67f, 0.49f);
-        GL.DrawArrays(PrimitiveType.TriangleFan, 0, 7);
+        GL.DrawArrays(PrimitiveType.TriangleFan, 0, 8);
 
         GL.Uniform3(_colorUniform, 0.09f, 0.16f, 0.19f);
         GL.LineWidth(2f);
