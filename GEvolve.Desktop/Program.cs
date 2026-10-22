@@ -17,7 +17,7 @@ public sealed class MotorGEvolve : GameWindow
     private readonly MenuRenderer _menu = new();
     private Pantalla _pantalla = Pantalla.Inicio;
     private int _seleccion;
-    private WorldSettings _ajustes = WorldPresets.Aplicar(TipoMundo.Continentes, 200, 150, 2026);
+    private WorldSettings _ajustes = WorldPresets.Aplicar(TipoMundo.ContinentesGrandes, 200, 150, 2026);
     private enum Pantalla { Inicio, Configuracion, Jugando, Pausa }
     // Giro horizontal continuo de 360°; puede repetirse sin detenerse en los extremos.
     private float _angulo = MathHelper.DegreesToRadians(40f);
