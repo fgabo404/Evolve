@@ -1,7 +1,7 @@
 namespace GEvolve.Core;
 
 /// <summary>Patrones de distribución de tierra para el generador.</summary>
-public enum TipoMundo { Continentes, Pangea, Archipielagos, MarInterior, Fractal, Aleatorio }
+public enum TipoMundo { ContinentesGrandes, ContinentesPequenos, Pangea, Archipielagos }
 
 /// <summary>Edad geológica que modifica la intensidad del relieve.</summary>
 public enum EdadGeologica { Joven, Normal, Antiguo }
@@ -9,7 +9,7 @@ public enum EdadGeologica { Joven, Normal, Antiguo }
 /// <summary>Parámetros del mundo y escala de relieve.</summary>
 public sealed record WorldSettings(int Ancho = 100, int Alto = 50, int Semilla = 2026,
     int TamanoChunk = 10, int NivelMar = 30,
-    TipoMundo Tipo = TipoMundo.Continentes,
+    TipoMundo Tipo = TipoMundo.ContinentesGrandes,
     EdadGeologica Edad = EdadGeologica.Normal,
     int PorcentajeOceanos = 60, int IntensidadMontanosa = 40)
 {
