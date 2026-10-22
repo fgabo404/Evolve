@@ -54,6 +54,7 @@ public readonly record struct WorldCell(int Columna, int Fila, HexCoord Coordena
 {
     /// <summary>Clasificación de relieve independiente del bioma.</summary>
     public NivelRelieve Relieve { get; init; }
+    public Bioma Bioma { get; init; }
 }
 
 /// <summary>Región del mundo, independiente de OpenGL.</summary>
