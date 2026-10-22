@@ -60,6 +60,8 @@ public sealed class WorldMap
     public WorldSettings Configuracion { get; }
     /// <summary>Regiones agrupadas por tamaño fijo.</summary>
     public IReadOnlyList<WorldChunk> Chunks { get; }
+    /// <summary>Resultado de pendientes y morfología indexado por fila y columna.</summary>
+    public IReadOnlyList<AnalisisRelieve> Analisis { get; }
     /// <summary>Vista de las celdas del mundo.</summary>
     public IReadOnlyList<WorldCell> Celdas => _celdas;
 
@@ -78,6 +80,7 @@ public sealed class WorldMap
             chunks.Add(new WorldChunk(x / config.TamanoChunk, y / config.TamanoChunk, grupo));
         }
         Chunks = chunks;
+        Analisis = AnalizadorRelieve.Analizar(this);
     }
 
     /// <summary>Consulta coordenadas offset; envuelve este-oeste y limita norte-sur.</summary>
