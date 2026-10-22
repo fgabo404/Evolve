@@ -18,20 +18,23 @@ public static class WorldSystem
                 Masa(x, y, 0.28f, 0.43f, 0.25f, 0.31f),
                 Masa(x, y, 0.74f, 0.60f, 0.24f, 0.32f));
             continente = MathF.Max(continente, Masa(x, y, 0.50f, 0.22f, 0.14f, 0.19f));
-            // Cordilleras interiores: crestas periódicas en longitud para
-            // conservar el relieve continuo al cruzar la costura E/O.
+            // Primero se delimita la costa: el océano ocupa exclusivamente nivel 0.
+            // Así la tierra costera puede comenzar en 1 sin saltar al nivel 30.
+            float latitud = Math.Clamp(MathF.Min(y, 1f - y) / 0.09f, 0f, 1f);
+            float suelo = (continente + 0.10f * Ondas(x, y, config.Semilla) - 0.16f)
+                * latitud;
+            bool esTierra = suelo > 0f;
+            // Altura interior progresiva, desde costas bajas hasta mesetas.
+            float interior = Math.Clamp(suelo / 0.75f, 0f, 1f);
+            // Cordilleras elevadas, estrechas y continuas en longitud (costura E/O).
             float cresta = MathF.Pow(MathF.Abs(MathF.Sin(2f * MathF.PI *
-                (4f * x + 1.6f * y + config.Semilla * 0.00017f))), 12f);
-            float montana = continente * 0.37f * cresta;
-            float altura = 0.24f + 0.62f * continente
-                + 0.16f * Ondas(x, y, config.Semilla) + montana;
-            // La franja polar reduce la tierra cerca del norte y sur.
-            altura *= Math.Clamp(MathF.Min(y, 1f - y) / 0.12f, 0f, 1f);
-            byte nivel = (byte)Math.Clamp((int)MathF.Round(100f * altura), 0, 100);
-            TipoSuperficie tipo = nivel < config.NivelMar
-                ? TipoSuperficie.Oceano : TipoSuperficie.Tierra;
-            // Los hexágonos marinos se mantienen, todos con nivel lógico cero.
-            if (tipo == TipoSuperficie.Oceano) nivel = 0;
+                (4f * x + 1.6f * y + config.Semilla * 0.00017f))), 7f);
+            float elevacion = 1f + 56f * MathF.Pow(interior, 0.9f)
+                + 48f * MathF.Pow(interior, 1.2f) * cresta;
+            byte nivel = esTierra
+                ? (byte)Math.Clamp((int)MathF.Round(elevacion), 1, 100)
+                : (byte)0;
+            TipoSuperficie tipo = esTierra ? TipoSuperficie.Tierra : TipoSuperficie.Oceano;
             int q = columna - (fila - (fila & 1)) / 2 - config.Ancho / 2 + config.Alto / 4;
             int r = fila - config.Alto / 2;
             resultado[fila * config.Ancho + columna] =
