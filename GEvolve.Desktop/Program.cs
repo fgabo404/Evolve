@@ -69,7 +69,7 @@ public sealed class MotorGEvolve : GameWindow
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
         float horizontal = _distancia * MathF.Cos(Inclinacion);
         Vector3 objetivo = new(0f, 0.4f, 0f);
-        Vector3 camara = objetivo + new(
+        Vector3 camara = objetivo + new Vector3(
             horizontal * MathF.Sin(_angulo),
             _distancia * MathF.Sin(Inclinacion),
             horizontal * MathF.Cos(_angulo));
