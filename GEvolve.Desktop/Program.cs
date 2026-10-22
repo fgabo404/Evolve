@@ -8,6 +8,8 @@ namespace GEvolve.Desktop;
 
 public class MotorGEvolve : GameWindow
 {
+    // Renderizador propio; no contiene reglas de simulación.
+    private readonly HexRenderer _hexRenderer = new();
     public MotorGEvolve()
         : base(
             GameWindowSettings.Default,
@@ -25,6 +27,7 @@ public class MotorGEvolve : GameWindow
 
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
+        _hexRenderer.Inicializar();
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
@@ -36,7 +39,15 @@ public class MotorGEvolve : GameWindow
             ClearBufferMask.DepthBufferBit
         );
 
+        _hexRenderer.Dibujar();
         SwapBuffers();
+    }
+
+    /// <summary>Libera recursos OpenGL antes de destruir el contexto.</summary>
+    protected override void OnUnload()
+    {
+        _hexRenderer.Dispose();
+        base.OnUnload();
     }
 
     protected override void OnResize(ResizeEventArgs e)
