@@ -48,17 +48,41 @@ public static class WorldSystem
         });
         var esAgua = new bool[total];
         for (int i = 0; i < cantidadAgua; i++) esAgua[indices[i]] = true;
-        float umbral = cantidadAgua == 0 ? campos.Min() - .001f
-            : cantidadAgua == total ? campos.Max() + .001f
-            : (campos[indices[cantidadAgua - 1]] + campos[indices[cantidadAgua]]) * .5f;
-        float rango = MathF.Max(.15f, campos.Max() - umbral);
+        // Distancia hexagonal a la costa mediante BFS multifuente.
+        // Se usa topología offset por filas, con envolvimiento horizontal.
+        var distancia = new int[total];
+        Array.Fill(distancia, int.MaxValue);
+        var cola = new Queue<int>();
+        for (int i = 0; i < total; i++)
+            if (esAgua[i]) { distancia[i] = 0; cola.Enqueue(i); }
+        while (cola.Count > 0)
+        {
+            int i = cola.Dequeue(), y = i / ancho, x = i % ancho;
+            int[] dx = (y & 1) == 0 ? new[] { -1, 1, -1, 0, -1, 0 } : new[] { -1, 1, 0, 1, 0, 1 };
+            int[] dy = { 0, 0, -1, -1, 1, 1 };
+            for (int n = 0; n < 6; n++)
+            {
+                int ny = y + dy[n];
+                if (ny < 0 || ny >= alto) continue;
+                int nx = (x + dx[n] + ancho) % ancho;
+                int vecino = ny * ancho + nx;
+                if (distancia[vecino] <= distancia[i] + 1) continue;
+                distancia[vecino] = distancia[i] + 1;
+                cola.Enqueue(vecino);
+            }
+        }
         float edad = config.Edad switch
         {
-            EdadGeologica.Joven => 1.25f,
-            EdadGeologica.Antiguo => .75f,
+            EdadGeologica.Joven => 1.15f,
+            EdadGeologica.Antiguo => .80f,
             _ => 1f
         };
-
+        float montanosidad = config.IntensidadMontanosa / 40f;
+        // Centro y dirección de dos sistemas montañosos sinuosos; no bandas sinusoidales.
+        float faseA = 0.17f + .17f * Hash(2, 3, config.Semilla);
+        float faseB = 0.63f + .12f * Hash(7, 11, config.Semilla);
+        float valleA = .25f + .40f * Hash(9, 5, config.Semilla);
+        float valleB = .25f + .40f * Hash(3, 13, config.Semilla);
         var resultado = new WorldCell[total];
         for (int fila = 0; fila < alto; fila++)
         for (int columna = 0; columna < ancho; columna++)
@@ -66,12 +90,25 @@ public static class WorldSystem
             int indice = fila * ancho + columna;
             float x = (columna + .5f) / ancho;
             float y = (fila + .5f) / alto;
-            float interior = Math.Clamp((campos[indice] - umbral) / rango, 0f, 1f);
-            float cresta = MathF.Pow(MathF.Abs(MathF.Sin(2f * MathF.PI *
-                (4f * x + 1.6f * y + config.Semilla * .00017f))), 7f);
-            float elevacion = 1f + 63f * MathF.Pow(interior, .72f)
-                + 36f * (config.IntensidadMontanosa / 40f) * edad
-                * MathF.Sqrt(interior) * cresta;
+            int costa = distancia[indice];
+            // Llanuras amplias y graduales; el litoral siempre permanece bajo.
+            float suavidad = Ruido(x, y, config.Semilla + 181, 4, 4);
+            float llanura = 3f + 1.45f * MathF.Min(costa, 14) + 5f * suavidad;
+            // Mesetas regionales suavizadas: altitud interior sin picos aislados.
+            float meseta = Math.Clamp((Ruido(x, y, config.Semilla + 191, 3, 3) + .25f) * 1.9f, 0f, 1f);
+            float factorInterior = Math.Clamp((costa - 3f) / 10f, 0f, 1f);
+            llanura += 27f * meseta * factorInterior;
+            // Dos corredores curvados, de orientación y posición variables por semilla.
+            float curvaA = faseA + .11f * Ruido(x, y, config.Semilla + 211, 3, 3);
+            float curvaB = faseB + .10f * Ruido(x, y, config.Semilla + 223, 4, 3);
+            float dxA = MathF.Abs(x - curvaA); dxA = MathF.Min(dxA, 1f - dxA);
+            float dxB = MathF.Abs(x - curvaB); dxB = MathF.Min(dxB, 1f - dxB);
+            float corredorA = MathF.Exp(-dxA * dxA / .0018f) * Math.Clamp(1f - MathF.Abs(y - valleA) / .44f, 0f, 1f);
+            float corredorB = MathF.Exp(-dxB * dxB / .0013f) * Math.Clamp(1f - MathF.Abs(y - valleB) / .38f, 0f, 1f);
+            float cresta = MathF.Max(corredorA, corredorB) *
+                (.82f + .18f * Ruido(x, y, config.Semilla + 239, 12, 10));
+            float pendienteCostera = Math.Clamp((costa - 1f) / 5f, 0f, 1f);
+            float elevacion = Math.Clamp(llanura + 76f * montanosidad * edad * cresta * pendienteCostera, 1f, 100f);
             byte nivel = esAgua[indice] ? (byte)0
                 : (byte)Math.Clamp((int)MathF.Round(elevacion), 1, 100);
             TipoSuperficie superficie = esAgua[indice]
