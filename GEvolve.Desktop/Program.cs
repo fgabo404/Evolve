@@ -22,6 +22,7 @@ public sealed class MotorGEvolve : GameWindow
     private float _distancia = 45f;
     private Vector3 _objetivo = new(0f, 0.5f, 0f);
     private const float Velocidad = 18f;
+    private WorldMap? _mundo;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
@@ -38,8 +39,16 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        // Mundo hexagonal 100x50: generación reproducible independiente del motor gráfico.
-        _hexRenderer.Inicializar(WorldGenerator.Crear(100, 50, semilla: 2026));
+        // Nuevo sistema modular de generación y chunks; mundo reproducible 100x50.
+        _mundo = WorldSystem.Generar(new WorldSettings(100, 50, 2026, 10, 30));
+        // La altura lógica va de 0 a 100. Se transforma a unidades gráficas
+        // sin modificar los datos del terreno. El mar queda horizontal.
+        CeldaMundo[] representacion = _mundo.Celdas.Select(c =>
+            new CeldaMundo(c.Coordenada,
+                c.Superficie == TipoSuperficie.Oceano ? 0.08f
+                : 0.13f + c.Altura / 100f * 1.75f,
+                c.Superficie)).ToArray();
+        _hexRenderer.Inicializar(representacion);
     }
 
     /// <summary>
