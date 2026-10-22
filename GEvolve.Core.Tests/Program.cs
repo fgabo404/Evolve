@@ -137,7 +137,7 @@ try
         "Una costa de nivel 5 no es océano.");
     // Perfil aprobado de generación y verificación del porcentaje exacto.
     var perfil = new WorldSettings(200, 150, 2026, 10, 30,
-        TipoMundo.Continentes, EdadGeologica.Normal, 60, 40);
+        TipoMundo.ContinentesGrandes, EdadGeologica.Normal, 60, 40);
     var generado = WorldSystem.Generar(perfil);
     Verificar(generado.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == 18_000,
         "El océano debe cubrir 60% de las 30000 celdas.");
@@ -159,8 +159,8 @@ try
     }
     Verificar(LanzaArgumento(() => WorldSystem.Generar(perfil with
         { PorcentajeOceanos = 101 })), "Porcentaje inválido rechazado.");
-    var continentes = WorldPresets.Aplicar(TipoMundo.Continentes, 200, 150, 2026);
-    Verificar(continentes.Tipo == TipoMundo.Continentes &&
+    var continentes = WorldPresets.Aplicar(TipoMundo.ContinentesGrandes, 200, 150, 2026);
+    Verificar(continentes.Tipo == TipoMundo.ContinentesGrandes &&
         continentes.PorcentajeOceanos == 60 && continentes.IntensidadMontanosa == 40 &&
         continentes.Edad == EdadGeologica.Normal, "Valores aprobados de Continentes.");
     foreach (TipoMundo familia in Enum.GetValues<TipoMundo>())
