@@ -78,6 +78,25 @@ try
         "Todas las elevaciones deben ser válidas.");
     Verificar(mundo.SequenceEqual(WorldGenerator.Crear(100, 50, semilla: 2026)),
         "La misma semilla debe reproducir el mundo.");
+    // Nuevo sistema de generación, regiones y topología este-oeste.
+    var config = new WorldSettings(100, 50, 2026, 10, 30);
+    var sistema = WorldSystem.Generar(config);
+    Verificar(sistema.Celdas.Count == 5000, "Sistema: 5000 celdas.");
+    Verificar(sistema.Chunks.Count == 50, "Sistema: 50 chunks de 10x10.");
+    Verificar(sistema.Chunks.Sum(x => x.Celdas.Count) == 5000, "Chunks completos.");
+    Verificar(sistema.Celdas.All(x => x.Altura <= 100), "Altura 0-100.");
+    Verificar(sistema.Celdas.Any(x => x.Superficie == TipoSuperficie.Tierra)
+        && sistema.Celdas.Any(x => x.Superficie == TipoSuperficie.Oceano),
+        "Debe existir mar y tierra.");
+    Verificar(sistema.Celdas.SequenceEqual(WorldSystem.Generar(config).Celdas),
+        "La generación debe ser reproducible.");
+    Verificar(sistema.IntentarObtener(-1, 20, out var oeste)
+        && sistema.IntentarObtener(99, 20, out var este) && oeste == este,
+        "El extremo oeste debe conectar con el este.");
+    Verificar(!sistema.IntentarObtener(4, -1, out _)
+        && !sistema.IntentarObtener(4, 50, out _),
+        "Norte y sur no envuelven.");
+    Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
     Console.WriteLine("OK — Mundo procedural 100x50 y 5000 celdas verificadas.");
     Console.WriteLine("OK — Grid 20x20 y mapa radial de 397 hexágonos verificados.");
     return 0;
