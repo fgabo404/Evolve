@@ -10,7 +10,7 @@ namespace GEvolve.Desktop;
 /// </summary>
 internal sealed class HexRenderer : IDisposable
 {
-    private int _vao, _vbo, _programa, _uniformeMatriz;
+    private int _vao, _vbo, _programa, _uniformeMatriz, _uniformeDesplazamiento;
     private int _verticesTriangulos;
 
     private const int DatosPorVertice = 6; // posición(3) y color(3)
@@ -20,10 +20,11 @@ internal sealed class HexRenderer : IDisposable
         layout(location = 0) in vec3 posicion;
         layout(location = 1) in vec3 colorEntrada;
         uniform mat4 matrizVistaProyeccion;
+        uniform float desplazamientoX;
         out vec3 color;
         void main()
         {
-            gl_Position = matrizVistaProyeccion * vec4(posicion, 1.0);
+            gl_Position = matrizVistaProyeccion * vec4(posicion.x + desplazamientoX, posicion.yz, 1.0);
             color = colorEntrada;
         }
         """;
@@ -60,6 +61,7 @@ internal sealed class HexRenderer : IDisposable
             throw new InvalidOperationException(GL.GetProgramInfoLog(_programa));
 
         _uniformeMatriz = GL.GetUniformLocation(_programa, "matrizVistaProyeccion");
+        _uniformeDesplazamiento = GL.GetUniformLocation(_programa, "desplazamientoX");
 
         var vertices = new List<float>(celdas.Count * 54 * DatosPorVertice);
         foreach (CeldaMundo celda in celdas)
@@ -140,13 +142,27 @@ internal sealed class HexRenderer : IDisposable
     }
 
     /// <summary>Dibuja tapas claras y laterales oscuros sin bordes.</summary>
-    public void Dibujar(Matrix4 vistaProyeccion)
+    public void Dibujar(Matrix4 vistaProyeccion, float anchoMundo = 0f)
     {
         GL.UseProgram(_programa);
         // Convención previamente validada para matrices OpenTK -> GLSL.
         GL.UniformMatrix4(_uniformeMatriz, false, ref vistaProyeccion);
         GL.BindVertexArray(_vao);
+        // La misma malla GPU se reutiliza a izquierda y derecha para que
+        // el mundo sea visualmente continuo en la costura este-oeste.
+        // No se duplican vértices ni se reconstruye el mapa al desplazarse.
+        if (anchoMundo > 0f)
+        {
+            GL.Uniform1(_uniformeDesplazamiento, -anchoMundo);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
+        }
+        GL.Uniform1(_uniformeDesplazamiento, 0f);
         GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
+        if (anchoMundo > 0f)
+        {
+            GL.Uniform1(_uniformeDesplazamiento, anchoMundo);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
+        }
         GL.BindVertexArray(0);
         GL.UseProgram(0);
     }
