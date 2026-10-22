@@ -1,8 +1,17 @@
 namespace GEvolve.Core;
 
+/// <summary>Patrones de distribución de tierra para el generador.</summary>
+public enum TipoMundo { Continentes, Pangea, Archipielagos, MarInterior, Fractal, Aleatorio }
+
+/// <summary>Edad geológica que modifica la intensidad del relieve.</summary>
+public enum EdadGeologica { Joven, Normal, Antiguo }
+
 /// <summary>Parámetros del mundo y escala de relieve.</summary>
 public sealed record WorldSettings(int Ancho = 100, int Alto = 50, int Semilla = 2026,
-    int TamanoChunk = 10, int NivelMar = 30)
+    int TamanoChunk = 10, int NivelMar = 30,
+    TipoMundo Tipo = TipoMundo.Continentes,
+    EdadGeologica Edad = EdadGeologica.Normal,
+    int PorcentajeOceanos = 60, int IntensidadMontanosa = 40)
 {
     /// <summary>Valida dimensiones y configuraciones del mapa.</summary>
     public void Validar()
@@ -11,6 +20,12 @@ public sealed record WorldSettings(int Ancho = 100, int Alto = 50, int Semilla =
             throw new ArgumentOutOfRangeException(nameof(Ancho));
         if (TamanoChunk < 1 || TamanoChunk > 256)
             throw new ArgumentOutOfRangeException(nameof(TamanoChunk));
+        if (!Enum.IsDefined(Tipo) || !Enum.IsDefined(Edad))
+            throw new ArgumentOutOfRangeException(nameof(Tipo));
+        if (PorcentajeOceanos < 5 || PorcentajeOceanos > 95)
+            throw new ArgumentOutOfRangeException(nameof(PorcentajeOceanos));
+        if (IntensidadMontanosa < 0 || IntensidadMontanosa > 100)
+            throw new ArgumentOutOfRangeException(nameof(IntensidadMontanosa));
         if (NivelMar < 1 || NivelMar > 99)
             throw new ArgumentOutOfRangeException(nameof(NivelMar));
     }
