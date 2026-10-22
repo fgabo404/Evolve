@@ -31,7 +31,7 @@ public sealed class MotorGEvolve : GameWindow
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mundo continuo E/O — WASD / giro 360 / zoom limitado"
+            Title = "G-Evolve | Mundo 200x150 — WASD / giro 360 / zoom limitado"
         })
     {
     }
@@ -41,8 +41,8 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        // Nuevo sistema modular de generación y chunks; mundo reproducible 100x50.
-        _mundo = WorldSystem.Generar(new WorldSettings(100, 50, 2026, 10, 30));
+        // Nuevo sistema modular de generación y chunks; mundo reproducible 200x150.
+        _mundo = WorldSystem.Generar(new WorldSettings(200, 150, 2026, 10, 30));
         _anchoMundo = MathF.Sqrt(3f) * HexGeometry.RadioEstandar * _mundo.Configuracion.Ancho;
         // La altura lógica va de 0 a 100. Se transforma a unidades gráficas
         // sin modificar los datos del terreno. El mar queda horizontal.
@@ -50,7 +50,7 @@ public sealed class MotorGEvolve : GameWindow
             new CeldaMundo(c.Coordenada,
                 c.Superficie == TipoSuperficie.Oceano ? 0f
                 : 0.13f + c.Altura / 100f * 2.8f,
-                c.Superficie, c.Relieve)).ToArray();
+                c.Superficie, c.Relieve, c.Altura)).ToArray();
         _hexRenderer.Inicializar(representacion);
     }
 
@@ -101,7 +101,9 @@ public sealed class MotorGEvolve : GameWindow
             float mitad = _anchoMundo * 0.5f;
             _objetivo.X = ((_objetivo.X + mitad) % _anchoMundo + _anchoMundo) % _anchoMundo - mitad;
             // Norte y sur mantienen sus límites polares: no hay envolvimiento.
-            _objetivo.Z = Math.Clamp(_objetivo.Z, -35f, 34f);
+            _objetivo.Z = Math.Clamp(_objetivo.Z,
+                -(_mundo!.Configuracion.Alto / 2f - 3f) * 1.5f,
+                 (_mundo.Configuracion.Alto / 2f - 3f) * 1.5f);
         }
         if (KeyboardState.IsKeyDown(Keys.Home)) _objetivo = new Vector3(0f, 0.5f, 0f);
     }
