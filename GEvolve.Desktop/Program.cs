@@ -83,7 +83,7 @@ public sealed class MotorGEvolve : GameWindow
         // El zoom controla el área visible; la elevación sigue siendo geometría real.
         float alturaVisible = _distancia * 0.85f;
         Matrix4 proyeccion = Matrix4.CreateOrthographic(
-            alturaVisible * aspecto, alturaVisible, 0.1f, 100f);
+            alturaVisible * aspecto, alturaVisible, 0.1f, 300f);
 
         _hexRenderer.Dibujar(vista * proyeccion);
         SwapBuffers();
