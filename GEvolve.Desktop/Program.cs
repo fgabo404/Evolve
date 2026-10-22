@@ -17,8 +17,7 @@ public sealed class MotorGEvolve : GameWindow
     private readonly MenuRenderer _menu = new();
     private Pantalla _pantalla = Pantalla.Inicio;
     private int _seleccion;
-    private WorldSettings _ajustes = new(200, 150, 2026, 10, 30,
-        TipoMundo.Continentes, EdadGeologica.Normal, 60, 40);
+    private WorldSettings _ajustes = WorldPresets.Aplicar(TipoMundo.Continentes, 200, 150, 2026);
     private enum Pantalla { Inicio, Configuracion, Jugando, Pausa }
     // Giro horizontal continuo de 360°; puede repetirse sin detenerse en los extremos.
     private float _angulo = MathHelper.DegreesToRadians(40f);
@@ -173,7 +172,7 @@ public sealed class MotorGEvolve : GameWindow
             return;
         }
         if (_pantalla == Pantalla.Jugando) return;
-        int opciones = _pantalla == Pantalla.Configuracion ? 8 : 3;
+        int opciones = _pantalla == Pantalla.Configuracion ? 5 : 3;
         if (e.Key == Keys.Up || e.Key == Keys.W) _seleccion = (_seleccion + opciones - 1) % opciones;
         if (e.Key == Keys.Down || e.Key == Keys.S) _seleccion = (_seleccion + 1) % opciones;
         if (_pantalla == Pantalla.Configuracion && (e.Key == Keys.Left || e.Key == Keys.Right
@@ -191,18 +190,24 @@ public sealed class MotorGEvolve : GameWindow
         float y = MouseState.Position.Y * 720f / Math.Max(1, Size.Y);
         if (_pantalla == Pantalla.Configuracion)
         {
-            if (x < 270f || x > 1010f) return;
-            int idx = (int)MathF.Floor((y - 162f) / 57f);
-            if (idx >= 0 && idx < 8)
+            if (x >= 340f && x <= 940f)
             {
-                _seleccion = idx;
-                if (idx < 6) ModificarOpcion(1);
-                else ActivarSeleccion();
+                int idx = (int)MathF.Floor((y - 310f) / 80f);
+                if (idx >= 0 && idx < 3)
+                {
+                    _seleccion = idx;
+                    // Izquierda/derecha permite cambiar el valor con el mouse.
+                    ModificarOpcion(x < 640f ? -1 : 1);
+                }
+                else if (y >= 552f && y <= 604f)
+                { _seleccion = 3; ActivarSeleccion(); }
+                else if (y >= 617f && y <= 669f)
+                { _seleccion = 4; ActivarSeleccion(); }
             }
         }
         else if (x >= 420f && x <= 860f)
         {
-            int idx = (int)MathF.Floor((y - 300f) / 70f);
+            int idx = (int)MathF.Floor((y - 330f) / 78f);
             if (idx >= 0 && idx < 3) { _seleccion = idx; ActivarSeleccion(); }
         }
     }
@@ -213,27 +218,19 @@ public sealed class MotorGEvolve : GameWindow
         switch (_seleccion)
         {
             case 0:
-                int tipos = Enum.GetValues<TipoMundo>().Length;
-                _ajustes = _ajustes with { Tipo = (TipoMundo)(((int)_ajustes.Tipo + delta + tipos) % tipos) };
+                int cantidad = Enum.GetValues<TipoMundo>().Length;
+                TipoMundo tipo = (TipoMundo)(((int)_ajustes.Tipo + delta + cantidad) % cantidad);
+                _ajustes = WorldPresets.Aplicar(tipo, _ajustes.Ancho, _ajustes.Alto, _ajustes.Semilla);
                 break;
             case 1:
-                _ajustes = _ajustes with { Edad = (EdadGeologica)(((int)_ajustes.Edad + delta + 3) % 3) };
-                break;
-            case 2:
-                _ajustes = _ajustes with { PorcentajeOceanos = Math.Clamp(_ajustes.PorcentajeOceanos + 5 * delta, 5, 95) };
-                break;
-            case 3:
-                _ajustes = _ajustes with { IntensidadMontanosa = Math.Clamp(_ajustes.IntensidadMontanosa + 10 * delta, 0, 100) };
-                break;
-            case 4:
-                _ajustes = _ajustes with { Semilla = _ajustes.Semilla + delta };
-                break;
-            case 5:
                 int[] anchos = [100, 200, 300];
                 int[] altos = [50, 150, 200];
-                int posicion = _ajustes.Ancho == 100 ? 0 : _ajustes.Ancho == 200 ? 1 : 2;
-                posicion = (posicion + delta + 3) % 3;
-                _ajustes = _ajustes with { Ancho = anchos[posicion], Alto = altos[posicion] };
+                int indice = _ajustes.Ancho == 100 ? 0 : _ajustes.Ancho == 200 ? 1 : 2;
+                indice = (indice + delta + 3) % 3;
+                _ajustes = _ajustes with { Ancho = anchos[indice], Alto = altos[indice] };
+                break;
+            case 2:
+                _ajustes = _ajustes with { Semilla = _ajustes.Semilla + delta };
                 break;
         }
     }
@@ -249,8 +246,8 @@ public sealed class MotorGEvolve : GameWindow
         }
         else if (_pantalla == Pantalla.Configuracion)
         {
-            if (_seleccion == 6) { CrearMundo(); _pantalla = Pantalla.Jugando; _seleccion = 0; }
-            else if (_seleccion == 7) { _pantalla = Pantalla.Inicio; _seleccion = 0; }
+            if (_seleccion == 3) { CrearMundo(); _pantalla = Pantalla.Jugando; _seleccion = 0; }
+            else if (_seleccion == 4) { _pantalla = Pantalla.Inicio; _seleccion = 0; }
         }
         else if (_pantalla == Pantalla.Pausa)
         {
@@ -264,50 +261,42 @@ public sealed class MotorGEvolve : GameWindow
     private void DibujarMenu()
     {
         _menu.Empezar();
-        var fondo = new Vector3(.08f,.13f,.15f);
-        _menu.Rect(0,0,1280,720,fondo);
-        // Bandas de paisaje estilizado sin imágenes externas.
-        for (int i=0;i<22;i++)
-        {
-            float x = i * 65f;
-            float altura = 40f + 45f * MathF.Abs(MathF.Sin(i * 1.7f));
-            _menu.Rect(x,630f-altura,63f,altura+90f,new Vector3(.11f,.19f,.18f));
-        }
-        _menu.Texto("G-EVOLVE",640,60,10f,new Vector3(.86f,.93f,.77f),true);
-        _menu.Texto("MUNDO HEXAGONAL",640,155,2.5f,new Vector3(.63f,.74f,.67f),true);
+        Vector3 tinta = new(.13f, .18f, .20f);
+        Vector3 tenue = new(.38f, .45f, .47f);
+        Vector3 verde = new(.21f, .62f, .46f);
+        // Fondo gris claro y sobrio, sin fotografías ni paisajes.
+        _menu.Rect(0, 0, 1280, 720, new Vector3(.86f, .88f, .88f));
+        _menu.Texto("G-EVOLVE", 640, 84, 11f, tinta, true);
+        // Marca visual verde únicamente sobre la G.
+        _menu.Texto("G", 640 - 8 * 6f * 11f / 2f, 84, 11f, verde);
+        _menu.Texto("V0.1.0", 640, 182, 2.5f, tenue, true);
 
         if (_pantalla == Pantalla.Configuracion)
         {
+            _menu.Texto("NUEVA PARTIDA", 640, 244, 4f, tinta, true);
             string[] opciones =
             [
-                "TIPO: " + _ajustes.Tipo,
-                "EDAD: " + _ajustes.Edad,
-                "OCEANOS: " + _ajustes.PorcentajeOceanos + "%",
-                "MONTANAS: " + _ajustes.IntensidadMontanosa + "%",
-                "SEMILLA: " + _ajustes.Semilla,
-                "TAMANO: " + _ajustes.Ancho + "X" + _ajustes.Alto,
+                "TIPO DE MUNDO:  < " + _ajustes.Tipo + " >",
+                "TAMANO:  < " + _ajustes.Ancho + "X" + _ajustes.Alto + " >",
+                "SEMILLA:  < " + _ajustes.Semilla + " >",
                 "GENERAR MUNDO", "VOLVER"
             ];
-            _menu.Texto("CONFIGURAR MUNDO",640,125,3.5f,Vector3.One,true);
-            for (int i=0;i<opciones.Length;i++)
-                _menu.Boton(opciones[i],270,162+i*57,740,i==_seleccion);
-            _menu.Texto("FLECHAS: ELEGIR Y CAMBIAR   ENTER: CONFIRMAR",640,645,1.8f,Vector3.One,true);
+            for (int i = 0; i < 3; i++)
+                _menu.Boton(opciones[i], 340, 310 + i * 80, 600, i == _seleccion);
+            _menu.Boton(opciones[3], 380, 552, 520, _seleccion == 3);
+            _menu.Boton(opciones[4], 380, 617, 520, _seleccion == 4);
         }
         else
         {
             string[] opciones = _pantalla == Pantalla.Pausa
-                ? ["CONTINUAR", "NUEVO MUNDO", "MENU PRINCIPAL"]
-                : ["UN JUGADOR", "CONTINUAR", "SALIR"];
-            _menu.Texto(_pantalla == Pantalla.Pausa ? "PAUSA" : "PROTOTIPO PC",
-                640,245,3f,Vector3.One,true);
-            for (int i=0;i<3;i++)
-                _menu.Boton(opciones[i],420,300+i*70,440,i==_seleccion);
-            _menu.Texto("W S: ELEGIR   ENTER: CONFIRMAR   ESC: VOLVER",
-                640,575,1.8f,Vector3.One,true);
+                ? ["CONTINUAR", "NUEVA PARTIDA", "MENU PRINCIPAL"]
+                : ["NUEVA PARTIDA", "CONTINUAR", "SALIR"];
+            if (_pantalla == Pantalla.Pausa)
+                _menu.Texto("PAUSA", 640, 258, 4f, tinta, true);
+            for (int i = 0; i < 3; i++)
+                _menu.Boton(opciones[i], 420, 330 + i * 78, 440, i == _seleccion);
         }
-        _menu.Texto("G-EVOLVE - MOTOR PROPIO - VERSION PROTOTIPO",
-            640,690,1.5f,new Vector3(.57f,.65f,.61f),true);
-        _menu.Presentar(Size.X,Size.Y);
+        _menu.Presentar(Size.X, Size.Y);
     }
 
     protected override void OnResize(ResizeEventArgs e)
