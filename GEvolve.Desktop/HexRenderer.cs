@@ -74,16 +74,10 @@ internal sealed class HexRenderer : IDisposable
             Vector3 arriba = new(centro.X, nivel, centro.Y);
 
             bool agua = celda.Superficie == TipoSuperficie.Oceano;
-            // Escala continua de negro (nivel 1) a blanco (nivel 100).
-            // Usar nivel lógico evita depender de la exageración vertical del render.
-            float t = celda.NivelNumerico is byte n
-                ? Math.Clamp((n - 1f) / 99f, 0f, 1f)
-                : Math.Clamp((nivel - 0.13f) / 2.8f, 0f, 1f);
-            Vector3 grisSuperior = new(t, t, t);
-            float pared = t * 0.72f;
-            Vector3 grisLateral = new(pared, pared, pared);
-            Vector3 colorSuperior = agua ? new Vector3(0.12f, 0.34f, 0.65f) : grisSuperior;
-            Vector3 colorLateral = agua ? new Vector3(0.08f, 0.25f, 0.48f) : grisLateral;
+            Vector3 colorSuperior = ColorBioma(celda.Bioma);
+            Vector3 colorLateral = colorSuperior * .68f;
+            float brillo = .2126f * colorSuperior.X + .7152f * colorSuperior.Y + .0722f * colorSuperior.Z;
+            Vector3 tinta = brillo < .43f ? Vector3.One : new Vector3(.07f,.09f,.10f);
 
             var esquinas = new Vector3[6];
             for (int i = 0; i < 6; i++)
@@ -112,8 +106,7 @@ internal sealed class HexRenderer : IDisposable
             // Dígitos vectoriales sobre cada tapa, conservando el nivel lógico.
             if (celda.NivelNumerico is byte nivelNumerico)
                 EtiquetaNivel(bordesAgua, centro.X, centro.Y, nivel + 0.012f,
-                    nivelNumerico, agua ? Vector3.One
-                                      : t < 0.53f ? Vector3.One : new Vector3(0.05f, 0.05f, 0.05f));
+                    nivelNumerico, agua ? Vector3.One : tinta);
 
             for (int i = 0; i < 6; i++)
             {
@@ -166,6 +159,31 @@ internal sealed class HexRenderer : IDisposable
         GL.EnableVertexAttribArray(1);
         GL.BindVertexArray(0);
     }
+
+    private static Vector3 ColorBioma(Bioma bioma) => bioma switch
+    {
+        Bioma.OceanoAbierto => new(.10f,.31f,.65f),
+        Bioma.Arrecife => new(.13f,.70f,.78f),
+        Bioma.EstuarioLitoral => new(.20f,.54f,.74f),
+        Bioma.Manglar => new(.16f,.37f,.30f),
+        Bioma.BosqueTropical => new(.08f,.43f,.18f),
+        Bioma.BosqueSubtropical => new(.24f,.57f,.27f),
+        Bioma.BosqueTemplado => new(.27f,.50f,.33f),
+        Bioma.BosqueBoreal => new(.20f,.33f,.28f),
+        Bioma.DesiertoArenoso => new(.86f,.72f,.38f),
+        Bioma.DesiertoRocoso => new(.63f,.40f,.29f),
+        Bioma.Salar => new(.87f,.85f,.80f),
+        Bioma.Sabana => new(.72f,.69f,.30f),
+        Bioma.Pradera => new(.50f,.72f,.38f),
+        Bioma.Estepa => new(.67f,.61f,.43f),
+        Bioma.Humedal => new(.32f,.58f,.49f),
+        Bioma.PantanoEverglades => new(.22f,.36f,.22f),
+        Bioma.TundraArtica => new(.70f,.80f,.85f),
+        Bioma.TundraAntartica => new(.90f,.93f,.97f),
+        Bioma.Alpino => new(.57f,.59f,.65f),
+        Bioma.Cumbres => new(.96f,.97f,.99f),
+        _ => new(.5f,.5f,.5f)
+    };
 
     // Segmentos: arriba, superior derecha, inferior derecha, abajo,
     // inferior izquierda, superior izquierda y centro.
