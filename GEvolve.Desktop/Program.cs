@@ -19,17 +19,19 @@ public sealed class MotorGEvolve : GameWindow
     // Inclinación fija por encima del plano: nunca invierte el horizonte.
     private const float Inclinacion = MathF.PI * 35f / 180f;
     // La cámara orbita alrededor de un objetivo desplazable sobre el terreno.
-    private float _distancia = 45f;
+    private float _distancia = 38f;
     private Vector3 _objetivo = new(0f, 0.5f, 0f);
     private const float Velocidad = 18f;
     private WorldMap? _mundo;
+    // Ancho físico X del mundo en hexágonos pointy-top con radio estándar.
+    private float _anchoMundo;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mundo procedural 100x50 — WASD mover / clic derecho girar / rueda zoom"
+            Title = "G-Evolve | Mundo continuo E/O — WASD / giro 360 / zoom limitado"
         })
     {
     }
@@ -41,6 +43,7 @@ public sealed class MotorGEvolve : GameWindow
         GL.Enable(EnableCap.DepthTest);
         // Nuevo sistema modular de generación y chunks; mundo reproducible 100x50.
         _mundo = WorldSystem.Generar(new WorldSettings(100, 50, 2026, 10, 30));
+        _anchoMundo = MathF.Sqrt(3f) * HexGeometry.RadioEstandar * _mundo.Configuracion.Ancho;
         // La altura lógica va de 0 a 100. Se transforma a unidades gráficas
         // sin modificar los datos del terreno. El mar queda horizontal.
         CeldaMundo[] representacion = _mundo.Celdas.Select(c =>
@@ -70,7 +73,8 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 2.5f, 8f, 110f);
+        // El zoom no puede alejarse tanto que el mundo se pierda en pantalla.
+        _distancia = Math.Clamp(_distancia - e.OffsetY * 2f, 8f, 52f);
     }
 
     /// <summary>Desplazamiento WASD en el plano XZ, relativo al giro de cámara.</summary>
@@ -92,9 +96,12 @@ public sealed class MotorGEvolve : GameWindow
         {
             movimiento.Normalize();
             _objetivo += movimiento * paso;
-            // Limites de la demostración: impiden perder el mundo de vista.
-            _objetivo.X = Math.Clamp(_objetivo.X, -120f, 120f);
-            _objetivo.Z = Math.Clamp(_objetivo.Z, -90f, 90f);
+            // Mundo cilíndrico: caminar al este reaparece por el oeste.
+            // Se usa el período físico de la cuadrícula en X, no el de celdas.
+            float mitad = _anchoMundo * 0.5f;
+            _objetivo.X = ((_objetivo.X + mitad) % _anchoMundo + _anchoMundo) % _anchoMundo - mitad;
+            // Norte y sur mantienen sus límites polares: no hay envolvimiento.
+            _objetivo.Z = Math.Clamp(_objetivo.Z, -35f, 34f);
         }
         if (KeyboardState.IsKeyDown(Keys.Home)) _objetivo = new Vector3(0f, 0.5f, 0f);
     }
@@ -121,7 +128,7 @@ public sealed class MotorGEvolve : GameWindow
         Matrix4 proyeccion = Matrix4.CreateOrthographic(
             alturaVisible * aspecto, alturaVisible, 0.1f, 300f);
 
-        _hexRenderer.Dibujar(vista * proyeccion);
+        _hexRenderer.Dibujar(vista * proyeccion, _anchoMundo);
         SwapBuffers();
     }
 
