@@ -87,12 +87,12 @@ internal sealed class HexRenderer : IDisposable
                 Vector3 a = esquinas[i];
                 Vector3 b = esquinas[(i + 1) % 6];
 
-                // Sin diagonales visuales en la tapa; solo se marca el borde exterior.
+                // Seis sectores forman la tapa uniforme, sin contornos dibujados.
                 Vertice(vertices, arriba, colorSuperior);
                 Vertice(vertices, a, colorSuperior);
                 Vertice(vertices, b, colorSuperior);
 
-                // Dos triángulos por pared; UV continuas sobre la cara.
+                // Dos triángulos por pared con el mismo gris oscuro.
                 Vector3 aBase = new(a.X, 0f, a.Z);
                 Vector3 bBase = new(b.X, 0f, b.Z);
                 Vertice(vertices, a, colorLateral);
