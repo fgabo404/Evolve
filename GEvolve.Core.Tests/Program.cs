@@ -174,6 +174,16 @@ try
         Verificar(mundoPerfil.Celdas.All(x => x.Superficie == TipoSuperficie.Oceano
             ? x.Altura == 0 : x.Altura is >= 1 and <= 100), "Alturas válidas por perfil.");
     }
+    Verificar(generado.Celdas.All(c => Enum.IsDefined(c.Bioma)),
+        "Todo hexagono debe tener bioma valido.");
+    Verificar(generado.Celdas.Where(c => c.Altura >= 80)
+        .All(c => c.Bioma == Bioma.Cumbres), "Cumbres clasificadas correctamente.");
+    Verificar(generado.Celdas.Where(c => c.Superficie == TipoSuperficie.Oceano)
+        .Any(c => c.Bioma is Bioma.Arrecife or Bioma.EstuarioLitoral),
+        "Debe existir una franja marina costera.");
+    Verificar(generado.Celdas.Where(c => c.Fila == 0 || c.Fila == 149)
+        .All(c => c.Bioma is Bioma.TundraArtica or Bioma.TundraAntartica),
+        "Bordes polares helados.");
     Console.WriteLine("OK — Tipos de mundo, semilla y cuota oceánica de 60%.");
     Console.WriteLine("OK — Mundo 200x150, 30000 hexágonos, 300 chunks y mar nivel cero.");
     Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
