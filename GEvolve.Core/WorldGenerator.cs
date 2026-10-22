@@ -5,7 +5,8 @@ public enum TipoSuperficie { Oceano, Tierra }
 
 /// <summary>Celda del mundo procedural con coordenadas, elevación y superficie.</summary>
 public readonly record struct CeldaMundo(HexCoord Coordenada, float Elevacion, TipoSuperficie Superficie,
-    NivelRelieve Relieve = NivelRelieve.Medio, byte? NivelNumerico = null);
+    NivelRelieve Relieve = NivelRelieve.Medio, byte? NivelNumerico = null,
+    Bioma Bioma = Bioma.OceanoAbierto);
 
 /// <summary>
 /// Crea mapas rectangulares de celdas hexagonales con una semilla reproducible.
