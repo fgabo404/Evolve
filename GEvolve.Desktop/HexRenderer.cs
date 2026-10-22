@@ -7,7 +7,7 @@ namespace GEvolve.Desktop;
 /// <summary>
 /// Convierte celdas de terreno en prismas hexagonales tridimensionales.
 /// Solo representa datos recibidos desde GEvolve.Core: no genera el mundo.
-/// Usa una sola malla y una sola subida a GPU para las siete celdas de prueba.
+/// Usa una sola malla y subida a GPU para todas las celdas del mapa radial.
 /// </summary>
 internal sealed class HexRenderer : IDisposable
 {
@@ -72,12 +72,11 @@ internal sealed class HexRenderer : IDisposable
                     centro.Y + MathF.Cos(angulo));
             }
 
-            var tapa = nivel >= 0.9f
-                ? new Vector3(0.72f, 0.77f, 0.65f)
-                : nivel <= 0.3f
-                    ? new Vector3(0.65f, 0.74f, 0.57f)
-                    : new Vector3(0.55f, 0.68f, 0.45f);
-            var contorno = new Vector3(0.11f, 0.19f, 0.18f);
+            // Escala de grises: elevaciones bajas oscuras, altas claras.
+            // La luminosidad es visual; NO determina categorías ecológicas.
+            float gris = 0.32f + 0.48f * Math.Clamp((nivel - 0.15f) / 1.25f, 0f, 1f);
+            var tapa = new Vector3(gris, gris, gris);
+            var contorno = new Vector3(0.12f, 0.12f, 0.12f);
 
             for (int i = 0; i < 6; i++)
             {
@@ -88,7 +87,8 @@ internal sealed class HexRenderer : IDisposable
                 Vector3 aBase = new(a.X, 0f, a.Z);
                 Vector3 bBase = new(b.X, 0f, b.Z);
                 float sombra = 0.68f + 0.07f * (i % 3);
-                var pared = new Vector3(0.46f * sombra, 0.54f * sombra, 0.40f * sombra);
+                float grisPared = gris * sombra;
+                var pared = new Vector3(grisPared, grisPared, grisPared);
                 Triangulo(triangulos, a, aBase, bBase, pared);
                 Triangulo(triangulos, a, bBase, b, pared);
 
