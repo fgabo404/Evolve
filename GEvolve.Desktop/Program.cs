@@ -21,14 +21,14 @@ public sealed class MotorGEvolve : GameWindow
     private const float AnguloMinimo = MathF.PI / 12f; // 15°
     private const float AnguloMaximo = MathF.PI * 11f / 12f; // 165°
     // Distancia inicial que encuadra el anillo completo de siete hexágonos.
-    private float _distancia = 22f;
+    private float _distancia = 38f;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mapa hexagonal radial 3D (91 celdas) — giro 15°-165°"
+            Title = "G-Evolve | Mapa hexagonal radial 3D (217 celdas) — giro 15°-165°"
         })
     {
     }
@@ -38,9 +38,9 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        // Mapa radial de radio 5: centro + cinco anillos (91 celdas).
+        // Mapa radial de radio 8: centro + ocho anillos (217 celdas).
         // Las elevaciones son solo una prueba geométrica, no biomas reales.
-        _hexRenderer.Inicializar(HexDemoWorld.CrearRadial(5));
+        _hexRenderer.Inicializar(HexDemoWorld.CrearRadial(8));
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 1.1f, 12f, 45f);
+        _distancia = Math.Clamp(_distancia - e.OffsetY * 1.8f, 18f, 75f);
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
