@@ -9,11 +9,9 @@ public static class WorldPresets
         // Aleatorio mantiene su selección determinista según la semilla.
         var (edad, oceanos, montanas) = tipo switch
         {
-            TipoMundo.Pangea => (EdadGeologica.Normal, 45, 50),
-            TipoMundo.Archipielagos => (EdadGeologica.Normal, 75, 35),
-            TipoMundo.MarInterior => (EdadGeologica.Antiguo, 40, 30),
-            TipoMundo.Fractal => (EdadGeologica.Joven, 60, 55),
-            TipoMundo.Aleatorio => (EdadGeologica.Normal, 60, 40),
+            TipoMundo.Pangea => (EdadGeologica.Normal, 40, 50),
+            TipoMundo.Archipielagos => (EdadGeologica.Normal, 80, 35),
+            TipoMundo.ContinentesPequenos => (EdadGeologica.Normal, 70, 45),
             _ => (EdadGeologica.Normal, 60, 40)
         };
         return new WorldSettings(ancho, alto, semilla, 10, 30, tipo, edad, oceanos, montanas);
