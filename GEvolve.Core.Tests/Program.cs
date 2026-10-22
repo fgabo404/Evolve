@@ -159,6 +159,21 @@ try
     }
     Verificar(LanzaArgumento(() => WorldSystem.Generar(perfil with
         { PorcentajeOceanos = 101 })), "Porcentaje inválido rechazado.");
+    var continentes = WorldPresets.Aplicar(TipoMundo.Continentes, 200, 150, 2026);
+    Verificar(continentes.Tipo == TipoMundo.Continentes &&
+        continentes.PorcentajeOceanos == 60 && continentes.IntensidadMontanosa == 40 &&
+        continentes.Edad == EdadGeologica.Normal, "Valores aprobados de Continentes.");
+    foreach (TipoMundo familia in Enum.GetValues<TipoMundo>())
+    {
+        var ajustes = WorldPresets.Aplicar(familia, 200, 150, 2026);
+        ajustes.Validar();
+        var mundoPerfil = WorldSystem.Generar(ajustes);
+        int aguaEsperada = 30000 * ajustes.PorcentajeOceanos / 100;
+        Verificar(mundoPerfil.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == aguaEsperada,
+            "Cada tipo aplica su cuota de agua preconfigurada.");
+        Verificar(mundoPerfil.Celdas.All(x => x.Superficie == TipoSuperficie.Oceano
+            ? x.Altura == 0 : x.Altura is >= 1 and <= 100), "Alturas válidas por perfil.");
+    }
     Console.WriteLine("OK — Tipos de mundo, semilla y cuota oceánica de 60%.");
     Console.WriteLine("OK — Mundo 200x150, 30000 hexágonos, 300 chunks y mar nivel cero.");
     Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
