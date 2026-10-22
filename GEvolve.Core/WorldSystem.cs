@@ -18,7 +18,13 @@ public static class WorldSystem
                 Masa(x, y, 0.28f, 0.43f, 0.25f, 0.31f),
                 Masa(x, y, 0.74f, 0.60f, 0.24f, 0.32f));
             continente = MathF.Max(continente, Masa(x, y, 0.50f, 0.22f, 0.14f, 0.19f));
-            float altura = 0.26f + 0.66f * continente + 0.19f * Ondas(x, y, config.Semilla);
+            // Cordilleras interiores: crestas periódicas en longitud para
+            // conservar el relieve continuo al cruzar la costura E/O.
+            float cresta = MathF.Pow(MathF.Abs(MathF.Sin(2f * MathF.PI *
+                (4f * x + 1.6f * y + config.Semilla * 0.00017f))), 12f);
+            float montana = continente * 0.37f * cresta;
+            float altura = 0.24f + 0.62f * continente
+                + 0.16f * Ondas(x, y, config.Semilla) + montana;
             // La franja polar reduce la tierra cerca del norte y sur.
             altura *= Math.Clamp(MathF.Min(y, 1f - y) / 0.12f, 0f, 1f);
             byte nivel = (byte)Math.Clamp((int)MathF.Round(100f * altura), 0, 100);
@@ -27,7 +33,10 @@ public static class WorldSystem
             int q = columna - (fila - (fila & 1)) / 2 - config.Ancho / 2 + config.Alto / 4;
             int r = fila - config.Alto / 2;
             resultado[fila * config.Ancho + columna] =
-                new WorldCell(columna, fila, new HexCoord(q, r), nivel, tipo);
+                new WorldCell(columna, fila, new HexCoord(q, r), nivel, tipo)
+                {
+                    Relieve = ReglasRelieve.Clasificar(nivel, config.NivelMar)
+                };
         }
         return new WorldMap(config, resultado);
     }
