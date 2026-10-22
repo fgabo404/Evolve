@@ -59,6 +59,8 @@ public sealed class MotorGEvolve : GameWindow
         _hexRenderer.Dispose();
         _hexRenderer = new HexRenderer();
         _mundo = WorldSystem.Generar(_ajustes);
+        _objetivo = new Vector3(0f, 0.5f, 0f);
+        _distancia = 38f;
         _anchoMundo = MathF.Sqrt(3f) * HexGeometry.RadioEstandar * _mundo.Configuracion.Ancho;
         // La altura lógica va de 0 a 100. Se transforma a unidades gráficas
         // sin modificar los datos del terreno. El mar queda horizontal.
