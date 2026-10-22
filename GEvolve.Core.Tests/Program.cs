@@ -51,6 +51,17 @@ try
         "El mapa radial debe conservar su contorno hexagonal.");
     Verificar(radial.Count(x => origen.Distancia(x.Coordenada) == 11) == 66,
         "El anillo exterior debe tener 6 * radio celdas.");
+    float cima = radial.Single(x => x.Coordenada == origen).Elevacion;
+    Verificar(radial.All(x => x.Elevacion <= cima), "La cima central debe ser máxima.");
+    Verificar(radial.Where(x => origen.Distancia(x.Coordenada) == 11)
+        .All(x => MathF.Abs(x.Elevacion - 0.15f) < 0.0001f),
+        "El borde debe tener la elevación mínima.");
+    Verificar(radial.GroupBy(x => origen.Distancia(x.Coordenada))
+        .OrderBy(x => x.Key).Select(x => x.First().Elevacion)
+        .Zip(radial.GroupBy(x => origen.Distancia(x.Coordenada))
+            .OrderBy(x => x.Key).Select(x => x.First().Elevacion).Skip(1),
+            (a, b) => a > b).All(x => x),
+        "La altura debe descender entre anillos.");
     Verificar(radial.SequenceEqual(HexDemoWorld.CrearRadial(11)),
         "La generación de prueba debe ser determinista.");
     Verificar(LanzaArgumento(() => HexDemoWorld.CrearRadial(-1)),
