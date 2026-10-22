@@ -14,7 +14,7 @@ internal sealed class HexRenderer : IDisposable
     private int _verticesTriangulos;
 
     private const int DatosPorVertice = 9; // posición(3), color(3), marcas de borde(3)
-    private const float GrosorBordePx = 1.5f;
+    private const float GrosorBordePx = 4f;
 
     private const string VertexShader = """
         #version 330 core
