@@ -190,8 +190,17 @@ public sealed class MotorGEvolve : GameWindow
         // HUD discreto, ubicado arriba a la derecha; se dibuja sobre la escena.
         _menu.Empezar();
         _menu.Boton("REGENERAR MUNDO", 910f, 18f, 350f, false);
+        string tipoMundo = _ajustes.Tipo switch
+        {
+            TipoMundo.Pangea => "PANGEA",
+            TipoMundo.Archipielagos => "ARCHIPIELAGOS",
+            TipoMundo.ContinentesPequenos => "CONTINENTES PEQUENOS",
+            _ => "CONTINENTES GRANDES"
+        };
         _menu.Texto("SEMILLA: " + _ajustes.Semilla, 1085f, 81f, 1.65f,
             new Vector3(.94f, .96f, .97f), true);
+        _menu.Texto(tipoMundo + "  " + _ajustes.Ancho + " X " + _ajustes.Alto,
+            1085f, 108f, 1.35f, new Vector3(.94f, .96f, .97f), true);
         _menu.Presentar(Size.X, Size.Y);
         SwapBuffers();
     }
