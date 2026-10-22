@@ -78,10 +78,16 @@ internal sealed class HexRenderer : IDisposable
             bool agua = celda.Superficie == TipoSuperficie.Oceano;
             float claro = Math.Clamp(gris * 1.15f, 0f, 1f);
             float oscuro = gris * 0.70f;
-            Vector3 colorSuperior = agua ? new Vector3(0.12f, 0.34f, 0.65f)
-                : new Vector3(0.25f * claro, 0.70f * claro, 0.36f * claro);
-            Vector3 colorLateral = agua ? new Vector3(0.08f, 0.25f, 0.48f)
-                : new Vector3(0.25f * oscuro, 0.65f * oscuro, 0.32f * oscuro);
+            // Paleta provisional por nivel geomorfológico, NO por bioma.
+            // Las cumbres infranqueables se identifican sin dibujar bordes.
+            Vector3 tono = celda.Relieve switch
+            {
+                NivelRelieve.Impasable => new Vector3(0.92f, 0.92f, 0.92f),
+                NivelRelieve.Alto => new Vector3(0.66f, 0.69f, 0.61f),
+                _ => new Vector3(0.34f, 0.67f, 0.36f)
+            };
+            Vector3 colorSuperior = agua ? new Vector3(0.12f, 0.34f, 0.65f) : tono * claro;
+            Vector3 colorLateral = agua ? new Vector3(0.08f, 0.25f, 0.48f) : tono * oscuro;
 
             var esquinas = new Vector3[6];
             for (int i = 0; i < 6; i++)
