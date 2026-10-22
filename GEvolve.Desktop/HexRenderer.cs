@@ -38,19 +38,26 @@ internal sealed class HexRenderer : IDisposable
         in vec3 borde;
         uniform float grosorBordePx;
         out vec4 fragColor;
+
         void main()
         {
-            // En tapas, borde.x = 0 en el perímetro y 1 en el centro.
-            // En paredes, borde.xy corresponde a UV de cada cara.
-            float d = borde.z < 0.5
-                ? borde.x
-                : min(min(borde.x, 1.0 - borde.x),
-                      min(borde.y, 1.0 - borde.y));
-            float pixel = max(fwidth(d), 0.000001);
-            float visibilidad = smoothstep(
-                grosorBordePx * pixel - pixel * 0.5,
-                grosorBordePx * pixel + pixel * 0.5, d);
-            fragColor = vec4(color * visibilidad, 1.0);
+            float distancia;
+            if (borde.z < 0.5)
+            {
+                distancia = borde.x;
+            }
+            else
+            {
+                float distanciaHorizontal = min(borde.x, 1.0 - borde.x);
+                float distanciaVertical = min(borde.y, 1.0 - borde.y);
+                distancia = min(distanciaHorizontal, distanciaVertical);
+            }
+
+            float derivada = max(fwidth(distancia), 0.00001);
+            float limite = grosorBordePx * derivada;
+            float factor = smoothstep(limite - derivada * 0.5,
+                                      limite + derivada * 0.5, distancia);
+            fragColor = vec4(color * factor, 1.0);
         }
         """;
 
@@ -185,6 +192,6 @@ internal sealed class HexRenderer : IDisposable
         if (ok != 0) return shader;
         string mensaje = GL.GetShaderInfoLog(shader);
         GL.DeleteShader(shader);
-        throw new InvalidOperationException("Error GLSL: " + mensaje);
+        throw new InvalidOperationException($"Error compilando shader {tipo}: {mensaje}");
     }
 }
