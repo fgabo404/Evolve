@@ -48,7 +48,7 @@ public sealed class MotorGEvolve : GameWindow
         // sin modificar los datos del terreno. El mar queda horizontal.
         CeldaMundo[] representacion = _mundo.Celdas.Select(c =>
             new CeldaMundo(c.Coordenada,
-                c.Superficie == TipoSuperficie.Oceano ? 0.08f
+                c.Superficie == TipoSuperficie.Oceano ? 0f
                 : 0.13f + c.Altura / 100f * 2.8f,
                 c.Superficie, c.Relieve)).ToArray();
         _hexRenderer.Inicializar(representacion);
