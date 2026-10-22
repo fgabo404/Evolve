@@ -1,82 +1,107 @@
 namespace GEvolve.Core;
 
-/// <summary>Cuatro estrategias fractales independientes para siluetas de tierra.</summary>
+/// <summary>Siluetas continentales a partir de esqueletos ramificados y fractales periódicos.</summary>
 public static class GeneradorMasasTerrestres
 {
-    public static float[] Crear(WorldSettings c)
+    private readonly record struct Tramo(float X, float Y, float Radio, float Peso);
+
+    public static float[] Crear(WorldSettings config)
     {
-        int w = c.Ancho, h = c.Alto;
-        var salida = new float[w * h];
-        var rng = new Random(c.Semilla);
-        var regiones = new List<(float x,float y,float rx,float ry,float giro)>();
-        int cantidad = c.Tipo switch
+        int ancho = config.Ancho, alto = config.Alto;
+        var azar = new Random(config.Semilla);
+        var trazos = new List<Tramo>();
+        int grupos = config.Tipo switch
         {
-            TipoMundo.Pangea => 7,
-            TipoMundo.ContinentesGrandes => 5,
-            TipoMundo.ContinentesPequenos => 11,
-            _ => 35
+            TipoMundo.Pangea => 1,
+            TipoMundo.ContinentesGrandes => 4,
+            TipoMundo.ContinentesPequenos => 9,
+            _ => 21
         };
-        for (int i = 0; i < cantidad; i++)
+        // Sin rejillas ni elipses: cada continente es una red de ejes ramificados.
+        for (int g = 0; g < grupos; g++)
         {
-            float x, y, rx, ry;
-            if (c.Tipo == TipoMundo.Pangea)
+            float cx = .08f + .84f * (float)azar.NextDouble();
+            float cy = .17f + .66f * (float)azar.NextDouble();
+            if (config.Tipo == TipoMundo.Pangea) { cx = .5f; cy = .5f; }
+            float escala = config.Tipo switch
             {
-                // Centro dominante y brazos conectados que forman penínsulas.
-                float ang = i * 2.39996f;
-                float radio = i == 0 ? 0f : .07f + .075f * (float)rng.NextDouble();
-                x = .5f + MathF.Cos(ang) * radio;
-                y = .50f + MathF.Sin(ang) * radio;
-                rx = i == 0 ? .29f : .15f + .07f * (float)rng.NextDouble();
-                ry = i == 0 ? .31f : .16f + .07f * (float)rng.NextDouble();
+                TipoMundo.Pangea => .24f,
+                TipoMundo.ContinentesGrandes => .105f,
+                TipoMundo.ContinentesPequenos => .060f,
+                _ => .023f
+            };
+            escala *= .65f + .8f * (float)azar.NextDouble();
+            float angulo = (float)(azar.NextDouble() * Math.PI * 2);
+            int pasos = config.Tipo switch
+            {
+                TipoMundo.Pangea => 24,
+                TipoMundo.ContinentesGrandes => 14,
+                TipoMundo.ContinentesPequenos => 9,
+                _ => 5
+            };
+            var espina = new List<(float x,float y)>();
+            float x = cx, y = cy;
+            for (int p = 0; p < pasos; p++)
+            {
+                float t = p / (float)Math.Max(1, pasos - 1);
+                float radio = escala * (.55f + .60f * MathF.Sin(MathF.PI * (.12f + .78f * t)));
+                radio *= .70f + .5f * (float)azar.NextDouble();
+                trazos.Add(new Tramo(x, y, radio, 1f));
+                espina.Add((x,y));
+                angulo += ((float)azar.NextDouble() - .5f) * .95f;
+                float paso = escala * (.36f + .28f * (float)azar.NextDouble());
+                x = Modulo(x + MathF.Cos(angulo) * paso);
+                y = Math.Clamp(y + MathF.Sin(angulo) * paso, .10f, .90f);
             }
-            else
+            // Brazos/penínsulas parten de la espina, no son círculos independientes.
+            int brazos = config.Tipo == TipoMundo.Archipielagos ? 1 : 3 + azar.Next(3);
+            for (int b = 0; b < brazos; b++)
             {
-                // Rejilla escalonada con desplazamiento evita centros amontonados.
-                int columnas = c.Tipo == TipoMundo.ContinentesGrandes ? 3 :
-                    c.Tipo == TipoMundo.ContinentesPequenos ? 4 : 7;
-                int filas = (cantidad + columnas - 1) / columnas;
-                x = ((i % columnas) + .30f + .40f * (float)rng.NextDouble()) / columnas;
-                y = .12f + .76f * ((i / columnas) + .25f + .50f * (float)rng.NextDouble()) / filas;
-                float escala = c.Tipo switch
+                var anclaje = espina[azar.Next(espina.Count)];
+                x = anclaje.x; y = anclaje.y;
+                angulo = (float)(azar.NextDouble() * Math.PI * 2);
+                int largo = 3 + azar.Next(Math.Max(4, pasos / 2));
+                for (int p = 0; p < largo; p++)
                 {
-                    TipoMundo.ContinentesGrandes => .18f,
-                    TipoMundo.ContinentesPequenos => .10f,
-                    _ => .047f
-                };
-                rx = escala * (.72f + .60f * (float)rng.NextDouble());
-                ry = escala * (1.12f + .65f * (float)rng.NextDouble());
+                    float caida = 1f - .65f * p / largo;
+                    float radio = escala * caida * (.32f + .30f * (float)azar.NextDouble());
+                    trazos.Add(new Tramo(x, y, radio, .94f));
+                    angulo += ((float)azar.NextDouble() - .5f) * .8f;
+                    x = Modulo(x + MathF.Cos(angulo) * escala * .45f);
+                    y = Math.Clamp(y + MathF.Sin(angulo) * escala * .45f, .06f, .94f);
+                }
             }
-            regiones.Add((x,y,rx,ry,(float)rng.NextDouble() * MathF.PI));
         }
-        for (int fila = 0; fila < h; fila++)
-        for (int col = 0; col < w; col++)
+
+        var salida = new float[ancho * alto];
+        for (int fila = 0; fila < alto; fila++)
+        for (int col = 0; col < ancho; col++)
         {
-            float x = (col + .5f) / w, y = (fila + .5f) / h;
-            // Warp de escala continental más detalles de costa.
-            float wx = x + .045f * Ruido(x,y,c.Semilla+11,4,3);
-            float wy = y + .040f * Ruido(x,y,c.Semilla+23,3,4);
-            float cobertura = -1f;
-            foreach (var region in regiones)
+            float x = (col + .5f) / ancho, y = (fila + .5f) / alto;
+            // Deformación continental con dos escalas: golfos, cabos y estrechos.
+            float wx = Modulo(x + .050f * Ruido(x,y,config.Semilla+11,3,3)
+                                + .018f * Ruido(x,y,config.Semilla+19,9,7));
+            float wy = y + .055f * Ruido(x,y,config.Semilla+23,3,3)
+                         + .018f * Ruido(x,y,config.Semilla+29,8,8);
+            float masa = -1.5f;
+            foreach (var tramo in trazos)
             {
-                float dx = wx - region.x;
-                dx -= MathF.Round(dx);
-                float dy = wy - region.y;
-                float ca = MathF.Cos(region.giro), sa = MathF.Sin(region.giro);
-                float u = (dx * ca - dy * sa) / region.rx;
-                float v = (dx * sa + dy * ca) / region.ry;
-                // Cada región se fusiona con sus vecinas mediante un máximo fractal.
-                cobertura = MathF.Max(cobertura, 1f - MathF.Sqrt(u*u+v*v));
+                float dx = wx - tramo.X;
+                dx -= MathF.Round(dx); // El mundo envuelve este y oeste.
+                float dy = wy - tramo.Y;
+                float d = MathF.Sqrt(dx*dx + dy*dy);
+                masa = MathF.Max(masa, tramo.Peso - d / tramo.Radio);
             }
-            float contorno = .16f*Ruido(x,y,c.Semilla+41,7,6)
-                           + .085f*Ruido(x,y,c.Semilla+59,17,13)
-                           + .027f*Ruido(x,y,c.Semilla+71,39,29);
-            if (c.Tipo == TipoMundo.Archipielagos) contorno *= .65f;
-            // Menor preferencia de tierra en las franjas polares; no afecta envoltura E/O.
-            float polar = .12f * Math.Clamp((.10f - MathF.Min(y,1f-y))/.10f,0f,1f);
-            salida[fila*w+col] = cobertura + contorno - polar;
+            float fractal = .31f * Ruido(x,y,config.Semilla+41,5,5)
+                          + .16f * Ruido(x,y,config.Semilla+59,13,11)
+                          + .065f * Ruido(x,y,config.Semilla+71,33,23);
+            float margenPolar = .32f * Math.Clamp((.10f - MathF.Min(y,1f-y))/.10f,0f,1f);
+            salida[fila*ancho+col] = masa + fractal - margenPolar;
         }
         return salida;
     }
+
+    private static float Modulo(float valor) => valor - MathF.Floor(valor);
 
     private static float Ruido(float x,float y,int semilla,int fx,int fy)
     {
