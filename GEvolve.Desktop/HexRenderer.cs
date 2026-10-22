@@ -35,8 +35,12 @@ internal sealed class HexRenderer : IDisposable
         void main() { fragColor = vec4(color, 1.0); }
         """;
 
-    /// <summary>Crea un lote de geometría de tapas y seis paredes por celda.</summary>
-    public void Inicializar(IReadOnlyList<HexTile> celdas)
+    /// <summary>Compatibilidad con las antiguas celdas de demostración.</summary>
+    public void Inicializar(IReadOnlyList<HexTile> celdas) => Inicializar(
+        celdas.Select(x => new CeldaMundo(x.Coordenada, x.Elevacion, TipoSuperficie.Tierra)).ToArray());
+
+    /// <summary>Crea un lote de geometría para tierra y océano.</summary>
+    public void Inicializar(IReadOnlyList<CeldaMundo> celdas)
     {
         if (_programa != 0)
             throw new InvalidOperationException("El renderer ya está inicializado.");
@@ -58,7 +62,7 @@ internal sealed class HexRenderer : IDisposable
         _uniformeMatriz = GL.GetUniformLocation(_programa, "matrizVistaProyeccion");
 
         var vertices = new List<float>(celdas.Count * 54 * DatosPorVertice);
-        foreach (HexTile celda in celdas)
+        foreach (CeldaMundo celda in celdas)
         {
             // El tamaño de todas las celdas se define en un único lugar.
             System.Numerics.Vector2 centro = HexGeometry.APosicion(celda.Coordenada, HexGeometry.RadioEstandar);
@@ -67,11 +71,15 @@ internal sealed class HexRenderer : IDisposable
 
             float gris = 0.32f + 0.48f
                 * Math.Clamp((nivel - 0.15f) / 1.65f, 0f, 1f);
-            // Superficie superior clara; paredes laterales oscuras.
+            // El mar permanece plano y azul. En tierra se mantiene
+            // el esquema acordado: tapa clara y laterales oscuros.
+            bool agua = celda.Superficie == TipoSuperficie.Oceano;
             float claro = Math.Clamp(gris * 1.15f, 0f, 1f);
             float oscuro = gris * 0.70f;
-            Vector3 colorSuperior = new(claro, claro, claro);
-            Vector3 colorLateral = new(oscuro, oscuro, oscuro);
+            Vector3 colorSuperior = agua ? new Vector3(0.12f, 0.34f, 0.65f)
+                : new Vector3(0.25f * claro, 0.70f * claro, 0.36f * claro);
+            Vector3 colorLateral = agua ? new Vector3(0.08f, 0.25f, 0.48f)
+                : new Vector3(0.25f * oscuro, 0.65f * oscuro, 0.32f * oscuro);
 
             var esquinas = new Vector3[6];
             for (int i = 0; i < 6; i++)
