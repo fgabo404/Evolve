@@ -40,7 +40,22 @@ try
         "Alturas válidas.");
     Verificar(HexDemoWorld.CrearCuadricula(20, 20).SequenceEqual(cuadricula),
         "Alturas reproducibles.");
-    Console.WriteLine("OK — Geometría hexagonal y grid 20x20 superadas.");
+    // Verificar el mapa radial, generado desde un único centro axial.
+    var radial = HexDemoWorld.CrearRadial(11);
+    Verificar(radial.Count == 397, "Radio 11 debe producir 397 hexágonos.");
+    Verificar(radial.Select(x => x.Coordenada).Distinct().Count() == 397,
+        "Las coordenadas radiales deben ser únicas.");
+    Verificar(radial.Count(x => x.Coordenada == origen) == 1,
+        "Debe existir un único hexágono central.");
+    Verificar(radial.All(x => origen.Distancia(x.Coordenada) <= 11),
+        "El mapa radial debe conservar su contorno hexagonal.");
+    Verificar(radial.Count(x => origen.Distancia(x.Coordenada) == 11) == 66,
+        "El anillo exterior debe tener 6 * radio celdas.");
+    Verificar(radial.SequenceEqual(HexDemoWorld.CrearRadial(11)),
+        "La generación de prueba debe ser determinista.");
+    Verificar(LanzaArgumento(() => HexDemoWorld.CrearRadial(-1)),
+        "El radio negativo debe rechazarse.");
+    Console.WriteLine("OK — Grid 20x20 y mapa radial de 397 hexágonos verificados.");
     return 0;
 }
 catch (Exception ex)
