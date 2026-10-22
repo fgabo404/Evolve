@@ -16,8 +16,10 @@ public sealed class MotorGEvolve : GameWindow
     private readonly HexRenderer _hexRenderer = new();
     // Giro horizontal continuo de 360°; puede repetirse sin detenerse en los extremos.
     private float _angulo = MathHelper.DegreesToRadians(40f);
-    // Inclinación fija por encima del plano: nunca invierte el horizonte.
-    private const float Inclinacion = MathF.PI * 35f / 180f;
+    // Inclinación orbital variable: de vista rasante a vista casi cenital.
+    private float _inclinacion = MathHelper.DegreesToRadians(35f);
+    private const float InclinacionMinima = MathF.PI * 8f / 180f;
+    private const float InclinacionMaxima = MathF.PI * 85f / 180f;
     // La cámara orbita alrededor de un objetivo desplazable sobre el terreno.
     private float _distancia = 38f;
     private Vector3 _objetivo = new(0f, 0.5f, 0f);
@@ -31,7 +33,7 @@ public sealed class MotorGEvolve : GameWindow
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mundo 200x150 — WASD / giro 360 / zoom limitado"
+            Title = "G-Evolve | 200x150 — boton derecho: giro 360 y altura 8-85 grados"
         })
     {
     }
@@ -55,9 +57,8 @@ public sealed class MotorGEvolve : GameWindow
     }
 
     /// <summary>
-    /// Gira horizontalmente la cámara libremente a lo largo de 360° manteniendo pulsado
-    /// el botón derecho. El desplazamiento vertical no cambia la inclinación:
-    /// de esta forma nunca vemos el terreno desde abajo ni invertimos horizonte.
+    /// Permite giro horizontal continuo de 360° y ajuste vertical de 8° a 85°
+    /// manteniendo el botón derecho, sin atravesar ni invertir el terreno.
     /// </summary>
     protected override void OnMouseMove(MouseMoveEventArgs e)
     {
@@ -67,6 +68,8 @@ public sealed class MotorGEvolve : GameWindow
         // Normalización circular: evita límites y permite múltiples vueltas completas.
         _angulo = (_angulo - e.DeltaX * 0.009f) % (2f * MathF.PI);
         if (_angulo < 0f) _angulo += 2f * MathF.PI;
+        _inclinacion = Math.Clamp(_inclinacion + e.DeltaY * 0.007f,
+            InclinacionMinima, InclinacionMaxima);
     }
 
     /// <summary>Acerca o aleja la cámara sin cambiar el tamaño de la malla.</summary>
@@ -114,11 +117,11 @@ public sealed class MotorGEvolve : GameWindow
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
-        float horizontal = _distancia * MathF.Cos(Inclinacion);
+        float horizontal = _distancia * MathF.Cos(_inclinacion);
         Vector3 objetivo = _objetivo;
         Vector3 camara = objetivo + new Vector3(
             horizontal * MathF.Sin(_angulo),
-            _distancia * MathF.Sin(Inclinacion),
+            _distancia * MathF.Sin(_inclinacion),
             horizontal * MathF.Cos(_angulo));
 
         Matrix4 vista = Matrix4.LookAt(camara, objetivo, Vector3.UnitY);
