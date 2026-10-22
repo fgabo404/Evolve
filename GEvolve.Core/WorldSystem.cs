@@ -105,11 +105,8 @@ public static class WorldSystem
             _ => 1f
         };
         float montanosidad = config.IntensidadMontanosa / 40f;
-        // Centro y dirección de dos sistemas montañosos sinuosos; no bandas sinusoidales.
-        float faseA = 0.17f + .17f * Hash(2, 3, config.Semilla);
-        float faseB = 0.63f + .12f * Hash(7, 11, config.Semilla);
-        float valleA = .25f + .40f * Hash(9, 5, config.Semilla);
-        float valleB = .25f + .40f * Hash(3, 13, config.Semilla);
+        float[] cordilleras = GeneradorCordilleras.Crear(ancho, alto, config.Semilla,
+            esAgua, distancia, config.Tipo);
         var resultado = new WorldCell[total];
         for (int fila = 0; fila < alto; fila++)
         for (int columna = 0; columna < ancho; columna++)
@@ -125,17 +122,12 @@ public static class WorldSystem
             float meseta = Math.Clamp((Ruido(x, y, config.Semilla + 191, 3, 3) + .25f) * 1.9f, 0f, 1f);
             float factorInterior = Math.Clamp((costa - 3f) / 10f, 0f, 1f);
             llanura += 27f * meseta * factorInterior;
-            // Dos corredores curvados, de orientación y posición variables por semilla.
-            float curvaA = faseA + .11f * Ruido(x, y, config.Semilla + 211, 3, 3);
-            float curvaB = faseB + .10f * Ruido(x, y, config.Semilla + 223, 4, 3);
-            float dxA = MathF.Abs(x - curvaA); dxA = MathF.Min(dxA, 1f - dxA);
-            float dxB = MathF.Abs(x - curvaB); dxB = MathF.Min(dxB, 1f - dxB);
-            float corredorA = MathF.Exp(-dxA * dxA / .0018f) * Math.Clamp(1f - MathF.Abs(y - valleA) / .44f, 0f, 1f);
-            float corredorB = MathF.Exp(-dxB * dxB / .0013f) * Math.Clamp(1f - MathF.Abs(y - valleB) / .38f, 0f, 1f);
-            float cresta = MathF.Max(corredorA, corredorB) *
-                (.82f + .18f * Ruido(x, y, config.Semilla + 239, 12, 10));
-            float pendienteCostera = Math.Clamp((costa - 1f) / 5f, 0f, 1f);
-            float elevacion = Math.Clamp(llanura + 76f * montanosidad * edad * cresta * pendienteCostera, 1f, 100f);
+            // Cordilleras conectadas por semilla: laderas y cumbres distribuidas
+            // en trayectorias locales, sin bandas que atraviesen todo el planeta.
+            float pendienteCostera = Math.Clamp((costa - 1f) / 4f, 0f, 1f);
+            float elevacion = Math.Clamp(llanura
+                + 91f * montanosidad * edad * cordilleras[indice] * pendienteCostera,
+                1f, 100f);
             byte nivel = esAgua[indice] ? (byte)0
                 : (byte)Math.Clamp((int)MathF.Round(elevacion), 1, 100);
             TipoSuperficie superficie = esAgua[indice]
