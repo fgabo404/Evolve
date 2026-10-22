@@ -18,7 +18,7 @@ public sealed class MotorGEvolve : GameWindow
     private float _angulo = MathHelper.DegreesToRadians(40f);
     // Inclinación orbital variable: de vista rasante a vista casi cenital.
     private float _inclinacion = MathHelper.DegreesToRadians(35f);
-    private const float InclinacionMinima = MathF.PI * 8f / 180f;
+    private const float InclinacionMinima = MathF.PI * 25f / 180f;
     private const float InclinacionMaxima = MathF.PI * 85f / 180f;
     // La cámara orbita alrededor de un objetivo desplazable sobre el terreno.
     private float _distancia = 38f;
@@ -33,7 +33,7 @@ public sealed class MotorGEvolve : GameWindow
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | 200x150 — boton derecho: giro 360 y altura 8-85 grados"
+            Title = "G-Evolve | 200x150 — boton derecho: giro 360 y altura 25-85 grados"
         })
     {
     }
@@ -57,7 +57,7 @@ public sealed class MotorGEvolve : GameWindow
     }
 
     /// <summary>
-    /// Permite giro horizontal continuo de 360° y ajuste vertical de 8° a 85°
+    /// Permite giro horizontal continuo de 360° y ajuste vertical de 25° a 85°
     /// manteniendo el botón derecho, sin atravesar ni invertir el terreno.
     /// </summary>
     protected override void OnMouseMove(MouseMoveEventArgs e)
