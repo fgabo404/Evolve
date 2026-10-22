@@ -142,7 +142,8 @@ internal sealed class HexRenderer : IDisposable
         GL.UniformMatrix4(_uniformeMatriz, false, ref vistaProyeccion);
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
-        GL.LineWidth(2f);
+        // Ancho solicitado de 4 píxeles rasterizados (dependiente del controlador OpenGL).
+        GL.LineWidth(4f);
         GL.DrawArrays(PrimitiveType.Lines, _verticesTriangulos, _verticesLineas);
         GL.BindVertexArray(0);
         GL.UseProgram(0);
