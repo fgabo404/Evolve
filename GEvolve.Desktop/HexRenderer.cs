@@ -13,21 +13,18 @@ internal sealed class HexRenderer : IDisposable
     private int _vao, _vbo, _programa, _uniformeMatriz;
     private int _verticesTriangulos;
 
-    private const int DatosPorVertice = 9; // posición(3), gris(3), coordenadas de borde(3)
+    private const int DatosPorVertice = 6; // posición(3), color(3)
 
     private const string VertexShader = """
         #version 330 core
         layout(location = 0) in vec3 posicion;
         layout(location = 1) in vec3 colorEntrada;
-        layout(location = 2) in vec3 marcaBorde;
         uniform mat4 matrizVistaProyeccion;
         out vec3 color;
-        out vec3 marca;
         void main()
         {
             gl_Position = matrizVistaProyeccion * vec4(posicion, 1.0);
             color = colorEntrada;
-            marca = marcaBorde;
         }
         """;
 
@@ -87,23 +84,21 @@ internal sealed class HexRenderer : IDisposable
                 Vector3 a = esquinas[i];
                 Vector3 b = esquinas[(i + 1) % 6];
 
-                // Un triángulo por sector. La marca topológica vale cero
-                // SOLO en el lado exterior, no en las diagonales del abanico.
-                Vertice(vertices, arriba, colorSuperior, new Vector3(1f, 0f, 0f));
-                Vertice(vertices, a, colorSuperior, new Vector3(0f, 0f, 0f));
-                Vertice(vertices, b, colorSuperior, new Vector3(0f, 0f, 0f));
+                // La tapa tiene un gris uniforme más oscuro.
+                Vertice(vertices, arriba, colorSuperior);
+                Vertice(vertices, a, colorSuperior);
+                Vertice(vertices, b, colorSuperior);
 
-                // Dos triángulos por pared; sus UV son continuas y el shader
-                // marca bordes superior, inferior y las aristas verticales.
+                // Dos triángulos por pared con gris uniforme más claro.
                 Vector3 aBase = new(a.X, 0f, a.Z);
                 Vector3 bBase = new(b.X, 0f, b.Z);
-                Vertice(vertices, a, colorLateral, new Vector3(0f, 1f, 1f));
-                Vertice(vertices, aBase, colorLateral, new Vector3(0f, 0f, 1f));
-                Vertice(vertices, bBase, colorLateral, new Vector3(1f, 0f, 1f));
+                Vertice(vertices, a, colorLateral);
+                Vertice(vertices, aBase, colorLateral);
+                Vertice(vertices, bBase, colorLateral);
 
-                Vertice(vertices, a, colorLateral, new Vector3(0f, 1f, 1f));
-                Vertice(vertices, bBase, colorLateral, new Vector3(1f, 0f, 1f));
-                Vertice(vertices, b, colorLateral, new Vector3(1f, 1f, 1f));
+                Vertice(vertices, a, colorLateral);
+                Vertice(vertices, bBase, colorLateral);
+                Vertice(vertices, b, colorLateral);
             }
         }
 
@@ -120,20 +115,13 @@ internal sealed class HexRenderer : IDisposable
         GL.EnableVertexAttribArray(0);
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
-        GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
-        GL.EnableVertexAttribArray(2);
         GL.BindVertexArray(0);
     }
 
-    /// <summary>Agrega un vértice con datos de borde interpolados por la GPU.</summary>
-    private static void Vertice(List<float> salida, Vector3 posicion, Vector3 color, Vector3 marca)
+    /// <summary>Agrega un vértice con posición y color, sin atributos de borde.</summary>
+    private static void Vertice(List<float> salida, Vector3 posicion, Vector3 color)
     {
-        salida.AddRange(new[]
-        {
-            posicion.X, posicion.Y, posicion.Z,
-            color.X, color.Y, color.Z,
-            marca.X, marca.Y, marca.Z
-        });
+        salida.AddRange(new[] { posicion.X, posicion.Y, posicion.Z, color.X, color.Y, color.Z });
     }
 
     /// <summary>Dibuja el lote 3D con tapas oscuras y paredes claras.</summary>
