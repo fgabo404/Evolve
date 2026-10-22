@@ -85,6 +85,9 @@ try
     Verificar(sistema.Chunks.Count == 50, "Sistema: 50 chunks de 10x10.");
     Verificar(sistema.Chunks.Sum(x => x.Celdas.Count) == 5000, "Chunks completos.");
     Verificar(sistema.Celdas.All(x => x.Altura <= 100), "Altura 0-100.");
+    Verificar(sistema.Celdas.Where(x => x.Superficie == TipoSuperficie.Oceano)
+        .All(x => x.Altura == 0 && x.Relieve == NivelRelieve.Mar),
+        "Todos los hexágonos del océano deben ser de nivel 0.");
     Verificar(sistema.Celdas.Any(x => x.Superficie == TipoSuperficie.Tierra)
         && sistema.Celdas.Any(x => x.Superficie == TipoSuperficie.Oceano),
         "Debe existir mar y tierra.");
