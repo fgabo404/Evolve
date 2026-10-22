@@ -10,7 +10,7 @@ public static class WorldPresets
         var (edad, oceanos, montanas) = tipo switch
         {
             TipoMundo.Pangea => (EdadGeologica.Normal, 40, 50),
-            TipoMundo.Archipielagos => (EdadGeologica.Normal, 80, 35),
+            TipoMundo.Archipielagos => (EdadGeologica.Normal, 86, 25),
             TipoMundo.ContinentesPequenos => (EdadGeologica.Normal, 70, 45),
             _ => (EdadGeologica.Normal, 60, 40)
         };
