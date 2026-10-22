@@ -96,6 +96,14 @@ try
     Verificar(!sistema.IntentarObtener(4, -1, out _)
         && !sistema.IntentarObtener(4, 50, out _),
         "Norte y sur no envuelven.");
+    Verificar(sistema.Celdas.All(x => x.Relieve ==
+        ReglasRelieve.Clasificar(x.Altura, config.NivelMar)),
+        "Cada celda debe respetar la clasificación oficial del relieve.");
+    Verificar(ReglasRelieve.Clasificar(0, 30) == NivelRelieve.Mar
+        && ReglasRelieve.Clasificar(40, 30) == NivelRelieve.Medio
+        && ReglasRelieve.Clasificar(65, 30) == NivelRelieve.Alto
+        && ReglasRelieve.Clasificar(80, 30) == NivelRelieve.Impasable,
+        "Umbrales de relieve de cuatro niveles.");
     Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
     Console.WriteLine("OK — Mundo procedural 100x50 y 5000 celdas verificadas.");
     Console.WriteLine("OK — Grid 20x20 y mapa radial de 397 hexágonos verificados.");
