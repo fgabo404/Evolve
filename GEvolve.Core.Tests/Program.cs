@@ -31,7 +31,16 @@ try
     Verificar(LanzaArgumento(() => HexGeometry.APosicion(origen, 0f)), "Radio cero rechazado.");
     Verificar(LanzaArgumento(() => HexGeometry.AHexagono(Vector2.Zero, -1f)), "Radio negativo rechazado.");
     Verificar(LanzaArgumento(() => HexGeometry.AHexagono(new Vector2(float.NaN, 0f))), "Posición no finita rechazada.");
-    Console.WriteLine("OK — Pruebas esenciales de geometría hexagonal superadas.");
+    // La cuadrícula debe ser reproducible y tener identidades únicas.
+    var cuadricula = HexDemoWorld.CrearCuadricula(20, 20);
+    Verificar(cuadricula.Count == 400, "La cuadrícula debe tener 400 celdas.");
+    Verificar(cuadricula.Select(x => x.Coordenada).Distinct().Count() == 400,
+        "Coordenadas axiales únicas.");
+    Verificar(cuadricula.All(x => float.IsFinite(x.Elevacion) && x.Elevacion > 0f),
+        "Alturas válidas.");
+    Verificar(HexDemoWorld.CrearCuadricula(20, 20).SequenceEqual(cuadricula),
+        "Alturas reproducibles.");
+    Console.WriteLine("OK — Geometría hexagonal y grid 20x20 superadas.");
     return 0;
 }
 catch (Exception ex)
