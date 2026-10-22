@@ -23,7 +23,7 @@ public sealed class MotorGEvolve : GameWindow
     // La cámara orbita alrededor de un objetivo desplazable sobre el terreno.
     private float _distancia = 38f;
     private Vector3 _objetivo = new(0f, 0.5f, 0f);
-    private const float Velocidad = 18f;
+    private const float Velocidad = 24f;
     private WorldMap? _mundo;
     // Ancho físico X del mundo en hexágonos pointy-top con radio estándar.
     private float _anchoMundo;
