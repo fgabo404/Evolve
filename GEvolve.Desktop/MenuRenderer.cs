@@ -145,6 +145,41 @@ internal sealed class MenuRenderer : IDisposable
         Texto(titulo,x+ancho/2f,y+18,2.3f,activo ? new Vector3(.52f,.98f,.78f) : Vector3.One,true);
     }
 
+    /// <summary>Marco con esquinas recortadas y doble línea al estilo de la referencia.</summary>
+    public void Marco(float x, float y, float w, float h, bool resaltado)
+    {
+        Vector3 contorno = resaltado ? new(.28f,.80f,.61f) : new(.48f,.55f,.59f);
+        Vector3 oscuro = new(.13f,.18f,.21f);
+        Rect(x+7,y,w-14,h,contorno);
+        Rect(x,y+7,w,h-14,contorno);
+        Rect(x+10,y+4,w-20,h-8,oscuro);
+        Rect(x+4,y+10,w-8,h-20,oscuro);
+        Rect(x+15,y+8,w-30,2,contorno);
+        Rect(x+15,y+h-10,w-30,2,contorno);
+    }
+
+    /// <summary>Fila de selección con etiqueta y control independiente de flechas.</summary>
+    public void Selector(string etiqueta, string valor, float x, float y, bool activo)
+    {
+        Marco(x,y,660,66,activo);
+        Vector3 gris = new(.79f,.83f,.86f);
+        Texto("O",x+30,y+21,2.7f,gris);
+        Texto(etiqueta,x+98,y+23,2.6f,gris);
+        Marco(x+345,y+8,300,50,activo);
+        Texto("<",x+365,y+22,2.6f,gris);
+        Texto(valor,x+497,y+22,2.5f,Vector3.One,true);
+        Texto(">",x+608,y+22,2.6f,gris);
+    }
+
+    /// <summary>Acción central destacada, con flecha y acento verde.</summary>
+    public void Accion(string titulo,float x,float y,float ancho,bool activo,bool primaria)
+    {
+        Marco(x,y,ancho,58,primaria || activo);
+        Vector3 tinta = primaria ? new(.48f,.97f,.76f) : new(.82f,.86f,.89f);
+        Texto(primaria ? ">" : "<",x+78,y+19,3f,tinta);
+        Texto(titulo,x+ancho/2f+18,y+19,2.7f,tinta,true);
+    }
+
     /// <summary>Inicia el dibujo del fotograma de UI.</summary>
     public void Empezar() => _vertices.Clear();
 
