@@ -21,14 +21,14 @@ public sealed class MotorGEvolve : GameWindow
     private const float AnguloMinimo = 0f;
     private const float AnguloMaximo = MathF.PI;
     // Distancia inicial que encuadra el anillo completo de siete hexágonos.
-    private float _distancia = 11.0f;
+    private float _distancia = 80f;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mini-grid 3D (7 hexágonos) — giro 0°-180°"
+            Title = "G-Evolve | Grid 3D 20x20 (400 hexágonos) — giro 0°-180°"
         })
     {
     }
@@ -38,8 +38,9 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        // Datos independientes del render; siete hexágonos en centro + anillo.
-        _hexRenderer.Inicializar(HexDemoWorld.Crear());
+        // El mundo mantiene 400 identidades axiales independientes de la GPU.
+        // Las elevaciones son solo una prueba geométrica, no biomas reales.
+        _hexRenderer.Inicializar(HexDemoWorld.CrearCuadricula(20, 20));
     }
 
     /// <summary>
@@ -59,7 +60,7 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 0.55f, 6f, 20f);
+        _distancia = Math.Clamp(_distancia - e.OffsetY * 3.5f, 30f, 140f);
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
@@ -69,7 +70,7 @@ public sealed class MotorGEvolve : GameWindow
 
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
         float horizontal = _distancia * MathF.Cos(Inclinacion);
-        Vector3 objetivo = new(0f, 0.4f, 0f);
+        Vector3 objetivo = new(-1.3f, 0.5f, -0.75f);
         Vector3 camara = objetivo + new Vector3(
             horizontal * MathF.Sin(_angulo),
             _distancia * MathF.Sin(Inclinacion),
