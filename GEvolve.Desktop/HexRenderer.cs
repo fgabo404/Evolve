@@ -76,7 +76,8 @@ internal sealed class HexRenderer : IDisposable
             // La luminosidad es visual; NO determina categorías ecológicas.
             float gris = 0.32f + 0.48f * Math.Clamp((nivel - 0.15f) / 1.25f, 0f, 1f);
             var tapa = new Vector3(gris, gris, gris);
-            var contorno = new Vector3(0.12f, 0.12f, 0.12f);
+            // Negro puro para marcar la silueta y la cuadrícula tridimensional.
+            var contorno = new Vector3(0f, 0f, 0f);
 
             for (int i = 0; i < 6; i++)
             {
@@ -86,14 +87,14 @@ internal sealed class HexRenderer : IDisposable
                 Triangulo(triangulos, superior, a, b, tapa);
                 Vector3 aBase = new(a.X, 0f, a.Z);
                 Vector3 bBase = new(b.X, 0f, b.Z);
-                float sombra = 0.68f + 0.07f * (i % 3);
-                float grisPared = gris * sombra;
-                var pared = new Vector3(grisPared, grisPared, grisPared);
+                // Sin iluminación artificial: tapa y paredes comparten el tono gris.
+                var pared = tapa;
                 Triangulo(triangulos, a, aBase, bBase, pared);
                 Triangulo(triangulos, a, bBase, b, pared);
 
                 Linea(lineas, a, b, contorno);
                 Linea(lineas, a, aBase, contorno);
+                Linea(lineas, aBase, bBase, contorno);
             }
         }
 
