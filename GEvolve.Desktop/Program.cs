@@ -20,7 +20,8 @@ public sealed class MotorGEvolve : GameWindow
     private const float Inclinacion = MathF.PI * 35f / 180f;
     private const float AnguloMinimo = 0f;
     private const float AnguloMaximo = MathF.PI;
-    private float _distancia = 9.0f;
+    // Distancia inicial que encuadra el anillo completo de siete hexágonos.
+    private float _distancia = 11.0f;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
@@ -58,7 +59,7 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 0.55f, 4.5f, 18f);
+        _distancia = Math.Clamp(_distancia - e.OffsetY * 0.55f, 6f, 20f);
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
@@ -76,10 +77,12 @@ public sealed class MotorGEvolve : GameWindow
 
         Matrix4 vista = Matrix4.LookAt(camara, objetivo, Vector3.UnitY);
         float aspecto = (float)Size.X / Math.Max(1, Size.Y);
-        // Perspectiva usada aquí para comprobar el volumen; podremos adoptar
-        // proyección ortográfica inclinada al integrar la cuadrícula completa.
-        Matrix4 proyeccion = Matrix4.CreatePerspectiveFieldOfView(
-            MathHelper.DegreesToRadians(45f), aspecto, 0.1f, 100f);
+        // Proyección ortográfica: conserva escala y silueta de las columnas 3D,
+        // independientemente de su profundidad, como en el boceto aprobado.
+        // El zoom controla el área visible; la elevación sigue siendo geometría real.
+        float alturaVisible = _distancia * 0.85f;
+        Matrix4 proyeccion = Matrix4.CreateOrthographic(
+            alturaVisible * aspecto, alturaVisible, 0.1f, 100f);
 
         _hexRenderer.Dibujar(vista * proyeccion);
         SwapBuffers();
