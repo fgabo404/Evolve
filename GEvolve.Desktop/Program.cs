@@ -18,7 +18,9 @@ public sealed class MotorGEvolve : GameWindow
     private Pantalla _pantalla = Pantalla.Inicio;
     private int _seleccion;
     private WorldSettings _ajustes = WorldPresets.Aplicar(TipoMundo.ContinentesGrandes, 200, 150, 2026);
-    private enum Pantalla { Inicio, Configuracion, Jugando, Pausa }
+    private enum Pantalla { Inicio, Configuracion, Cargando, Jugando, Pausa }
+    private Task<WorldMap>? _generacion;
+    private string _errorGeneracion = "";
     // Giro horizontal continuo de 360°; puede repetirse sin detenerse en los extremos.
     private float _angulo = MathHelper.DegreesToRadians(40f);
     // Inclinación orbital variable: de vista rasante a vista casi cenital.
@@ -52,30 +54,40 @@ public sealed class MotorGEvolve : GameWindow
         // El terreno se genera cuando el jugador pulsa GENERAR MUNDO.
     }
 
-    /// <summary>Reconstruye el mundo únicamente al iniciar una nueva partida.</summary>
-    private void CrearMundo()
+    /// <summary>Inicia el cálculo sin bloquear el hilo de OpenGL.</summary>
+    private void IniciarGeneracion()
     {
-        _hexRenderer.Dispose();
-        _hexRenderer = new HexRenderer();
-        _mundo = WorldSystem.Generar(_ajustes);
-        _objetivo = new Vector3(0f, 0.5f, 0f);
-        _distancia = 38f;
-        _anchoMundo = MathF.Sqrt(3f) * HexGeometry.RadioEstandar * _mundo.Configuracion.Ancho;
-        // La altura lógica va de 0 a 100. Se transforma a unidades gráficas
-        // sin modificar los datos del terreno. El mar queda horizontal.
-        CeldaMundo[] representacion = _mundo.Celdas.Select(c =>
+        if (_pantalla == Pantalla.Cargando) return;
+        WorldSettings configuracion = _ajustes;
+        _errorGeneracion = "";
+        _generacion = Task.Run(() => WorldSystem.Generar(configuracion));
+        _pantalla = Pantalla.Cargando;
+    }
+
+    /// <summary>Construye los recursos gráficos únicamente en el hilo de la ventana.</summary>
+    private void PresentarMundo(WorldMap nuevo)
+    {
+        var renderer = new HexRenderer();
+        CeldaMundo[] representacion = nuevo.Celdas.Select(c =>
             new CeldaMundo(c.Coordenada,
                 c.Superficie == TipoSuperficie.Oceano ? 0f
                 : 0.13f + c.Altura / 100f * 2.8f,
                 c.Superficie, c.Relieve, c.Altura, c.Bioma)).ToArray();
-        _hexRenderer.Inicializar(representacion);
+        renderer.Inicializar(representacion);
+        _hexRenderer.Dispose();
+        _hexRenderer = renderer;
+        _mundo = nuevo;
+        _objetivo = new Vector3(0f, 0.5f, 0f);
+        _distancia = 38f;
+        _anchoMundo = MathF.Sqrt(3f) * HexGeometry.RadioEstandar * nuevo.Configuracion.Ancho;
+        _pantalla = Pantalla.Jugando;
     }
 
-    /// <summary>Genera otra geografía conservando tipo y tamaño, con semilla nueva.</summary>
+    /// <summary>Regenera conservando tipo y tamaño y cambiando la semilla.</summary>
     private void RegenerarMundo()
     {
         _ajustes = _ajustes with { Semilla = unchecked(_ajustes.Semilla + 1) };
-        CrearMundo();
+        IniciarGeneracion();
     }
 
     /// <summary>
@@ -100,13 +112,24 @@ public sealed class MotorGEvolve : GameWindow
         base.OnMouseWheel(e);
         if (_pantalla != Pantalla.Jugando) return;
         // El zoom no puede alejarse tanto que el mundo se pierda en pantalla.
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 2f, 8f, 52f);
+        _distancia = Math.Clamp(_distancia * MathF.Pow(1.12f, -e.OffsetY), 8f, 750f);
     }
 
     /// <summary>Desplazamiento WASD en el plano XZ, relativo al giro de cámara.</summary>
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
+        if (_pantalla == Pantalla.Cargando && _generacion is { IsCompleted: true } tarea)
+        {
+            _generacion = null;
+            try { PresentarMundo(tarea.GetAwaiter().GetResult()); }
+            catch (Exception ex)
+            {
+                _errorGeneracion = ex.Message;
+                _pantalla = Pantalla.Configuracion;
+                _seleccion = 3;
+            }
+        }
         if (_pantalla != Pantalla.Jugando) return;
         float paso = Velocidad * (float)args.Time;
         if (KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift))
@@ -161,7 +184,7 @@ public sealed class MotorGEvolve : GameWindow
         // El zoom controla el área visible; la elevación sigue siendo geometría real.
         float alturaVisible = _distancia * 0.85f;
         Matrix4 proyeccion = Matrix4.CreateOrthographic(
-            alturaVisible * aspecto, alturaVisible, 0.1f, 300f);
+            alturaVisible * aspecto, alturaVisible, 0.1f, 2000f);
 
         _hexRenderer.Dibujar(vista * proyeccion, _anchoMundo);
         // HUD discreto, ubicado arriba a la derecha; se dibuja sobre la escena.
@@ -177,6 +200,7 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnKeyDown(KeyboardKeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (_pantalla == Pantalla.Cargando) return;
         if (e.Key == Keys.Escape)
         {
             if (_pantalla == Pantalla.Jugando) { _pantalla = Pantalla.Pausa; _seleccion = 0; }
@@ -202,7 +226,7 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseDown(MouseButtonEventArgs e)
     {
         base.OnMouseDown(e);
-        if (e.Button != MouseButton.Left) return;
+        if (e.Button != MouseButton.Left || _pantalla == Pantalla.Cargando) return;
         float x = MouseState.Position.X * 1280f / Math.Max(1, Size.X);
         float y = MouseState.Position.Y * 720f / Math.Max(1, Size.Y);
         if (_pantalla == Pantalla.Jugando)
@@ -272,7 +296,7 @@ public sealed class MotorGEvolve : GameWindow
         }
         else if (_pantalla == Pantalla.Configuracion)
         {
-            if (_seleccion == 3) { CrearMundo(); _pantalla = Pantalla.Jugando; _seleccion = 0; }
+            if (_seleccion == 3) { IniciarGeneracion(); _seleccion = 0; }
             else if (_seleccion == 4) { _pantalla = Pantalla.Inicio; _seleccion = 0; }
         }
         else if (_pantalla == Pantalla.Pausa)
@@ -297,8 +321,15 @@ public sealed class MotorGEvolve : GameWindow
         _menu.Texto("G", 640 - 8 * 6f * 11f / 2f, 84, 11f, verde);
         _menu.Texto("V0.1.0", 640, 182, 2.5f, tenue, true);
 
-        if (_pantalla == Pantalla.Configuracion)
+        if (_pantalla == Pantalla.Cargando)
         {
+            _menu.Texto("CARGANDO MUNDO", 640, 326, 5f, tinta, true);
+            _menu.Texto("GENERANDO TERRENO Y BIOMAS", 640, 390, 2f, tenue, true);
+        }
+        else if (_pantalla == Pantalla.Configuracion)
+        {
+            if (_errorGeneracion.Length > 0)
+                _menu.Texto("ERROR AL GENERAR MUNDO", 640, 686, 2f, new Vector3(.7f,.18f,.18f), true);
             _menu.Texto("NUEVA PARTIDA", 640, 230, 4.5f, tinta, true);
             // Separadores finos a ambos lados del encabezado.
             _menu.Rect(255, 245, 230, 2, tenue);
