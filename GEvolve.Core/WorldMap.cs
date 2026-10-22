@@ -1,0 +1,76 @@
+namespace GEvolve.Core;
+
+/// <summary>Parámetros del mundo y escala de relieve.</summary>
+public sealed record WorldSettings(int Ancho = 100, int Alto = 50, int Semilla = 2026,
+    int TamanoChunk = 10, int NivelMar = 30)
+{
+    /// <summary>Valida dimensiones y configuraciones del mapa.</summary>
+    public void Validar()
+    {
+        if (Ancho < 1 || Alto < 1 || (long)Ancho * Alto > 1_000_000)
+            throw new ArgumentOutOfRangeException(nameof(Ancho));
+        if (TamanoChunk < 1 || TamanoChunk > 256)
+            throw new ArgumentOutOfRangeException(nameof(TamanoChunk));
+        if (NivelMar < 1 || NivelMar > 99)
+            throw new ArgumentOutOfRangeException(nameof(NivelMar));
+    }
+}
+
+/// <summary>Celda persistente con altura oficial de 0 a 100.</summary>
+public readonly record struct WorldCell(int Columna, int Fila, HexCoord Coordenada,
+    byte Altura, TipoSuperficie Superficie);
+
+/// <summary>Región del mundo, independiente de OpenGL.</summary>
+public sealed class WorldChunk
+{
+    /// <summary>Índice horizontal de la región.</summary>
+    public int X { get; }
+    /// <summary>Índice vertical de la región.</summary>
+    public int Y { get; }
+    /// <summary>Celdas pertenecientes a esta región.</summary>
+    public IReadOnlyList<WorldCell> Celdas { get; }
+    internal WorldChunk(int x, int y, IReadOnlyList<WorldCell> celdas)
+        => (X, Y, Celdas) = (x, y, celdas);
+}
+
+/// <summary>Almacén inmutable con acceso a celdas y regiones.</summary>
+public sealed class WorldMap
+{
+    private readonly WorldCell[] _celdas;
+    /// <summary>Configuración usada al generar.</summary>
+    public WorldSettings Configuracion { get; }
+    /// <summary>Regiones agrupadas por tamaño fijo.</summary>
+    public IReadOnlyList<WorldChunk> Chunks { get; }
+    /// <summary>Vista de las celdas del mundo.</summary>
+    public IReadOnlyList<WorldCell> Celdas => _celdas;
+
+    internal WorldMap(WorldSettings config, WorldCell[] celdas)
+    {
+        Configuracion = config;
+        _celdas = celdas;
+        var chunks = new List<WorldChunk>();
+        for (int y = 0; y < config.Alto; y += config.TamanoChunk)
+        for (int x = 0; x < config.Ancho; x += config.TamanoChunk)
+        {
+            var grupo = new List<WorldCell>();
+            for (int fila = y; fila < Math.Min(y + config.TamanoChunk, config.Alto); fila++)
+            for (int col = x; col < Math.Min(x + config.TamanoChunk, config.Ancho); col++)
+                grupo.Add(_celdas[fila * config.Ancho + col]);
+            chunks.Add(new WorldChunk(x / config.TamanoChunk, y / config.TamanoChunk, grupo));
+        }
+        Chunks = chunks;
+    }
+
+    /// <summary>Consulta coordenadas offset; envuelve este-oeste y limita norte-sur.</summary>
+    public bool IntentarObtener(int columna, int fila, out WorldCell celda)
+    {
+        if (fila < 0 || fila >= Configuracion.Alto)
+        {
+            celda = default;
+            return false;
+        }
+        int x = ((columna % Configuracion.Ancho) + Configuracion.Ancho) % Configuracion.Ancho;
+        celda = _celdas[fila * Configuracion.Ancho + x];
+        return true;
+    }
+}
