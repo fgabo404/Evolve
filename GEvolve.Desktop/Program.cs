@@ -190,20 +190,23 @@ public sealed class MotorGEvolve : GameWindow
         float y = MouseState.Position.Y * 720f / Math.Max(1, Size.Y);
         if (_pantalla == Pantalla.Configuracion)
         {
-            if (x >= 340f && x <= 940f)
+            if (x >= 310f && x <= 970f)
             {
-                int idx = (int)MathF.Floor((y - 310f) / 80f);
-                if (idx >= 0 && idx < 3)
+                for (int i = 0; i < 3; i++)
                 {
-                    _seleccion = idx;
-                    // Izquierda/derecha permite cambiar el valor con el mouse.
-                    ModificarOpcion(x < 640f ? -1 : 1);
+                    float arriba = 285f + i * 83f;
+                    if (y >= arriba && y <= arriba + 66f)
+                    {
+                        _seleccion = i;
+                        if (x >= 655f) ModificarOpcion(x < 805f ? -1 : 1);
+                        return;
+                    }
                 }
-                else if (y >= 552f && y <= 604f)
-                { _seleccion = 3; ActivarSeleccion(); }
-                else if (y >= 617f && y <= 669f)
-                { _seleccion = 4; ActivarSeleccion(); }
             }
+            if (x >= 390f && x <= 890f && y >= 547f && y <= 605f)
+            { _seleccion = 3; ActivarSeleccion(); }
+            else if (x >= 390f && x <= 890f && y >= 615f && y <= 673f)
+            { _seleccion = 4; ActivarSeleccion(); }
         }
         else if (x >= 420f && x <= 860f)
         {
@@ -273,18 +276,18 @@ public sealed class MotorGEvolve : GameWindow
 
         if (_pantalla == Pantalla.Configuracion)
         {
-            _menu.Texto("NUEVA PARTIDA", 640, 244, 4f, tinta, true);
-            string[] opciones =
-            [
-                "TIPO DE MUNDO:  < " + _ajustes.Tipo + " >",
-                "TAMANO:  < " + _ajustes.Ancho + "X" + _ajustes.Alto + " >",
-                "SEMILLA:  < " + _ajustes.Semilla + " >",
-                "GENERAR MUNDO", "VOLVER"
-            ];
-            for (int i = 0; i < 3; i++)
-                _menu.Boton(opciones[i], 340, 310 + i * 80, 600, i == _seleccion);
-            _menu.Boton(opciones[3], 380, 552, 520, _seleccion == 3);
-            _menu.Boton(opciones[4], 380, 617, 520, _seleccion == 4);
+            _menu.Texto("NUEVA PARTIDA", 640, 230, 4.5f, tinta, true);
+            // Separadores finos a ambos lados del encabezado.
+            _menu.Rect(255, 245, 230, 2, tenue);
+            _menu.Rect(795, 245, 230, 2, tenue);
+            _menu.Selector("TIPO DE MUNDO", _ajustes.Tipo.ToString().ToUpperInvariant(),
+                310, 285, _seleccion == 0);
+            _menu.Selector("TAMANO", _ajustes.Ancho + " X " + _ajustes.Alto,
+                310, 368, _seleccion == 1);
+            _menu.Selector("SEMILLA", _ajustes.Semilla.ToString(),
+                310, 451, _seleccion == 2);
+            _menu.Accion("GENERAR MUNDO", 390, 547, 500, _seleccion == 3, true);
+            _menu.Accion("VOLVER", 390, 615, 500, _seleccion == 4, false);
         }
         else
         {
