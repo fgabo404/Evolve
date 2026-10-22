@@ -61,4 +61,36 @@ public static class HexDemoWorld
         return resultado;
     }
 
+    /// <summary>
+    /// Genera un mapa hexagonal radial desde el origen (0,0).
+    /// Radio 0 = 1 celda; radio 1 = 7; radio 11 = 397 celdas.
+    /// Se incluyen todas las coordenadas axiales con distancia <= radio.
+    /// Las elevaciones son una prueba visual determinista, no biomas.
+    /// </summary>
+    public static IReadOnlyList<HexTile> CrearRadial(int radio = 11)
+    {
+        if (radio < 0 || radio > 100)
+            throw new ArgumentOutOfRangeException(nameof(radio), "Radio admitido: 0 a 100.");
+
+        int cantidad = checked(1 + 3 * radio * (radio + 1));
+        var celdas = new List<HexTile>(cantidad);
+
+        // La relación Q+R+S=0 garantiza un perímetro de seis lados iguales.
+        for (int q = -radio; q <= radio; q++)
+        {
+            int rMin = Math.Max(-radio, -q - radio);
+            int rMax = Math.Min(radio, -q + radio);
+            for (int r = rMin; r <= rMax; r++)
+            {
+                float onda = 0.30f * MathF.Sin(q * 0.39f)
+                           + 0.22f * MathF.Cos(r * 0.44f)
+                           + 0.12f * MathF.Sin((q + r) * 0.31f);
+                float altura = Math.Clamp(0.70f + onda, 0.15f, 1.40f);
+                celdas.Add(new HexTile(new HexCoord(q, r), altura));
+            }
+        }
+        return celdas;
+    }
+
+
 }
