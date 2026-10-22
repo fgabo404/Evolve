@@ -36,7 +36,8 @@ public static class WorldSystem
 
         // Ordenación estable para que el porcentaje solicitado sea exactamente
         // reproducible y no dependa de puntos de corte estimados.
-        int cantidadAgua = (int)MathF.Round(total * config.PorcentajeOceanos / 100f);
+        int cantidadAgua = Math.Clamp((int)MathF.Round(total * config.PorcentajeOceanos / 100f),
+            0, total);
         int[] indices = Enumerable.Range(0, total).ToArray();
         Array.Sort(indices, (a, b) =>
         {
@@ -45,8 +46,9 @@ public static class WorldSystem
         });
         var esAgua = new bool[total];
         for (int i = 0; i < cantidadAgua; i++) esAgua[indices[i]] = true;
-        float umbral = (campos[indices[cantidadAgua - 1]] +
-                         campos[indices[cantidadAgua]]) * .5f;
+        float umbral = cantidadAgua == 0 ? campos.Min() - .001f
+            : cantidadAgua == total ? campos.Max() + .001f
+            : (campos[indices[cantidadAgua - 1]] + campos[indices[cantidadAgua]]) * .5f;
         float rango = MathF.Max(.15f, campos.Max() - umbral);
         float edad = config.Edad switch
         {
