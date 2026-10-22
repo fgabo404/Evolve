@@ -135,6 +135,31 @@ try
         "Deben existir cumbres de nivel 80-100.");
     Verificar(ReglasRelieve.Clasificar(5, 30) == NivelRelieve.Medio,
         "Una costa de nivel 5 no es océano.");
+    // Perfil aprobado de generación y verificación del porcentaje exacto.
+    var perfil = new WorldSettings(200, 150, 2026, 10, 30,
+        TipoMundo.Continentes, EdadGeologica.Normal, 60, 40);
+    var generado = WorldSystem.Generar(perfil);
+    Verificar(generado.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == 18_000,
+        "El océano debe cubrir 60% de las 30000 celdas.");
+    Verificar(generado.Celdas.All(x =>
+        x.Superficie == TipoSuperficie.Oceano ? x.Altura == 0 : x.Altura is >= 1 and <= 100),
+        "Mar 0 y tierra 1-100.");
+    Verificar(generado.Celdas.SequenceEqual(WorldSystem.Generar(perfil).Celdas),
+        "Misma semilla y configuración deben producir mismo mapa.");
+    Verificar(!generado.Celdas.SequenceEqual(WorldSystem.Generar(perfil with
+        { Tipo = TipoMundo.Pangea }).Celdas), "Cambiar tipo debe modificar el mapa.");
+    Verificar(!generado.Celdas.SequenceEqual(WorldSystem.Generar(perfil with
+        { Semilla = 2027 }).Celdas), "Cambiar semilla debe modificar el mapa.");
+    foreach (TipoMundo variedad in Enum.GetValues<TipoMundo>())
+    {
+        var variante = WorldSystem.Generar(perfil with { Tipo = variedad });
+        Verificar(variante.Celdas.Count == 30_000 &&
+            variante.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == 18_000,
+            "Cada tipo debe preservar dimensiones y cuota oceánica.");
+    }
+    Verificar(LanzaArgumento(() => WorldSystem.Generar(perfil with
+        { PorcentajeOceanos = 101 })), "Porcentaje inválido rechazado.");
+    Console.WriteLine("OK — Tipos de mundo, semilla y cuota oceánica de 60%.");
     Console.WriteLine("OK — Mundo 200x150, 30000 hexágonos, 300 chunks y mar nivel cero.");
     Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
     Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
