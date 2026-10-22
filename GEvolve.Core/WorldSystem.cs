@@ -30,6 +30,8 @@ public static class WorldSystem
             byte nivel = (byte)Math.Clamp((int)MathF.Round(100f * altura), 0, 100);
             TipoSuperficie tipo = nivel < config.NivelMar
                 ? TipoSuperficie.Oceano : TipoSuperficie.Tierra;
+            // Los hexágonos marinos se mantienen, todos con nivel lógico cero.
+            if (tipo == TipoSuperficie.Oceano) nivel = 0;
             int q = columna - (fila - (fila & 1)) / 2 - config.Ancho / 2 + config.Alto / 4;
             int r = fila - config.Alto / 2;
             resultado[fila * config.Ancho + columna] =
