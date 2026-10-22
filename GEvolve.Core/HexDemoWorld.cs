@@ -65,7 +65,7 @@ public static class HexDemoWorld
     /// Genera un mapa hexagonal radial desde el origen (0,0).
     /// Radio 0 = 1 celda; radio 1 = 7; radio 11 = 397 celdas.
     /// Se incluyen todas las coordenadas axiales con distancia <= radio.
-    /// Las elevaciones son una prueba visual determinista, no biomas.
+    /// Las elevaciones forman una cumbre central que desciende por anillos hasta el borde; son una prueba visual, no biomas.
     /// </summary>
     public static IReadOnlyList<HexTile> CrearRadial(int radio = 11)
     {
@@ -82,10 +82,12 @@ public static class HexDemoWorld
             int rMax = Math.Min(radio, -q + radio);
             for (int r = rMin; r <= rMax; r++)
             {
-                float onda = 0.30f * MathF.Sin(q * 0.39f)
-                           + 0.22f * MathF.Cos(r * 0.44f)
-                           + 0.12f * MathF.Sin((q + r) * 0.31f);
-                float altura = Math.Clamp(0.70f + onda, 0.15f, 1.40f);
+                // Cumbre central y descenso radial continuo hasta el perímetro.
+                // Se emplea distancia cúbica para mantener seis laderas simétricas.
+                // En este prototipo NO se utilizan todavía valores 0–100.
+                int anillo = new HexCoord(q, r).Distancia(new HexCoord(0, 0));
+                float avance = radio == 0 ? 0f : anillo / (float)radio;
+                float altura = 0.15f + 1.65f * (1f - avance) * (1f - avance);
                 celdas.Add(new HexTile(new HexCoord(q, r), altura));
             }
         }
