@@ -71,6 +71,13 @@ public sealed class MotorGEvolve : GameWindow
         _hexRenderer.Inicializar(representacion);
     }
 
+    /// <summary>Genera otra geografía conservando tipo y tamaño, con semilla nueva.</summary>
+    private void RegenerarMundo()
+    {
+        _ajustes = _ajustes with { Semilla = unchecked(_ajustes.Semilla + 1) };
+        CrearMundo();
+    }
+
     /// <summary>
     /// Permite giro horizontal continuo de 360° y ajuste vertical de 25° a 85°
     /// manteniendo el botón derecho, sin atravesar ni invertir el terreno.
@@ -157,6 +164,12 @@ public sealed class MotorGEvolve : GameWindow
             alturaVisible * aspecto, alturaVisible, 0.1f, 300f);
 
         _hexRenderer.Dibujar(vista * proyeccion, _anchoMundo);
+        // HUD discreto, ubicado arriba a la derecha; se dibuja sobre la escena.
+        _menu.Empezar();
+        _menu.Boton("REGENERAR MUNDO", 910f, 18f, 350f, false);
+        _menu.Texto("SEMILLA: " + _ajustes.Semilla, 1085f, 81f, 1.65f,
+            new Vector3(.94f, .96f, .97f), true);
+        _menu.Presentar(Size.X, Size.Y);
         SwapBuffers();
     }
 
@@ -171,7 +184,11 @@ public sealed class MotorGEvolve : GameWindow
             else if (_pantalla == Pantalla.Pausa) { _pantalla = Pantalla.Jugando; }
             return;
         }
-        if (_pantalla == Pantalla.Jugando) return;
+        if (_pantalla == Pantalla.Jugando)
+        {
+            if (e.Key == Keys.F5) RegenerarMundo();
+            return;
+        }
         int opciones = _pantalla == Pantalla.Configuracion ? 5 : 3;
         if (e.Key == Keys.Up || e.Key == Keys.W) _seleccion = (_seleccion + opciones - 1) % opciones;
         if (e.Key == Keys.Down || e.Key == Keys.S) _seleccion = (_seleccion + 1) % opciones;
@@ -185,9 +202,15 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseDown(MouseButtonEventArgs e)
     {
         base.OnMouseDown(e);
-        if (e.Button != MouseButton.Left || _pantalla == Pantalla.Jugando) return;
+        if (e.Button != MouseButton.Left) return;
         float x = MouseState.Position.X * 1280f / Math.Max(1, Size.X);
         float y = MouseState.Position.Y * 720f / Math.Max(1, Size.Y);
+        if (_pantalla == Pantalla.Jugando)
+        {
+            if (x >= 910f && x <= 1260f && y >= 18f && y <= 70f)
+                RegenerarMundo();
+            return;
+        }
         if (_pantalla == Pantalla.Configuracion)
         {
             if (x >= 310f && x <= 970f)
