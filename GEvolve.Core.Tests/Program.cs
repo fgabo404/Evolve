@@ -124,6 +124,17 @@ try
         && extremoA == extremoB, "La continuidad este-oeste se conserva en 200x150.");
     Verificar(mundoGrande.Celdas.Where(x => x.Superficie == TipoSuperficie.Oceano)
         .All(x => x.Altura == 0), "Todos los niveles del mar deben ser cero.");
+    Verificar(mundoGrande.Celdas.Where(x => x.Superficie == TipoSuperficie.Tierra)
+        .All(x => x.Altura >= 1 && x.Relieve != NivelRelieve.Mar),
+        "La tierra baja puede comenzar en nivel 1.");
+    Verificar(mundoGrande.Celdas.Any(x => x.Superficie == TipoSuperficie.Tierra && x.Altura <= 10),
+        "Deben existir costas bajas entre niveles 1 y 10.");
+    Verificar(mundoGrande.Celdas.Any(x => x.Altura >= 60 && x.Altura < 80),
+        "Deben existir elevaciones altas 60-79.");
+    Verificar(mundoGrande.Celdas.Any(x => x.Altura >= 80),
+        "Deben existir cumbres de nivel 80-100.");
+    Verificar(ReglasRelieve.Clasificar(5, 30) == NivelRelieve.Medio,
+        "Una costa de nivel 5 no es océano.");
     Console.WriteLine("OK — Mundo 200x150, 30000 hexágonos, 300 chunks y mar nivel cero.");
     Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
     Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
