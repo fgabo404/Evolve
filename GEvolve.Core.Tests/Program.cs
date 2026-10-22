@@ -116,6 +116,15 @@ try
         .Where(x => x.celda.Altura >= 80)
         .All(x => sistema.Analisis[x.i].PasoDificil),
         "Cumbres de nivel 80 o superior siempre restringidas.");
+    var mundoGrande = WorldSystem.Generar(new WorldSettings(200, 150, 2026, 10, 30));
+    Verificar(mundoGrande.Celdas.Count == 30_000, "Mapa 200x150 debe contener 30000 hexágonos.");
+    Verificar(mundoGrande.Chunks.Count == 300, "El mapa grande tendrá 300 regiones lógicas.");
+    Verificar(mundoGrande.IntentarObtener(-1, 80, out var extremoA)
+        && mundoGrande.IntentarObtener(199, 80, out var extremoB)
+        && extremoA == extremoB, "La continuidad este-oeste se conserva en 200x150.");
+    Verificar(mundoGrande.Celdas.Where(x => x.Superficie == TipoSuperficie.Oceano)
+        .All(x => x.Altura == 0), "Todos los niveles del mar deben ser cero.");
+    Console.WriteLine("OK — Mundo 200x150, 30000 hexágonos, 300 chunks y mar nivel cero.");
     Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
     Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
     Console.WriteLine("OK — Mundo procedural 100x50 y 5000 celdas verificadas.");
