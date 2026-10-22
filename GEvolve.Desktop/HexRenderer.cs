@@ -14,7 +14,7 @@ internal sealed class HexRenderer : IDisposable
     private int _vao, _vbo, _programa, _uniformeMatriz;
     private int _verticesTriangulos;
     // Banda negra de 0.18 unidades del mundo: geometría real, no GL.LineWidth.
-    private const float GrosorCuadricula = 0.18f;
+    private const float GrosorCuadricula = 0.27f;
 
     private const string VertexShader = """
         #version 330 core
@@ -82,24 +82,26 @@ internal sealed class HexRenderer : IDisposable
             // Se dibuja un hexágono negro completo y una tapa gris más
             // pequeña encima. El borde resultante es un anillo hexagonal 3D
             // de grosor estable en unidades del mundo.
-            Vector3 centroBorde = new(centro.X, nivel + 0.003f, centro.Y);
-            Vector3 centroInterior = new(centro.X, nivel + 0.006f, centro.Y);
+            // Banda e interior comparten exactamente un plano: son superficies
+            // contiguas, no capas superpuestas que compiten por profundidad.
+            const float elevacionSuperficie = 0.025f;
+            Vector3 centroInterior = new(centro.X, nivel + elevacionSuperficie, centro.Y);
 
             for (int i = 0; i < 6; i++)
             {
                 int siguiente = (i + 1) % 6;
                 Vector3 a = esquinas[i], b = esquinas[siguiente];
-                // Tapa negra de tamaño completo: garantiza que la cuadrícula
-                // sea visible incluso si el driver ignora GL.LineWidth.
-                Vector3 aNegra = new(a.X, nivel + 0.003f, a.Z);
-                Vector3 bNegra = new(b.X, nivel + 0.003f, b.Z);
-                Triangulo(triangulos, centroBorde, aNegra, bNegra, contorno);
-
-                // Tapa gris inscrita (radio 1 - GrosorCuadricula).
-                // Pequeña separación vertical evita z-fighting entre ambas.
+                // El contorno es un anillo de trapecios negros, nunca una tapa
+                // completa negra debajo de otra gris (evita z-fighting).
+                Vector3 aExterior = new(a.X, nivel + elevacionSuperficie, a.Z);
+                Vector3 bExterior = new(b.X, nivel + elevacionSuperficie, b.Z);
                 float escala = 1f - GrosorCuadricula;
                 Vector3 aInterior = centroInterior + (a - superior) * escala;
                 Vector3 bInterior = centroInterior + (b - superior) * escala;
+
+                // Dos triángulos de la banda exterior, más un triángulo de tapa.
+                Triangulo(triangulos, aExterior, aInterior, bInterior, contorno);
+                Triangulo(triangulos, aExterior, bInterior, bExterior, contorno);
                 Triangulo(triangulos, centroInterior, aInterior, bInterior, tapa);
 
                 Vector3 aBase = new(a.X, 0f, a.Z);
@@ -146,7 +148,7 @@ internal sealed class HexRenderer : IDisposable
         GL.UniformMatrix4(_uniformeMatriz, false, ref vistaProyeccion);
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
-         GL.BindVertexArray(0);
+        GL.BindVertexArray(0);
         GL.UseProgram(0);
     }
 
