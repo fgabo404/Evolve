@@ -13,8 +13,12 @@ namespace GEvolve.Desktop;
 public sealed class MotorGEvolve : GameWindow
 {
     private readonly HexRenderer _hexRenderer = new();
+    // Giro horizontal limitado a medio círculo para no orbitar completamente el mundo.
     private float _angulo = MathHelper.DegreesToRadians(40f);
-    private float _inclinacion = MathHelper.DegreesToRadians(35f);
+    // Inclinación fija por encima del plano: nunca invierte el horizonte.
+    private const float Inclinacion = MathF.PI * 35f / 180f;
+    private const float AnguloMinimo = 0f;
+    private const float AnguloMaximo = MathF.PI;
     private float _distancia = 4.8f;
 
     public MotorGEvolve() : base(
@@ -22,7 +26,7 @@ public sealed class MotorGEvolve : GameWindow
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Hexágono 3D — botón derecho: girar / rueda: zoom"
+            Title = "G-Evolve | Hexágono 3D — giro 0°-180° / rueda: zoom"
         })
     {
     }
@@ -35,17 +39,17 @@ public sealed class MotorGEvolve : GameWindow
         _hexRenderer.Inicializar();
     }
 
-    /// <summary>Gira la cámara manteniendo pulsado el botón derecho del ratón.</summary>
+    /// <summary>
+    /// Gira horizontalmente la cámara entre 0° y 180° manteniendo pulsado
+    /// el botón derecho. El desplazamiento vertical no cambia la inclinación:
+    /// de esta forma nunca vemos el terreno desde abajo ni invertimos horizonte.
+    /// </summary>
     protected override void OnMouseMove(MouseMoveEventArgs e)
     {
         base.OnMouseMove(e);
         if (!MouseState.IsButtonDown(MouseButton.Right)) return;
 
-        _angulo -= e.DeltaX * 0.009f;
-        _inclinacion = Math.Clamp(
-            _inclinacion + e.DeltaY * 0.009f,
-            MathHelper.DegreesToRadians(-80f),
-            MathHelper.DegreesToRadians(80f));
+        _angulo = Math.Clamp(_angulo - e.DeltaX * 0.009f, AnguloMinimo, AnguloMaximo);
     }
 
     /// <summary>Acerca o aleja la cámara sin cambiar el tamaño de la malla.</summary>
@@ -61,10 +65,10 @@ public sealed class MotorGEvolve : GameWindow
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
-        float horizontal = _distancia * MathF.Cos(_inclinacion);
+        float horizontal = _distancia * MathF.Cos(Inclinacion);
         Vector3 camara = new(
             horizontal * MathF.Sin(_angulo),
-            _distancia * MathF.Sin(_inclinacion),
+            _distancia * MathF.Sin(Inclinacion),
             horizontal * MathF.Cos(_angulo));
 
         Matrix4 vista = Matrix4.LookAt(camara, Vector3.Zero, Vector3.UnitY);
