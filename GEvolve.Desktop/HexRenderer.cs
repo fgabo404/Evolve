@@ -12,7 +12,9 @@ namespace GEvolve.Desktop;
 internal sealed class HexRenderer : IDisposable
 {
     private int _vao, _vbo, _programa, _uniformeMatriz;
-    private int _verticesTriangulos, _verticesLineas;
+    private int _verticesTriangulos;
+    // Banda negra de 0.18 unidades del mundo: geometría real, no GL.LineWidth.
+    private const float GrosorCuadricula = 0.18f;
 
     private const string VertexShader = """
         #version 330 core
@@ -53,7 +55,6 @@ internal sealed class HexRenderer : IDisposable
         _uniformeMatriz = GL.GetUniformLocation(_programa, "matrizVistaProyeccion");
 
         var triangulos = new List<float>();
-        var lineas = new List<float>();
 
         // El mapa vive en X/Z; la altura física se expresa sobre Y.
         // HexGeometry asegura que todos los centros compartan exactamente
@@ -77,30 +78,39 @@ internal sealed class HexRenderer : IDisposable
             float gris = 0.32f + 0.48f * Math.Clamp((nivel - 0.15f) / 1.25f, 0f, 1f);
             var tapa = new Vector3(gris, gris, gris);
             // Negro puro para marcar la silueta y la cuadrícula tridimensional.
-            var contorno = new Vector3(0f, 0f, 0f);
+            var contorno = Vector3.Zero;
+            // Se dibuja un hexágono negro completo y una tapa gris más
+            // pequeña encima. El borde resultante es un anillo hexagonal 3D
+            // de grosor estable en unidades del mundo.
+            Vector3 centroBorde = new(centro.X, nivel + 0.003f, centro.Y);
+            Vector3 centroInterior = new(centro.X, nivel + 0.006f, centro.Y);
 
             for (int i = 0; i < 6; i++)
             {
                 int siguiente = (i + 1) % 6;
                 Vector3 a = esquinas[i], b = esquinas[siguiente];
-                // Tapa y paredes cerradas hasta la base (nivel cero).
-                Triangulo(triangulos, superior, a, b, tapa);
+                // Tapa negra de tamaño completo: garantiza que la cuadrícula
+                // sea visible incluso si el driver ignora GL.LineWidth.
+                Vector3 aNegra = new(a.X, nivel + 0.003f, a.Z);
+                Vector3 bNegra = new(b.X, nivel + 0.003f, b.Z);
+                Triangulo(triangulos, centroBorde, aNegra, bNegra, contorno);
+
+                // Tapa gris inscrita (radio 1 - GrosorCuadricula).
+                // Pequeña separación vertical evita z-fighting entre ambas.
+                float escala = 1f - GrosorCuadricula;
+                Vector3 aInterior = centroInterior + (a - superior) * escala;
+                Vector3 bInterior = centroInterior + (b - superior) * escala;
+                Triangulo(triangulos, centroInterior, aInterior, bInterior, tapa);
+
                 Vector3 aBase = new(a.X, 0f, a.Z);
                 Vector3 bBase = new(b.X, 0f, b.Z);
-                // Sin iluminación artificial: tapa y paredes comparten el tono gris.
-                var pared = tapa;
-                Triangulo(triangulos, a, aBase, bBase, pared);
-                Triangulo(triangulos, a, bBase, b, pared);
-
-                Linea(lineas, a, b, contorno);
-                Linea(lineas, a, aBase, contorno);
-                Linea(lineas, aBase, bBase, contorno);
+                // Sin sombras: paredes del mismo gris que la tapa.
+                Triangulo(triangulos, a, aBase, bBase, tapa);
+                Triangulo(triangulos, a, bBase, b, tapa);
             }
         }
 
         _verticesTriangulos = triangulos.Count / 6;
-        _verticesLineas = lineas.Count / 6;
-        triangulos.AddRange(lineas);
 
         _vao = GL.GenVertexArray();
         _vbo = GL.GenBuffer();
@@ -127,12 +137,6 @@ internal sealed class HexRenderer : IDisposable
         Vertice(salida, c, color);
     }
 
-    private static void Linea(List<float> salida, Vector3 a, Vector3 b, Vector3 color)
-    {
-        Vertice(salida, a, color);
-        Vertice(salida, b, color);
-    }
-
     /// <summary>Dibuja tapas, paredes y bordes usando la cámara proporcionada.</summary>
     public void Dibujar(Matrix4 vistaProyeccion)
     {
@@ -142,10 +146,7 @@ internal sealed class HexRenderer : IDisposable
         GL.UniformMatrix4(_uniformeMatriz, false, ref vistaProyeccion);
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
-        // Ancho solicitado de 4 píxeles rasterizados (dependiente del controlador OpenGL).
-        GL.LineWidth(4f);
-        GL.DrawArrays(PrimitiveType.Lines, _verticesTriangulos, _verticesLineas);
-        GL.BindVertexArray(0);
+         GL.BindVertexArray(0);
         GL.UseProgram(0);
     }
 
