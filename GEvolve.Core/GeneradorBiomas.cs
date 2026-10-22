@@ -20,43 +20,41 @@ public static class GeneradorBiomas
         float frio = MathF.Abs(latitud * 2f - 1f);
         float x = (columna + .5f) / ancho;
         // Ruido regional suave y periódico E/O para zonas climáticas coherentes.
+        // Regiones climáticas amplias para evitar el efecto de mosaico aleatorio.
         float humedad = .53f
-            + .25f * Campo(x, latitud, semilla + 320, 5, 4)
-            + .13f * Campo(x, latitud, semilla + 472, 13, 9)
-            + .10f * MathF.Cos(latitud * MathF.PI * 6f);
+            + .39f * Campo(x, latitud, semilla + 320, 3, 3)
+            + .08f * Campo(x, latitud, semilla + 472, 7, 5)
+            + .12f * MathF.Cos(latitud * MathF.PI * 6f);
         humedad = Math.Clamp(humedad, 0f, 1f);
         float temperatura = 1f - frio * 1.12f - altura * .0048f;
-        float detalle = Campo(x, latitud, semilla + 781, 17, 11);
-
         if (agua)
         {
-            // Oceano es nivel cero; bandas cálidas y húmedas costeras representan
-            // regiones marinas conceptuales. No modelamos profundidad aún.
-            if (frio < .34f && humedad > .60f && detalle > .10f) return Bioma.Arrecife;
-            if (humedad > .62f && detalle > -.20f) return Bioma.EstuarioLitoral;
+            // Franja de poca profundidad alrededor de islas y continentes.
+            if (frio > .89f) return latitud < .5f ? Bioma.TundraArtica : Bioma.TundraAntartica;
+            if (distanciaCosta <= 2)
+                return frio < .40f ? Bioma.Arrecife : Bioma.EstuarioLitoral;
             return Bioma.OceanoAbierto;
         }
         if (altura >= 80) return Bioma.Cumbres;
         if (altura >= 60) return Bioma.Alpino;
-        if (frio > .83f) return latitud < .5f ? Bioma.TundraArtica : Bioma.TundraAntartica;
+        if (frio > .82f) return latitud < .5f ? Bioma.TundraArtica : Bioma.TundraAntartica;
         if (temperatura < .30f) return Bioma.BosqueBoreal;
-
-        if (distanciaCosta <= 2 && frio < .38f && humedad > .68f) return Bioma.Manglar;
-        if (humedad > .84f && altura <= 18)
+        if (distanciaCosta <= 2 && frio < .38f && humedad > .70f) return Bioma.Manglar;
+        if (humedad > .83f && altura <= 18)
             return frio < .43f ? Bioma.PantanoEverglades : Bioma.Humedal;
-        if (humedad > .72f && altura <= 14) return Bioma.Humedal;
-        if (humedad < .19f) return altura <= 8 ? Bioma.Salar : Bioma.DesiertoArenoso;
-        if (humedad < .29f) return altura > 22 ? Bioma.DesiertoRocoso : Bioma.DesiertoArenoso;
+        if (humedad > .75f && altura <= 14) return Bioma.Humedal;
+        if (humedad < .22f) return altura <= 8 ? Bioma.Salar : Bioma.DesiertoArenoso;
+        if (humedad < .32f) return altura > 22 ? Bioma.DesiertoRocoso : Bioma.DesiertoArenoso;
         if (frio < .36f)
         {
-            if (humedad > .65f) return Bioma.BosqueTropical;
-            if (humedad > .43f) return Bioma.BosqueSubtropical;
+            if (humedad > .64f) return Bioma.BosqueTropical;
+            if (humedad > .45f) return Bioma.BosqueSubtropical;
             return Bioma.Sabana;
         }
         if (frio < .61f)
         {
-            if (humedad > .62f) return Bioma.BosqueTemplado;
-            if (humedad > .37f) return Bioma.Pradera;
+            if (humedad > .61f) return Bioma.BosqueTemplado;
+            if (humedad > .38f) return Bioma.Pradera;
             return Bioma.Estepa;
         }
         return humedad > .44f ? Bioma.BosqueBoreal : Bioma.Estepa;
