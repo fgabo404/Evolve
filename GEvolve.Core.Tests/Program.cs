@@ -104,6 +104,16 @@ try
         && ReglasRelieve.Clasificar(65, 30) == NivelRelieve.Alto
         && ReglasRelieve.Clasificar(80, 30) == NivelRelieve.Impasable,
         "Umbrales de relieve de cuatro niveles.");
+    Verificar(sistema.Analisis.Count == 5000, "Un análisis de pendiente por hexágono.");
+    Verificar(sistema.Analisis.All(x => x.PendienteMaxima <= 100 &&
+        float.IsFinite(x.PendienteMedia)), "Pendientes válidas.");
+    Verificar(sistema.Analisis.SequenceEqual(WorldSystem.Generar(config).Analisis),
+        "Análisis de relieve reproducible.");
+    Verificar(sistema.Celdas.Select((celda, i) => (celda, i))
+        .Where(x => x.celda.Altura >= 80)
+        .All(x => sistema.Analisis[x.i].PasoDificil),
+        "Cumbres de nivel 80 o superior siempre restringidas.");
+    Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
     Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
     Console.WriteLine("OK — Mundo procedural 100x50 y 5000 celdas verificadas.");
     Console.WriteLine("OK — Grid 20x20 y mapa radial de 397 hexágonos verificados.");
