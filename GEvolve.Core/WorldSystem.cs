@@ -9,37 +9,7 @@ public static class WorldSystem
         ArgumentNullException.ThrowIfNull(config);
         config.Validar();
         int ancho = config.Ancho, alto = config.Alto, total = checked(ancho * alto);
-        var campos = new float[total];
-        // La deformación de dominio da costas con golfos, cabos e istmos.
-        // Todos los armónicos se repiten al atravesar X=0/1.
-        for (int fila = 0; fila < alto; fila++)
-        for (int columna = 0; columna < ancho; columna++)
-        {
-            float x = (columna + .5f) / ancho;
-            float y = (fila + .5f) / alto;
-            float wx = x + .045f * Ruido(x, y, config.Semilla + 11, 3, 3)
-                         + .020f * Ruido(x, y, config.Semilla + 31, 8, 7);
-            float wy = y + .050f * Ruido(x, y, config.Semilla + 23, 3, 3);
-            float masa = config.Tipo switch
-            {
-                TipoMundo.Pangea => Masa(wx, wy, .50f, .50f, .38f, .40f)
-                    + .24f * Masa(wx, wy, .32f, .42f, .19f, .25f),
-                TipoMundo.Archipielagos => Archipielago(wx, wy, config.Semilla),
-                TipoMundo.ContinentesPequenos => MaximoMasas(wx, wy, config.Semilla, 9,
-                    .105f, .145f),
-                _ => MaximoMasas(wx, wy, config.Semilla, 4, .205f, .30f)
-            };
-            // Satélites continentales: islotes y archipiélagos periféricos.
-            // Se suman ANTES de fijar la cuota de océano.
-            float satelites = MaximoMasas(wx, wy, config.Semilla + 1307,
-                config.Tipo == TipoMundo.Archipielagos ? 48 : 24, .035f, .053f);
-            masa = MathF.Max(masa, .80f * satelites);
-            float detalle = .14f * Ruido(x, y, config.Semilla + 53, 5, 5)
-                + .070f * Ruido(x, y, config.Semilla + 73, 12, 12)
-                + .025f * Ruido(x, y, config.Semilla + 97, 25, 20);
-            float polar = Math.Clamp(MathF.Min(y, 1f - y) / .065f, 0f, 1f);
-            campos[fila * ancho + columna] = (masa + detalle) * polar;
-        }
+        float[] campos = GeneradorMasasTerrestres.Crear(config);
 
         // Ordenación estable para que el porcentaje solicitado sea exactamente
         // reproducible y no dependa de puntos de corte estimados.
