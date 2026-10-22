@@ -22,10 +22,12 @@ public enum NivelRelieve { Mar, Medio, Alto, Impasable }
 /// <summary>Reglas centrales de clasificación del relieve.</summary>
 public static class ReglasRelieve
 {
-    /// <summary>Clasifica la altura con nivel del mar configurable y cumbres desde 80.</summary>
+    /// <summary>El mar es nivel 0; tierra baja 1-59, alta 60-79 y cumbres 80-100.</summary>
     public static NivelRelieve Clasificar(byte altura, int nivelMar)
     {
-        if (altura < nivelMar) return NivelRelieve.Mar;
+        // NivelMar se conserva por compatibilidad de configuración: la nueva
+        // topología usa siempre cero para agua y 1-100 para terreno emergido.
+        if (altura == 0) return NivelRelieve.Mar;
         if (altura >= 80) return NivelRelieve.Impasable;
         return altura >= 60 ? NivelRelieve.Alto : NivelRelieve.Medio;
     }
