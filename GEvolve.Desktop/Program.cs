@@ -73,7 +73,7 @@ public sealed class MotorGEvolve : GameWindow
             paso *= 2.5f;
 
         Vector3 adelante = new(-MathF.Sin(_angulo), 0f, -MathF.Cos(_angulo));
-        Vector3 derecha = new(adelante.Z, 0f, -adelante.X);
+        Vector3 derecha = new(-adelante.Z, 0f, adelante.X);
         Vector3 movimiento = Vector3.Zero;
         if (KeyboardState.IsKeyDown(Keys.W)) movimiento += adelante;
         if (KeyboardState.IsKeyDown(Keys.S)) movimiento -= adelante;
