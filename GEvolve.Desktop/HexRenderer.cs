@@ -115,6 +115,12 @@ internal sealed class HexRenderer : IDisposable
                 }
             }
 
+            // Dígitos vectoriales sobre cada tapa, conservando el nivel lógico.
+            if (celda.NivelNumerico is byte nivelNumerico)
+                EtiquetaNivel(bordesAgua, centro.X, centro.Y, nivel + 0.012f,
+                    nivelNumerico, agua ? new Vector3(1f, 1f, 1f)
+                                      : new Vector3(0.05f, 0.08f, 0.05f));
+
             for (int i = 0; i < 6; i++)
             {
                 Vector3 a = esquinas[i];
@@ -165,6 +171,44 @@ internal sealed class HexRenderer : IDisposable
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
         GL.BindVertexArray(0);
+    }
+
+    // Segmentos: arriba, superior derecha, inferior derecha, abajo,
+    // inferior izquierda, superior izquierda y centro.
+    private static readonly int[] SegmentosNumero =
+        [0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F];
+
+    /// <summary>Dibuja la elevación 0–100 con trazos sobre la tapa del hexágono.</summary>
+    private static void EtiquetaNivel(List<float> salida, float x, float z,
+        float y, byte numero, Vector3 tinta)
+    {
+        string texto = numero.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const float ancho = 0.20f;
+        const float alto = 0.36f;
+        const float separacion = 0.08f;
+        float inicio = x - (texto.Length * ancho + (texto.Length - 1) * separacion) / 2f;
+        for (int i = 0; i < texto.Length; i++)
+        {
+            int segmentos = SegmentosNumero[texto[i] - '0'];
+            float izq = inicio + i * (ancho + separacion);
+            float der = izq + ancho;
+            float superior = z - alto / 2f;
+            float medio = z;
+            float inferior = z + alto / 2f;
+            void Trazo(int bit, float x1, float z1, float x2, float z2)
+            {
+                if ((segmentos & (1 << bit)) == 0) return;
+                Vertice(salida, new Vector3(x1, y, z1), tinta);
+                Vertice(salida, new Vector3(x2, y, z2), tinta);
+            }
+            Trazo(0, izq, superior, der, superior);
+            Trazo(1, der, superior, der, medio);
+            Trazo(2, der, medio, der, inferior);
+            Trazo(3, izq, inferior, der, inferior);
+            Trazo(4, izq, medio, izq, inferior);
+            Trazo(5, izq, superior, izq, medio);
+            Trazo(6, izq, medio, der, medio);
+        }
     }
 
     /// <summary>Guarda solo posición XYZ y color RGB por vértice.</summary>
