@@ -66,6 +66,19 @@ try
         "La generación de prueba debe ser determinista.");
     Verificar(LanzaArgumento(() => HexDemoWorld.CrearRadial(-1)),
         "El radio negativo debe rechazarse.");
+    // Verificación mínima del prototipo procedural sin requerir GPU.
+    var mundo = WorldGenerator.Crear(100, 50, semilla: 2026);
+    Verificar(mundo.Count == 5000, "El mundo debe contener 5000 hexágonos.");
+    Verificar(mundo.Select(x => x.Coordenada).Distinct().Count() == 5000,
+        "Las coordenadas del mundo deben ser únicas.");
+    Verificar(mundo.Any(x => x.Superficie == TipoSuperficie.Oceano) &&
+             mundo.Any(x => x.Superficie == TipoSuperficie.Tierra),
+        "Deben existir tanto tierra como océanos.");
+    Verificar(mundo.All(x => float.IsFinite(x.Elevacion) && x.Elevacion > 0f),
+        "Todas las elevaciones deben ser válidas.");
+    Verificar(mundo.SequenceEqual(WorldGenerator.Crear(100, 50, semilla: 2026)),
+        "La misma semilla debe reproducir el mundo.");
+    Console.WriteLine("OK — Mundo procedural 100x50 y 5000 celdas verificadas.");
     Console.WriteLine("OK — Grid 20x20 y mapa radial de 397 hexágonos verificados.");
     return 0;
 }
