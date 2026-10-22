@@ -167,7 +167,7 @@ internal sealed class MenuRenderer : IDisposable
         Texto(etiqueta,x+98,y+23,2.6f,gris);
         Marco(x+345,y+8,300,50,activo);
         Texto("<",x+365,y+22,2.6f,gris);
-        Texto(valor,x+497,y+22,2.5f,Vector3.One,true);
+        Texto(valor,x+497,y+22,MathF.Min(2.5f, 185f / Math.Max(1, valor.Length * 6f)),Vector3.One,true);
         Texto(">",x+608,y+22,2.6f,gris);
     }
 
