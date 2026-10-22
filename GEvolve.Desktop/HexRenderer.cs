@@ -73,23 +73,17 @@ internal sealed class HexRenderer : IDisposable
             float nivel = celda.Elevacion;
             Vector3 arriba = new(centro.X, nivel, centro.Y);
 
-            float gris = 0.32f + 0.48f
-                * Math.Clamp((nivel - 0.15f) / 1.65f, 0f, 1f);
-            // El mar permanece plano y azul. En tierra se mantiene
-            // el esquema acordado: tapa clara y laterales oscuros.
             bool agua = celda.Superficie == TipoSuperficie.Oceano;
-            float claro = Math.Clamp(gris * 1.15f, 0f, 1f);
-            float oscuro = gris * 0.70f;
-            // Paleta provisional por nivel geomorfológico, NO por bioma.
-            // Las cumbres infranqueables se identifican sin dibujar bordes.
-            Vector3 tono = celda.Relieve switch
-            {
-                NivelRelieve.Impasable => new Vector3(0.92f, 0.92f, 0.92f),
-                NivelRelieve.Alto => new Vector3(0.66f, 0.69f, 0.61f),
-                _ => new Vector3(0.34f, 0.67f, 0.36f)
-            };
-            Vector3 colorSuperior = agua ? new Vector3(0.12f, 0.34f, 0.65f) : tono * claro;
-            Vector3 colorLateral = agua ? new Vector3(0.08f, 0.25f, 0.48f) : tono * oscuro;
+            // Escala continua de negro (nivel 1) a blanco (nivel 100).
+            // Usar nivel lógico evita depender de la exageración vertical del render.
+            float t = celda.NivelNumerico is byte n
+                ? Math.Clamp((n - 1f) / 99f, 0f, 1f)
+                : Math.Clamp((nivel - 0.13f) / 2.8f, 0f, 1f);
+            Vector3 grisSuperior = new(t, t, t);
+            float pared = t * 0.72f;
+            Vector3 grisLateral = new(pared, pared, pared);
+            Vector3 colorSuperior = agua ? new Vector3(0.12f, 0.34f, 0.65f) : grisSuperior;
+            Vector3 colorLateral = agua ? new Vector3(0.08f, 0.25f, 0.48f) : grisLateral;
 
             var esquinas = new Vector3[6];
             for (int i = 0; i < 6; i++)
@@ -118,8 +112,8 @@ internal sealed class HexRenderer : IDisposable
             // Dígitos vectoriales sobre cada tapa, conservando el nivel lógico.
             if (celda.NivelNumerico is byte nivelNumerico)
                 EtiquetaNivel(bordesAgua, centro.X, centro.Y, nivel + 0.012f,
-                    nivelNumerico, agua ? new Vector3(1f, 1f, 1f)
-                                      : new Vector3(0.05f, 0.08f, 0.05f));
+                    nivelNumerico, agua ? Vector3.One
+                                      : t < 0.53f ? Vector3.One : new Vector3(0.05f, 0.05f, 0.05f));
 
             for (int i = 0; i < 6; i++)
             {
