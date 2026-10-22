@@ -137,11 +137,12 @@ internal sealed class MenuRenderer : IDisposable
     public void Boton(string titulo,float x,float y,float ancho,bool activo)
     {
         Vector3 sombra = new(.06f,.07f,.08f);
-        Vector3 fondo = activo ? new(.33f,.48f,.37f) : new(.25f,.28f,.29f);
+        Vector3 fondo = new(.14f,.18f,.20f);
         Rect(x+4,y+5,ancho,52,sombra);
         Rect(x,y,ancho,52,fondo);
-        Rect(x,y,ancho,3,activo ? new(.78f,.9f,.68f) : new(.48f,.52f,.52f));
-        Texto(titulo,x+ancho/2f,y+18,2.3f,Vector3.One,true);
+        Rect(x,y,ancho,3,activo ? new(.32f,.77f,.60f) : new(.62f,.68f,.70f));
+        Rect(x,y+49,ancho,3,activo ? new(.32f,.77f,.60f) : new(.62f,.68f,.70f));
+        Texto(titulo,x+ancho/2f,y+18,2.3f,activo ? new Vector3(.52f,.98f,.78f) : Vector3.One,true);
     }
 
     /// <summary>Inicia el dibujo del fotograma de UI.</summary>
