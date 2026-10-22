@@ -9,6 +9,12 @@ namespace GEvolve.Core;
 /// </summary>
 public static class HexGeometry
 {
+    /// <summary>
+    /// Radio estándar de una celda: 1 unidad del mundo desde centro a vértice.
+    /// No representa píxeles; todos los hexágonos comparten este radio.
+    /// </summary>
+    public const float RadioEstandar = 1f;
+
     // Aproximación de √3, suficiente para las transformaciones en float.
     private const float Raiz3 = 1.7320508075688772f;
 
