@@ -136,7 +136,9 @@ internal sealed class HexRenderer : IDisposable
     public void Dibujar(Matrix4 vistaProyeccion)
     {
         GL.UseProgram(_programa);
-        GL.UniformMatrix4(_uniformeMatriz, true, ref vistaProyeccion);
+        // OpenTK compone matrices en orden fila (vista * proyección).
+        // false carga los datos para que GLSL opere correctamente por columnas.
+        GL.UniformMatrix4(_uniformeMatriz, false, ref vistaProyeccion);
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
         GL.LineWidth(2f);
