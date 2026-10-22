@@ -14,13 +14,11 @@ namespace GEvolve.Desktop;
 public sealed class MotorGEvolve : GameWindow
 {
     private readonly HexRenderer _hexRenderer = new();
-    // Giro horizontal limitado a medio círculo para no orbitar completamente el mundo.
+    // Giro horizontal continuo de 360°; puede repetirse sin detenerse en los extremos.
     private float _angulo = MathHelper.DegreesToRadians(40f);
     // Inclinación fija por encima del plano: nunca invierte el horizonte.
     private const float Inclinacion = MathF.PI * 35f / 180f;
-    private const float AnguloMinimo = MathF.PI / 12f; // 15°
-    private const float AnguloMaximo = MathF.PI * 11f / 12f; // 165°
-    // Distancia inicial que encuadra el anillo completo de siete hexágonos.
+    // Distancia inicial para encuadrar los 217 hexágonos.
     private float _distancia = 38f;
 
     public MotorGEvolve() : base(
@@ -28,7 +26,7 @@ public sealed class MotorGEvolve : GameWindow
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mapa hexagonal radial 3D (217 celdas) — giro 15°-165°"
+            Title = "G-Evolve | Mapa hexagonal radial 3D (217 celdas) — giro horizontal 360°"
         })
     {
     }
@@ -44,7 +42,7 @@ public sealed class MotorGEvolve : GameWindow
     }
 
     /// <summary>
-    /// Gira horizontalmente la cámara entre 15° y 165° manteniendo pulsado
+    /// Gira horizontalmente la cámara libremente a lo largo de 360° manteniendo pulsado
     /// el botón derecho. El desplazamiento vertical no cambia la inclinación:
     /// de esta forma nunca vemos el terreno desde abajo ni invertimos horizonte.
     /// </summary>
@@ -53,7 +51,9 @@ public sealed class MotorGEvolve : GameWindow
         base.OnMouseMove(e);
         if (!MouseState.IsButtonDown(MouseButton.Right)) return;
 
-        _angulo = Math.Clamp(_angulo - e.DeltaX * 0.009f, AnguloMinimo, AnguloMaximo);
+        // Normalización circular: evita límites y permite múltiples vueltas completas.
+        _angulo = (_angulo - e.DeltaX * 0.009f) % (2f * MathF.PI);
+        if (_angulo < 0f) _angulo += 2f * MathF.PI;
     }
 
     /// <summary>Acerca o aleja la cámara sin cambiar el tamaño de la malla.</summary>
