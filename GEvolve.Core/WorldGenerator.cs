@@ -4,7 +4,8 @@ namespace GEvolve.Core;
 public enum TipoSuperficie { Oceano, Tierra }
 
 /// <summary>Celda del mundo procedural con coordenadas, elevación y superficie.</summary>
-public readonly record struct CeldaMundo(HexCoord Coordenada, float Elevacion, TipoSuperficie Superficie);
+public readonly record struct CeldaMundo(HexCoord Coordenada, float Elevacion, TipoSuperficie Superficie,
+    NivelRelieve Relieve = NivelRelieve.Medio);
 
 /// <summary>
 /// Crea mapas rectangulares de celdas hexagonales con una semilla reproducible.
