@@ -29,6 +29,11 @@ public static class WorldSystem
                     .105f, .145f),
                 _ => MaximoMasas(wx, wy, config.Semilla, 4, .205f, .30f)
             };
+            // Satélites continentales: islotes y archipiélagos periféricos.
+            // Se suman ANTES de fijar la cuota de océano.
+            float satelites = MaximoMasas(wx, wy, config.Semilla + 1307,
+                config.Tipo == TipoMundo.Archipielagos ? 48 : 24, .035f, .053f);
+            masa = MathF.Max(masa, .80f * satelites);
             float detalle = .14f * Ruido(x, y, config.Semilla + 53, 5, 5)
                 + .070f * Ruido(x, y, config.Semilla + 73, 12, 12)
                 + .025f * Ruido(x, y, config.Semilla + 97, 25, 20);
@@ -69,6 +74,28 @@ public static class WorldSystem
                 if (distancia[vecino] <= distancia[i] + 1) continue;
                 distancia[vecino] = distancia[i] + 1;
                 cola.Enqueue(vecino);
+            }
+        }
+        // Distancia desde cualquier celda marina hasta la tierra más próxima.
+        // Se utiliza para colorear plataformas costeras de forma coherente.
+        var distanciaTierra = new int[total];
+        Array.Fill(distanciaTierra, int.MaxValue);
+        var colaMarina = new Queue<int>();
+        for (int i = 0; i < total; i++)
+            if (!esAgua[i]) { distanciaTierra[i] = 0; colaMarina.Enqueue(i); }
+        while (colaMarina.Count > 0)
+        {
+            int i = colaMarina.Dequeue(), y = i / ancho, x = i % ancho;
+            int[] dx = (y & 1) == 0 ? new[] { -1, 1, -1, 0, -1, 0 } : new[] { -1, 1, 0, 1, 0, 1 };
+            int[] dy = { 0, 0, -1, -1, 1, 1 };
+            for (int n = 0; n < 6; n++)
+            {
+                int ny = y + dy[n];
+                if (ny < 0 || ny >= alto) continue;
+                int nx = (x + dx[n] + ancho) % ancho, j = ny * ancho + nx;
+                if (distanciaTierra[j] <= distanciaTierra[i] + 1) continue;
+                distanciaTierra[j] = distanciaTierra[i] + 1;
+                colaMarina.Enqueue(j);
             }
         }
         float edad = config.Edad switch
@@ -118,7 +145,7 @@ public static class WorldSystem
             resultado[indice] = new WorldCell(columna, fila, new HexCoord(q, r),
                 nivel, superficie) { Relieve = ReglasRelieve.Clasificar(nivel, config.NivelMar),
                 Bioma = GeneradorBiomas.Clasificar(nivel, esAgua[indice], fila, columna,
-                    ancho, alto, costa, config.Semilla) };
+                    ancho, alto, esAgua[indice] ? distanciaTierra[indice] : costa, config.Semilla) };
         }
         return new WorldMap(config, resultado);
     }
