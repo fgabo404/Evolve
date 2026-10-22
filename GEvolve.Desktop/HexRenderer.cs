@@ -5,40 +5,68 @@ using OpenTK.Mathematics;
 namespace GEvolve.Desktop;
 
 /// <summary>
-/// Convierte celdas de terreno en prismas hexagonales tridimensionales.
-/// Solo representa datos recibidos desde GEvolve.Core: no genera el mundo.
-/// Usa una sola malla y subida a GPU para todas las celdas del mapa radial.
+/// Construye una única malla de prismas hexagonales. Los contornos se
+/// calculan en el shader, sin prismas extra ni triángulos de borde.
 /// </summary>
 internal sealed class HexRenderer : IDisposable
 {
-    private int _vao, _vbo, _programa, _uniformeMatriz;
+    private int _vao, _vbo, _programa, _uniformeMatriz, _uniformeGrosor;
     private int _verticesTriangulos;
-    // Banda negra de 0.18 unidades del mundo: geometría real, no GL.LineWidth.
-    private const float GrosorCuadricula = 0.27f;
+
+    // Grosor visual en píxeles de pantalla; no modifica la geometría.
+    private const float GrosorBordePx = 4f;
+    private const int DatosPorVertice = 9; // posición(3), gris(3), coordenadas de borde(3)
 
     private const string VertexShader = """
         #version 330 core
-        layout(location=0) in vec3 posicion;
-        layout(location=1) in vec3 colorEntrada;
+        layout(location = 0) in vec3 posicion;
+        layout(location = 1) in vec3 colorEntrada;
+        layout(location = 2) in vec3 marcaBorde;
         uniform mat4 matrizVistaProyeccion;
         out vec3 color;
-        void main() {
+        out vec3 marca;
+        void main()
+        {
             gl_Position = matrizVistaProyeccion * vec4(posicion, 1.0);
             color = colorEntrada;
+            marca = marcaBorde;
         }
         """;
 
     private const string FragmentShader = """
         #version 330 core
         in vec3 color;
+        in vec3 marca;
+        uniform float grosorBordePx;
         out vec4 fragColor;
-        void main() { fragColor = vec4(color, 1.0); }
+
+        void main()
+        {
+            // Tapa: marca.x = 0 en el perímetro, 1 en el centro.
+            // Pared: marca.xy = UV, para resaltar sus cuatro aristas.
+            // marca.z: 0 = tapa, 1 = pared.
+            float distanciaBorde = marca.z < 0.5
+                ? marca.x
+                : min(min(marca.x, 1.0 - marca.x),
+                      min(marca.y, 1.0 - marca.y));
+
+            // fwidth relaciona las distancias interpoladas con píxeles.
+            // El antialias evita los segmentos punteados causados por líneas
+            // rasterizadas y no requiere GL.LineWidth.
+            float paso = max(fwidth(distanciaBorde), 0.000001);
+            float grosor = grosorBordePx * paso;
+            float interior = smoothstep(grosor - paso * 0.5,
+                                        grosor + paso * 0.5,
+                                        distanciaBorde);
+            fragColor = vec4(color * interior, 1.0);
+        }
         """;
 
-    /// <summary>Inicializa shaders y construye la malla con un contexto OpenGL activo.</summary>
+    /// <summary>Crea un lote de geometría de tapas y seis paredes por celda.</summary>
     public void Inicializar(IReadOnlyList<HexTile> celdas)
     {
-        if (_programa != 0) throw new InvalidOperationException("El renderer ya está inicializado.");
+        if (_programa != 0)
+            throw new InvalidOperationException("El renderer ya está inicializado.");
 
         int vert = Compilar(ShaderType.VertexShader, VertexShader);
         int frag = Compilar(ShaderType.FragmentShader, FragmentShader);
@@ -51,19 +79,23 @@ internal sealed class HexRenderer : IDisposable
         GL.DetachShader(_programa, frag);
         GL.DeleteShader(vert);
         GL.DeleteShader(frag);
-        if (exito == 0) throw new InvalidOperationException(GL.GetProgramInfoLog(_programa));
+        if (exito == 0)
+            throw new InvalidOperationException(GL.GetProgramInfoLog(_programa));
+
         _uniformeMatriz = GL.GetUniformLocation(_programa, "matrizVistaProyeccion");
+        _uniformeGrosor = GL.GetUniformLocation(_programa, "grosorBordePx");
 
-        var triangulos = new List<float>();
-
-        // El mapa vive en X/Z; la altura física se expresa sobre Y.
-        // HexGeometry asegura que todos los centros compartan exactamente
-        // la convención axial pointy-top del núcleo matemático.
+        var vertices = new List<float>(celdas.Count * 54 * DatosPorVertice);
         foreach (HexTile celda in celdas)
         {
             System.Numerics.Vector2 centro = HexGeometry.APosicion(celda.Coordenada);
             float nivel = celda.Elevacion;
-            Vector3 superior = new(centro.X, nivel, centro.Y);
+            Vector3 arriba = new(centro.X, nivel, centro.Y);
+
+            float gris = 0.32f + 0.48f
+                * Math.Clamp((nivel - 0.15f) / 1.65f, 0f, 1f);
+            Vector3 color = new(gris, gris, gris);
+
             var esquinas = new Vector3[6];
             for (int i = 0; i < 6; i++)
             {
@@ -73,86 +105,74 @@ internal sealed class HexRenderer : IDisposable
                     centro.Y + MathF.Cos(angulo));
             }
 
-            // Escala de grises: elevaciones bajas oscuras, altas claras.
-            // La luminosidad es visual; NO determina categorías ecológicas.
-            float gris = 0.32f + 0.48f * Math.Clamp((nivel - 0.15f) / 1.25f, 0f, 1f);
-            var tapa = new Vector3(gris, gris, gris);
-            // Negro puro para marcar la silueta y la cuadrícula tridimensional.
-            var contorno = Vector3.Zero;
-            // Se dibuja un hexágono negro completo y una tapa gris más
-            // pequeña encima. El borde resultante es un anillo hexagonal 3D
-            // de grosor estable en unidades del mundo.
-            // Banda e interior comparten exactamente un plano: son superficies
-            // contiguas, no capas superpuestas que compiten por profundidad.
-            const float elevacionSuperficie = 0.025f;
-            Vector3 centroInterior = new(centro.X, nivel + elevacionSuperficie, centro.Y);
-
             for (int i = 0; i < 6; i++)
             {
-                int siguiente = (i + 1) % 6;
-                Vector3 a = esquinas[i], b = esquinas[siguiente];
-                // El contorno es un anillo de trapecios negros, nunca una tapa
-                // completa negra debajo de otra gris (evita z-fighting).
-                Vector3 aExterior = new(a.X, nivel + elevacionSuperficie, a.Z);
-                Vector3 bExterior = new(b.X, nivel + elevacionSuperficie, b.Z);
-                float escala = 1f - GrosorCuadricula;
-                Vector3 aInterior = centroInterior + (a - superior) * escala;
-                Vector3 bInterior = centroInterior + (b - superior) * escala;
+                Vector3 a = esquinas[i];
+                Vector3 b = esquinas[(i + 1) % 6];
 
-                // Dos triángulos de la banda exterior, más un triángulo de tapa.
-                Triangulo(triangulos, aExterior, aInterior, bInterior, contorno);
-                Triangulo(triangulos, aExterior, bInterior, bExterior, contorno);
-                Triangulo(triangulos, centroInterior, aInterior, bInterior, tapa);
+                // Un triángulo por sector. La marca topológica vale cero
+                // SOLO en el lado exterior, no en las diagonales del abanico.
+                Vertice(vertices, arriba, color, new Vector3(1f, 0f, 0f));
+                Vertice(vertices, a, color, new Vector3(0f, 0f, 0f));
+                Vertice(vertices, b, color, new Vector3(0f, 0f, 0f));
 
+                // Dos triángulos por pared; sus UV son continuas y el shader
+                // marca bordes superior, inferior y las aristas verticales.
                 Vector3 aBase = new(a.X, 0f, a.Z);
                 Vector3 bBase = new(b.X, 0f, b.Z);
-                // Sin sombras: paredes del mismo gris que la tapa.
-                Triangulo(triangulos, a, aBase, bBase, tapa);
-                Triangulo(triangulos, a, bBase, b, tapa);
+                Vertice(vertices, a, color, new Vector3(0f, 1f, 1f));
+                Vertice(vertices, aBase, color, new Vector3(0f, 0f, 1f));
+                Vertice(vertices, bBase, color, new Vector3(1f, 0f, 1f));
+
+                Vertice(vertices, a, color, new Vector3(0f, 1f, 1f));
+                Vertice(vertices, bBase, color, new Vector3(1f, 0f, 1f));
+                Vertice(vertices, b, color, new Vector3(1f, 1f, 1f));
             }
         }
 
-        _verticesTriangulos = triangulos.Count / 6;
-
+        _verticesTriangulos = vertices.Count / DatosPorVertice;
         _vao = GL.GenVertexArray();
         _vbo = GL.GenBuffer();
         GL.BindVertexArray(_vao);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, triangulos.Count * sizeof(float),
-            triangulos.ToArray(), BufferUsageHint.StaticDraw);
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Count * sizeof(float),
+            vertices.ToArray(), BufferUsageHint.StaticDraw);
+
+        int stride = DatosPorVertice * sizeof(float);
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
         GL.EnableVertexAttribArray(0);
-        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
+        GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
+        GL.EnableVertexAttribArray(2);
         GL.BindVertexArray(0);
     }
 
-    private static void Vertice(List<float> salida, Vector3 posicion, Vector3 color)
+    /// <summary>Agrega un vértice con datos de borde interpolados por la GPU.</summary>
+    private static void Vertice(List<float> salida, Vector3 posicion, Vector3 color, Vector3 marca)
     {
-        salida.AddRange(new[] { posicion.X, posicion.Y, posicion.Z, color.X, color.Y, color.Z });
+        salida.AddRange(new[]
+        {
+            posicion.X, posicion.Y, posicion.Z,
+            color.X, color.Y, color.Z,
+            marca.X, marca.Y, marca.Z
+        });
     }
 
-    private static void Triangulo(List<float> salida, Vector3 a, Vector3 b, Vector3 c, Vector3 color)
-    {
-        Vertice(salida, a, color);
-        Vertice(salida, b, color);
-        Vertice(salida, c, color);
-    }
-
-    /// <summary>Dibuja tapas, paredes y bordes usando la cámara proporcionada.</summary>
+    /// <summary>Dibuja el lote 3D; el shader rasteriza sus contornos negros.</summary>
     public void Dibujar(Matrix4 vistaProyeccion)
     {
         GL.UseProgram(_programa);
-        // OpenTK compone matrices en orden fila (vista * proyección).
-        // false carga los datos para que GLSL opere correctamente por columnas.
+        // Convención previamente validada para matrices OpenTK -> GLSL.
         GL.UniformMatrix4(_uniformeMatriz, false, ref vistaProyeccion);
+        GL.Uniform1(_uniformeGrosor, GrosorBordePx);
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
         GL.BindVertexArray(0);
         GL.UseProgram(0);
     }
 
-    /// <summary>Libera los recursos gráficos antes de destruir el contexto OpenGL.</summary>
+    /// <summary>Libera los recursos GPU cuando se cierra la aplicación.</summary>
     public void Dispose()
     {
         if (_vbo != 0) GL.DeleteBuffer(_vbo);
@@ -161,6 +181,7 @@ internal sealed class HexRenderer : IDisposable
         _vao = _vbo = _programa = 0;
     }
 
+    /// <summary>Compila GLSL y describe el error si el controlador lo rechaza.</summary>
     private static int Compilar(ShaderType tipo, string fuente)
     {
         int shader = GL.CreateShader(tipo);
