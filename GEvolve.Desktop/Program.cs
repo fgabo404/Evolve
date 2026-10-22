@@ -49,8 +49,8 @@ public sealed class MotorGEvolve : GameWindow
         CeldaMundo[] representacion = _mundo.Celdas.Select(c =>
             new CeldaMundo(c.Coordenada,
                 c.Superficie == TipoSuperficie.Oceano ? 0.08f
-                : 0.13f + c.Altura / 100f * 1.75f,
-                c.Superficie)).ToArray();
+                : 0.13f + c.Altura / 100f * 2.8f,
+                c.Superficie, c.Relieve)).ToArray();
         _hexRenderer.Inicializar(representacion);
     }
 
