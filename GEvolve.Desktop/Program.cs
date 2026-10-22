@@ -18,8 +18,8 @@ public sealed class MotorGEvolve : GameWindow
     private float _angulo = MathHelper.DegreesToRadians(40f);
     // Inclinación fija por encima del plano: nunca invierte el horizonte.
     private const float Inclinacion = MathF.PI * 35f / 180f;
-    private const float AnguloMinimo = 0f;
-    private const float AnguloMaximo = MathF.PI;
+    private const float AnguloMinimo = MathF.PI / 12f; // 15°
+    private const float AnguloMaximo = MathF.PI * 11f / 12f; // 165°
     // Distancia inicial que encuadra el anillo completo de siete hexágonos.
     private float _distancia = 80f;
 
@@ -28,7 +28,7 @@ public sealed class MotorGEvolve : GameWindow
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Grid 3D 20x20 (400 hexágonos) — giro 0°-180°"
+            Title = "G-Evolve | Mapa hexagonal radial 3D (397 celdas) — giro 15°-165°"
         })
     {
     }
@@ -38,13 +38,13 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        // El mundo mantiene 400 identidades axiales independientes de la GPU.
+        // Mapa radial de 397 identidades axiales, centrado en el origen.
         // Las elevaciones son solo una prueba geométrica, no biomas reales.
-        _hexRenderer.Inicializar(HexDemoWorld.CrearCuadricula(20, 20));
+        _hexRenderer.Inicializar(HexDemoWorld.CrearRadial(11));
     }
 
     /// <summary>
-    /// Gira horizontalmente la cámara entre 0° y 180° manteniendo pulsado
+    /// Gira horizontalmente la cámara entre 15° y 165° manteniendo pulsado
     /// el botón derecho. El desplazamiento vertical no cambia la inclinación:
     /// de esta forma nunca vemos el terreno desde abajo ni invertimos horizonte.
     /// </summary>
@@ -70,7 +70,7 @@ public sealed class MotorGEvolve : GameWindow
 
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
         float horizontal = _distancia * MathF.Cos(Inclinacion);
-        Vector3 objetivo = new(-1.3f, 0.5f, -0.75f);
+        Vector3 objetivo = new(0f, 0.5f, 0f);
         Vector3 camara = objetivo + new Vector3(
             horizontal * MathF.Sin(_angulo),
             _distancia * MathF.Sin(Inclinacion),
