@@ -44,7 +44,8 @@ public sealed class MotorGEvolve : GameWindow
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
         // Nuevo sistema modular de generación y chunks; mundo reproducible 200x150.
-        _mundo = WorldSystem.Generar(new WorldSettings(200, 150, 2026, 10, 30));
+        _mundo = WorldSystem.Generar(new WorldSettings(200, 150, 2026, 10, 30,
+            TipoMundo.Continentes, EdadGeologica.Normal, 60, 40));
         _anchoMundo = MathF.Sqrt(3f) * HexGeometry.RadioEstandar * _mundo.Configuracion.Ancho;
         // La altura lógica va de 0 a 100. Se transforma a unidades gráficas
         // sin modificar los datos del terreno. El mar queda horizontal.
