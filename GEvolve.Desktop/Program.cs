@@ -67,7 +67,7 @@ public sealed class MotorGEvolve : GameWindow
             new CeldaMundo(c.Coordenada,
                 c.Superficie == TipoSuperficie.Oceano ? 0f
                 : 0.13f + c.Altura / 100f * 2.8f,
-                c.Superficie, c.Relieve, c.Altura)).ToArray();
+                c.Superficie, c.Relieve, c.Altura, c.Bioma)).ToArray();
         _hexRenderer.Inicializar(representacion);
     }
 
