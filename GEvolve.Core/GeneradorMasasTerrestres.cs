@@ -7,6 +7,9 @@ public static class GeneradorMasasTerrestres
 
     public static float[] Crear(WorldSettings config)
     {
+        if (config.Tipo == TipoMundo.Archipielagos)
+            return GeneradorArchipielagos.Crear(config);
+
         int ancho = config.Ancho, alto = config.Alto;
         var azar = new Random(config.Semilla);
         var trazos = new List<Tramo>();
