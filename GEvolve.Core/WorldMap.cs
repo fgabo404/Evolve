@@ -16,9 +16,28 @@ public sealed record WorldSettings(int Ancho = 100, int Alto = 50, int Semilla =
     }
 }
 
+/// <summary>Cuatro niveles funcionales de relieve; no son biomas.</summary>
+public enum NivelRelieve { Mar, Medio, Alto, Impasable }
+
+/// <summary>Reglas centrales de clasificación del relieve.</summary>
+public static class ReglasRelieve
+{
+    /// <summary>Clasifica la altura con nivel del mar configurable y cumbres desde 80.</summary>
+    public static NivelRelieve Clasificar(byte altura, int nivelMar)
+    {
+        if (altura < nivelMar) return NivelRelieve.Mar;
+        if (altura >= 80) return NivelRelieve.Impasable;
+        return altura >= 60 ? NivelRelieve.Alto : NivelRelieve.Medio;
+    }
+}
+
 /// <summary>Celda persistente con altura oficial de 0 a 100.</summary>
 public readonly record struct WorldCell(int Columna, int Fila, HexCoord Coordenada,
-    byte Altura, TipoSuperficie Superficie);
+    byte Altura, TipoSuperficie Superficie)
+{
+    /// <summary>Clasificación de relieve independiente del bioma.</summary>
+    public NivelRelieve Relieve { get; init; }
+}
 
 /// <summary>Región del mundo, independiente de OpenGL.</summary>
 public sealed class WorldChunk
