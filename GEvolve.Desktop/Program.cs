@@ -18,15 +18,17 @@ public sealed class MotorGEvolve : GameWindow
     private float _angulo = MathHelper.DegreesToRadians(40f);
     // Inclinación fija por encima del plano: nunca invierte el horizonte.
     private const float Inclinacion = MathF.PI * 35f / 180f;
-    // Distancia inicial para encuadrar los 217 hexágonos.
-    private float _distancia = 38f;
+    // La cámara orbita alrededor de un objetivo desplazable sobre el terreno.
+    private float _distancia = 45f;
+    private Vector3 _objetivo = new(0f, 0.5f, 0f);
+    private const float Velocidad = 18f;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Mapa hexagonal radial 3D (217 celdas) — giro horizontal 360°"
+            Title = "G-Evolve | Mundo procedural 100x50 — WASD mover / clic derecho girar / rueda zoom"
         })
     {
     }
@@ -36,9 +38,8 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        // Mapa radial de radio 8: centro + ocho anillos (217 celdas).
-        // Las elevaciones son solo una prueba geométrica, no biomas reales.
-        _hexRenderer.Inicializar(HexDemoWorld.CrearRadial(8));
+        // Mundo hexagonal 100x50: generación reproducible independiente del motor gráfico.
+        _hexRenderer.Inicializar(WorldGenerator.Crear(100, 50, semilla: 2026));
     }
 
     /// <summary>
@@ -60,7 +61,33 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 1.8f, 18f, 75f);
+        _distancia = Math.Clamp(_distancia - e.OffsetY * 2.5f, 8f, 110f);
+    }
+
+    /// <summary>Desplazamiento WASD en el plano XZ, relativo al giro de cámara.</summary>
+    protected override void OnUpdateFrame(FrameEventArgs args)
+    {
+        base.OnUpdateFrame(args);
+        float paso = Velocidad * (float)args.Time;
+        if (KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift))
+            paso *= 2.5f;
+
+        Vector3 adelante = new(-MathF.Sin(_angulo), 0f, -MathF.Cos(_angulo));
+        Vector3 derecha = new(adelante.Z, 0f, -adelante.X);
+        Vector3 movimiento = Vector3.Zero;
+        if (KeyboardState.IsKeyDown(Keys.W)) movimiento += adelante;
+        if (KeyboardState.IsKeyDown(Keys.S)) movimiento -= adelante;
+        if (KeyboardState.IsKeyDown(Keys.D)) movimiento += derecha;
+        if (KeyboardState.IsKeyDown(Keys.A)) movimiento -= derecha;
+        if (movimiento.LengthSquared > 0f)
+        {
+            movimiento.Normalize();
+            _objetivo += movimiento * paso;
+            // Limites de la demostración: impiden perder el mundo de vista.
+            _objetivo.X = Math.Clamp(_objetivo.X, -120f, 120f);
+            _objetivo.Z = Math.Clamp(_objetivo.Z, -90f, 90f);
+        }
+        if (KeyboardState.IsKeyDown(Keys.Home)) _objetivo = new Vector3(0f, 0.5f, 0f);
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
@@ -70,7 +97,7 @@ public sealed class MotorGEvolve : GameWindow
 
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
         float horizontal = _distancia * MathF.Cos(Inclinacion);
-        Vector3 objetivo = new(0f, 0.5f, 0f);
+        Vector3 objetivo = _objetivo;
         Vector3 camara = objetivo + new Vector3(
             horizontal * MathF.Sin(_angulo),
             _distancia * MathF.Sin(Inclinacion),
