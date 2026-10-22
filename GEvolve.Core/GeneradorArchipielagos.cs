@@ -7,22 +7,25 @@ namespace GEvolve.Core;
 public static class GeneradorArchipielagos
 {
     private readonly record struct Isla(float X, float Y, float Rx, float Ry, float Angulo, float Fuerza);
+    private readonly record struct Canal(float X, float Y, float Radio, float Fuerza);
 
     public static float[] Crear(WorldSettings config)
     {
         int ancho = config.Ancho, alto = config.Alto;
         var azar = new Random(config.Semilla);
         var islas = new List<Isla>();
+        var canales = new List<Canal>();
         // Arcos en lugares y orientaciones variables, no centros en cuadrícula.
-        int arcos = 6 + azar.Next(3);
+        int arcos = 7 + azar.Next(4);
         for (int a = 0; a < arcos; a++)
         {
             float centroX = (float)azar.NextDouble();
             float centroY = .16f + .68f * (float)azar.NextDouble();
             float orientacion = (float)(azar.NextDouble() * Math.PI * 2);
-            float longitud = .13f + .12f * (float)azar.NextDouble();
+            float longitud = .15f + .10f * (float)azar.NextDouble();
             float curvatura = ((float)azar.NextDouble() - .5f) * .95f;
-            int miembros = 8 + azar.Next(9);
+            int miembros = 7 + azar.Next(7);
+            Isla? anterior = null;
             for (int j = 0; j < miembros; j++)
             {
                 float t = j / (float)(miembros - 1);
@@ -35,16 +38,27 @@ public static class GeneradorArchipielagos
                     + MathF.Cos(orientacion) * arco
                     + ((float)azar.NextDouble() - .5f) * .014f, .08f, .92f);
                 // Unas pocas islas principales, muchas menores y satélites.
-                float principal = azar.NextDouble() < .19 ? 2.2f : 1f;
-                float rx = (.009f + .013f * (float)azar.NextDouble()) * principal;
-                float ry = rx * (.75f + 1.9f * (float)azar.NextDouble());
+                float principal = azar.NextDouble() < .14 ? 1.55f : 1f;
+                float rx = (.007f + .008f * (float)azar.NextDouble()) * principal;
+                float ry = rx * (.75f + 1.55f * (float)azar.NextDouble());
                 float angulo = orientacion + ((float)azar.NextDouble() - .5f) * 1.2f;
-                islas.Add(new Isla(x, y, rx, ry, angulo, 1f));
-                int satelites = azar.Next(3);
+                var isla = new Isla(x, y, rx, ry, angulo, 1f);
+                islas.Add(isla);
+                if (anterior is Isla previa)
+                {
+                    float dx = x - previa.X;
+                    dx -= MathF.Round(dx);
+                    float dy = y - previa.Y;
+                    float medioX = Modulo(previa.X + dx * .5f);
+                    float medioY = (previa.Y + y) * .5f;
+                    canales.Add(new Canal(medioX, medioY, .010f, .60f));
+                }
+                anterior = isla;
+                int satelites = azar.Next(2);
                 for (int k = 0; k < satelites; k++)
                 {
                     float delta = (float)(azar.NextDouble() * Math.PI * 2);
-                    float separacion = .012f + .026f * (float)azar.NextDouble();
+                    float separacion = .018f + .024f * (float)azar.NextDouble();
                     islas.Add(new Isla(
                         Modulo(x + MathF.Cos(delta) * separacion),
                         Math.Clamp(y + MathF.Sin(delta) * separacion, .07f, .93f),
@@ -58,8 +72,8 @@ public static class GeneradorArchipielagos
         for (int col = 0; col < ancho; col++)
         {
             float x = (col + .5f) / ancho, y = (fila + .5f) / alto;
-            float warpX = .008f * Ruido(x, y, config.Semilla + 117, 9, 8);
-            float warpY = .009f * Ruido(x, y, config.Semilla + 129, 8, 9);
+            float warpX = .005f * Ruido(x, y, config.Semilla + 117, 9, 8);
+            float warpY = .006f * Ruido(x, y, config.Semilla + 129, 8, 9);
             float valor = -1.2f;
             foreach (var isla in islas)
             {
@@ -72,10 +86,19 @@ public static class GeneradorArchipielagos
                 float d = MathF.Sqrt(u*u + v*v);
                 valor = MathF.Max(valor, isla.Fuerza - d);
             }
-            float costa = .16f * Ruido(x,y,config.Semilla+233,17,14)
+            float corte = 0f;
+            foreach (var canal in canales)
+            {
+                float dx = x - canal.X;
+                dx -= MathF.Round(dx);
+                float dy = y - canal.Y;
+                float d2 = (dx * dx + dy * dy) / (canal.Radio * canal.Radio);
+                corte = MathF.Max(corte, canal.Fuerza * MathF.Exp(-d2));
+            }
+            float costa = .12f * Ruido(x,y,config.Semilla+233,17,14)
                         + .06f * Ruido(x,y,config.Semilla+247,31,23);
             float polo = .3f * Math.Clamp((.10f - MathF.Min(y,1f-y))/.10f,0f,1f);
-            campo[fila*ancho+col] = valor + costa - polo;
+            campo[fila*ancho+col] = valor + costa - corte - polo;
         }
         return campo;
     }
