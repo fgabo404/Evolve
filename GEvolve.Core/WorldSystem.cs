@@ -1,6 +1,6 @@
 namespace GEvolve.Core;
 
-/// <summary>Genera topologías y alturas reproducibles, sin biomas ni dependencias gráficas.</summary>
+/// <summary>Genera topologías, alturas y biomas reproducibles, sin dependencias gráficas.</summary>
 public static class WorldSystem
 {
     /// <summary>Construye un mundo con el porcentaje objetivo exacto de agua.</summary>
@@ -116,7 +116,9 @@ public static class WorldSystem
             int q = columna - (fila - (fila & 1)) / 2 - ancho / 2 + alto / 4;
             int r = fila - alto / 2;
             resultado[indice] = new WorldCell(columna, fila, new HexCoord(q, r),
-                nivel, superficie) { Relieve = ReglasRelieve.Clasificar(nivel, config.NivelMar) };
+                nivel, superficie) { Relieve = ReglasRelieve.Clasificar(nivel, config.NivelMar),
+                Bioma = GeneradorBiomas.Clasificar(nivel, esAgua[indice], fila, columna,
+                    ancho, alto, costa, config.Semilla) };
         }
         return new WorldMap(config, resultado);
     }
