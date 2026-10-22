@@ -6,12 +6,13 @@ namespace GEvolve.Desktop;
 
 /// <summary>
 /// Construye una sola malla de prismas hexagonales con tapas claras
-/// y laterales oscuros, sin contornos ni geometría extra.
+/// y laterales oscuros. Solo el mar muestra contornos blancos superiores.
 /// </summary>
 internal sealed class HexRenderer : IDisposable
 {
     private int _vao, _vbo, _programa, _uniformeMatriz, _uniformeDesplazamiento;
     private int _verticesTriangulos;
+    private int _vaoAgua, _vboAgua, _verticesAgua;
 
     private const int DatosPorVertice = 6; // posición(3) y color(3)
 
@@ -64,6 +65,7 @@ internal sealed class HexRenderer : IDisposable
         _uniformeDesplazamiento = GL.GetUniformLocation(_programa, "desplazamientoX");
 
         var vertices = new List<float>(celdas.Count * 54 * DatosPorVertice);
+        var bordesAgua = new List<float>();
         foreach (CeldaMundo celda in celdas)
         {
             // El tamaño de todas las celdas se define en un único lugar.
@@ -96,6 +98,21 @@ internal sealed class HexRenderer : IDisposable
                 esquinas[i] = new Vector3(
                     centro.X + HexGeometry.RadioEstandar * MathF.Sin(angulo), nivel,
                     centro.Y + HexGeometry.RadioEstandar * MathF.Cos(angulo));
+            }
+
+            // Líneas blancas solo en las tapas marinas: pequeño sesgo evita z-fighting.
+            if (agua)
+            {
+                Vector3 blanco = Vector3.One;
+                for (int i = 0; i < 6; i++)
+                {
+                    Vector3 aBorde = esquinas[i];
+                    Vector3 bBorde = esquinas[(i + 1) % 6];
+                    aBorde.Y += 0.003f;
+                    bBorde.Y += 0.003f;
+                    Vertice(bordesAgua, aBorde, blanco);
+                    Vertice(bordesAgua, bBorde, blanco);
+                }
             }
 
             for (int i = 0; i < 6; i++)
@@ -135,6 +152,19 @@ internal sealed class HexRenderer : IDisposable
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
         GL.BindVertexArray(0);
+
+        _verticesAgua = bordesAgua.Count / DatosPorVertice;
+        _vaoAgua = GL.GenVertexArray();
+        _vboAgua = GL.GenBuffer();
+        GL.BindVertexArray(_vaoAgua);
+        GL.BindBuffer(BufferTarget.ArrayBuffer, _vboAgua);
+        GL.BufferData(BufferTarget.ArrayBuffer, bordesAgua.Count * sizeof(float),
+            bordesAgua.ToArray(), BufferUsageHint.StaticDraw);
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
+        GL.EnableVertexAttribArray(0);
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
+        GL.EnableVertexAttribArray(1);
+        GL.BindVertexArray(0);
     }
 
     /// <summary>Guarda solo posición XYZ y color RGB por vértice.</summary>
@@ -147,7 +177,7 @@ internal sealed class HexRenderer : IDisposable
         });
     }
 
-    /// <summary>Dibuja tapas claras y laterales oscuros sin bordes.</summary>
+    /// <summary>Dibuja terreno y líneas del mar usando la misma continuidad este-oeste.</summary>
     public void Dibujar(Matrix4 vistaProyeccion, float anchoMundo = 0f)
     {
         GL.UseProgram(_programa);
@@ -169,6 +199,20 @@ internal sealed class HexRenderer : IDisposable
             GL.Uniform1(_uniformeDesplazamiento, anchoMundo);
             GL.DrawArrays(PrimitiveType.Triangles, 0, _verticesTriangulos);
         }
+        GL.BindVertexArray(_vaoAgua);
+        GL.LineWidth(1f);
+        if (anchoMundo > 0f)
+        {
+            GL.Uniform1(_uniformeDesplazamiento, -anchoMundo);
+            GL.DrawArrays(PrimitiveType.Lines, 0, _verticesAgua);
+        }
+        GL.Uniform1(_uniformeDesplazamiento, 0f);
+        GL.DrawArrays(PrimitiveType.Lines, 0, _verticesAgua);
+        if (anchoMundo > 0f)
+        {
+            GL.Uniform1(_uniformeDesplazamiento, anchoMundo);
+            GL.DrawArrays(PrimitiveType.Lines, 0, _verticesAgua);
+        }
         GL.BindVertexArray(0);
         GL.UseProgram(0);
     }
@@ -176,10 +220,12 @@ internal sealed class HexRenderer : IDisposable
     /// <summary>Libera los recursos GPU cuando se cierra la aplicación.</summary>
     public void Dispose()
     {
+        if (_vboAgua != 0) GL.DeleteBuffer(_vboAgua);
+        if (_vaoAgua != 0) GL.DeleteVertexArray(_vaoAgua);
         if (_vbo != 0) GL.DeleteBuffer(_vbo);
         if (_vao != 0) GL.DeleteVertexArray(_vao);
         if (_programa != 0) GL.DeleteProgram(_programa);
-        _vao = _vbo = _programa = 0;
+        _vao = _vbo = _programa = _vaoAgua = _vboAgua = 0;
     }
 
     /// <summary>Compila GLSL y describe el error si el controlador lo rechaza.</summary>
