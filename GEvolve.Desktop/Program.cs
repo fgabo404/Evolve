@@ -1,3 +1,4 @@
+using GEvolve.Core;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -19,14 +20,14 @@ public sealed class MotorGEvolve : GameWindow
     private const float Inclinacion = MathF.PI * 35f / 180f;
     private const float AnguloMinimo = 0f;
     private const float AnguloMaximo = MathF.PI;
-    private float _distancia = 4.8f;
+    private float _distancia = 9.0f;
 
     public MotorGEvolve() : base(
         GameWindowSettings.Default,
         new NativeWindowSettings
         {
             ClientSize = new Vector2i(1280, 720),
-            Title = "G-Evolve | Hexágono 3D — giro 0°-180° / rueda: zoom"
+            Title = "G-Evolve | Mini-grid 3D (7 hexágonos) — giro 0°-180°"
         })
     {
     }
@@ -36,7 +37,8 @@ public sealed class MotorGEvolve : GameWindow
         base.OnLoad();
         GL.ClearColor(0.08f, 0.16f, 0.22f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        _hexRenderer.Inicializar();
+        // Datos independientes del render; siete hexágonos en centro + anillo.
+        _hexRenderer.Inicializar(HexDemoWorld.Crear());
     }
 
     /// <summary>
@@ -56,7 +58,7 @@ public sealed class MotorGEvolve : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        _distancia = Math.Clamp(_distancia - e.OffsetY * 0.35f, 2.4f, 12f);
+        _distancia = Math.Clamp(_distancia - e.OffsetY * 0.55f, 4.5f, 18f);
     }
 
     protected override void OnRenderFrame(FrameEventArgs args)
@@ -66,12 +68,13 @@ public sealed class MotorGEvolve : GameWindow
 
         // Cámara esférica dirigida al origen. El eje Y representa la altura.
         float horizontal = _distancia * MathF.Cos(Inclinacion);
-        Vector3 camara = new(
+        Vector3 objetivo = new(0f, 0.4f, 0f);
+        Vector3 camara = objetivo + new(
             horizontal * MathF.Sin(_angulo),
             _distancia * MathF.Sin(Inclinacion),
             horizontal * MathF.Cos(_angulo));
 
-        Matrix4 vista = Matrix4.LookAt(camara, Vector3.Zero, Vector3.UnitY);
+        Matrix4 vista = Matrix4.LookAt(camara, objetivo, Vector3.UnitY);
         float aspecto = (float)Size.X / Math.Max(1, Size.Y);
         // Perspectiva usada aquí para comprobar el volumen; podremos adoptar
         // proyección ortográfica inclinada al integrar la cuadrícula completa.
