@@ -1,7 +1,7 @@
 using GEvolve.Core;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
-using GEvolve.Engine.Engine;
+using GEvolve.Engine;
 
 var state = new GameState { WorldSettings = new WorldSettings(Ancho: 20, Alto: 20, Semilla: 42) };
 var simulation = new SimulationEngine(state);
