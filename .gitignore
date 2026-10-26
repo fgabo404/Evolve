@@ -4,3 +4,7 @@
 .vscode/
 *.user
 TestResults/
+
+# Local game saves and generated 2D maps
+saves/
+output/
