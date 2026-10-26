@@ -1,0 +1,2305 @@
+{
+  "schemaVersion": "2.0.0",
+  "contentVersion": "0.3.0",
+  "kind": "technology_definitions",
+  "status": "prototype",
+  "balance": {
+    "status": "provisional",
+    "defaultResearchCost": 100,
+    "defaultEurekaFraction": 0.25,
+    "note": "All numeric costs, counters and boost values are illustrative starting values, not approved balance."
+  },
+  "runtimeContract": {
+    "definitionDataIsReadOnly": true,
+    "saveStateStoredSeparately": true,
+    "conditionGrammar": "An expression is {all:[expressions]}, {any:[expressions]} or a typed leaf. Empty all evaluates true. Empty any is invalid.",
+    "prerequisiteScope": {
+      "civilization": "The shared civilization research instance.",
+      "current_species": "The same speciesId as the current research instance.",
+      "any_species": "At least one completed research instance for any species in the civilization."
+    },
+    "researchInstanceKey": [
+      "civilizationId",
+      "technologyId",
+      "speciesId"
+    ],
+    "speciesIdRule": "Required for species scope; null for civilization scope. Resolve $speciesId from the current instance, never from translated names.",
+    "researchStartAndContinuation": "Check prerequisites and startConditions before starting. While active, check ongoingConditions each turn. Losing access to specimens does not erase knowledge or progress.",
+    "resourceRule": "Availability conditions do not consume resources. Consumption is defined by action and recipe definitions. Research effects never create equipment or plants.",
+    "eurekaPolicy": {
+      "historyWindow": "since_game_start",
+      "trackedBeforeResearchAvailable": true,
+      "eventOwner": "civilizationId",
+      "speciesFilter": "current research instance when $speciesId is present",
+      "counterUnit": "Each gameplay event supplies a positive amount; occurrence events use amount=1.",
+      "grouping": "A counterGroup filter restricts accumulation to one matching entity; do not sum across groups.",
+      "distinctCounters": {
+        "compatible_crop_species_harvested": "distinct speciesId in a compatible sequence",
+        "separate_crop_line_harvest_completed": "distinct lineId within the current species"
+      },
+      "rewardTiming": "Store eligibility even while locked; grant once after prerequisites and startConditions are satisfied.",
+      "rewardRounding": "floor(baseResearchCost * fractionOfBaseCost)",
+      "progressLimit": "Clamp at research cost. An eureka cannot bypass prerequisites or start conditions.",
+      "deduplication": "Each event has a unique eventId; each reward is claimed once per research instance and eureka ID."
+    },
+    "effectRule": "Completion unlocks scoped capabilities. Their use still requires usageConditions. Generational, soil and production systems implement actual outcomes. Restore capabilities idempotently when loading a save.",
+    "unsupportedRulePolicy": "Reject unknown condition, event or effect types. Never silently treat unresolved references as satisfied.",
+    "integrationStatus": "Configuration contract only. No SimulationEngine implementation is included.",
+    "orderMeaning": "Global display order only. Explicit prerequisites define dependencies; adjacent entries are not automatically dependent."
+  },
+  "externalReferences": {
+    "technologyIds": [
+      "stone_tools",
+      "basketry",
+      "woodworking",
+      "pottery",
+      "water_management",
+      "canal_construction",
+      "animal_traction",
+      "metal_tools",
+      "cutting_tools"
+    ],
+    "requiredCatalogs": [
+      "species",
+      "resources",
+      "items",
+      "recipes",
+      "sites"
+    ],
+    "note": "These are declared imports. The complete game loader must resolve them before starting a simulation. They are not implemented by this file."
+  },
+  "manufacturingAlternatives": [
+    {
+      "technologyId": "basketry",
+      "inputTags": [
+        "flexible_plant_fiber"
+      ],
+      "outputTag": "gathering_container"
+    },
+    {
+      "technologyId": "woodworking",
+      "inputTags": [
+        "wood"
+      ],
+      "equipmentTags": [
+        "woodworking_tool"
+      ],
+      "outputTag": "gathering_container"
+    },
+    {
+      "technologyId": "pottery",
+      "inputTags": [
+        "clay",
+        "water",
+        "kiln_fuel"
+      ],
+      "siteFeatures": [
+        "firing_facility"
+      ],
+      "outputTag": "gathering_container"
+    }
+  ],
+  "speciesGroupBindings": [
+    {
+      "id": "cereal",
+      "name": {
+        "en": "Cereals",
+        "es": "Cereales"
+      },
+      "speciesTag": "cereal",
+      "cultivationTechnologyId": "species_cultivation"
+    },
+    {
+      "id": "pulse",
+      "name": {
+        "en": "Pulses",
+        "es": "Legumbres"
+      },
+      "speciesTag": "pulse",
+      "cultivationTechnologyId": "species_cultivation"
+    },
+    {
+      "id": "root_or_tuber",
+      "name": {
+        "en": "Roots and Tubers",
+        "es": "Raíces y tubérculos"
+      },
+      "speciesTag": "root_or_tuber",
+      "cultivationTechnologyId": "species_cultivation"
+    },
+    {
+      "id": "fruit_crop",
+      "name": {
+        "en": "Fruit Crops",
+        "es": "Frutales"
+      },
+      "speciesTag": "fruit_crop",
+      "cultivationTechnologyId": "species_cultivation"
+    },
+    {
+      "id": "vegetable",
+      "name": {
+        "en": "Vegetables",
+        "es": "Hortalizas"
+      },
+      "speciesTag": "vegetable",
+      "cultivationTechnologyId": "species_cultivation"
+    },
+    {
+      "id": "oil_crop",
+      "name": {
+        "en": "Oil Crops",
+        "es": "Oleaginosas"
+      },
+      "speciesTag": "oil_crop",
+      "cultivationTechnologyId": "species_cultivation"
+    },
+    {
+      "id": "fiber_crop",
+      "name": {
+        "en": "Fiber Crops",
+        "es": "Cultivos de fibra"
+      },
+      "speciesTag": "fiber_crop",
+      "cultivationTechnologyId": "species_cultivation"
+    }
+  ],
+  "scopeExamples": [
+    {
+      "technologyId": "species_cultivation",
+      "speciesId": "wheat"
+    },
+    {
+      "technologyId": "species_cultivation",
+      "speciesId": "maize"
+    }
+  ],
+  "designNotes": [
+    "No graphics or UI state is included.",
+    "Detailed species definitions, recipes, actual domestication state and local farm improvements belong to their respective catalogs and GameState.",
+    "Plant knowledge and seed handling progress independently per species.",
+    "Irrigation, drainage, manuring and ploughing can develop in parallel according to explicit prerequisites.",
+    "No storage technology universally requires pottery.",
+    "The same species may have multiple crop-use tags.",
+    "The two example species IDs must be resolved against the future species catalog.",
+    "Technology definitions are flat. Node and branch containers have been removed; stable technology IDs, scopes and explicit prerequisites remain authoritative."
+  ],
+  "requiredRuntimeHandlers": {
+    "conditionTypes": [
+      "accessible_edible_plants",
+      "accessible_land_available",
+      "alternative_food_supply_available",
+      "any_viable_propagation_material_available",
+      "compatible_crop_sequence_available",
+      "compatible_grafting_material_available",
+      "compatible_plot_available",
+      "cultivable_land_available",
+      "cultivated_plot_available",
+      "draft_animals_supported",
+      "observable_trait_variation_available",
+      "propagation_storage_available",
+      "reproducing_crop_population_available",
+      "resource_tag_available",
+      "selectable_crop_lines_available",
+      "separate_identified_crop_lines_available",
+      "site_feature_available",
+      "species_discovered",
+      "species_domesticated",
+      "species_material_accessible",
+      "species_plants_accessible",
+      "species_propagation_material_available",
+      "species_supports_method",
+      "technology_completed",
+      "trained_draft_animals_available",
+      "workers_assigned"
+    ],
+    "eventTypes": [
+      "compatible_crop_species_harvested",
+      "crop_generation_completed",
+      "crop_harvest_completed",
+      "draft_plough_team_assembled",
+      "graftable_orchard_established",
+      "item_crafted",
+      "land_surveyed",
+      "plant_gathered",
+      "plot_established",
+      "plot_harvest_completed",
+      "propagation_material_collected",
+      "propagation_material_reserved",
+      "resource_produced",
+      "separate_crop_line_harvest_completed",
+      "target_trait_reproduced",
+      "useful_plant_trait_observed",
+      "vegetative_plant_established"
+    ],
+    "effectTypes": [
+      "unlock_capability"
+    ],
+    "capabilityIds": [
+      "agricultural_drainage",
+      "animal_drawn_plough",
+      "basic_foraging",
+      "channel_irrigation",
+      "crop_alternation",
+      "fallow_management",
+      "gathering_containers",
+      "gathering_tools",
+      "grafting",
+      "improved_ploughs",
+      "initial_selection",
+      "initial_sowing",
+      "line_comparison",
+      "organic_manuring",
+      "plant_knowledge",
+      "progressive_domestication",
+      "reproductive_reserve",
+      "seed_handling",
+      "soil_preparation",
+      "specialized_varieties",
+      "species_cultivation",
+      "vegetative_propagation",
+      "wild_plant_management"
+    ]
+  },
+  "defaultLanguage": "en",
+  "supportedLanguages": [
+    "en",
+    "es"
+  ],
+  "localization": {
+    "format": "inline_language_map",
+    "visibleFields": [
+      "name",
+      "description"
+    ],
+    "fallbackOrder": [
+      "requested_language",
+      "defaultLanguage",
+      "id"
+    ],
+    "missingValuePolicy": "Treat an absent, empty or whitespace-only translation as missing.",
+    "identityPolicy": "Never use translated text as an ID, dependency, event type or save key.",
+    "futureExtraction": "Preserve stable IDs when moving translations to external language catalogs. Each field can later use a key such as technology.<id>.name. No external language catalogs or resolver implementation are included yet.",
+    "technicalTextPolicy": "designNotes, runtimeContract, balance notes and external reference notes are developer-facing English text, not player-visible strings."
+  },
+  "id": "agriculture",
+  "name": {
+    "en": "Agriculture",
+    "es": "Agricultura"
+  },
+  "description": {
+    "en": "Forage, cultivate and improve plant species through knowledge, equipment and local practice.",
+    "es": "Recolecta, cultiva y mejora especies vegetales mediante conocimientos, equipos y prácticas locales."
+  },
+  "technologies": [
+    {
+      "id": "basic_foraging",
+      "name": {
+        "en": "Basic Foraging",
+        "es": "Recolección básica"
+      },
+      "description": {
+        "en": "Gather food from accessible edible wild plants.",
+        "es": "Recoge alimentos de plantas silvestres comestibles accesibles."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": []
+      },
+      "research": {
+        "mode": "initial_grant",
+        "cost": 0,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "accessible_edible_plants"
+          }
+        ]
+      },
+      "eurekas": [],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "basic_foraging",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 1
+    },
+    {
+      "id": "plant_knowledge",
+      "name": {
+        "en": "Plant Knowledge",
+        "es": "Conocimiento de plantas"
+      },
+      "description": {
+        "en": "Identify useful and reproductive parts of a particular plant species.",
+        "es": "Identifica las partes útiles y reproductivas de una especie vegetal."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "basic_foraging",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_plants_accessible",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "plant_gathered",
+          "eventType": "plant_gathered",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 20
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "plant_knowledge",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 2
+    },
+    {
+      "id": "gathering_tools",
+      "name": {
+        "en": "Gathering Tools",
+        "es": "Herramientas de recolección"
+      },
+      "description": {
+        "en": "Enable equipped workers to harvest plants more efficiently.",
+        "es": "Permite que los trabajadores equipados cosechen plantas con mayor eficiencia."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "stone_tools",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "accessible_edible_plants"
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "gathering_tool",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "item_crafted",
+          "eventType": "item_crafted",
+          "filters": {
+            "itemTag": "stone_gathering_tool"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "gathering_tools",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Efficiency values belong to balance and production rules. Stone tools are the minimum technological prerequisite."
+      ],
+      "order": 3
+    },
+    {
+      "id": "gathering_containers",
+      "name": {
+        "en": "Gathering Containers",
+        "es": "Recipientes de recolección"
+      },
+      "description": {
+        "en": "Enable equipped workers to carry more gathered food.",
+        "es": "Permite que los trabajadores equipados transporten más alimentos recolectados."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "any": [
+          {
+            "type": "technology_completed",
+            "technologyId": "basketry",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "woodworking",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "pottery",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "accessible_edible_plants"
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "gathering_container",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "item_crafted",
+          "eventType": "item_crafted",
+          "filters": {
+            "itemTag": "gathering_container"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "gathering_containers",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Any one container technology is sufficient. Raw materials are consumed by manufacturing recipes, not by researching or using this technology."
+      ],
+      "order": 4
+    },
+    {
+      "id": "seed_handling",
+      "name": {
+        "en": "Seed Handling",
+        "es": "Manejo de semillas"
+      },
+      "description": {
+        "en": "Separate and preserve viable seeds or other propagation material.",
+        "es": "Separa y conserva semillas viables u otro material de reproducción."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "plant_knowledge",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_propagation_material_available",
+            "speciesId": "$speciesId",
+            "minimumAmount": 1
+          },
+          {
+            "type": "propagation_storage_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "propagation_material_collected",
+          "eventType": "propagation_material_collected",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 5
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "seed_handling",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 5
+    },
+    {
+      "id": "wild_plant_management",
+      "name": {
+        "en": "Wild Plant Management",
+        "es": "Manejo de plantas silvestres"
+      },
+      "description": {
+        "en": "Protect useful wild plants and clear competing vegetation.",
+        "es": "Protege plantas útiles y retira la vegetación que compite con ellas."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "plant_knowledge",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_plants_accessible",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "accessible_land_available"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "plant_gathered",
+          "eventType": "plant_gathered",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 30
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "wild_plant_management",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 6
+    },
+    {
+      "id": "initial_sowing",
+      "name": {
+        "en": "Initial Sowing",
+        "es": "Siembra inicial"
+      },
+      "description": {
+        "en": "Learn the general technique of planting viable propagation material.",
+        "es": "Aprende la técnica general de plantar material de reproducción viable."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "seed_handling",
+            "scope": "any_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "any_viable_propagation_material_available"
+          },
+          {
+            "type": "cultivable_land_available"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "propagation_material_reserved",
+          "eventType": "propagation_material_reserved",
+          "filters": {},
+          "counter": {
+            "mode": "sum_amount",
+            "target": 10
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "initial_sowing",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "This general technique does not automatically unlock cultivation of every species."
+      ],
+      "order": 7
+    },
+    {
+      "id": "species_cultivation",
+      "name": {
+        "en": "Species Cultivation",
+        "es": "Cultivo por especie"
+      },
+      "description": {
+        "en": "Apply sowing and crop care to one discovered species.",
+        "es": "Aplica la siembra y el cuidado de cultivos a una especie descubierta."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "seed_handling",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_propagation_material_available",
+            "speciesId": "$speciesId",
+            "minimumAmount": 1
+          },
+          {
+            "type": "compatible_plot_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "propagation_material_reserved",
+          "eventType": "propagation_material_reserved",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 10
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "species_cultivation",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Wheat and maize use separate research instances identified by technologyId and speciesId. Wild ancestors and domesticated crops must be distinguished in the species catalog."
+      ],
+      "order": 8
+    },
+    {
+      "id": "soil_preparation",
+      "name": {
+        "en": "Soil Preparation",
+        "es": "Preparación del suelo"
+      },
+      "description": {
+        "en": "Prepare larger plots with suitable agricultural hand tools.",
+        "es": "Prepara parcelas más grandes con herramientas agrícolas manuales apropiadas."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "stone_tools",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "cultivable_land_available"
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "soil_working_tool",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "item_crafted",
+          "eventType": "item_crafted",
+          "filters": {
+            "itemTag": "soil_working_tool"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "soil_preparation",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 9
+    },
+    {
+      "id": "channel_irrigation",
+      "name": {
+        "en": "Channel Irrigation",
+        "es": "Riego por canales"
+      },
+      "description": {
+        "en": "Supply suitable fields through constructed irrigation channels.",
+        "es": "Abastece campos adecuados mediante canales de riego construidos."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "water_management",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "canal_construction",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "site_feature_available",
+            "feature": "accessible_water_source"
+          },
+          {
+            "type": "site_feature_available",
+            "feature": "operational_irrigation_channels"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "plot_established",
+          "eventType": "plot_established",
+          "filters": {
+            "siteFeature": "accessible_water_source"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "channel_irrigation",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 10
+    },
+    {
+      "id": "agricultural_drainage",
+      "name": {
+        "en": "Agricultural Drainage",
+        "es": "Drenaje agrícola"
+      },
+      "description": {
+        "en": "Remove excess water where terrain and constructed drains permit it.",
+        "es": "Retira el exceso de agua donde el terreno y los drenajes construidos lo permiten."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "water_management",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "canal_construction",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "site_feature_available",
+            "feature": "viable_drainage_outlet"
+          },
+          {
+            "type": "site_feature_available",
+            "feature": "operational_drainage_channels"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "land_surveyed",
+          "eventType": "land_surveyed",
+          "filters": {
+            "siteFeature": "excess_soil_water"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "agricultural_drainage",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 11
+    },
+    {
+      "id": "organic_manuring",
+      "name": {
+        "en": "Organic Manuring",
+        "es": "Abonado orgánico"
+      },
+      "description": {
+        "en": "Apply appropriate organic materials to cultivated soil.",
+        "es": "Aplica materiales orgánicos apropiados al suelo cultivado."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "plant_knowledge",
+            "scope": "any_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "cultivated_plot_available"
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "suitable_organic_fertilizer",
+            "location": "inventory",
+            "minimumAmount": 1
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "resource_produced",
+          "eventType": "resource_produced",
+          "filters": {
+            "resourceTag": "livestock_manure"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 10
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "organic_manuring",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Fertilizer quantities and soil responses are defined by production and soil rules."
+      ],
+      "order": 12
+    },
+    {
+      "id": "animal_drawn_plough",
+      "name": {
+        "en": "Animal-Drawn Plough",
+        "es": "Arado de tracción animal"
+      },
+      "description": {
+        "en": "Prepare more land using trained draft animals and a suitable plough.",
+        "es": "Prepara más terreno con animales de tiro entrenados y un arado adecuado."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "soil_preparation",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "woodworking",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "animal_traction",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "wooden_plough",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "compatible_draft_harness",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          },
+          {
+            "type": "trained_draft_animals_available"
+          },
+          {
+            "type": "draft_animals_supported"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "draft_plough_team_assembled",
+          "eventType": "draft_plough_team_assembled",
+          "filters": {},
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "animal_drawn_plough",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Wooden ploughs do not require metallurgy. Assembled teams require both suitable equipment and trained animals."
+      ],
+      "order": 13
+    },
+    {
+      "id": "improved_ploughs",
+      "name": {
+        "en": "Improved Ploughs",
+        "es": "Arados mejorados"
+      },
+      "description": {
+        "en": "Use more durable or soil-adapted plough designs.",
+        "es": "Utiliza diseños de arado más duraderos o adaptados al suelo."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "animal_drawn_plough",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "metal_tools",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "improved_plough",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          },
+          {
+            "type": "site_feature_available",
+            "feature": "compatible_plough_soil"
+          },
+          {
+            "type": "trained_draft_animals_available"
+          },
+          {
+            "type": "draft_animals_supported"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "item_crafted",
+          "eventType": "item_crafted",
+          "filters": {
+            "itemTag": "metal_plough_component"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "improved_ploughs",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 14
+    },
+    {
+      "id": "fallow_management",
+      "name": {
+        "en": "Fallow Management",
+        "es": "Descanso del suelo"
+      },
+      "description": {
+        "en": "Schedule uncultivated periods to manage soil recovery.",
+        "es": "Programa periodos sin cultivo para gestionar la recuperación del suelo."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "cultivated_plot_available"
+          },
+          {
+            "type": "alternative_food_supply_available"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "plot_harvest_completed",
+          "eventType": "plot_harvest_completed",
+          "filters": {
+            "counterGroup": "plotId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 3
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "fallow_management",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Actual recovery is controlled by soil simulation; it is not an instant fertility reset."
+      ],
+      "order": 15
+    },
+    {
+      "id": "crop_alternation",
+      "name": {
+        "en": "Crop Alternation",
+        "es": "Alternancia de cultivos"
+      },
+      "description": {
+        "en": "Organize compatible crop sequences on cultivated land.",
+        "es": "Organiza sucesiones de cultivos compatibles en terrenos cultivados."
+      },
+      "scope": "civilization",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_sowing",
+            "scope": "civilization"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "plant_knowledge",
+            "scope": "any_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": []
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "compatible_crop_sequence_available",
+            "minimumSpeciesCount": 2
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "compatible_crop_species_harvested",
+          "eventType": "compatible_crop_species_harvested",
+          "filters": {},
+          "counter": {
+            "mode": "sum_amount",
+            "target": 2
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "crop_alternation",
+          "scope": "civilization",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "The runtime must count distinct species in a compatible sequence for this event. No universal benefit is granted for arbitrary crop combinations."
+      ],
+      "order": 16
+    },
+    {
+      "id": "reproductive_reserve",
+      "name": {
+        "en": "Reproductive Reserve",
+        "es": "Reserva para reproducción"
+      },
+      "description": {
+        "en": "Reserve viable material from a harvest for future planting.",
+        "es": "Reserva material viable de una cosecha para futuras plantaciones."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "species_cultivation",
+            "scope": "current_species"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "seed_handling",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_propagation_material_available",
+            "speciesId": "$speciesId",
+            "minimumAmount": 1
+          },
+          {
+            "type": "propagation_storage_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "crop_harvest_completed",
+          "eventType": "crop_harvest_completed",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "reproductive_reserve",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 17
+    },
+    {
+      "id": "initial_selection",
+      "name": {
+        "en": "Initial Selection",
+        "es": "Selección inicial"
+      },
+      "description": {
+        "en": "Select plants with useful observable traits for reproduction.",
+        "es": "Selecciona plantas con características útiles observables para reproducirlas."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "reproductive_reserve",
+            "scope": "current_species"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "plant_knowledge",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_propagation_material_available",
+            "speciesId": "$speciesId",
+            "minimumAmount": 1
+          },
+          {
+            "type": "observable_trait_variation_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "useful_plant_trait_observed",
+          "eventType": "useful_plant_trait_observed",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "initial_selection",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 18
+    },
+    {
+      "id": "progressive_domestication",
+      "name": {
+        "en": "Progressive Domestication",
+        "es": "Domesticación progresiva"
+      },
+      "description": {
+        "en": "Support generational changes in a cultivated population under human management.",
+        "es": "Favorece cambios entre generaciones de una población cultivada bajo manejo humano."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "reproductive_reserve",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "reproducing_crop_population_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "crop_generation_completed",
+          "eventType": "crop_generation_completed",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 3
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "progressive_domestication",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Research unlocks a management capability. Actual domestication requires generational simulation and species-specific criteria; completing research must not mark the species domesticated. Selection need not have been consciously understood."
+      ],
+      "order": 19
+    },
+    {
+      "id": "line_comparison",
+      "name": {
+        "en": "Line Comparison",
+        "es": "Comparación de líneas"
+      },
+      "description": {
+        "en": "Maintain separate lines and compare their results.",
+        "es": "Mantiene líneas separadas y compara sus resultados."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "initial_selection",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "separate_identified_crop_lines_available",
+            "speciesId": "$speciesId",
+            "minimumLineCount": 2
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "separate_crop_line_harvest_completed",
+          "eventType": "separate_crop_line_harvest_completed",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 2
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "line_comparison",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "The eureka counts distinct harvested line IDs, not repeated harvests of one line."
+      ],
+      "order": 20
+    },
+    {
+      "id": "specialized_varieties",
+      "name": {
+        "en": "Specialized Varieties",
+        "es": "Variedades especializadas"
+      },
+      "description": {
+        "en": "Direct sustained selection toward specific crop traits and uses.",
+        "es": "Orienta la selección sostenida hacia características y usos concretos del cultivo."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "line_comparison",
+            "scope": "current_species"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "progressive_domestication",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_domesticated",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "selectable_crop_lines_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "target_trait_reproduced",
+          "eventType": "target_trait_reproduced",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 3
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "specialized_varieties",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Only species-appropriate heritable traits can be selected. Trait gains are simulated locally rather than granted to every crop on research completion."
+      ],
+      "order": 21
+    },
+    {
+      "id": "vegetative_propagation",
+      "name": {
+        "en": "Vegetative Propagation",
+        "es": "Propagación vegetativa"
+      },
+      "description": {
+        "en": "Reproduce compatible plants through cuttings, division or other vegetative material.",
+        "es": "Reproduce plantas compatibles mediante esquejes, división u otro material vegetativo."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "plant_knowledge",
+            "scope": "current_species"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "species_supports_method",
+            "speciesId": "$speciesId",
+            "method": "vegetative_propagation"
+          },
+          {
+            "type": "species_propagation_material_available",
+            "speciesId": "$speciesId",
+            "minimumAmount": 1
+          },
+          {
+            "type": "compatible_plot_available",
+            "speciesId": "$speciesId"
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "vegetative_plant_established",
+          "eventType": "vegetative_plant_established",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "vegetative_propagation",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [
+        "Basic vegetative planting can be supported by initial cultivation; this technology represents deliberate specialized propagation, not a universal prerequisite for planting tubers or cuttings."
+      ],
+      "order": 22
+    },
+    {
+      "id": "grafting",
+      "name": {
+        "en": "Grafting",
+        "es": "Injerto"
+      },
+      "description": {
+        "en": "Join compatible scion and rootstock material for suitable fruit crops.",
+        "es": "Une material compatible de una variedad y un patrón para cultivos frutales adecuados."
+      },
+      "scope": "species",
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "vegetative_propagation",
+            "scope": "current_species"
+          },
+          {
+            "type": "technology_completed",
+            "technologyId": "cutting_tools",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": "points",
+        "cost": 100,
+        "pointUnit": "research_point",
+        "startConditions": {
+          "all": [
+            {
+              "type": "species_discovered",
+              "speciesId": "$speciesId"
+            },
+            {
+              "type": "species_material_accessible",
+              "speciesId": "$speciesId"
+            }
+          ]
+        },
+        "ongoingConditions": {
+          "all": []
+        },
+        "onConditionFailure": "pause_keep_progress"
+      },
+      "usageConditions": {
+        "all": [
+          {
+            "type": "species_discovered",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "workers_assigned",
+            "minimumCount": 1
+          },
+          {
+            "type": "compatible_grafting_material_available",
+            "speciesId": "$speciesId"
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "grafting_tool",
+            "location": "site_equipment",
+            "minimumAmount": 1
+          },
+          {
+            "type": "resource_tag_available",
+            "tag": "grafting_binding",
+            "location": "inventory",
+            "minimumAmount": 1
+          }
+        ]
+      },
+      "eurekas": [
+        {
+          "id": "graftable_orchard_established",
+          "eventType": "graftable_orchard_established",
+          "filters": {
+            "speciesId": "$speciesId"
+          },
+          "counter": {
+            "mode": "sum_amount",
+            "target": 1
+          },
+          "reward": {
+            "type": "add_research_points",
+            "fractionOfBaseCost": 0.25
+          },
+          "repeatable": false
+        }
+      ],
+      "effects": [
+        {
+          "type": "unlock_capability",
+          "capabilityId": "grafting",
+          "scope": "species",
+          "activation": "while_usage_conditions_met"
+        }
+      ],
+      "designNotes": [],
+      "order": 23
+    }
+  ]
+}
