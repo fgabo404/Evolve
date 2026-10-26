@@ -1,7 +1,7 @@
 using GEvolve.Core;
 using GEvolve.State.Game;
 
-namespace GEvolve.Engine.Engine;
+namespace GEvolve.Engine;
 
 /// <summary>Deterministic host for simulation phases. Domain rules are intentionally not fabricated.</summary>
 public sealed class SimulationEngine
