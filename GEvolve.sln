@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Definitions", "GEvo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.State", "GEvolve.State\GEvolve.State.csproj", "{AE02AF42-3DA4-4C6F-B9EB-5C1BA42D129D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Simulation", "GEvolve.Simulation\GEvolve.Simulation.csproj", "{42882BA1-EE09-4E7D-BD1D-83D9021B24C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Engine", "GEvolve.Engine\GEvolve.Engine.csproj", "{42882BA1-EE09-4E7D-BD1D-83D9021B24C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Simulator", "GEvolve.Simulator\GEvolve.Simulator.csproj", "{03F9D23A-8BB0-4A15-91EA-8F44E0E5D29CC}"
 EndProject
