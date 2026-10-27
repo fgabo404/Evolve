@@ -85,6 +85,72 @@
       "usageConditions": null,
       "eurekas": null,
       "effects": null
+    },
+    {
+      "id": "basic_foraging",
+      "branchId": "agriculture",
+      "name": {
+        "en": "Basic Foraging",
+        "es": "Recolección básica"
+      },
+      "description": {
+        "en": "Knowledge of gathering accessible wild plants. Detailed research and gameplay rules are pending.",
+        "es": "Conocimiento de recolección de plantas silvestres accesibles. Sus reglas de investigación y juego están pendientes."
+      },
+      "scope": null,
+      "order": 1,
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "language",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": null,
+        "cost": null,
+        "pointUnit": null,
+        "startConditions": null,
+        "ongoingConditions": null
+      },
+      "usageConditions": null,
+      "eurekas": null,
+      "effects": null
+    },
+    {
+      "id": "plant_knowledge",
+      "branchId": "agriculture",
+      "name": {
+        "en": "Plant Knowledge",
+        "es": "Conocimiento de plantas"
+      },
+      "description": {
+        "en": "Knowledge of useful plant characteristics. Detailed research and gameplay rules are pending.",
+        "es": "Conocimiento de características útiles de las plantas. Sus reglas de investigación y juego están pendientes."
+      },
+      "scope": null,
+      "order": 2,
+      "prerequisites": {
+        "all": [
+          {
+            "type": "technology_completed",
+            "technologyId": "basic_foraging",
+            "scope": "civilization"
+          }
+        ]
+      },
+      "research": {
+        "mode": null,
+        "cost": null,
+        "pointUnit": null,
+        "startConditions": null,
+        "ongoingConditions": null
+      },
+      "usageConditions": null,
+      "eurekas": null,
+      "effects": null
     }
   ]
 }
