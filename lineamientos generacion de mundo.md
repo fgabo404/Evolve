@@ -27,7 +27,7 @@ Las capas son **lógicas y secuenciales**, no renderizadores independientes. La 
 - Límites **norte–sur**: no conectados.
 - La continuidad se aplica tanto a vecindad/distancia como a la navegación visual; las coordenadas deben ser consistentes.
 - El grid no define agua, masas terrestres, elevación, clima ni biomas.
-- La Capa 01 se genera solo al solicitarla con **Generar mundo**; al iniciar el Simulator no existe un grid activo. La vista general usa una imagen interna de la cuadrícula y el zoom cercano dibuja solo celdas visibles, para no procesar los 50 000 hexágonos en cada fotograma.
+- La Capa 01 se genera solo al solicitarla con **Generar mundo** desde `GEvolve.Game`; al iniciar no existe un grid activo. La vista estratégica 2D usa OpenGL con un hexágono base instanciado en los centros visibles, sin enviar una operación independiente por celda a la GPU. La cámara y la selección se apoyan en la geometría de Engine.
 - Convenio de la implementación: columnas impares desplazadas hacia abajo (`odd-q`); ID estable `fila × columnas + columna`; axial `(q, r) = (columna, fila − ⌊columna/2⌋)`. Para los anchos pares oficiales, el cierre horizontal traslada `(q, r)` por `(±ancho, ∓ancho/2)`. Así se conserva la fila, la distancia entre centros y la vecindad geométrica sin duplicar celdas.
 
 ## Capa 02 — Forma de masas terrestres (categorías acordadas)
@@ -55,7 +55,7 @@ Fuente canónica de diseño: `EvolveDoc/data/world/world.catalog.guide.json`, ca
 | **3** | Cumbres infranqueables | No permitido | Asentamientos convencionales no permitidos. |
 
 - Elevación y bioma son atributos independientes.
-- **Visualización inicial 2D:** colocar el número de nivel (`0`, `1`, `2` o `3`) sobre cada hexágono. No dibujar relieve tridimensional en Simulator como requisito de esta capa.
+- **Visualización inicial 2D:** colocar el número de nivel (`0`, `1`, `2` o `3`) sobre cada hexágono. No dibujar relieve tridimensional en la vista estratégica 2D como requisito de esta capa.
 - La capa puede requerir un cálculo interno de elevación más fino antes de clasificar los niveles, **pero no está decidido** si existirá una altura continua, sus unidades o umbrales. No equiparar estos cuatro niveles con la escala 1–100 del prototipo previo.
 - Pendiente: modelo de generación de alturas, continuidad entre vecinos, cordilleras, relación con costas, umbrales de clasificación y codificación de profundidad marina.
 

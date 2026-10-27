@@ -1,0 +1,89 @@
+using System.Diagnostics;
+using System.Numerics;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+using GEvolve.Engine.Grid;
+using GEvolve.Game;
+using GEvolve.Game.Graphics;
+using GEvolve.Game.Screens;
+
+public static class GameTests
+{
+    public static void Run()
+    {
+        var session = new GameSession();
+        Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
+            session.State.HexGrid is null, "Start at menu without generation");
+        Check(ScreenLayout.Buttons(session.Screen, 1280, 720).Select(button => button.Action)
+            .SequenceEqual([UiAction.Create, UiAction.Options, UiAction.Exit]), "Main menu actions");
+        session.OpenOptions();
+        Check(session.Screen == GameScreen.Options && session.Grid is null, "Options screen");
+        session.ReturnToMenu();
+        session.OpenCreateWorld();
+        Check(session.Screen == GameScreen.CreateWorld && session.SelectedSize == GridSize.Small,
+            "Create screen defaults to Small");
+        var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
+        Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large)
+            .Select(button => ScreenLayout.SizeFor(button.Action))
+            .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large]), "Three official sizes");
+
+        foreach (var size in new[] { GridSize.Small, GridSize.Medium, GridSize.Large })
+        {
+            session.ChooseSize(size);
+            var definition = HexGridDefinitions.Get(size);
+            var timer = Stopwatch.StartNew();
+            var grid = session.GenerateWorld();
+            timer.Stop();
+            Check(session.Screen == GameScreen.World && ReferenceEquals(grid, session.Grid),
+                "One Engine grid serves the world screen");
+            Check(session.State.HexGrid?.Definition == definition &&
+                grid.Cells.Count == definition.Columns * definition.Rows &&
+                definition.Orientation == GridOrientation.FlatTop, "Effective state and cell count");
+
+            var cell = grid.Cells[definition.Columns * (definition.Rows / 2) + 2];
+            Check(session.SelectAt(cell.Center)?.Id == cell.Id, "Cell selection");
+            Vector2 repeated = cell.Center + new Vector2(
+                FlatHexGeometry.PeriodWidth(definition.Columns), 0);
+            Check(session.SelectAt(repeated)?.Id == cell.Id,
+                "Repeated visual cell preserves logical ID");
+
+            var camera = new MapCamera2D();
+            camera.Fit(definition.Columns, definition.Rows, 1280, 720);
+            Vector2 screen = camera.WorldToScreen(cell.Center);
+            Check(Vector2.Distance(camera.ScreenToWorld(screen), cell.Center) < .001f,
+                "Camera screen/world conversion");
+            float oldScale = camera.Scale;
+            camera.Zoom(8, new Vector2(640, 360));
+            Check(camera.Scale > oldScale && camera.VisibleRange().Count < grid.Cells.Count,
+                "Zoom culls cells outside the viewport");
+            float oldX = camera.X;
+            camera.Pan(100, 0);
+            Check(camera.X >= 0 && camera.X < FlatHexGeometry.PeriodWidth(definition.Columns) &&
+                camera.X != oldX, "Horizontal drag wraps camera");
+            camera.Pan(0, 100_000);
+            Check(FlatHexGeometry.CellAt(new Vector2(cell.Center.X, -20),
+                definition.Columns, definition.Rows) is null,
+                "North remains open");
+            Check(timer.ElapsedMilliseconds < 2_000, "Grid generation remains responsive");
+            Console.WriteLine($"PASS: Game {size} ({grid.Cells.Count} cells, {timer.ElapsedMilliseconds} ms)");
+
+            session.ReturnToMenu();
+            Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
+                session.State.HexGrid is null && session.SelectedCell is null,
+                "Returning to menu releases logical world");
+            session.OpenCreateWorld();
+        }
+
+        foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
+        foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })
+        foreach (var button in ScreenLayout.Buttons(screen, width, height))
+            Check(button.Bounds.X >= 0 && button.Bounds.Y >= 0 &&
+                button.Bounds.X + button.Bounds.Width <= width &&
+                button.Bounds.Y + button.Bounds.Height <= height,
+                "Buttons fit the window");
+    }
+
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new InvalidOperationException(message);
+    }
+}

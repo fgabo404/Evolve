@@ -23,4 +23,5 @@ finally { if (File.Exists(path)) File.Delete(path); }
 
 if (WorldTests.Run() != 0) return 1;
 GridTests.Run();
+GameTests.Run();
 return 0;
