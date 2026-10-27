@@ -1,9 +1,69 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Evolve · Wiki de catálogos</title><link rel="stylesheet" href="./style.css"></head>
-<body><div class="shell"><aside class="sidebar"><div class="brand"><span class="brandmark">◈</span><div><strong>EVOLVE</strong><small>Wiki de catálogos</small></div></div><nav id="categories" aria-label="Catálogos"></nav><div class="sidebar-bottom">Datos reales de <code>Catalogs/</code><br>Solo lectura · HTML + JS</div></aside>
-<main class="main"><header class="top"><div><p class="eyebrow">EXPLORADOR DE DEFINICIONES</p><h1 id="title">Catálogo de animales</h1><p id="subtitle">Explora los catálogos de Evolve.</p></div><div class="controls"><label>Idioma <select id="language"><option value="es">Español</option><option value="en">English</option></select></label></div></header>
-<div id="notice" role="status" class="notice" hidden></div><section class="toolbar"><label class="searchbox"><span>⌕</span><input id="search" type="search" placeholder="Buscar por nombre, ID o etiqueta…" autocomplete="off"></label><span id="count" class="counter"></span></section>
-<div class="workspace"><section id="list" class="entries" aria-label="Resultados"></section><section id="detail" class="details" aria-label="Detalle de definición"><div class="empty">Selecciona una definición para ver sus datos.</div></section></div>
-<footer>Las referencias científicas son opcionales y se muestran solamente en el catálogo biológico. Los valores <code>null</code> siguen pendientes de definición.</footer></main></div>
-<script src="./app.js" defer></script></body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evolve — Wiki de catálogos</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./catalog-index.js" defer></script>
+  <script src="./technology-roadmap.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">Evolve <span>Wiki de catálogos</span></div>
+      <p class="nav-label" data-es="CATÁLOGOS" data-en="CATALOGS">CATÁLOGOS</p>
+      <nav id="categories" aria-label="Catálogos"></nav>
+      <div class="sidebar-bottom" data-es="Definiciones de diseño · Solo lectura" data-en="Design definitions · Read only">Definiciones de diseño · Solo lectura</div>
+    </aside>
+    <main class="main">
+      <header class="top">
+        <div>
+          <p class="eyebrow" data-es="EXPLORADOR DE DEFINICIONES" data-en="DEFINITION EXPLORER">EXPLORADOR DE DEFINICIONES</p>
+          <h1 id="title">Mundo (Biomas)</h1>
+          <p id="subtitle"></p>
+        </div>
+        <label class="language-label" for="language"><span data-es="Idioma" data-en="Language">Idioma</span>
+          <select id="language"><option value="es">Español</option><option value="en">English</option></select>
+        </label>
+      </header>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <div class="trailbar"><button id="back" class="backbtn" type="button" hidden>Atrás</button><nav id="breadcrumbs" class="breadcrumbs" aria-label="Ruta de navegación"></nav></div>
+      <section class="toolbar" aria-label="Filtros">
+        <label class="searchbox" for="search"><span class="sr-only" data-es="Buscar definiciones" data-en="Search definitions">Buscar definiciones</span><input id="search" type="search" placeholder="Buscar por nombre, ID o etiqueta…" autocomplete="off"></label>
+        <span id="count" class="counter" aria-live="polite"></span>
+      </section>
+      <div id="workspace" class="workspace">
+        <section id="list" class="entries" aria-label="Resultados"></section>
+        <section id="detail" class="details" aria-label="Detalle de definición"></section>
+      </div>
+      <section id="technology-view" class="technology-view" aria-label="Roadmap de Agricultura" hidden>
+        <div class="roadmap-toolbar">
+          <div><strong id="roadmap-heading"></strong><p id="roadmap-caption"></p></div>
+          <div class="roadmap-controls">
+            <button id="roadmap-zoom-out" type="button" aria-label="Alejar">−</button>
+            <span id="roadmap-zoom-value" aria-live="polite">100%</span>
+            <button id="roadmap-zoom-in" type="button" aria-label="Acercar">+</button>
+            <button id="roadmap-center" type="button"></button>
+          </div>
+        </div>
+        <div id="roadmap-layout" class="roadmap-layout">
+          <div id="roadmap-viewport" class="roadmap-viewport" tabindex="0" aria-label="Mapa tecnológico desplazable">
+            <div id="roadmap-surface" class="roadmap-surface">
+              <div id="roadmap-stage" class="roadmap-stage">
+                <svg id="roadmap-lines" class="roadmap-lines" aria-hidden="true"></svg>
+                <div id="roadmap-nodes" class="roadmap-nodes"></div>
+              </div>
+            </div>
+          </div>
+          <aside id="roadmap-panel" class="roadmap-panel" aria-label="Detalle de tecnología" hidden></aside>
+        </div>
+        <div id="roadmap-legend" class="roadmap-legend"></div>
+      </section>
+      <details id="unresolved" class="unresolved-panel"><summary id="unresolved-title"></summary><div id="unresolved-list"></div></details>
+      <footer data-es="Los valores pendientes se muestran sin estimaciones." data-en="Pending values are shown without estimates.">Los valores pendientes se muestran sin estimaciones.</footer>
+    </main>
+  </div>
+</body>
+</html>

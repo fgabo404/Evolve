@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.1.0",
-  "contentVersion": "0.4.0",
+  "schemaVersion": "1.2.0",
+  "contentVersion": "0.5.0",
   "kind": "resource_catalog_design_guide",
   "status": "prototype_requires_species_action_and_balance_review",
   "defaultLanguage": "en",
@@ -13,7 +13,7 @@
     "loadAsGameDefinitions": false,
     "unknownValues": "null means unresolved, not zero, none or unrestricted.",
     "sourceBindings": "Links are possible design outputs, not guaranteed products or completed taxonomy. They do not consume inventory or create items.",
-    "processingLinks": "Endpoint guides only; additional inputs, recipes, facilities, time, fuel and losses remain unresolved. No executable recipes are provided.",
+    "processingLinks": "Historical process profiles remain design candidates. Explicit endpoints and auxiliary materials do not define executable recipes, quantities, facilities or technology unlocks.",
     "services": "Draft, transport and work are services, not storable inventory resources.",
     "provenance": "Resource IDs may aggregate compatible material categories; future GameState inventory lots must preserve source species/material, viability and quality before substitution."
   },
@@ -2583,6 +2583,366 @@
         "storageRules": null
       },
       "definitionStatus": "design_guide_requires_review"
+    },
+    {
+      "id": "RES#000107",
+      "tag": "prepared_clay",
+      "name": {
+        "en": "Prepared clay",
+        "es": "Arcilla preparada"
+      },
+      "description": {
+        "en": "Selected and worked clay for candidate shaping steps; suitability depends on the source lot.",
+        "es": "Arcilla seleccionada y trabajada para moldeado candidato; la idoneidad depende del lote de origen."
+      },
+      "category": "clay_material",
+      "stage": "intermediate",
+      "tags": [
+        "prepared_clay"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000108",
+      "tag": "green_brick",
+      "name": {
+        "en": "Unfired moulded brick",
+        "es": "Ladrillo moldeado sin cocer"
+      },
+      "description": {
+        "en": "Moulded and dried brick blank intended for firing; distinct from straw adobe.",
+        "es": "Pieza de ladrillo moldeada y seca destinada a cocción; distinta del adobe con paja."
+      },
+      "category": "clay_building_material",
+      "stage": "intermediate",
+      "tags": [
+        "green_brick"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000109",
+      "tag": "adobe",
+      "name": {
+        "en": "Air-dried adobe brick",
+        "es": "Adobe secado al aire"
+      },
+      "description": {
+        "en": "Sun- or air-dried earth brick; not a fired ceramic brick.",
+        "es": "Bloque de tierra secado al sol o al aire; no es ladrillo cerámico cocido."
+      },
+      "category": "clay_building_material",
+      "stage": "processed",
+      "tags": [
+        "adobe"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000110",
+      "tag": "fired_brick",
+      "name": {
+        "en": "Fired clay brick",
+        "es": "Ladrillo cocido"
+      },
+      "description": {
+        "en": "Clay building brick hardened by firing after moulding and drying.",
+        "es": "Ladrillo de construcción endurecido mediante cocción tras moldeado y secado."
+      },
+      "category": "ceramic_building_material",
+      "stage": "processed",
+      "tags": [
+        "fired_brick"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000111",
+      "tag": "ceramic_roof_tile",
+      "name": {
+        "en": "Ceramic roof tile",
+        "es": "Teja cerámica"
+      },
+      "description": {
+        "en": "Shaped and fired roofing tile; suitability of clay and form remains to be specified.",
+        "es": "Teja de cubierta moldeada y cocida; la arcilla y forma aptas quedan por especificar."
+      },
+      "category": "ceramic_building_material",
+      "stage": "processed",
+      "tags": [
+        "ceramic_roof_tile"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000112",
+      "tag": "earthenware_vessel",
+      "name": {
+        "en": "Earthenware vessel",
+        "es": "Vasija de barro"
+      },
+      "description": {
+        "en": "General fired earthenware vessel; storage and cooking roles are kept separate.",
+        "es": "Vasija general de barro cocido; almacenamiento y cocina se mantienen como funciones distintas."
+      },
+      "category": "ceramic_vessel",
+      "stage": "processed",
+      "tags": [
+        "earthenware_vessel"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000113",
+      "tag": "ceramic_storage_jar",
+      "name": {
+        "en": "Ceramic storage jar",
+        "es": "Recipiente cerámico de almacenamiento"
+      },
+      "description": {
+        "en": "Fired vessel intended for storage; sealing and capacity are unresolved.",
+        "es": "Recipiente cocido destinado a almacenaje; sellado y capacidad pendientes."
+      },
+      "category": "ceramic_vessel",
+      "stage": "processed",
+      "tags": [
+        "ceramic_storage_jar"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000114",
+      "tag": "earthenware_cooking_pot",
+      "name": {
+        "en": "Earthenware cooking pot",
+        "es": "Olla de barro cocido"
+      },
+      "description": {
+        "en": "Fired pot intended for cooking; heat resistance depends on clay and temper.",
+        "es": "Olla cocida destinada a cocinar; la resistencia térmica depende de la arcilla y el desgrasante."
+      },
+      "category": "ceramic_vessel",
+      "stage": "processed",
+      "tags": [
+        "earthenware_cooking_pot"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000115",
+      "tag": "ceramic_installation_component",
+      "name": {
+        "en": "Ceramic installation component",
+        "es": "Componente cerámico de instalación"
+      },
+      "description": {
+        "en": "General fired ceramic component for a future installation design; exact form unresolved.",
+        "es": "Componente cerámico cocido para una instalación futura; forma precisa pendiente."
+      },
+      "category": "ceramic_component",
+      "stage": "processed",
+      "tags": [
+        "ceramic_installation_component"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000116",
+      "tag": "quicklime",
+      "name": {
+        "en": "Quicklime",
+        "es": "Cal viva"
+      },
+      "description": {
+        "en": "Calcined suitable limestone; requires controlled handling and later slaking for mortar.",
+        "es": "Caliza apta calcinada; requiere manejo controlado y posterior apagado para mortero."
+      },
+      "category": "lime_material",
+      "stage": "processed",
+      "tags": [
+        "quicklime"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000117",
+      "tag": "hydrated_lime",
+      "name": {
+        "en": "Hydrated lime",
+        "es": "Cal apagada"
+      },
+      "description": {
+        "en": "Quicklime reacted with water; form and storage remain unresolved.",
+        "es": "Cal viva reaccionada con agua; presentación y almacenaje pendientes."
+      },
+      "category": "lime_material",
+      "stage": "processed",
+      "tags": [
+        "hydrated_lime"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000118",
+      "tag": "lime_mortar",
+      "name": {
+        "en": "Lime mortar",
+        "es": "Mortero de cal"
+      },
+      "description": {
+        "en": "Candidate binder made from lime, aggregate and water; no fixed proportions are approved.",
+        "es": "Aglomerante candidato de cal, árido y agua; no hay proporciones aprobadas."
+      },
+      "category": "building_material",
+      "stage": "processed",
+      "tags": [
+        "lime_mortar"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000119",
+      "tag": "hewn_wood_beam",
+      "name": {
+        "en": "Hewn timber beam",
+        "es": "Viga de madera labrada"
+      },
+      "description": {
+        "en": "Timber worked into a structural beam; dimensions and species suitability remain unresolved.",
+        "es": "Madera labrada como viga estructural; dimensiones e idoneidad por especie pendientes."
+      },
+      "category": "wood_building_material",
+      "stage": "processed",
+      "tags": [
+        "hewn_wood_beam"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000120",
+      "tag": "roasted_iron_ore",
+      "name": {
+        "en": "Prepared roasted iron ore",
+        "es": "Mena de hierro tostada y preparada"
+      },
+      "description": {
+        "en": "Suitable iron ore prepared by sorting, breaking and roasting before a candidate bloomery path.",
+        "es": "Mena de hierro apta seleccionada, fragmentada y tostada antes de una ruta candidata de horno bajo."
+      },
+      "category": "metal_ore",
+      "stage": "intermediate",
+      "tags": [
+        "roasted_iron_ore"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
+    },
+    {
+      "id": "RES#000121",
+      "tag": "iron_slag",
+      "name": {
+        "en": "Iron smelting slag",
+        "es": "Escoria de reducción de hierro"
+      },
+      "description": {
+        "en": "Solid byproduct of candidate bloomery reduction; composition and reuse are unresolved.",
+        "es": "Subproducto sólido de la reducción candidata en horno bajo; composición y reutilización pendientes."
+      },
+      "category": "metallurgical_byproduct",
+      "stage": "processed",
+      "tags": [
+        "iron_slag"
+      ],
+      "inventory": {
+        "storable": true,
+        "quantityUnit": null,
+        "perishable": null,
+        "storageRules": null
+      },
+      "definitionStatus": "candidate_requires_recipe_and_material_suitability_review"
     }
   ],
   "sourceBindings": [
@@ -2988,46 +3348,6 @@
     },
     {
       "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_alluvial_clay",
-      "resourceId": "RES#000047",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_estuarine_clay",
-      "resourceId": "RES#000047",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_fluvial_clay",
-      "resourceId": "RES#000047",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_glacial_clay",
-      "resourceId": "RES#000047",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
       "sourceId": "geological_sand",
       "resourceId": "RES#000048",
       "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
@@ -3069,26 +3389,6 @@
     {
       "sourceCollection": "geologicalResourceCandidates",
       "sourceId": "geological_limestone",
-      "resourceId": "RES#000052",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_limestone_in_carbonate_formations",
-      "resourceId": "RES#000052",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_coastal_limestone",
       "resourceId": "RES#000052",
       "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
       "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
@@ -3168,16 +3468,6 @@
     },
     {
       "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_alluvial_cassiterite",
-      "resourceId": "RES#000057",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
       "sourceId": "geological_phosphorite",
       "resourceId": "RES#000058",
       "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
@@ -3209,16 +3499,6 @@
     {
       "sourceCollection": "geologicalResourceCandidates",
       "sourceId": "geological_gravel",
-      "resourceId": "RES#000060",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_coastal_gravel",
       "resourceId": "RES#000060",
       "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
       "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
@@ -3458,27 +3738,7 @@
     },
     {
       "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_deep_rock_salt",
-      "resourceId": "RES#000082",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
       "sourceId": "geological_sea_salt",
-      "resourceId": "RES#000083",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_sea_salt_in_suitable_saltworks",
       "resourceId": "RES#000083",
       "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
       "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
@@ -3509,26 +3769,6 @@
     {
       "sourceCollection": "geologicalResourceCandidates",
       "sourceId": "geological_gypsum_in_evaporite_deposits",
-      "resourceId": "RES#000086",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_deep_gypsum",
-      "resourceId": "RES#000086",
-      "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
-      "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
-      "quantityPerAction": null,
-      "runtimeEnabled": false,
-      "requiresProcessing": false
-    },
-    {
-      "sourceCollection": "geologicalResourceCandidates",
-      "sourceId": "geological_coastal_gypsum",
       "resourceId": "RES#000086",
       "acquisitionTag": "material_acquisition_requires_extraction_or_collection_design",
       "reviewStatus": "source_material_mapping_requires_extraction_and_processing_review",
@@ -9235,7 +9475,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select suitable timber.",
+          "es": "Seleccionar madera apta."
+        },
+        "transformation": {
+          "en": "Saw into planks.",
+          "es": "Aserrar en tablas."
+        },
+        "suggestedFacilities": {
+          "en": "Hand saw and work area.",
+          "es": "Sierra manual y área de trabajo."
+        },
+        "knownConstraints": {
+          "en": "Species, dimensions and seasoning unresolved.",
+          "es": "Especie, dimensiones y secado pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/iha-preindustrial-ironworks/heag221-pre-industrial-ironworks/"
+        ]
+      }
     },
     {
       "processTag": "stone_preparation",
@@ -9255,7 +9520,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select suitable stone.",
+          "es": "Seleccionar piedra apta."
+        },
+        "transformation": {
+          "en": "Dress or shape stone into a block.",
+          "es": "Labrar o dar forma a la piedra como bloque."
+        },
+        "suggestedFacilities": {
+          "en": "Hand stoneworking tools.",
+          "es": "Herramientas manuales de cantería."
+        },
+        "knownConstraints": {
+          "en": "Stone quality and dimensions unresolved.",
+          "es": "Calidad y dimensiones de la piedra pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/advice/planning/mineral-extraction/dimension-stone/"
+        ]
+      }
     },
     {
       "processTag": "granite_building_material_selection",
@@ -9375,7 +9665,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Stack and cover suitable wood to restrict air.",
+          "es": "Apilar y cubrir madera apta para limitar el aire."
+        },
+        "transformation": {
+          "en": "Carbonize wood under controlled limited oxygen.",
+          "es": "Carbonizar madera con oxígeno limitado y controlado."
+        },
+        "suggestedFacilities": {
+          "en": "Traditional charcoal clamp or pit.",
+          "es": "Horno temporal o fosa tradicional de carbón."
+        },
+        "knownConstraints": {
+          "en": "Fuel, losses and potential condensates are not quantified.",
+          "es": "Combustible, pérdidas y posibles condensados sin cuantificar."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/iha-preindustrial-ironworks/heag221-pre-industrial-ironworks/"
+        ]
+      }
     },
     {
       "processTag": "fiber_preparation",
@@ -9415,7 +9730,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Clean suitable wheat grain.",
+          "es": "Limpiar grano de trigo apto."
+        },
+        "transformation": {
+          "en": "Grind grain into flour.",
+          "es": "Moler el grano para obtener harina."
+        },
+        "suggestedFacilities": {
+          "en": "Hand mill or quern.",
+          "es": "Molino manual o piedra de moler."
+        },
+        "knownConstraints": {
+          "en": "Extraction rate and flour quality unresolved.",
+          "es": "Rendimiento y calidad de harina pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://www.metmuseum.org/art/collection/search/544258"
+        ]
+      }
     },
     {
       "processTag": "breadmaking",
@@ -9436,7 +9776,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Mix flour and water into dough.",
+          "es": "Mezclar harina y agua para formar masa."
+        },
+        "transformation": {
+          "en": "Shape and bake bread.",
+          "es": "Formar y cocer pan."
+        },
+        "suggestedFacilities": {
+          "en": "Hearth or oven.",
+          "es": "Hogar u horno."
+        },
+        "knownConstraints": {
+          "en": "Leavening, fuel, ratios and baking time unresolved.",
+          "es": "Fermentación, combustible, proporciones y tiempo de cocción pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://www.metmuseum.org/art/collection/search/544258"
+        ]
+      }
     },
     {
       "processTag": "copper_metallurgy",
@@ -9502,10 +9867,12 @@
     {
       "processTag": "bloomery_ironmaking",
       "inputResourceIds": [
-        "RES#000062"
+        "RES#000062",
+        "RES#000090"
       ],
       "outputResourceIds": [
-        "RES#000096"
+        "RES#000096",
+        "RES#000121"
       ],
       "description": {
         "en": "Multi-stage iron-reduction guide; reducing agents, fuel and furnace design remain undefined.",
@@ -9517,7 +9884,34 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select suitable ore; roast when needed and charge charcoal.",
+          "es": "Seleccionar mena apta; tostarla si procede y cargar carbón vegetal."
+        },
+        "transformation": {
+          "en": "Reduce ore to a solid bloom and separate slag.",
+          "es": "Reducir la mena a masa sólida y separar escoria."
+        },
+        "suggestedFacilities": {
+          "en": "Bloomery furnace and air supply.",
+          "es": "Horno bajo y suministro de aire."
+        },
+        "knownConstraints": {
+          "en": "Ore preparation may differ; not molten cast iron.",
+          "es": "La preparación varía según la mena; no es hierro colado líquido."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [
+          "RES#000121"
+        ],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/archaeometallurgy-guidelines-best-practice/heag003-archaeometallurgy-guidelines/"
+        ]
+      }
     },
     {
       "processTag": "iron_bloom_consolidation",
@@ -9537,7 +9931,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Reheat and inspect a bloom.",
+          "es": "Recalentar e inspeccionar una masa de hierro."
+        },
+        "transformation": {
+          "en": "Hammer and consolidate workable iron.",
+          "es": "Martillar y consolidar hierro trabajable."
+        },
+        "suggestedFacilities": {
+          "en": "Forge hearth and hammer.",
+          "es": "Hogar de forja y martillo."
+        },
+        "knownConstraints": {
+          "en": "Losses, repeated heats and final composition unresolved.",
+          "es": "Pérdidas, recalentamientos y composición final pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/archaeometallurgy-guidelines-best-practice/heag003-archaeometallurgy-guidelines/"
+        ]
+      }
     },
     {
       "processTag": "lead_metal_processing",
@@ -9637,7 +10056,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Clean and prepare cotton fiber.",
+          "es": "Limpiar y preparar fibra de algodón."
+        },
+        "transformation": {
+          "en": "Twist fiber into yarn.",
+          "es": "Retorcer la fibra para obtener hilo."
+        },
+        "suggestedFacilities": {
+          "en": "Spindle or equivalent hand tools.",
+          "es": "Huso o herramientas manuales equivalentes."
+        },
+        "knownConstraints": {
+          "en": "Fiber length, quality and yield unresolved.",
+          "es": "Longitud de fibra, calidad y rendimiento pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://www.metmuseum.org/pt/essays/textiles-island-southeast-asia"
+        ]
+      }
     },
     {
       "processTag": "cotton_weaving",
@@ -9657,7 +10101,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Prepare cotton yarn for warp and weft.",
+          "es": "Preparar hilo de algodón para urdimbre y trama."
+        },
+        "transformation": {
+          "en": "Interlace yarn into cloth.",
+          "es": "Entretejer hilo para obtener tela."
+        },
+        "suggestedFacilities": {
+          "en": "Suitable loom.",
+          "es": "Telar adecuado."
+        },
+        "knownConstraints": {
+          "en": "Weave structure, size and losses unresolved.",
+          "es": "Ligamento, tamaño y pérdidas pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://www.metmuseum.org/pt/essays/textiles-island-southeast-asia"
+        ]
+      }
     },
     {
       "processTag": "olive_oil_extraction",
@@ -9697,7 +10166,32 @@
       "facilities": null,
       "byproducts": null,
       "recipeId": null,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Clean and prepare a raw hide.",
+          "es": "Limpiar y preparar una piel sin curtir."
+        },
+        "transformation": {
+          "en": "Tan hide into durable leather by a method still to be specified.",
+          "es": "Curtir la piel para obtener cuero duradero mediante un método por especificar."
+        },
+        "suggestedFacilities": {
+          "en": "Working area and tanning vessel or pit.",
+          "es": "Área de trabajo y recipiente o fosa de curtido."
+        },
+        "knownConstraints": {
+          "en": "Tanning agent and exact method are not approved; this is not a complete recipe.",
+          "es": "Curtiente y método concretos sin aprobar; no es receta completa."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://www.britishmuseum.org/sites/default/files/2022-11/Scientific_Research_newsletter_Issue_4_2018.pdf"
+        ]
+      }
     },
     {
       "processTag": "ivory_preparation",
@@ -9782,6 +10276,712 @@
       "recipeId": null,
       "runtimeEnabled": false,
       "inputProvenancePolicy": "whale_source_blubber_only"
+    },
+    {
+      "processTag": "clay_hand_preparation",
+      "inputResourceIds": [
+        "RES#000047",
+        "RES#000003"
+      ],
+      "outputResourceIds": [
+        "RES#000107"
+      ],
+      "description": {
+        "en": "Candidate selection, wetting and kneading of suitable clay.",
+        "es": "Selección, humectación y amasado candidatos de arcilla apta."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select and remove unsuitable inclusions; wash only if the source requires it.",
+          "es": "Seleccionar y retirar inclusiones inadecuadas; lavar solo si el origen lo requiere."
+        },
+        "transformation": {
+          "en": "Wet and knead clay into workable material.",
+          "es": "Humedecer y amasar la arcilla hasta hacerla trabajable."
+        },
+        "suggestedFacilities": {
+          "en": "Hand tools and a working area; exact tools unresolved.",
+          "es": "Herramientas manuales y área de trabajo; herramientas precisas pendientes."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/",
+          "https://resources.metmuseum.org/resources/metpublications/pdf/Bernini_Sculpting_in_Clay.pdf"
+        ]
+      }
+    },
+    {
+      "processTag": "green_brick_moulding",
+      "inputResourceIds": [
+        "RES#000107"
+      ],
+      "outputResourceIds": [
+        "RES#000108"
+      ],
+      "description": {
+        "en": "Mould and dry a brick blank before firing.",
+        "es": "Moldear y secar una pieza de ladrillo antes de cocerla."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Prepare suitable clay and a mould; optional release sand is not a fixed input.",
+          "es": "Preparar arcilla apta y un molde; la arena antiadherente opcional no es insumo fijo."
+        },
+        "transformation": {
+          "en": "Mould the brick and dry it in air before any firing.",
+          "es": "Moldear el ladrillo y secarlo al aire antes de cualquier cocción."
+        },
+        "suggestedFacilities": {
+          "en": "Mould and sheltered drying area.",
+          "es": "Molde y área de secado protegida."
+        },
+        "knownConstraints": {
+          "en": "Unfired blank is not a durable fired brick; drying conditions remain unresolved.",
+          "es": "La pieza sin cocer no es ladrillo cocido duradero; condiciones de secado pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/"
+        ]
+      }
+    },
+    {
+      "processTag": "adobe_moulding_drying",
+      "inputResourceIds": [
+        "RES#000107",
+        "RES#000028"
+      ],
+      "outputResourceIds": [
+        "RES#000109"
+      ],
+      "description": {
+        "en": "Candidate straw-tempered adobe moulding and air drying.",
+        "es": "Moldeado y secado al aire candidatos de adobe con paja."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Choose suitable earth or clay and chopped straw; proportions are unresolved.",
+          "es": "Elegir tierra o arcilla apta y paja cortada; proporciones pendientes."
+        },
+        "transformation": {
+          "en": "Mould and dry in suitable air or sun without firing.",
+          "es": "Moldear y secar al aire o sol adecuado, sin cocción."
+        },
+        "suggestedFacilities": {
+          "en": "Mould and drying ground.",
+          "es": "Molde y superficie de secado."
+        },
+        "knownConstraints": {
+          "en": "Straw-tempered adobe is one documented candidate, not a universal adobe formula.",
+          "es": "El adobe con paja es un candidato documentado, no fórmula universal."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://www.metmuseum.org/ko/-/media/files/learn/for-educators/publications-for-educators/art-of-the-ancient-near-east.pdf"
+        ]
+      }
+    },
+    {
+      "processTag": "brick_firing",
+      "inputResourceIds": [
+        "RES#000108"
+      ],
+      "outputResourceIds": [
+        "RES#000110"
+      ],
+      "description": {
+        "en": "Fire a dried clay brick blank.",
+        "es": "Cocer una pieza seca de ladrillo de arcilla."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Dry the moulded blank sufficiently before heating.",
+          "es": "Secar suficientemente la pieza moldeada antes de calentarla."
+        },
+        "transformation": {
+          "en": "Fire and cool the brick under controlled conditions.",
+          "es": "Cocer y enfriar el ladrillo bajo condiciones controladas."
+        },
+        "suggestedFacilities": {
+          "en": "Clamp or kiln and a suitable fuel source.",
+          "es": "Horno temporal o permanente y combustible adecuado."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/"
+        ]
+      }
+    },
+    {
+      "processTag": "ceramic_roof_tile_forming_firing",
+      "inputResourceIds": [
+        "RES#000107"
+      ],
+      "outputResourceIds": [
+        "RES#000111"
+      ],
+      "description": {
+        "en": "Shape, dry and fire a ceramic roof tile.",
+        "es": "Moldear, secar y cocer una teja cerámica."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select clay suitable for a roof tile and prepare the shape.",
+          "es": "Seleccionar arcilla apta para teja y preparar la forma."
+        },
+        "transformation": {
+          "en": "Shape, dry, fire and cool the tile.",
+          "es": "Moldear, secar, cocer y enfriar la teja."
+        },
+        "suggestedFacilities": {
+          "en": "Tile mould, drying area and kiln.",
+          "es": "Molde de teja, área de secado y horno."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/",
+          "https://historicengland.org.uk/images-books/publications/iha-roman-medieval-pottery-tile-production/"
+        ]
+      }
+    },
+    {
+      "processTag": "earthenware_vessel_forming_firing",
+      "inputResourceIds": [
+        "RES#000107"
+      ],
+      "outputResourceIds": [
+        "RES#000112"
+      ],
+      "description": {
+        "en": "Shape, dry and fire a general earthenware vessel.",
+        "es": "Moldear, secar y cocer una vasija general de barro."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select suitable clay and form a vessel by a documented hand method.",
+          "es": "Seleccionar arcilla apta y formar una vasija con método manual documentado."
+        },
+        "transformation": {
+          "en": "Dry and fire the shaped vessel.",
+          "es": "Secar y cocer la vasija formada."
+        },
+        "suggestedFacilities": {
+          "en": "Working area and suitable firing installation.",
+          "es": "Área de trabajo e instalación de cocción adecuada."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/",
+          "https://historicengland.org.uk/images-books/publications/iha-roman-medieval-pottery-tile-production/"
+        ]
+      }
+    },
+    {
+      "processTag": "ceramic_storage_jar_forming_firing",
+      "inputResourceIds": [
+        "RES#000107"
+      ],
+      "outputResourceIds": [
+        "RES#000113"
+      ],
+      "description": {
+        "en": "Shape, dry and fire a vessel intended for storage.",
+        "es": "Moldear, secar y cocer un recipiente destinado a almacenamiento."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Choose clay and form suitable for storage; sealing is unresolved.",
+          "es": "Elegir arcilla y forma aptas para almacenaje; sellado pendiente."
+        },
+        "transformation": {
+          "en": "Dry and fire the storage jar.",
+          "es": "Secar y cocer el recipiente de almacenamiento."
+        },
+        "suggestedFacilities": {
+          "en": "Working area and suitable firing installation.",
+          "es": "Área de trabajo e instalación de cocción adecuada."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/",
+          "https://historicengland.org.uk/images-books/publications/iha-roman-medieval-pottery-tile-production/"
+        ]
+      }
+    },
+    {
+      "processTag": "earthenware_cooking_pot_forming_firing",
+      "inputResourceIds": [
+        "RES#000107"
+      ],
+      "outputResourceIds": [
+        "RES#000114"
+      ],
+      "description": {
+        "en": "Shape, dry and fire a cooking pot.",
+        "es": "Moldear, secar y cocer una olla de cocina."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select clay and temper suitable for thermal use; exact mix unresolved.",
+          "es": "Seleccionar arcilla y desgrasante aptos para calor; mezcla precisa pendiente."
+        },
+        "transformation": {
+          "en": "Shape, dry and fire the cooking pot.",
+          "es": "Moldear, secar y cocer la olla."
+        },
+        "suggestedFacilities": {
+          "en": "Working area and suitable firing installation.",
+          "es": "Área de trabajo e instalación de cocción adecuada."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/",
+          "https://historicengland.org.uk/images-books/publications/iha-roman-medieval-pottery-tile-production/"
+        ]
+      }
+    },
+    {
+      "processTag": "ceramic_installation_component_forming_firing",
+      "inputResourceIds": [
+        "RES#000107"
+      ],
+      "outputResourceIds": [
+        "RES#000115"
+      ],
+      "description": {
+        "en": "Shape, dry and fire a candidate ceramic installation component.",
+        "es": "Moldear, secar y cocer un componente cerámico candidato de instalación."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select a suitable form only when a specific installation is designed.",
+          "es": "Elegir una forma apta solo cuando se diseñe una instalación específica."
+        },
+        "transformation": {
+          "en": "Shape, dry and fire the component.",
+          "es": "Moldear, secar y cocer el componente."
+        },
+        "suggestedFacilities": {
+          "en": "Mould or hand tools and firing installation.",
+          "es": "Molde o herramientas manuales e instalación de cocción."
+        },
+        "knownConstraints": {
+          "en": "Clay suitability, temper, fuel and losses depend on source and intended use; no universal recipe is approved.",
+          "es": "La aptitud de la arcilla, el desgrasante, el combustible y las pérdidas dependen del origen y el uso; no hay receta universal aprobada."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/content/docs/education/explorer/teachers-kit-brick-making-pdf/",
+          "https://historicengland.org.uk/images-books/publications/iha-roman-medieval-pottery-tile-production/"
+        ]
+      }
+    },
+    {
+      "processTag": "limestone_calcination",
+      "inputResourceIds": [
+        "RES#000052"
+      ],
+      "outputResourceIds": [
+        "RES#000116"
+      ],
+      "description": {
+        "en": "Candidate calcination of suitable limestone to quicklime.",
+        "es": "Calcinación candidata de caliza apta para obtener cal viva."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select suitable limestone and fuel; suitability depends on composition.",
+          "es": "Seleccionar caliza y combustible aptos; la idoneidad depende de la composición."
+        },
+        "transformation": {
+          "en": "Burn limestone to quicklime and allow controlled cooling.",
+          "es": "Calcinar caliza hasta cal viva y enfriar de forma controlada."
+        },
+        "suggestedFacilities": {
+          "en": "Pre-industrial lime kiln.",
+          "es": "Horno de cal preindustrial."
+        },
+        "knownConstraints": {
+          "en": "Fuel, emissions, heat and losses are not quantified; not every limestone lot behaves alike.",
+          "es": "Combustible, emisiones, calor y pérdidas sin cuantificar; no toda caliza se comporta igual."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/iha-preindustrial-lime-kilns/heag222-pre-industrial-lime-kilns/"
+        ]
+      }
+    },
+    {
+      "processTag": "quicklime_slaking",
+      "inputResourceIds": [
+        "RES#000116",
+        "RES#000003"
+      ],
+      "outputResourceIds": [
+        "RES#000117"
+      ],
+      "description": {
+        "en": "Candidate slaking of quicklime with water.",
+        "es": "Apagado candidato de cal viva con agua."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Handle quicklime safely and provide suitable water.",
+          "es": "Manejar cal viva con seguridad y disponer de agua adecuada."
+        },
+        "transformation": {
+          "en": "React quicklime with water to obtain hydrated lime.",
+          "es": "Reaccionar cal viva con agua para obtener cal apagada."
+        },
+        "suggestedFacilities": {
+          "en": "Slaking pit or vessel.",
+          "es": "Fosa o recipiente de apagado."
+        },
+        "knownConstraints": {
+          "en": "Reaction and storage behavior depend on the lime; no ratios or times approved.",
+          "es": "Reacción y almacenamiento dependen de la cal; sin proporciones ni tiempos aprobados."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/iha-preindustrial-lime-kilns/heag222-pre-industrial-lime-kilns/"
+        ]
+      }
+    },
+    {
+      "processTag": "lime_mortar_mixing",
+      "inputResourceIds": [
+        "RES#000117",
+        "RES#000048",
+        "RES#000003"
+      ],
+      "outputResourceIds": [
+        "RES#000118"
+      ],
+      "description": {
+        "en": "Candidate lime mortar mixing with sand and water.",
+        "es": "Mezcla candidata de mortero de cal con arena y agua."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select hydrated lime and aggregate suitable for the intended masonry.",
+          "es": "Seleccionar cal apagada y árido aptos para la mampostería prevista."
+        },
+        "transformation": {
+          "en": "Mix lime, sand and water into mortar.",
+          "es": "Mezclar cal, arena y agua para formar mortero."
+        },
+        "suggestedFacilities": {
+          "en": "Mixing area and hand tools.",
+          "es": "Área de mezcla y herramientas manuales."
+        },
+        "knownConstraints": {
+          "en": "Aggregate and lime type alter properties; no universal proportion is asserted.",
+          "es": "El tipo de árido y cal altera las propiedades; no se fija proporción universal."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/iha-preindustrial-lime-kilns/heag222-pre-industrial-lime-kilns/"
+        ]
+      }
+    },
+    {
+      "processTag": "timber_beam_hewing",
+      "inputResourceIds": [
+        "RES#000001"
+      ],
+      "outputResourceIds": [
+        "RES#000119"
+      ],
+      "description": {
+        "en": "Candidate hand-hewing of suitable timber into a beam.",
+        "es": "Labrado manual candidato de madera apta para obtener una viga."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Select timber with suitable size and properties.",
+          "es": "Seleccionar madera de tamaño y propiedades adecuados."
+        },
+        "transformation": {
+          "en": "Hew or shape timber with hand tools.",
+          "es": "Labrar o dar forma a la madera con herramientas manuales."
+        },
+        "suggestedFacilities": {
+          "en": "Axes, adzes or saws; exact tool requirement unresolved.",
+          "es": "Hachas, azuelas o sierras; requisito concreto pendiente."
+        },
+        "knownConstraints": {
+          "en": "Tree species, seasoning and structural dimensions require review.",
+          "es": "Especie del árbol, secado y dimensiones estructurales requieren revisión."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/iha-preindustrial-ironworks/heag221-pre-industrial-ironworks/"
+        ]
+      }
+    },
+    {
+      "processTag": "iron_ore_roasting",
+      "inputResourceIds": [
+        "RES#000062"
+      ],
+      "outputResourceIds": [
+        "RES#000120"
+      ],
+      "description": {
+        "en": "Candidate sorting and roasting of suitable iron ore.",
+        "es": "Selección y tostación candidatas de mena de hierro apta."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Sort, break and wash the ore where appropriate.",
+          "es": "Seleccionar, fragmentar y lavar la mena cuando proceda."
+        },
+        "transformation": {
+          "en": "Roast suitable ore before a bloomery reduction path.",
+          "es": "Tostar mena apta antes de una ruta de reducción en horno bajo."
+        },
+        "suggestedFacilities": {
+          "en": "Roasting hearth and fuel source.",
+          "es": "Hogar de tostación y combustible."
+        },
+        "knownConstraints": {
+          "en": "Roasting is not mandatory for every ore; suitability and losses unresolved.",
+          "es": "La tostación no es obligatoria para toda mena; aptitud y pérdidas pendientes."
+        },
+        "auxiliaryResourceIds": [
+          "RES#000001"
+        ],
+        "byproductResourceIds": [],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/archaeometallurgy-guidelines-best-practice/heag003-archaeometallurgy-guidelines/"
+        ]
+      }
+    },
+    {
+      "processTag": "bloomery_prepared_ironmaking",
+      "inputResourceIds": [
+        "RES#000120",
+        "RES#000090"
+      ],
+      "outputResourceIds": [
+        "RES#000096",
+        "RES#000121"
+      ],
+      "description": {
+        "en": "Candidate charcoal-fuelled bloomery reduction of prepared iron ore.",
+        "es": "Reducción candidata de mena preparada con carbón vegetal en horno bajo."
+      },
+      "requiredTechnologyIds": null,
+      "inputQuantities": null,
+      "outputQuantities": null,
+      "facilities": null,
+      "byproducts": null,
+      "recipeId": null,
+      "runtimeEnabled": false,
+      "processProfile": {
+        "historicalStatus": "documented_practice",
+        "gameplayStatus": "candidate_not_runtime_enabled",
+        "preparation": {
+          "en": "Charge suitable prepared ore and charcoal.",
+          "es": "Cargar mena preparada apta y carbón vegetal."
+        },
+        "transformation": {
+          "en": "Reduce ore to a solid iron bloom while separating slag.",
+          "es": "Reducir la mena a masa de hierro sólida separando escoria."
+        },
+        "suggestedFacilities": {
+          "en": "Bloomery furnace and air supply.",
+          "es": "Horno bajo y suministro de aire."
+        },
+        "knownConstraints": {
+          "en": "The bloom is not molten cast iron; ore chemistry and losses remain unresolved.",
+          "es": "La masa no es hierro colado líquido; química de la mena y pérdidas pendientes."
+        },
+        "auxiliaryResourceIds": [],
+        "byproductResourceIds": [
+          "RES#000121"
+        ],
+        "evidenceUrls": [
+          "https://historicengland.org.uk/images-books/publications/archaeometallurgy-guidelines-best-practice/heag003-archaeometallurgy-guidelines/"
+        ]
+      }
     }
   ],
   "unresolvedSources": [
@@ -9817,11 +11017,11 @@
     }
   ],
   "summary": {
-    "resourceCount": 106,
-    "sourceBindingCount": 594,
-    "processingLinkCount": 28,
+    "resourceCount": 121,
+    "sourceBindingCount": 582,
+    "processingLinkCount": 43,
     "sourceTagMappingCount": 21,
-    "geologicalSourceCount": 57,
+    "geologicalSourceCount": 45,
     "cropSourceCount": 21
   }
 }

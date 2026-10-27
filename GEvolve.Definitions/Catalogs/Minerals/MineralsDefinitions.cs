@@ -7,6 +7,12 @@ public sealed class MineralCatalog {
  public string? ContentVersion {get;set;}
  public string? Kind {get;set;}
  public List<MineralDefinition> GeologicalResourceCandidates {get;set;} = [];
+ public List<MineralEntityAlias> EntityAliases {get;set;} = [];
+}
+public sealed class MineralEntityAlias {
+ public string PreviousId {get;set;} = "";
+ public string EntityId {get;set;} = "";
+ public string? Reason {get;set;}
 }
 public sealed class MineralDefinition {
  public string Id {get;set;} = "";

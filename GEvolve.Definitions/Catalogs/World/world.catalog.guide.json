@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.4.0",
-  "contentVersion": "0.5.0",
+  "contentVersion": "0.6.0",
   "kind": "world_catalog_design_guide",
   "status": "source_converted_requires_species_resolution",
   "defaultLanguage": "en",
@@ -28,7 +28,8 @@
     "geology": "Mineral distribution is controlled by geology, not mandatory biome resource lists.",
     "miningStages": "Extraction methods describe capabilities, not exclusive material eras.",
     "scope": "Mechanized mining and seabed nodules remain future content outside the initial medieval scope.",
-    "biologicalGranularity": "World occurrences reference gameplay categories; optional scientific catalogs do not split entities or expand spawns. Original sourceDefinitionId/sourceText preserve provenance."
+    "biologicalGranularity": "World occurrences reference gameplay categories; optional scientific catalogs do not split entities or expand spawns. Original sourceDefinitionId/sourceText preserve provenance.",
+    "regionalVariants": "Historical source provenance only; playable and Wiki navigation uses general biomes. Occurrences are not guaranteed or globally distributed."
   },
   "worldRules": {
     "hexagonalMap": true,
@@ -453,7 +454,7 @@
   "resourceOccurrences": [
     {
       "id": "occurrence_0001",
-      "definitionId": "geological_alluvial_clay",
+      "definitionId": "geological_clay",
       "kind": "geological",
       "biomeId": "tropical_forest",
       "variantId": "tropical_forest_american",
@@ -462,7 +463,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_alluvial_clay"
     },
     {
       "id": "occurrence_0002",
@@ -1032,7 +1034,7 @@
     },
     {
       "id": "occurrence_0045",
-      "definitionId": "geological_fluvial_clay",
+      "definitionId": "geological_clay",
       "kind": "geological",
       "biomeId": "tropical_forest",
       "variantId": "tropical_forest_asian",
@@ -1041,7 +1043,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_fluvial_clay"
     },
     {
       "id": "occurrence_0046",
@@ -1058,7 +1061,7 @@
     },
     {
       "id": "occurrence_0047",
-      "definitionId": "geological_alluvial_cassiterite",
+      "definitionId": "geological_vein_cassiterite_tin_ore",
       "kind": "geological",
       "biomeId": "tropical_forest",
       "variantId": "tropical_forest_asian",
@@ -1067,7 +1070,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_alluvial_cassiterite"
     },
     {
       "id": "occurrence_0048",
@@ -1325,7 +1329,7 @@
     },
     {
       "id": "occurrence_0067",
-      "definitionId": "geological_alluvial_clay",
+      "definitionId": "geological_clay",
       "kind": "geological",
       "biomeId": "tropical_forest",
       "variantId": "tropical_forest_oceanian",
@@ -1334,7 +1338,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_alluvial_clay"
     },
     {
       "id": "occurrence_0068",
@@ -2973,7 +2978,7 @@
     },
     {
       "id": "occurrence_0191",
-      "definitionId": "geological_glacial_clay",
+      "definitionId": "geological_clay",
       "kind": "geological",
       "biomeId": "tundra",
       "variantId": "tundra_eurasian",
@@ -2982,7 +2987,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_glacial_clay"
     },
     {
       "id": "occurrence_0192",
@@ -3370,7 +3376,7 @@
     },
     {
       "id": "occurrence_0221",
-      "definitionId": "geological_alluvial_clay",
+      "definitionId": "geological_clay",
       "kind": "geological",
       "biomeId": "savanna",
       "variantId": "savanna_african",
@@ -3379,7 +3385,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_alluvial_clay"
     },
     {
       "id": "occurrence_0222",
@@ -5287,7 +5294,7 @@
     },
     {
       "id": "occurrence_0367",
-      "definitionId": "geological_coastal_limestone",
+      "definitionId": "geological_limestone",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_tropical_coast",
@@ -5296,11 +5303,12 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_limestone"
     },
     {
       "id": "occurrence_0368",
-      "definitionId": "geological_coastal_gypsum",
+      "definitionId": "geological_gypsum_in_evaporite_deposits",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_tropical_coast",
@@ -5309,7 +5317,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_gypsum"
     },
     {
       "id": "occurrence_0369",
@@ -5445,7 +5454,7 @@
     },
     {
       "id": "occurrence_0379",
-      "definitionId": "geological_coastal_gravel",
+      "definitionId": "geological_gravel",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_temperate_coast_and_sea",
@@ -5454,11 +5463,12 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_gravel"
     },
     {
       "id": "occurrence_0380",
-      "definitionId": "geological_coastal_limestone",
+      "definitionId": "geological_limestone",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_temperate_coast_and_sea",
@@ -5467,11 +5477,12 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_limestone"
     },
     {
       "id": "occurrence_0381",
-      "definitionId": "geological_coastal_gypsum",
+      "definitionId": "geological_gypsum_in_evaporite_deposits",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_temperate_coast_and_sea",
@@ -5480,7 +5491,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_gypsum"
     },
     {
       "id": "occurrence_0382",
@@ -5589,7 +5601,7 @@
     },
     {
       "id": "occurrence_0390",
-      "definitionId": "geological_coastal_gravel",
+      "definitionId": "geological_gravel",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_polar_and_subpolar",
@@ -5598,7 +5610,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_gravel"
     },
     {
       "id": "occurrence_0391",
@@ -5628,7 +5641,7 @@
     },
     {
       "id": "occurrence_0393",
-      "definitionId": "geological_coastal_limestone",
+      "definitionId": "geological_limestone",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_polar_and_subpolar",
@@ -5637,11 +5650,12 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_limestone"
     },
     {
       "id": "occurrence_0394",
-      "definitionId": "geological_coastal_gypsum",
+      "definitionId": "geological_gypsum_in_evaporite_deposits",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_polar_and_subpolar",
@@ -5650,7 +5664,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_coastal_gypsum"
     },
     {
       "id": "occurrence_0395",
@@ -5773,7 +5788,7 @@
     },
     {
       "id": "occurrence_0404",
-      "definitionId": "geological_estuarine_clay",
+      "definitionId": "geological_clay",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_coastal_wetlands",
@@ -5782,7 +5797,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_estuarine_clay"
     },
     {
       "id": "occurrence_0405",
@@ -5799,7 +5815,7 @@
     },
     {
       "id": "occurrence_0406",
-      "definitionId": "geological_sea_salt_in_suitable_saltworks",
+      "definitionId": "geological_sea_salt",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_coastal_wetlands",
@@ -5808,7 +5824,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_sea_salt_in_suitable_saltworks"
     },
     {
       "id": "occurrence_0407",
@@ -5825,7 +5842,7 @@
     },
     {
       "id": "occurrence_0408",
-      "definitionId": "geological_limestone_in_carbonate_formations",
+      "definitionId": "geological_limestone",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_coastal_wetlands",
@@ -5834,11 +5851,12 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_limestone_in_carbonate_formations"
     },
     {
       "id": "occurrence_0409",
-      "definitionId": "geological_deep_rock_salt",
+      "definitionId": "geological_rock_salt",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_coastal_wetlands",
@@ -5847,11 +5865,12 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_deep_rock_salt"
     },
     {
       "id": "occurrence_0410",
-      "definitionId": "geological_deep_gypsum",
+      "definitionId": "geological_gypsum_in_evaporite_deposits",
       "kind": "geological",
       "biomeId": "marine",
       "variantId": "marine_coastal_wetlands",
@@ -5860,7 +5879,8 @@
       "constraintsStatus": "qualitative_source_constraints_preserved_pending_formalization",
       "spawnProbability": null,
       "guaranteedPresence": false,
-      "runtimeEnabled": false
+      "runtimeEnabled": false,
+      "sourceDefinitionId": "geological_deep_gypsum"
     },
     {
       "id": "occurrence_0411",
@@ -6928,7 +6948,7 @@
     "regionalVariantCount": 27,
     "plantCandidateCount": 109,
     "animalCandidateCount": 101,
-    "geologicalCandidateCount": 57,
+    "geologicalCandidateCount": 45,
     "sourceOccurrenceCount": 485,
     "agriculturalCropCandidateCount": 21
   },

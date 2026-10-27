@@ -34,4 +34,16 @@ public sealed class ProcessingLink {
  public List<string>? OutputResourceIds {get;set;}
  public List<string>? RequiredTechnologyIds {get;set;}
  public bool? RuntimeEnabled {get;set;}
+ public ResourceProcessProfile? ProcessProfile {get;set;}
+}
+public sealed class ResourceProcessProfile {
+ public string? HistoricalStatus {get;set;}
+ public string? GameplayStatus {get;set;}
+ public Dictionary<string,string>? Preparation {get;set;}
+ public Dictionary<string,string>? Transformation {get;set;}
+ public Dictionary<string,string>? SuggestedFacilities {get;set;}
+ public Dictionary<string,string>? KnownConstraints {get;set;}
+ public List<string> AuxiliaryResourceIds {get;set;} = [];
+ public List<string> ByproductResourceIds {get;set;} = [];
+ public List<string> EvidenceUrls {get;set;} = [];
 }

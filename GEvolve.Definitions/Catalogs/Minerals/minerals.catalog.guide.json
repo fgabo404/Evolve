@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.1.0",
-  "contentVersion": "0.2.0",
+  "schemaVersion": "1.2.0",
+  "contentVersion": "0.3.0",
   "status": "design_guide_requires_resolution",
   "defaultLanguage": "en",
   "supportedLanguages": [
@@ -24,58 +24,6 @@
       "refinedOutputResourceId": null,
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
       "sourceLabel": "Arcilla",
-      "extractedResourceId": "RES#000047"
-    },
-    {
-      "id": "geological_alluvial_clay",
-      "name": {
-        "en": "Alluvial Clay",
-        "es": "Arcilla aluvial"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Arcilla aluvial",
-      "extractedResourceId": "RES#000047"
-    },
-    {
-      "id": "geological_estuarine_clay",
-      "name": {
-        "en": "Estuarine Clay",
-        "es": "Arcilla estuarina"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Arcilla estuarina",
-      "extractedResourceId": "RES#000047"
-    },
-    {
-      "id": "geological_fluvial_clay",
-      "name": {
-        "en": "Fluvial Clay",
-        "es": "Arcilla fluvial"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Arcilla fluvial",
-      "extractedResourceId": "RES#000047"
-    },
-    {
-      "id": "geological_glacial_clay",
-      "name": {
-        "en": "Glacial Clay",
-        "es": "Arcilla glacial"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Arcilla glacial",
       "extractedResourceId": "RES#000047"
     },
     {
@@ -141,32 +89,6 @@
       "refinedOutputResourceId": null,
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
       "sourceLabel": "Caliza",
-      "extractedResourceId": "RES#000052"
-    },
-    {
-      "id": "geological_limestone_in_carbonate_formations",
-      "name": {
-        "en": "Limestone in Carbonate Formations",
-        "es": "Caliza (donde exista formación carbonatada)"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Caliza (donde exista formación carbonatada)",
-      "extractedResourceId": "RES#000052"
-    },
-    {
-      "id": "geological_coastal_limestone",
-      "name": {
-        "en": "Coastal Limestone",
-        "es": "Caliza costera"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Caliza costera",
       "extractedResourceId": "RES#000052"
     },
     {
@@ -250,27 +172,14 @@
     {
       "id": "geological_vein_cassiterite_tin_ore",
       "name": {
-        "en": "Vein Cassiterite Tin Ore",
-        "es": "Estaño (casiterita en veta)"
+        "en": "Cassiterite tin ore",
+        "es": "Mena de estaño (casiterita)"
       },
       "definitionStatus": "source_candidate",
       "geologyConstraints": null,
       "refinedOutputResourceId": null,
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Estaño (casiterita en veta)",
-      "extractedResourceId": "RES#000057"
-    },
-    {
-      "id": "geological_alluvial_cassiterite",
-      "name": {
-        "en": "Alluvial Cassiterite",
-        "es": "Estaño aluvial (casiterita)"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Estaño aluvial (casiterita)",
+      "sourceLabel": "Casiterita",
       "extractedResourceId": "RES#000057"
     },
     {
@@ -323,19 +232,6 @@
       "refinedOutputResourceId": null,
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
       "sourceLabel": "Grava",
-      "extractedResourceId": "RES#000060"
-    },
-    {
-      "id": "geological_coastal_gravel",
-      "name": {
-        "en": "Coastal Gravel",
-        "es": "Grava costera"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Grava costera",
       "extractedResourceId": "RES#000060"
     },
     {
@@ -638,19 +534,6 @@
       "extractedResourceId": "RES#000082"
     },
     {
-      "id": "geological_deep_rock_salt",
-      "name": {
-        "en": "Deep Rock Salt",
-        "es": "Sal gema (en depósitos profundos apropiados)"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Sal gema (en depósitos profundos apropiados)",
-      "extractedResourceId": "RES#000082"
-    },
-    {
       "id": "geological_sea_salt",
       "name": {
         "en": "Sea Salt",
@@ -661,19 +544,6 @@
       "refinedOutputResourceId": null,
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
       "sourceLabel": "Sal marina",
-      "extractedResourceId": "RES#000083"
-    },
-    {
-      "id": "geological_sea_salt_in_suitable_saltworks",
-      "name": {
-        "en": "Sea Salt in Suitable Saltworks",
-        "es": "Sal marina (en salinas apropiadas)"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Sal marina (en salinas apropiadas)",
       "extractedResourceId": "RES#000083"
     },
     {
@@ -705,40 +575,14 @@
     {
       "id": "geological_gypsum_in_evaporite_deposits",
       "name": {
-        "en": "Gypsum in Evaporite Deposits",
-        "es": "Yeso (en depósitos evaporíticos)"
+        "en": "Gypsum",
+        "es": "Yeso mineral"
       },
       "definitionStatus": "source_candidate",
       "geologyConstraints": null,
       "refinedOutputResourceId": null,
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Yeso (en depósitos evaporíticos)",
-      "extractedResourceId": "RES#000086"
-    },
-    {
-      "id": "geological_deep_gypsum",
-      "name": {
-        "en": "Deep Gypsum",
-        "es": "Yeso (en yacimientos profundos)"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Yeso (en yacimientos profundos)",
-      "extractedResourceId": "RES#000086"
-    },
-    {
-      "id": "geological_coastal_gypsum",
-      "name": {
-        "en": "Coastal Gypsum",
-        "es": "Yeso costero"
-      },
-      "definitionStatus": "source_candidate",
-      "geologyConstraints": null,
-      "refinedOutputResourceId": null,
-      "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
-      "sourceLabel": "Yeso costero",
+      "sourceLabel": "Yeso mineral",
       "extractedResourceId": "RES#000086"
     },
     {
@@ -753,6 +597,56 @@
       "surfaceAndOreDistinction": "No refined metal is granted directly by a deposit. Extraction and processing recipes remain separate.",
       "sourceLabel": "Ópalo superficial",
       "extractedResourceId": "RES#000087"
+    }
+  ],
+  "entityAliases": [
+    {
+      "previousId": "geological_alluvial_clay",
+      "entityId": "geological_clay"
+    },
+    {
+      "previousId": "geological_estuarine_clay",
+      "entityId": "geological_clay"
+    },
+    {
+      "previousId": "geological_fluvial_clay",
+      "entityId": "geological_clay"
+    },
+    {
+      "previousId": "geological_glacial_clay",
+      "entityId": "geological_clay"
+    },
+    {
+      "previousId": "geological_limestone_in_carbonate_formations",
+      "entityId": "geological_limestone"
+    },
+    {
+      "previousId": "geological_coastal_limestone",
+      "entityId": "geological_limestone"
+    },
+    {
+      "previousId": "geological_coastal_gravel",
+      "entityId": "geological_gravel"
+    },
+    {
+      "previousId": "geological_deep_rock_salt",
+      "entityId": "geological_rock_salt"
+    },
+    {
+      "previousId": "geological_sea_salt_in_suitable_saltworks",
+      "entityId": "geological_sea_salt"
+    },
+    {
+      "previousId": "geological_deep_gypsum",
+      "entityId": "geological_gypsum_in_evaporite_deposits"
+    },
+    {
+      "previousId": "geological_coastal_gypsum",
+      "entityId": "geological_gypsum_in_evaporite_deposits"
+    },
+    {
+      "previousId": "geological_alluvial_cassiterite",
+      "entityId": "geological_vein_cassiterite_tin_ore"
     }
   ]
 }

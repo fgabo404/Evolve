@@ -23,4 +23,11 @@ public sealed class RegionalVariantDefinition {
 }
 public sealed class WorldResourceOccurrence {
  public string? Id {get;set;}
+ public string? Kind {get;set;}
+ public string? DefinitionId {get;set;}
+ public string? SourceDefinitionId {get;set;}
+ public string? BiomeId {get;set;}
+ public string? VariantId {get;set;}
+ public string? SourceText {get;set;}
+ public bool? RuntimeEnabled {get;set;}
 }
