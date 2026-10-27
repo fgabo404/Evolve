@@ -9,8 +9,7 @@
 - `GEvolve.Definitions`: configuración, selección de algoritmos, parámetros y reglas declarativas.
 - `GEvolve.Engine`: ejecuta las etapas, calcula geometría/terreno/elevaciones y asigna los atributos aprobados.
 - `GEvolve.State`: conserva configuración efectiva, semilla, resultados generados y cambios posteriores; la estrategia definitiva de snapshots está pendiente.
-- `GEvolve.Simulator`: visualiza e inspecciona el mundo en 2D, sin generarlo.
-- `GEvolve.Game`: juego 3D futuro, que consume los mismos resultados; su primer prototipo gráfico no condiciona este diseño.
+- `GEvolve.Game`: única aplicación gráfica; tendrá dos modos de visualización (2D y 3D) sobre el mismo mundo de Engine/State. El antiguo Simulator web y el prototipo 3D fueron retirados.
 
 Las capas son **lógicas y secuenciales**, no renderizadores independientes. La Capa 01 está implementada por encargo explícito; las capas posteriores permanecen sin implementar.
 
@@ -97,7 +96,7 @@ Definitions: parámetros y lineamientos aprobados
       ↓
 Engine entrega resultados a State
       ↓
-Simulator 2D / Game 3D leen los mismos resultados
+Game (vistas 2D y 3D) leen los mismos resultados
 ```
 
 ### Separación entre definición y estado

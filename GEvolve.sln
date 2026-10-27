@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Tests", "GEvolve.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Game", "GEvolve.Game\GEvolve.Game.csproj", "{53ACE89E-9ED9-4860-9860-86F2F0FA4924}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GEvolve.Simulator", "GEvolve.Simulator\GEvolve.Simulator.csproj", "{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,18 +83,6 @@ Global
 		{53ACE89E-9ED9-4860-9860-86F2F0FA4924}.Release|x64.Build.0 = Release|Any CPU
 		{53ACE89E-9ED9-4860-9860-86F2F0FA4924}.Release|x86.ActiveCfg = Release|Any CPU
 		{53ACE89E-9ED9-4860-9860-86F2F0FA4924}.Release|x86.Build.0 = Release|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Debug|x64.Build.0 = Debug|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Debug|x86.Build.0 = Debug|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Release|x64.ActiveCfg = Release|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Release|x64.Build.0 = Release|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Release|x86.ActiveCfg = Release|Any CPU
-		{E3C0FC34-9549-4FBB-A7A7-3FB9A6D08FA9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
