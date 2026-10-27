@@ -22,4 +22,5 @@ try
 finally { if (File.Exists(path)) File.Delete(path); }
 
 if (WorldTests.Run() != 0) return 1;
+GridTests.Run();
 return 0;

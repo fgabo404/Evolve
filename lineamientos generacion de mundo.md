@@ -1,6 +1,6 @@
 # Evolve — Lineamientos de generación del mundo
 
-**Estado:** documento de diseño en elaboración. **Actualizado:** 2026-10-27.
+**Estado:** Capa 01 implementada; capas 02–04 pendientes. **Actualizado:** 2026-10-27.
 **Alcance:** capas 01–04. Los valores explícitamente pendientes no son reglas aprobadas ni deben completarse por inferencia.
 **Fuentes:** acuerdos de diseño del proyecto y `fgabo404/EvolveDoc`: `data/world/world.catalog.guide.json`, `lang/es/world.catalog.guide.md`, `lang/es/tecnologias-arquitectura.md`.
 
@@ -12,7 +12,7 @@
 - `GEvolve.Simulator`: visualiza e inspecciona el mundo en 2D, sin generarlo.
 - `GEvolve.Game`: juego 3D futuro, que consume los mismos resultados; su primer prototipo gráfico no condiciona este diseño.
 
-Las capas son **lógicas y secuenciales**, no renderizadores independientes. No implementar todavía ninguna de ellas por el solo hecho de estar documentada aquí.
+Las capas son **lógicas y secuenciales**, no renderizadores independientes. La Capa 01 está implementada por encargo explícito; las capas posteriores permanecen sin implementar.
 
 ## Capa 01 — Grid de hexágonos (acordada)
 
@@ -28,7 +28,7 @@ Las capas son **lógicas y secuenciales**, no renderizadores independientes. No 
 - Límites **norte–sur**: no conectados.
 - La continuidad se aplica tanto a vecindad/distancia como a la navegación visual; las coordenadas deben ser consistentes.
 - El grid no define agua, masas terrestres, elevación, clima ni biomas.
-- Pendiente: convenio exacto de indexación, coordenadas internas (axiales/offset), orientación de desplazamiento de columnas y transformaciones para cierre horizontal.
+- Convenio de la implementación: columnas impares desplazadas hacia abajo (`odd-q`); ID estable `fila × columnas + columna`; axial `(q, r) = (columna, fila − ⌊columna/2⌋)`. Para los anchos pares oficiales, el cierre horizontal traslada `(q, r)` por `(±ancho, ∓ancho/2)`. Así se conserva la fila, la distancia entre centros y la vecindad geométrica sin duplicar celdas.
 
 ## Capa 02 — Forma de masas terrestres (categorías acordadas)
 

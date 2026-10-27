@@ -9,6 +9,7 @@ public sealed class GameState
     public string DefinitionSetVersion { get; set; } = "prototype-unversioned";
     public long Turn { get; set; }
     public WorldSettings WorldSettings { get; set; } = new();
+    public HexGridState? HexGrid { get; set; }
     public Dictionary<string, CivilizationState> Civilizations { get; set; } = new();
     public Dictionary<string, RegionState> Regions { get; set; } = new();
 }

@@ -5,9 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Evolve — Simulador</title>
   <link rel="stylesheet" href="/style.css">
-  <script src="/app.js" defer></script>
+  <script type="module" src="/app.js"></script>
 </head>
 <body>
   <canvas id="simulator-canvas" aria-label="Lienzo del simulador"></canvas>
+  <label class="size-control">Tamaño
+    <select id="grid-size" aria-label="Tamaño del grid">
+      <option value="small">Pequeño</option>
+      <option value="medium">Mediano</option>
+      <option value="large">Grande</option>
+    </select>
+  </label>
 </body>
 </html>
