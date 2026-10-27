@@ -16,11 +16,11 @@ public sealed record HexGridDefinition(
 public static class HexGridDefinitions
 {
     private static readonly HexGridDefinition Small =
-        new(GridSize.Small, 150, 100, GridOrientation.FlatTop, true, false);
+        new(GridSize.Small, 100, 70, GridOrientation.FlatTop, true, false);
     private static readonly HexGridDefinition Medium =
-        new(GridSize.Medium, 250, 200, GridOrientation.FlatTop, true, false);
+        new(GridSize.Medium, 150, 100, GridOrientation.FlatTop, true, false);
     private static readonly HexGridDefinition Large =
-        new(GridSize.Large, 300, 250, GridOrientation.FlatTop, true, false);
+        new(GridSize.Large, 250, 200, GridOrientation.FlatTop, true, false);
 
     public static IReadOnlyList<HexGridDefinition> All { get; } = [Small, Medium, Large];
 

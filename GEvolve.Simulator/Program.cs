@@ -2,7 +2,7 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Simulator.Grid;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://127.0.0.1:8766");
+builder.WebHost.UseUrls(builder.Configuration["urls"] ?? "http://127.0.0.1:8766");
 builder.Services.AddSingleton<GridSession>();
 
 var app = builder.Build();
@@ -14,8 +14,10 @@ app.MapGet("/api/grid/sizes", () => HexGridDefinitions.All.Select(definition => 
     columns = definition.Columns,
     rows = definition.Rows
 }));
-app.MapGet("/api/grid", (GridSession session) => session.Get());
-app.MapGet("/api/grid/state", (GridSession session) => session.GetState());
+app.MapGet("/api/grid", (GridSession session) =>
+    session.Get() is { } grid ? Results.Ok(grid) : Results.NotFound());
+app.MapGet("/api/grid/state", (GridSession session) =>
+    session.GetState() is { } state ? Results.Ok(state) : Results.NotFound());
 app.MapGet("/api/grid/cells/{column:int}/{row:int}", (int column, int row, GridSession session) =>
 {
     var cell = session.GetCell(column, row);

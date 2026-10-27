@@ -5,7 +5,7 @@ using GEvolve.State.Game;
 namespace GEvolve.Simulator.Grid;
 
 public sealed record GridDto(string Size, int Columns, int Rows, string Orientation,
-    string Layout, bool WrapHorizontal, bool WrapVertical, int[] Cells);
+    string Layout, bool WrapHorizontal, bool WrapVertical, int CellCount);
 public sealed record GridCellDto(int Id, int Column, int Row, int Q, int R, int[] Neighbors);
 
 /// <summary>Única capa 01 activa; conserva su configuración efectiva en GameState.</summary>
@@ -13,25 +13,17 @@ public sealed class GridSession
 {
     private readonly object _gate = new();
     private readonly GameState _state = new();
-    private HexGrid _grid;
-    private GridDto _dto;
+    private HexGrid? _grid;
+    private GridDto? _dto;
 
-    public GridSession()
-    {
-        var definition = HexGridDefinitions.Get(GridSize.Small);
-        _grid = HexGrid.Generate(definition);
-        _state.HexGrid = new HexGridState(definition);
-        _dto = Map(_grid);
-    }
-
-    public GridDto Get()
+    public GridDto? Get()
     {
         lock (_gate) return _dto;
     }
 
-    public HexGridState GetState()
+    public HexGridState? GetState()
     {
-        lock (_gate) return _state.HexGrid!;
+        lock (_gate) return _state.HexGrid;
     }
 
     public GridDto Select(GridSize size)
@@ -52,7 +44,7 @@ public sealed class GridSession
     {
         lock (_gate)
         {
-            if (!_grid.TryGet(new GridAddress(column, row), out GridCell cell)) return null;
+            if (_grid is null || !_grid.TryGet(new GridAddress(column, row), out GridCell cell)) return null;
             return new GridCellDto(cell.Id, column, row, cell.Axial.Q, cell.Axial.R,
                 _grid.Neighbors(cell).Select(neighbor => neighbor.Id).ToArray());
         }
@@ -60,11 +52,8 @@ public sealed class GridSession
 
     private static GridDto Map(HexGrid grid)
     {
-        var cells = new int[grid.Cells.Count];
-        foreach (GridCell cell in grid.Cells)
-            cells[cell.Id] = cell.Id;
         return new GridDto(grid.Definition.Size.ToString().ToLowerInvariant(),
             grid.Definition.Columns, grid.Definition.Rows, "flat-top", "odd-q",
-            grid.Definition.WrapHorizontal, grid.Definition.WrapVertical, cells);
+            grid.Definition.WrapHorizontal, grid.Definition.WrapVertical, grid.Cells.Count);
     }
 }

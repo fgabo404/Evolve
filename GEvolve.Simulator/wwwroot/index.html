@@ -8,13 +8,22 @@
   <script type="module" src="/app.js"></script>
 </head>
 <body>
-  <canvas id="simulator-canvas" aria-label="Lienzo del simulador"></canvas>
-  <label class="size-control">Tamaño
-    <select id="grid-size" aria-label="Tamaño del grid">
-      <option value="small">Pequeño</option>
-      <option value="medium">Mediano</option>
-      <option value="large">Grande</option>
-    </select>
-  </label>
+  <header class="toolbar">
+    <strong>Evolve Simulator</strong>
+    <div class="controls">
+      <label for="grid-size">Tamaño</label>
+      <select id="grid-size" aria-label="Tamaño del grid">
+        <option value="small">Pequeño (100 × 70)</option>
+        <option value="medium">Mediano (150 × 100)</option>
+        <option value="large">Grande (250 × 200)</option>
+      </select>
+      <button id="generate-grid" type="button">Generar mundo</button>
+      <span id="generation-status" role="status" aria-live="polite"></span>
+    </div>
+  </header>
+  <main class="viewport">
+    <canvas id="simulator-canvas" aria-label="Lienzo del simulador"></canvas>
+    <p id="generation-error" role="alert" hidden></p>
+  </main>
 </body>
 </html>

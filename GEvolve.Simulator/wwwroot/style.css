@@ -1,40 +1,56 @@
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; }
+body {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  background: #ffffff;
+  background: #fff;
+  color: #18324f;
+  font: 13px system-ui, sans-serif;
 }
-
-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: #ffffff;
-  touch-action: none;
-  cursor: grab;
-}
-
-canvas:active { cursor: grabbing; }
-
-.size-control {
-  position: fixed;
-  top: 12px;
-  left: 12px;
+.toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 9px;
-  border: 1px solid #d5dce3;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #526172;
-  font: 12px system-ui, sans-serif;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  min-height: 56px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #dbe3eb;
+  background: #f8fafc;
 }
-
-.size-control select {
-  border: 0;
-  background: #ffffff;
-  color: #23384b;
+.toolbar strong { font-size: 15px; white-space: nowrap; }
+.controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.controls label { color: #49627a; }
+select, button {
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid #b7c9da;
+  border-radius: 5px;
   font: inherit;
+}
+select { background: #fff; color: #18324f; }
+button { background: #194a79; color: #fff; cursor: pointer; }
+button:hover:not(:disabled) { background: #123b62; }
+button:disabled { opacity: .6; cursor: wait; }
+#generation-status { color: #49627a; }
+.viewport { position: relative; flex: 1; min-height: 0; }
+canvas { display: block; width: 100%; height: 100%; background: #fff; touch-action: none; cursor: grab; }
+canvas:active { cursor: grabbing; }
+#generation-error {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid #d9a5a5;
+  border-radius: 5px;
+  background: #fff6f6;
+  color: #8b2424;
+}
+@media (max-width: 560px) {
+  .toolbar { gap: 6px; padding: 8px 10px; }
+  .controls { width: 100%; gap: 6px; }
+  select { flex: 1; min-width: 0; }
+  #generation-status { width: 100%; }
 }

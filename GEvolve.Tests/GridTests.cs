@@ -10,9 +10,9 @@ public static class GridTests
     {
         foreach (var (size, columns, rows) in new[]
         {
-            (GridSize.Small, 150, 100),
-            (GridSize.Medium, 250, 200),
-            (GridSize.Large, 300, 250)
+            (GridSize.Small, 100, 70),
+            (GridSize.Medium, 150, 100),
+            (GridSize.Large, 250, 200)
         })
         {
             var definition = HexGridDefinitions.Get(size);

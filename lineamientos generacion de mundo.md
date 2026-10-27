@@ -18,9 +18,9 @@ Las capas son **lógicas y secuenciales**, no renderizadores independientes. La 
 
 | Perfil | Columnas × filas | Hexágonos |
 | --- | ---: | ---: |
-| Pequeño | 150 × 100 | 15 000 |
-| Mediano | 250 × 200 | 50 000 |
-| Grande | 300 × 250 | 75 000 |
+| Pequeño | 100 × 70 | 7 000 |
+| Mediano | 150 × 100 | 15 000 |
+| Grande | 250 × 200 | 50 000 |
 
 - Hexágonos regulares, orientación **flat-top** (lado horizontal arriba).
 - Extensión lógica rectangular; **no** forzar una proporción exacta 3:2: se conservan los tres tamaños aprobados.
@@ -28,6 +28,7 @@ Las capas son **lógicas y secuenciales**, no renderizadores independientes. La 
 - Límites **norte–sur**: no conectados.
 - La continuidad se aplica tanto a vecindad/distancia como a la navegación visual; las coordenadas deben ser consistentes.
 - El grid no define agua, masas terrestres, elevación, clima ni biomas.
+- La Capa 01 se genera solo al solicitarla con **Generar mundo**; al iniciar el Simulator no existe un grid activo. La vista general usa una imagen interna de la cuadrícula y el zoom cercano dibuja solo celdas visibles, para no procesar los 50 000 hexágonos en cada fotograma.
 - Convenio de la implementación: columnas impares desplazadas hacia abajo (`odd-q`); ID estable `fila × columnas + columna`; axial `(q, r) = (columna, fila − ⌊columna/2⌋)`. Para los anchos pares oficiales, el cierre horizontal traslada `(q, r)` por `(±ancho, ∓ancho/2)`. Así se conserva la fila, la distancia entre centros y la vecindad geométrica sin duplicar celdas.
 
 ## Capa 02 — Forma de masas terrestres (categorías acordadas)

@@ -50,7 +50,7 @@ dotnet run --project GEvolve.Game
 dotnet run --project GEvolve.Simulator
 ```
 
-Game abre la ventana 3D y conserva la generación bajo el control existente del usuario. Simulator escucha en <http://127.0.0.1:8766/>; muestra únicamente la Capa 01 flat-top y se detiene con `Ctrl+C`. Al iniciar usa el tamaño pequeño; el selector permite mediano y grande. `GET /api/grid/sizes` consulta los perfiles, `GET /api/grid` devuelve configuración e IDs compactos en orden fila-columna, `POST /api/grid` con `{ "size": "medium" }` cambia de tamaño, `GET /api/grid/state` consulta su configuración efectiva y `GET /api/grid/cells/{column}/{row}` devuelve identidad, coordenadas y vecinos de una celda.
+Game abre la ventana 3D y conserva la generación bajo el control existente del usuario. Simulator escucha en <http://127.0.0.1:8766/> y se detiene con `Ctrl+C`. Al abrir muestra un lienzo blanco; el tamaño pequeño (100 × 70) está seleccionado, pero no se genera ningún grid hasta pulsar **Generar mundo**. `GET /api/grid/sizes` consulta los tres perfiles oficiales (100 × 70, 150 × 100 y 250 × 200). `POST /api/grid` con `{ "size": "medium" }` crea o sustituye la Capa 01. `GET /api/grid` devuelve su configuración y número de celdas, sin enviar IDs redundantes: el ID estable es `fila × columnas + columna`. `GET /api/grid/state` consulta su configuración efectiva y `GET /api/grid/cells/{column}/{row}` devuelve identidad, coordenadas y vecinos de una celda. Las consultas de grid, estado y celda responden `404` antes de generar. La vista general reutiliza una imagen interna; con zoom cercano solo se dibujan celdas visibles, sin procesar los 50 000 hexágonos en cada redibujado.
 
 ## Persistencia y trabajo pendiente
 

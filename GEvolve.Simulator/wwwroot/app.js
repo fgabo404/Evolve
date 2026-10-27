@@ -1,9 +1,16 @@
-import { RADIUS, ROOT3, cellAt, center, mapHeight, periodWidth } from './grid-geometry.js';
+import { RADIUS, ROOT3, cellAt, mapHeight, periodWidth } from './grid-geometry.js';
 
 const canvas = document.getElementById('simulator-canvas');
 const context = canvas.getContext('2d');
 const sizeSelect = document.getElementById('grid-size');
+const generateButton = document.getElementById('generate-grid');
+const status = document.getElementById('generation-status');
+const errorMessage = document.getElementById('generation-error');
+const COLUMN_STEP = 1.5 * RADIUS;
+const ROW_STEP = ROOT3 * RADIUS;
+const HALF_HEIGHT = ROW_STEP / 2;
 let grid = null;
+let overviewCache = null;
 let selected = null;
 let scale = 1;
 let fitScale = 1;
@@ -11,6 +18,7 @@ let cameraX = 0;
 let cameraY = 0;
 let drawQueued = false;
 let pointer = null;
+let generating = false;
 
 function queueDraw() {
   if (drawQueued) return;
@@ -42,22 +50,62 @@ function fitGrid() {
 
 function resizeCanvas() {
   const bounds = canvas.getBoundingClientRect();
-  const ratio = window.devicePixelRatio || 1;
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = Math.round(bounds.width * ratio);
   canvas.height = Math.round(bounds.height * ratio);
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
-  fitGrid();
+  overviewCache = null;
+  if (grid) fitGrid();
+  else queueDraw();
 }
 
-function addHexPath(x, y) {
-  const halfHeight = ROOT3 * RADIUS / 2;
-  context.moveTo(x + RADIUS, y);
-  context.lineTo(x + RADIUS / 2, y + halfHeight);
-  context.lineTo(x - RADIUS / 2, y + halfHeight);
-  context.lineTo(x - RADIUS, y);
-  context.lineTo(x - RADIUS / 2, y - halfHeight);
-  context.lineTo(x + RADIUS / 2, y - halfHeight);
-  context.closePath();
+function addHexPath(target, x, y) {
+  target.moveTo(x + RADIUS, y);
+  target.lineTo(x + RADIUS / 2, y + HALF_HEIGHT);
+  target.lineTo(x - RADIUS / 2, y + HALF_HEIGHT);
+  target.lineTo(x - RADIUS, y);
+  target.lineTo(x - RADIUS / 2, y - HALF_HEIGHT);
+  target.lineTo(x + RADIUS / 2, y - HALF_HEIGHT);
+  target.closePath();
+}
+
+// One low-resolution image is built per generated grid. Overview redraws only blit
+// visible horizontal slices, so panning never traverses all 50,000 cells.
+function getOverviewCache() {
+  if (overviewCache) return overviewCache;
+  const bitmap = document.createElement('canvas');
+  const density = 0.5;
+  bitmap.width = Math.ceil(periodWidth(grid.columns) * density);
+  bitmap.height = Math.ceil(mapHeight(grid.rows) * density);
+  const target = bitmap.getContext('2d');
+  target.scale(density, density);
+  target.beginPath();
+  for (let row = 0; row < grid.rows; row++) {
+    for (let column = -1; column <= grid.columns; column++) {
+      addHexPath(target, RADIUS * (1 + 1.5 * column),
+        ROW_STEP * (row + 0.5 * (column & 1) + 0.5));
+    }
+  }
+  target.strokeStyle = '#c5cdd5';
+  target.lineWidth = Math.max(0.7 / fitScale, 1.4);
+  target.stroke();
+  overviewCache = bitmap;
+  return bitmap;
+}
+
+function drawOverview(right) {
+  const bitmap = getOverviewCache();
+  const period = periodWidth(grid.columns);
+  const height = mapHeight(grid.rows);
+  for (let copy = Math.floor(cameraX / period); copy * period < right; copy++) {
+    const left = Math.max(cameraX, copy * period);
+    const edge = Math.min(right, (copy + 1) * period);
+    if (edge <= left) continue;
+    const sourceX = (left - copy * period) * bitmap.width / period;
+    const sourceWidth = (edge - left) * bitmap.width / period;
+    context.drawImage(bitmap, sourceX, 0, sourceWidth, bitmap.height,
+      left, 0, edge - left, height);
+  }
 }
 
 function draw() {
@@ -78,25 +126,27 @@ function draw() {
   context.save();
   context.translate(-cameraX * scale, -cameraY * scale);
   context.scale(scale, scale);
-  context.beginPath();
-  for (let row = firstRow; row <= lastRow; row++) {
-    for (let unwrapped = firstColumn; unwrapped <= lastColumn; unwrapped++) {
-      const column = ((unwrapped % grid.columns) + grid.columns) % grid.columns;
-      if (grid.cells[row * grid.columns + column] === undefined) continue;
-      const point = center(unwrapped, row);
-      addHexPath(point.x, point.y);
+  if (RADIUS * scale < 4) {
+    drawOverview(right);
+  } else {
+    context.beginPath();
+    for (let row = firstRow; row <= lastRow; row++) {
+      for (let unwrapped = firstColumn; unwrapped <= lastColumn; unwrapped++) {
+        addHexPath(context, RADIUS + COLUMN_STEP * unwrapped,
+          ROW_STEP * (row + 0.5 * (unwrapped & 1) + 0.5));
+      }
     }
+    context.strokeStyle = '#c5cdd5';
+    context.lineWidth = 0.7 / scale;
+    context.stroke();
   }
-  context.strokeStyle = '#c5cdd5';
-  context.lineWidth = 0.7 / scale;
-  context.stroke();
 
   if (selected && selected.row >= firstRow && selected.row <= lastRow) {
     for (let unwrapped = firstColumn; unwrapped <= lastColumn; unwrapped++) {
       if (((unwrapped % grid.columns) + grid.columns) % grid.columns !== selected.column) continue;
-      const point = center(unwrapped, selected.row);
       context.beginPath();
-      addHexPath(point.x, point.y);
+      addHexPath(context, RADIUS + COLUMN_STEP * unwrapped,
+        ROW_STEP * (selected.row + 0.5 * (unwrapped & 1) + 0.5));
       context.fillStyle = '#e3ecf5';
       context.fill();
       context.strokeStyle = '#627e9a';
@@ -107,17 +157,19 @@ function draw() {
   context.restore();
 }
 
-async function loadGrid(size) {
-  const response = await fetch('/api/grid', size ? {
+async function generateGrid(size) {
+  const response = await fetch('/api/grid', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ size })
-  } : undefined);
+  });
   if (!response.ok) throw new Error(`Grid HTTP ${response.status}`);
   const next = await response.json();
   if (next.layout !== 'odd-q' || next.orientation !== 'flat-top' ||
-      next.cells.length !== next.columns * next.rows) throw new Error('Unsupported grid.');
+      next.cellCount !== next.columns * next.rows ||
+      !next.wrapHorizontal || next.wrapVertical) throw new Error('Unsupported grid.');
   grid = next;
+  overviewCache = null;
   selected = null;
   sizeSelect.value = next.size;
   fitGrid();
@@ -147,7 +199,7 @@ canvas.addEventListener('wheel', event => {
   const worldX = cameraX + x / scale;
   const worldY = cameraY + y / scale;
   const factor = event.deltaY < 0 ? 1.16 : 1 / 1.16;
-  scale = Math.max(fitScale * 0.5, Math.min(fitScale * 40, scale * factor));
+  scale = Math.max(fitScale * 0.75, Math.min(Math.min(fitScale * 40, 12), scale * factor));
   cameraX = worldX - x / scale;
   cameraY = worldY - y / scale;
   normalizeCamera();
@@ -180,13 +232,25 @@ canvas.addEventListener('pointerup', event => {
 });
 canvas.addEventListener('pointercancel', () => { pointer = null; });
 
-sizeSelect.addEventListener('change', async () => {
+generateButton.addEventListener('click', async () => {
+  if (generating) return;
+  generating = true;
+  generateButton.disabled = true;
   sizeSelect.disabled = true;
-  try { await loadGrid(sizeSelect.value); }
-  catch (error) { console.error(error); if (grid) sizeSelect.value = grid.size; }
-  finally { sizeSelect.disabled = false; }
+  status.textContent = 'Generando…';
+  errorMessage.hidden = true;
+  try { await generateGrid(sizeSelect.value); }
+  catch (error) {
+    console.error(error);
+    errorMessage.textContent = `No se pudo generar el grid: ${error.message}`;
+    errorMessage.hidden = false;
+  } finally {
+    generating = false;
+    generateButton.disabled = false;
+    sizeSelect.disabled = false;
+    status.textContent = '';
+  }
 });
 
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-loadGrid().catch(console.error);
