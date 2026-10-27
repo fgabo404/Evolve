@@ -6,7 +6,7 @@ const CATALOGS = [
   { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Plants/plants.catalog.guide.json" },
   { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Minerals/minerals.catalog.guide.json" },
   { type: "resources", title: { es: "Recursos", en: "Resources" }, file: "../Resources/resources.catalog.guide.json" },
-  { type: "technologies", title: { es: "Tecnologías", en: "Technologies" }, file: "../Technologies/agriculture.technologies.json" }
+  { type: "technologies", title: { es: "Tecnologías", en: "Technologies" }, file: "../Technologies/agriculture.tech.json" }
 ];
 const state = { lang: "es", query: "", type: "world", id: null, data: null, index: null,
   roadmap: { graph: null, zoom: 1, lastFocus: null } };
@@ -446,8 +446,8 @@ function structured(parent, value, label = "") {
 function renderTechnology(area, node) {
   const value = node.value;
   fieldGrid(section(area, tr("Investigación", "Research")), [
-    [tr("Ámbito", "Scope"), value.scope], [tr("Orden", "Order"), value.order],
-    [tr("Modo", "Mode"), value.research?.mode], [tr("Costo documentado", "Documented cost"), value.research?.cost]
+    [tr("Ámbito", "Scope"), value.scope, true], [tr("Orden", "Order"), value.order],
+    [tr("Modo", "Mode"), value.research?.mode, true], [tr("Costo documentado", "Documented cost"), value.research?.cost, true]
   ]);
   for (const [label, expression] of [
     [tr("Requisitos previos", "Prerequisites"), value.prerequisites],
@@ -577,15 +577,17 @@ function renderTechnologyRoadmap(selected) {
   const matches = [...graph.nodes.values()].filter(node => roadmapMatches(node, query));
   $("count").textContent = `${query ? matches.length : state.data.technologies.technologies.length} / ${state.data.technologies.technologies.length}`;
   $("roadmap-heading").textContent = loc(state.data.technologies.name);
-  $("roadmap-caption").textContent = tr("Puntos azules: tecnologías agrícolas · líneas: requisitos explícitos", "Blue points: agriculture technologies · lines: explicit prerequisites");
+  $("roadmap-caption").textContent = tr("Lenguaje abre las ramas de estudio. Las cajas son categorías planificadas, no tecnologías.", "Language opens the study branches. Boxes are planned categories, not technologies.");
   $("roadmap-center").textContent = tr("Centrar mapa", "Center map");
   $("roadmap-zoom-in").setAttribute("aria-label", tr("Acercar", "Zoom in"));
   $("roadmap-zoom-out").setAttribute("aria-label", tr("Alejar", "Zoom out"));
   $("roadmap-viewport").setAttribute("aria-label", tr("Mapa tecnológico desplazable", "Scrollable technology map"));
   const legend = $("roadmap-legend"); legend.replaceChildren();
-  for (const [shape, text] of [["legend-dot", tr("Tecnología agrícola", "Agriculture technology")],
-    ["legend-dot external", tr("Referencia externa", "External reference")],
-    ["legend-gate", tr("TODAS / CUALQUIERA", "ALL / ANY")]]) {
+  const legendItems = [["legend-dot", tr("Tecnología", "Technology")]];
+  if ([...graph.nodes.values()].some(node => node.kind === "branch")) legendItems.push(["legend-branch", tr("Rama planificada", "Planned branch")]);
+  if ([...graph.nodes.values()].some(node => node.kind === "external")) legendItems.push(["legend-dot external", tr("Referencia externa", "External reference")]);
+  if ([...graph.nodes.values()].some(node => node.kind === "gate")) legendItems.push(["legend-gate", tr("TODAS / CUALQUIERA", "ALL / ANY")]);
+  for (const [shape, text] of legendItems) {
     const item = append(legend, element("span"));
     append(item, element("i", shape, shape === "legend-gate" ? tr("Y/O", "A/O") : ""));
     append(item, element("span", "", text));
@@ -599,21 +601,32 @@ function renderTechnologyRoadmap(selected) {
   svg.setAttribute("viewBox", `0 0 ${graph.width} ${graph.height}`);
   svg.setAttribute("width", graph.width);
   svg.setAttribute("height", graph.height);
+  const definitions = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  const arrow = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  for (const [key, value] of [["id", "roadmap-arrow"], ["viewBox", "0 0 8 8"], ["markerWidth", "8"], ["markerHeight", "8"], ["refX", "7"], ["refY", "4"], ["orient", "auto"]]) arrow.setAttribute(key, value);
+  const arrowShape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  arrowShape.setAttribute("d", "M 0 0 L 8 4 L 0 8 Z");
+  arrowShape.setAttribute("fill", "#7399c2");
+  arrow.appendChild(arrowShape);
+  definitions.appendChild(arrow);
+  svg.appendChild(definitions);
   const activeEdges = roadmapHighlightEdges(graph, selected?.id);
   const related = new Set([...(graph.dependencies.get(selected?.id) || []), ...(graph.dependents.get(selected?.id) || [])]);
   for (const edge of graph.edges) {
     const from = graph.nodes.get(edge.from), to = graph.nodes.get(edge.to);
-    const sx = from.x + 24, sy = from.y + 24, tx = to.x + 6, ty = to.y + 24;
+    const sx = from.x + (edge.kind === "branch" ? 150 : 24), sy = from.y + 24;
+    const tx = to.kind === "branch" ? to.x - 8 : to.x + 6, ty = to.y + (to.kind === "branch" ? 33 : 24);
     const halfway = sx + Math.max(35, (tx - sx) / 2);
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", `M ${sx} ${sy} C ${halfway} ${sy}, ${halfway} ${ty}, ${tx} ${ty}`);
-    path.setAttribute("class", `roadmap-path${activeEdges.has(edge) ? " is-active" : selected ? " is-dim" : ""}`);
+    path.setAttribute("class", `roadmap-path${edge.kind === "branch" ? " branch-path" : ""}${activeEdges.has(edge) ? " is-active" : selected ? " is-dim" : ""}`);
+    path.setAttribute("marker-end", "url(#roadmap-arrow)");
     svg.appendChild(path);
   }
   const nodeLayer = $("roadmap-nodes"); nodeLayer.replaceChildren();
   for (const node of graph.nodes.values()) {
     const matched = roadmapMatches(node, query);
-    const isRelated = related.has(node.id) || node.kind === "gate" && activeEdges.size && graph.edges.some(edge => activeEdges.has(edge) && (edge.from === node.id || edge.to === node.id));
+    const isRelated = related.has(node.id) || node.kind !== "technology" && activeEdges.size && graph.edges.some(edge => activeEdges.has(edge) && (edge.from === node.id || edge.to === node.id));
     const dim = selected ? node.id !== selected.id && !isRelated && !matched : query && !matched && node.kind === "technology";
     const button = append(nodeLayer, element("button", `roadmap-node ${node.kind}${node.id === selected?.id ? " is-selected" : ""}${isRelated ? " is-related" : ""}${dim ? " is-dim" : ""}${matched ? " is-match" : ""}`));
     button.type = "button";
@@ -624,6 +637,11 @@ function renderTechnologyRoadmap(selected) {
       button.title = node.id;
       if (node.id === selected?.id) button.setAttribute("aria-current", "true");
       button.onclick = () => navigate("technologies", node.id);
+    } else if (node.kind === "branch") {
+      append(button, element("span", "node-label", loc(node.value.name)));
+      append(button, element("small", "branch-status", tr("Rama planificada", "Planned branch")));
+      button.title = loc(node.value.description);
+      button.onclick = () => setNotice(`${loc(node.value.name)}: ${loc(node.value.description)}`);
     } else if (node.kind === "external") {
       append(button, element("span", "point"));
       append(button, element("span", "node-label", node.id.replaceAll("_", " ")));

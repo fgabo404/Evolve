@@ -5,17 +5,27 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const wiki = path.resolve(__dirname, "..");
-const catalog = JSON.parse(fs.readFileSync(path.resolve(wiki, "../Technologies/agriculture.technologies.json"), "utf8"));
+const catalog = JSON.parse(fs.readFileSync(path.resolve(wiki, "../Technologies/agriculture.tech.json"), "utf8"));
 const context = vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(wiki, "technology-roadmap.js"), "utf8"), context);
 const build = context.EvolveTechnologyRoadmap;
 const graph = build(catalog);
 const nodes = [...graph.nodes.values()];
 assert.equal(nodes.filter(node => node.kind === "technology").length, catalog.technologies.length);
-assert.equal(catalog.technologies.length, 23);
-assert.equal(nodes.filter(node => node.kind === "external").length, 9);
-assert(nodes.some(node => node.kind === "gate" && node.operator === "any" && node.owner === "gathering_containers"));
-assert(nodes.some(node => node.kind === "gate" && node.operator === "all" && node.owner === "species_cultivation"));
+assert.equal(catalog.technologies.length, 1);
+assert.equal(catalog.rootTechnologyId, "language");
+assert.equal(catalog.technologies[0].order, 0);
+assert.equal(catalog.technologies[0].name.es, "Lenguaje");
+assert.equal(nodes.filter(node => node.kind === "external").length, 0);
+assert.deepEqual(catalog.branches.map(branch => branch.name.es), ["Agricultura", "Domesticación", "Otras tecnologías"]);
+assert.equal(nodes.filter(node => node.kind === "branch").length, 3);
+assert.equal(graph.edges.length, 3);
+assert(graph.edges.every(edge => edge.kind === "branch" && edge.from === "language"));
+const branchNodes = catalog.branches.map(branch => graph.nodes.get(`branch:${branch.id}`));
+assert(branchNodes.every(node => node.x >= graph.nodes.get("language").x + 300));
+assert(branchNodes[1].y - branchNodes[0].y >= 160);
+assert(branchNodes[2].y - branchNodes[1].y >= 160);
+assert(graph.nodes.get("language").y > branchNodes[0].y && graph.nodes.get("language").y < branchNodes[2].y);
 
 function refs(value) {
   if (!value || typeof value !== "object") return [];
@@ -41,18 +51,23 @@ for (const technology of catalog.technologies) {
 for (const edge of graph.edges) assert(graph.nodes.get(edge.from).level < graph.nodes.get(edge.to).level);
 for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
   const a = nodes[i], b = nodes[j];
-  const widthA = a.kind === "gate" ? 74 : 232, widthB = b.kind === "gate" ? 74 : 232;
-  assert(a.x + widthA <= b.x || b.x + widthB <= a.x || a.y + 48 <= b.y || b.y + 48 <= a.y,
+  const widthA = a.kind === "gate" ? 74 : a.kind === "branch" ? 240 : 232;
+  const widthB = b.kind === "gate" ? 74 : b.kind === "branch" ? 240 : 232;
+  const heightA = a.kind === "branch" ? 66 : 48, heightB = b.kind === "branch" ? 66 : 48;
+  assert(a.x + widthA <= b.x || b.x + widthB <= a.x || a.y + heightA <= b.y || b.y + heightB <= a.y,
     `overlap: ${a.id} and ${b.id}`);
 }
-assert(!graph.dependencies.get("plant_knowledge").has("gathering_tools"), "display order must not create edges");
+assert.equal(graph.dependencies.get("language").size, 0);
 const extended = build({ ...catalog, technologies: [...catalog.technologies, {
-  id: "future_candidate", order: 24,
-  prerequisites: { all: [{ type: "technology_completed", technologyId: "grafting", scope: "current_species" }] }
+  id: "future_candidate", order: 1,
+  prerequisites: { all: [{ type: "technology_completed", technologyId: "language" }] }
 }] });
-assert.equal([...extended.nodes.values()].filter(node => node.kind === "technology").length, 24);
-assert(extended.dependencies.get("future_candidate").has("grafting"));
-assert(extended.nodes.get("future_candidate").level > extended.nodes.get("grafting").level);
+assert.equal([...extended.nodes.values()].filter(node => node.kind === "technology").length, 2);
+assert(extended.dependencies.get("future_candidate").has("language"));
+assert(extended.nodes.get("future_candidate").level > extended.nodes.get("language").level);
+assert.throws(() => build({ ...catalog, technologies: [...catalog.technologies, {
+  id: "disconnected", order: 1, prerequisites: { all: [] }
+}] }), /does not descend/);
 
 const synthetic = build({ externalReferences: { technologyIds: ["external_a", "external_b"] }, technologies: [
   { id: "first", order: 2, prerequisites: { all: [] } },
@@ -74,4 +89,4 @@ assert.equal([...synthetic.nodes.values()].filter(node => node.kind === "conditi
 assert.throws(() => build({ externalReferences: { technologyIds: [] }, technologies: [
   { id: "a", prerequisites: { all: [{ type: "technology_completed", technologyId: "missing" }] } }
 ] }), /Undeclared/);
-console.log(`Roadmap: ${catalog.technologies.length} technologies, 9 external references, ${graph.edges.length} prerequisite segments; nested logic and layout verified.`);
+console.log(`Roadmap: ${catalog.technologies.length} initial technology, ${catalog.branches.length} planned branches, ${graph.edges.length} visual branch connections; root rule and nested logic verified.`);

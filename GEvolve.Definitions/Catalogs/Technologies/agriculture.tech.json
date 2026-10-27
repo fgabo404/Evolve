@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "0.1.0",
+  "contentVersion": "0.2.0",
+  "kind": "technology_definitions",
+  "status": "draft",
+  "id": "agriculture",
+  "name": {
+    "en": "Technology roadmap",
+    "es": "Árbol tecnológico"
+  },
+  "description": {
+    "en": "Technology roadmap under construction, beginning with Language.",
+    "es": "Roadmap tecnológico en construcción, comenzando por Lenguaje."
+  },
+  "defaultLanguage": "en",
+  "supportedLanguages": [
+    "en",
+    "es"
+  ],
+  "rootTechnologyId": "language",
+  "branches": [
+    {
+      "id": "agriculture",
+      "name": {
+        "en": "Agriculture",
+        "es": "Agricultura"
+      },
+      "description": {
+        "en": "Branch reserved for future agriculture technologies.",
+        "es": "Rama reservada para futuras tecnologías agrícolas."
+      },
+      "status": "planned"
+    },
+    {
+      "id": "domestication",
+      "name": {
+        "en": "Domestication",
+        "es": "Domesticación"
+      },
+      "description": {
+        "en": "Branch reserved for future domestication technologies.",
+        "es": "Rama reservada para futuras tecnologías de domesticación."
+      },
+      "status": "planned"
+    },
+    {
+      "id": "other_technologies",
+      "name": {
+        "en": "Other technologies",
+        "es": "Otras tecnologías"
+      },
+      "description": {
+        "en": "Space for other technology branches yet to be defined.",
+        "es": "Espacio para otras ramas tecnológicas aún por definir."
+      },
+      "status": "planned"
+    }
+  ],
+  "externalReferences": {
+    "technologyIds": []
+  },
+  "technologies": [
+    {
+      "id": "language",
+      "name": {
+        "en": "Language",
+        "es": "Lenguaje"
+      },
+      "description": {
+        "en": "Starting point for this technology roadmap. Research conditions, cost and effects are pending design.",
+        "es": "Punto de partida de este roadmap tecnológico. Sus condiciones de investigación, coste y efectos están pendientes de diseño."
+      },
+      "scope": null,
+      "order": 0,
+      "prerequisites": {
+        "all": []
+      },
+      "research": {
+        "mode": null,
+        "cost": null,
+        "pointUnit": null,
+        "startConditions": null,
+        "ongoingConditions": null
+      },
+      "usageConditions": null,
+      "eurekas": null,
+      "effects": null
+    }
+  ]
+}

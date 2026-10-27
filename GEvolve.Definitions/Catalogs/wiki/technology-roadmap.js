@@ -1,6 +1,6 @@
 "use strict";
 
-// The diagram is a read-only projection of prerequisites, never a research evaluator.
+// The diagram projects technology prerequisites and separately declared visual branches.
 globalThis.EvolveTechnologyRoadmap = function createTechnologyRoadmap(catalog) {
   const technologies = catalog.technologies || [];
   const byId = new Map(technologies.map(value => [value.id, value]));
@@ -11,9 +11,9 @@ globalThis.EvolveTechnologyRoadmap = function createTechnologyRoadmap(catalog) {
   const dependents = new Map(technologies.map(value => [value.id, new Set()]));
   const declaredExternal = new Set(catalog.externalReferences?.technologyIds || []);
 
-  function connect(from, to, owner, scope = null) {
+  function connect(from, to, owner, scope = null, kind = "prerequisite") {
     if (!edges.some(edge => edge.from === from && edge.to === to && edge.owner === owner))
-      edges.push({ from, to, owner, scope });
+      edges.push({ from, to, owner, scope, kind });
   }
   function expression(value, owner, path) {
     if (!value || typeof value !== "object") return null;
@@ -49,7 +49,15 @@ globalThis.EvolveTechnologyRoadmap = function createTechnologyRoadmap(catalog) {
     const prerequisite = expression(technology.prerequisites, technology.id, "root");
     if (prerequisite) connect(prerequisite.id, technology.id, technology.id, prerequisite.scope);
   }
-
+  const branches = catalog.branches || [];
+  if (branches.length && !byId.has(catalog.rootTechnologyId)) throw Error("Visual branches require an existing root technology");
+  for (const [order, branch] of branches.entries()) {
+    if (!branch.id || !branch.name?.en || !branch.name?.es) throw Error("Incomplete visual branch");
+    const id = `branch:${branch.id}`;
+    if (nodes.has(id)) throw Error(`Duplicate visual branch: ${branch.id}`);
+    nodes.set(id, { id, kind: "branch", value: branch, order });
+    connect(catalog.rootTechnologyId, id, catalog.rootTechnologyId, null, "branch");
+  }
   const incoming = new Map([...nodes.keys()].map(id => [id, []]));
   const outgoing = new Map([...nodes.keys()].map(id => [id, []]));
   for (const edge of edges) { incoming.get(edge.to).push(edge); outgoing.get(edge.from).push(edge); }
@@ -66,9 +74,22 @@ globalThis.EvolveTechnologyRoadmap = function createTechnologyRoadmap(catalog) {
     }
   }
   if (processed !== nodes.size) throw Error("Technology prerequisite cycle");
+  if (catalog.rootTechnologyId) {
+    if (!byId.has(catalog.rootTechnologyId)) throw Error(`Missing root technology: ${catalog.rootTechnologyId}`);
+    const reachable = new Set([catalog.rootTechnologyId]);
+    const queue = [catalog.rootTechnologyId];
+    while (queue.length) {
+      for (const edge of outgoing.get(queue.shift())) {
+        if (reachable.has(edge.to)) continue;
+        reachable.add(edge.to);
+        queue.push(edge.to);
+      }
+    }
+    for (const id of byId.keys()) if (!reachable.has(id)) throw Error(`Technology does not descend from ${catalog.rootTechnologyId}: ${id}`);
+  }
   const columns = [];
   for (const [id, level] of levels) (columns[level] ||= []).push(id);
-  const order = id => nodes.get(id).value?.order ?? Number.MAX_SAFE_INTEGER;
+  const order = id => nodes.get(id).order ?? nodes.get(id).value?.order ?? Number.MAX_SAFE_INTEGER;
   for (const column of columns) column.sort((a, b) => order(a) - order(b) || a.localeCompare(b));
   // Barycentric passes reduce crossings while keeping every level in its DAG column.
   for (let pass = 0; pass < 4; pass++) {
@@ -82,16 +103,25 @@ globalThis.EvolveTechnologyRoadmap = function createTechnologyRoadmap(catalog) {
     }
   }
   const maxRows = Math.max(...columns.map(column => column.length));
-  const width = columns.length * 270 + 90;
-  const height = Math.max(640, maxRows * 88 + 120);
+  const openingBranches = branches.length > 0 && technologies.length === 1;
+  const columnGap = openingBranches ? 360 : 270;
+  const rowGap = openingBranches ? 180 : 88;
+  const width = columns.length * columnGap + 90;
+  const height = Math.max(640, maxRows * rowGap + 120);
   for (let level = 0; level < columns.length; level++) {
     const column = columns[level];
     for (let row = 0; row < column.length; row++) {
       const node = nodes.get(column[row]);
-      node.x = 46 + level * 270;
-      node.y = 48 + (row + (maxRows - column.length) / 2) * 88;
+      node.x = 46 + level * columnGap;
+      node.y = 48 + (row + (maxRows - column.length) / 2) * rowGap;
       node.level = level;
     }
+  }
+  if (branches.length) {
+    const root = nodes.get(catalog.rootTechnologyId);
+    root.y = height / 2 - 24;
+    const middle = (branches.length - 1) / 2;
+    branches.forEach((branch, index) => { nodes.get(`branch:${branch.id}`).y = root.y + (index - middle) * 180; });
   }
   return { nodes, edges, dependencies, dependents, incoming, outgoing, width, height, columns };
 };

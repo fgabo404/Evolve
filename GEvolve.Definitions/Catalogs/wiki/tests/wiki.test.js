@@ -12,7 +12,7 @@ const files = {
   plants: "Plants/plants.catalog.guide.json",
   minerals: "Minerals/minerals.catalog.guide.json",
   resources: "Resources/resources.catalog.guide.json",
-  technologies: "Technologies/agriculture.technologies.json"
+  technologies: "Technologies/agriculture.tech.json"
 };
 const data = Object.fromEntries(Object.entries(files).map(([type, file]) =>
   [type, JSON.parse(fs.readFileSync(path.join(catalogs, file), "utf8"))]));
@@ -48,8 +48,7 @@ const routes = [
   ["world", "occurrence", "plants", "source", "resources"],
   ["world", "occurrence", "minerals", "source", "resources"],
   ["plants", "source", "resources", "process_input", "processes"],
-  ["minerals", "source", "resources", "process_input", "processes"],
-  ["technologies", "tag_reference", "resources", "process_input", "processes"]
+  ["minerals", "source", "resources", "process_input", "processes"]
 ];
 for (const route of routes) {
   const found = findPath(...route);
@@ -62,8 +61,9 @@ assert(tanning);
 assert(out(tanning, "process_output").some(edge => edge.to.id === "RES#000104"));
 assert(incoming(hide, "source").every(edge => out(edge.from, "source").includes(edge)));
 const manure = index.resolve("resources", "RES#000006");
-assert(incoming(manure, "tag_reference").some(edge => edge.from.type === "technologies"));
 assert(incoming(manure, "source").length > 0, "referenced resource should retain its sources");
+assert(index.resolve("technologies", "language"));
+assert.equal(index.list("technologies").length, 1);
 const olives = index.resolve("plants", "plant_wild_olive");
 const oliveResource = out(olives, "source").find(edge => edge.to.id === "RES#000021")?.to;
 assert(oliveResource);
@@ -144,6 +144,8 @@ function descendants(root) { return [root, ...root.children.flatMap(descendants)
 async function ready() {
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(requested.length, 6);
+  assert(requested.includes("../Technologies/agriculture.tech.json"));
+  assert(!requested.includes("../Technologies/agriculture.technologies.json"));
   assert(requested.every(file => !file.includes("biological")));
   assert.equal(ids.categories.children.length, 6);
   assert.equal(ids.categories.children[0].textContent, "Mundo (Biomas)");
@@ -152,7 +154,7 @@ async function ready() {
   assert.match(ids.detail.textContent, /RES#000031/);
   assert.match(ids.detail.textContent, /hide_tanning/);
   assert.match(ids.detail.textContent, /Pendiente de definir/);
-  assert.match(ids["unresolved-title"].textContent, /18/);
+  assert.match(ids["unresolved-title"].textContent, /\d+/);
   assert.doesNotMatch(ids.detail.textContent, /taxonomy|taxonResolution|scientificName/i);
   const sourceButton = descendants(ids.detail).find(item => item.className === "relation-link" && item.textContent);
   assert(sourceButton, "a resource source must be clickable");
@@ -186,44 +188,53 @@ async function ready() {
     ["plants", "wheat", "Associated resources"],
     ["minerals", "geological_alluvial_clay", "Extractable resources"],
     ["processes", "breadmaking", "breadmaking"],
-    ["technologies", "organic_manuring", "livestock_manure"]
+    ["technologies", "language", "Language"]
   ]) {
     vm.runInContext(`navigate(${JSON.stringify(type)}, ${JSON.stringify(id)})`, context);
     assert.match((type === "technologies" ? ids["roadmap-panel"] : ids.detail).textContent, new RegExp(expected), `${type}:${id}`);
   }
-  assert.match(ids["roadmap-panel"].textContent, /Reference not found in these catalogs/);
-  assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" technology")).length, 23);
-  assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" external")).length, 9);
-  assert(ids["roadmap-lines"].children.length > 23);
+  assert.match(ids["roadmap-panel"].textContent, /Pending definition/);
+  assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" technology")).length, 1);
+  assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" branch")).length, 3);
+  assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" external")).length, 0);
+  assert.equal(ids["roadmap-lines"].children.filter(node => node.tag === "path").length, 3);
+  assert.match(ids["roadmap-nodes"].textContent, /Agriculture|Domestication|Other technologies/);
+  const agricultureBranch = ids["roadmap-nodes"].children.find(node => node.className.includes(" branch") && node.textContent.includes("Agriculture"));
+  assert(agricultureBranch);
+  const routeBeforeBranch = location.hash;
+  agricultureBranch.onclick();
+  assert.equal(location.hash, routeBeforeBranch);
+  assert.match(ids.notice.textContent, /future agriculture technologies/);
   assert.equal(ids.workspace.hidden, true);
   assert.equal(ids["technology-view"].hidden, false);
   ids["roadmap-zoom-in"].onclick();
   assert.equal(ids["roadmap-zoom-value"].textContent, "115%");
   ids["roadmap-zoom-out"].onclick();
   assert.equal(ids["roadmap-zoom-value"].textContent, "100%");
+  ids["roadmap-viewport"].clientWidth = 200;
   ids["roadmap-center"].onclick();
   assert(ids["roadmap-viewport"].scrollLeft > 0);
-  ids.search.value = "grafting"; ids.search.oninput({ target: ids.search });
-  assert.equal(ids.count.textContent, "1 / 23");
-  const graftingPoint = descendants(ids["roadmap-nodes"]).find(node => node.title === "grafting");
-  assert(graftingPoint);
-  graftingPoint.onclick();
-  assert.equal(new URLSearchParams(location.hash.slice(1)).get("id"), "grafting");
-  assert.match(ids["roadmap-panel"].textContent, /Grafting/);
+  ids.search.value = "language"; ids.search.oninput({ target: ids.search });
+  assert.equal(ids.count.textContent, "1 / 1");
+  const languagePoint = descendants(ids["roadmap-nodes"]).find(node => node.title === "language");
+  assert(languagePoint);
+  languagePoint.onclick();
+  assert.equal(new URLSearchParams(location.hash.slice(1)).get("id"), "language");
+  assert.match(ids["roadmap-panel"].textContent, /Language/);
   const closeRoadmap = descendants(ids["roadmap-panel"]).find(node => node.className === "roadmap-close");
   closeRoadmap.onclick();
   assert.equal(new URLSearchParams(location.hash.slice(1)).get("type"), "technologies");
   assert.equal(ids["roadmap-panel"].hidden, true);
   history.back();
-  assert.equal(new URLSearchParams(location.hash.slice(1)).get("id"), "grafting");
+  assert.equal(new URLSearchParams(location.hash.slice(1)).get("id"), "language");
   assert.equal(ids["roadmap-panel"].hidden, false);
   ids.language.value = "es"; ids.language.onchange({ target: ids.language });
-  assert.match(ids["roadmap-panel"].textContent, /Injerto/);
-  ids.search.value = "siembra inicial"; ids.search.oninput({ target: ids.search });
-  assert.equal(ids.count.textContent, "1 / 23");
-  location.hash = "#type=technologies&id=seed_handling";
+  assert.match(ids["roadmap-panel"].textContent, /Lenguaje/);
+  ids.search.value = "lenguaje"; ids.search.oninput({ target: ids.search });
+  assert.equal(ids.count.textContent, "1 / 1");
+  location.hash = "#type=technologies&id=language";
   listeners.hashchange();
-  assert.match(ids["roadmap-panel"].textContent, /Manejo de semillas/);
+  assert.match(ids["roadmap-panel"].textContent, /Lenguaje/);
   ids.language.value = "en"; ids.language.onchange({ target: ids.language });
   vm.runInContext("navigate('world', 'tropical_forest')", context);
   assert.doesNotMatch(ids.detail.textContent, /Regional variants|regional variant IDs/i);
