@@ -1,5 +1,5 @@
-﻿
-namespace GEvolve.Core;
+
+namespace GEvolve.Engine;
 
 public readonly record struct HexCoord(int Q, int R)
 {

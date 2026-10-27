@@ -1,0 +1,5 @@
+# Estado de partida
+
+`GameState` contiene actualmente la versión del formato de guardado, la versión declarada de definiciones, el turno, `WorldSettings` y los estados existentes de civilizaciones y regiones. `GameSaveStore` serializa este estado; el mundo se reconstruye actualmente desde la configuración y la semilla al crear un `SimulationEngine`.
+
+Los modelos `WorldState`, `HexState`, `EntityState` y `WorldSnapshot` quedan pendientes: representarían, respectivamente, el estado persistente del mundo, cambios en unidades espaciales si se confirma esa geometría, instancias de entidades y datos suficientes para recuperar un mundo generado. No se crean clases vacías ni se fija aún su formato. Antes de depender de la regeneración para partidas duraderas se deberán identificar la versión del generador y la configuración efectiva, y decidir qué resultados conservar como snapshot.

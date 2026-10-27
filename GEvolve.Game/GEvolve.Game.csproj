@@ -12,7 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GEvolve.Core\GEvolve.Core.csproj" />
+    <ProjectReference Include="..\GEvolve.Definitions\GEvolve.Definitions.csproj" />
+    <ProjectReference Include="..\GEvolve.Engine\GEvolve.Engine.csproj" />
+    <ProjectReference Include="..\GEvolve.State\GEvolve.State.csproj" />
   </ItemGroup>
 
 </Project>

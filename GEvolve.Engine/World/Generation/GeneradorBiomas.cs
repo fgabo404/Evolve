@@ -1,4 +1,4 @@
-namespace GEvolve.Core;
+namespace GEvolve.Engine;
 
 /// <summary>Catálogo visual v0.2.1. No agrega recursos ni efectos de juego.</summary>
 public enum Bioma

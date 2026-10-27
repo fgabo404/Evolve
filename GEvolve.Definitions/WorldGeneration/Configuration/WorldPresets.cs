@@ -1,4 +1,4 @@
-namespace GEvolve.Core;
+namespace GEvolve.Definitions.WorldGeneration.Configuration;
 
 /// <summary>Perfiles geográficos del prototipo; el jugador elige tipo, tamaño y semilla.</summary>
 public static class WorldPresets

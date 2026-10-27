@@ -1,4 +1,4 @@
-namespace GEvolve.Core;
+namespace GEvolve.Engine;
 
 /// <summary>Una celda de demostración con coordenada axial y altura visual.</summary>
 /// <param name="Coordenada">Identidad hexagonal estable.</param>

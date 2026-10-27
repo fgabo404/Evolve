@@ -1,4 +1,6 @@
-namespace GEvolve.Core;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+
+namespace GEvolve.Engine;
 
 /// <summary>Genera cadenas montañosas locales, continuas y reproducibles sobre tierra.</summary>
 public static class GeneradorCordilleras

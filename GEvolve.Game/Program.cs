@@ -1,11 +1,13 @@
-using GEvolve.Core;
+using GEvolve.Engine;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+using GEvolve.State.Game;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace GEvolve.Desktop;
+namespace GEvolve.Game;
 
 /// <summary>
 /// Ventana principal del motor G-Evolve.
@@ -60,7 +62,10 @@ public sealed class MotorGEvolve : GameWindow
         if (_pantalla == Pantalla.Cargando) return;
         WorldSettings configuracion = _ajustes;
         _errorGeneracion = "";
-        _generacion = Task.Run(() => WorldSystem.Generar(configuracion));
+        _generacion = Task.Run(() => new SimulationEngine(new GameState
+        {
+            WorldSettings = configuracion
+        }).World);
         _pantalla = Pantalla.Cargando;
     }
 

@@ -1,4 +1,6 @@
-namespace GEvolve.Core;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+
+namespace GEvolve.Engine;
 
 /// <summary>Siluetas continentales a partir de esqueletos ramificados y fractales periódicos.</summary>
 public static class GeneradorMasasTerrestres

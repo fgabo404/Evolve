@@ -1,4 +1,6 @@
-namespace GEvolve.Core;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+
+namespace GEvolve.Engine;
 
 /// <summary>
 /// Archipiélagos de inspiración geográfica: arcos insulares, islas mayores,

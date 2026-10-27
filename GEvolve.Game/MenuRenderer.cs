@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-namespace GEvolve.Desktop;
+namespace GEvolve.Game;
 
 /// <summary>Interfaz 2D de estilo pixelado, sin texturas ni fuentes externas.</summary>
 internal sealed class MenuRenderer : IDisposable

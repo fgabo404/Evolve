@@ -1,4 +1,4 @@
-using GEvolve.Core;
+using GEvolve.Definitions.WorldGeneration.Configuration;
 
 namespace GEvolve.State.Game;
 

@@ -1,8 +1,13 @@
 using System.Numerics;
-using GEvolve.Core;
+using GEvolve.Engine;
+using GEvolve.Definitions.WorldGeneration.Configuration;
 
 // Pruebas ligeras sin paquetes externos. Fallan con código de salida distinto de cero.
 // Alcance: matemáticas hexagonales, no requieren GPU ni abrir una ventana.
+public static class WorldTests
+{
+public static int Run()
+{
 try
 {
     var origen = new HexCoord(0, 0);
@@ -197,6 +202,7 @@ catch (Exception ex)
     Console.Error.WriteLine($"ERROR — {ex.Message}");
     return 1;
 }
+}
 
 /// <summary>Comprueba una invariante de geometría; detiene el proceso al fallar.</summary>
 static void Verificar(bool condicion, string mensaje)
@@ -209,4 +215,5 @@ static bool LanzaArgumento(Action accion)
 {
     try { accion(); return false; }
     catch (ArgumentOutOfRangeException) { return true; }
+}
 }

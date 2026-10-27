@@ -1,4 +1,4 @@
-namespace GEvolve.Core;
+namespace GEvolve.Engine;
 
 /// <summary>Forma local del relieve según los vecinos hexagonales.</summary>
 public enum FormaRelieve { Llanura, Ladera, Valle, Cresta, Cumbre }

@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace GEvolve.Core;
+namespace GEvolve.Engine;
 
 /// <summary>
 /// Conversiones matemáticas entre coordenadas hexagonales axiales y puntos

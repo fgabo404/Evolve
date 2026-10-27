@@ -1,7 +1,7 @@
-using GEvolve.Core;
+using GEvolve.Engine;
+using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
-using GEvolve.Engine;
 
 var state = new GameState { WorldSettings = new WorldSettings(Ancho: 20, Alto: 20, Semilla: 42) };
 var simulation = new SimulationEngine(state);
@@ -20,3 +20,6 @@ try
     Console.WriteLine("PASS: turns, save/load, deterministic world");
 }
 finally { if (File.Exists(path)) File.Delete(path); }
+
+if (WorldTests.Run() != 0) return 1;
+return 0;

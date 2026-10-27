@@ -1,4 +1,4 @@
-namespace GEvolve.Core;
+namespace GEvolve.Engine;
 
 /// <summary>Clase visual inicial del terreno, independiente de OpenGL.</summary>
 public enum TipoSuperficie { Oceano, Tierra }

@@ -1,4 +1,6 @@
-namespace GEvolve.Core;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+
+namespace GEvolve.Engine;
 
 /// <summary>Genera topologías, alturas y biomas reproducibles, sin dependencias gráficas.</summary>
 public static class WorldSystem

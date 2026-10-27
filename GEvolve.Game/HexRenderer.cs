@@ -1,8 +1,8 @@
-using GEvolve.Core;
+using GEvolve.Engine;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-namespace GEvolve.Desktop;
+namespace GEvolve.Game;
 
 /// <summary>
 /// Construye una sola malla de prismas hexagonales con tapas claras
