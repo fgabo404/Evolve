@@ -56,43 +56,9 @@ El ruido coherente multiescala se interpola con periodicidad horizontal exacta. 
 
 **Aún por decidir:** relación de esta forma con polos, anchuras de estrechos como regla de juego, erosión y parámetros definitivos. Estas ausencias no invalidan los perfiles experimentales actuales.
 
-## Capa 03 — Elevaciones (cuatro niveles documentados)
+## Capas 03 y 04 — Pendientes de redefinición
 
-Fuente canónica de diseño: `EvolveDoc/data/world/world.catalog.guide.json`, campo `elevationLevels`, y `lang/es/world.catalog.guide.md`.
-
-| Nivel | Nombre ES | Tránsito terrestre ordinario | Otras reglas |
-| --- | --- | --- | --- |
-| **0** | Nivel del mar | Depende de tierra/agua | No confundir nivel 0 con océano obligatorio. |
-| **1** | Nivel medio | Permitido | Sin restricción adicional documentada. |
-| **2** | Nivel alto | Permitido | Restricciones de movimiento/construcción por concretar (`null` en fuente). |
-| **3** | Cumbres infranqueables | No permitido | Asentamientos convencionales no permitidos. |
-
-- Elevación y bioma son atributos independientes.
-- **Visualización inicial 2D:** colocar el número de nivel (`0`, `1`, `2` o `3`) sobre cada hexágono. No dibujar relieve tridimensional en la vista estratégica 2D como requisito de esta capa.
-- La capa puede requerir un cálculo interno de elevación más fino antes de clasificar los niveles, **pero no está decidido** si existirá una altura continua, sus unidades o umbrales. No equiparar estos cuatro niveles con la escala 1–100 del prototipo previo.
-- Pendiente: modelo de generación de alturas, continuidad entre vecinos, cordilleras, relación con costas, umbrales de clasificación y codificación de profundidad marina.
-
-## Capa 04 — Asignación de biomas (siete categorías documentadas)
-
-Fuente canónica de diseño: `EvolveDoc/data/world/world.catalog.guide.json`, campo `biomes`.
-
-| ID | Nombre ES |
-| --- | --- |
-| `tropical_forest` | Bosque tropical |
-| `temperate_forest` | Bosque templado |
-| `tundra` | Tundra |
-| `savanna` | Sabana |
-| `desert` | Desierto |
-| `marine` | Marino |
-| `alpine` | Alta montaña y pisos alpinos |
-
-- Los biomas son **categorías generales de interfaz**, no siete fórmulas ecológicas completas.
-- La asignación debe considerar, cuando se definan sus modelos, superficie tierra/agua, elevación, condiciones climáticas geográficas estáticas (temperatura y humedad) y otros condicionantes del terreno pertinentes.
-- **No inferir** el bioma exclusivamente de la elevación.
-- No incorporar variantes regionales como biomas jugables distintos; las variantes presentes en la documentación preservan procedencia histórica.
-- No activar todavía generación de flora/fauna/recursos a partir del catálogo guía.
-- Estaciones, tiempo atmosférico dinámico y desastres climáticos dinámicos quedan fuera del alcance inicial, conforme a `worldRules` de la fuente.
-- Pendiente: cálculo de temperatura/humedad, umbrales ecológicos, latitud/gradientes, interacción con costa y alturas, y resolución de asignaciones en bordes.
+Se retiraron las reglas anteriores de alturas, rangos, movilidad y asignación de biomas. El generador tectónico mantiene tierra/océano y placas; no clasifica elevaciones ni biomas. Las nuevas reglas se definirán expresamente.
 
 ## Flujo lógico previsto
 
@@ -103,9 +69,9 @@ Definitions: parámetros y lineamientos aprobados
       ↓
 02 Forma del mundo (tierra/agua)
       ↓
-03 Elevaciones (niveles, y solo los valores adicionales que se aprueben)
+03 Elevaciones (pendiente de redefinición)
       ↓
-04 Biomas (categoría por hexágono)
+04 Biomas (pendiente de redefinición)
       ↓
 Engine entrega resultados a State
       ↓
