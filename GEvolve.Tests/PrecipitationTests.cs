@@ -56,8 +56,7 @@ public static class PrecipitationTests
             Check(rain.Max()>rain.Min() && rain.Distinct().Take(30).Count()>20,
                 "Precipitation varies geographically instead of uniform latitude bands");
             Console.WriteLine(FormattableString.Invariant(
-                $"RAIN {size}/{seed}: land {landCount}, min {rain.Min()} mm, max {rain.Max()} mm, " +
-                $"mean {rain.Average(x=>(double)x):F1} mm, dry {100.0*dry/landCount:F1}%, wet {100.0*wet/landCount:F1}%"));
+                $"RAIN {size}/{seed}: land {landCount}, min {rain.Min()} mm, max {rain.Max()} mm, mean {rain.Average(x=>(double)x):F1} mm, dry {100.0*dry/landCount:F1}%, wet {100.0*wet/landCount:F1}%"));
             if (seed==2026) VerifyPersistence(world);
             int testId=Array.FindIndex(land.SurfaceByCellId,x=>x==1);
             Check(MapViewColors.ForCell(land,testId,MapViewMode.Rainfall)==
@@ -67,8 +66,7 @@ public static class PrecipitationTests
         Check(dryTotal>0 && wetTotal>0,
             "Nine reproducible worlds contain both dry and rainy terrestrial cells");
         Console.WriteLine(FormattableString.Invariant(
-            $"RAIN AGGREGATE: {landTotal} land cells, dry {100.0*dryTotal/landTotal:F2}%, " +
-            $"wet {100.0*wetTotal/landTotal:F2}%"));
+            $"RAIN AGGREGATE: {landTotal} land cells, dry {100.0*dryTotal/landTotal:F2}%, wet {100.0*wetTotal/landTotal:F2}%"));
     }
 
     private static void VerifyRainShadow(PrecipitationGenerator generator)
