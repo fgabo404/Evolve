@@ -35,8 +35,6 @@ public static class GameSaveStore
             landmass.SurfaceByCellId.Length != checked(state.HexGrid.Definition.Columns *
                 state.HexGrid.Definition.Rows) ||
             landmass.SurfaceByCellId.Any(surface => surface is not 0 and not 1) ||
-            (landmass.ElevationByCellId is { } heights &&
-                (heights.Length != landmass.SurfaceByCellId.Length || heights.Any(level => level > 3))) ||
             (landmass.PlateByCellId is { } plates && plates.Length != landmass.SurfaceByCellId.Length))
             throw new InvalidDataException("Invalid landmass save data.");
     }
