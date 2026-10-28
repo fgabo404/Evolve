@@ -50,6 +50,17 @@ public static class GameSaveStore
              climate.RegionalOffsetsTenthsByCellId?.Keys.Any(id =>
                  (uint)id >= (uint)landmass.SurfaceByCellId.Length) == true))
             throw new InvalidDataException("Invalid climate save data.");
+        if (landmass.Climate is { } hydrology &&
+            ((hydrology.BasePrecipitationMmByCellId is { } rain &&
+                rain.Length != landmass.SurfaceByCellId.Length) ||
+             (hydrology.BaseMoistureByCellId is { } moisture &&
+                (moisture.Length != landmass.SurfaceByCellId.Length ||
+                 moisture.Any(value => value > 100))) ||
+             ((hydrology.BasePrecipitationMmByCellId is null) !=
+              (hydrology.BaseMoistureByCellId is null)) ||
+             (hydrology.BasePrecipitationMmByCellId is not null &&
+              string.IsNullOrWhiteSpace(hydrology.PrecipitationModelVersion))))
+            throw new InvalidDataException("Invalid precipitation data.");
         if (landmass.Biomes is { } biomes)
         {
             if (string.IsNullOrWhiteSpace(biomes.ClassifierVersion) ||

@@ -115,7 +115,7 @@ public sealed class HexGridRenderer : IDisposable
         }
         _shader.Use();
         GL.Uniform1(_shader.Uniform("uGrayscale"), viewMode == MapViewMode.Elevation ? 1 : 0);
-        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode == MapViewMode.Infrared ? 1 : 0);
+        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode is MapViewMode.Infrared or MapViewMode.Rainfall ? 1 : 0);
         var summitColor = BiomePalette.ImpassableSummitColor;
         GL.Uniform3(_shader.Uniform("uSummitColor"), summitColor.X, summitColor.Y, summitColor.Z);
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);

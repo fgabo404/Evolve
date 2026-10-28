@@ -408,6 +408,9 @@ internal sealed class EvolveWindow : GameWindow
             string temperature = landmass.Climate is { } climate
                 ? FormattableString.Invariant($"TEMPERATURA: {climate.CurrentCelsius(cell.Id):F1} °C")
                 : "TEMPERATURA: PENDIENTE";
+            string rainfall = landmass.Climate?.BasePrecipitationMmByCellId is { } rain
+                ? $"LLUVIA: {rain[cell.Id]} MM/AÑO  HUMEDAD: {landmass.Climate.BaseMoistureByCellId![cell.Id]}/100"
+                : "LLUVIA: PENDIENTE";
             string biome = environment.Biome.Status switch
             {
                 BiomeClassificationStatus.Assigned =>
@@ -417,14 +420,15 @@ internal sealed class EvolveWindow : GameWindow
                 _ => "BIOMA: SIN COINCIDENCIA EN CATÁLOGO"
             };
             float pixel = MathF.Min(1.6f, (ClientSize.X - 48) /
-                (6f * Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length)))));
-            float labelWidth = Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length))) * 6 * pixel;
-            _ui.Rect(12, ClientSize.Y - 103, labelWidth + 20, 91,
+                (6f * Math.Max(rainfall.Length, Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length))))));
+            float labelWidth = Math.Max(rainfall.Length, Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length)))) * 6 * pixel;
+            _ui.Rect(12, ClientSize.Y - 123, labelWidth + 20, 111,
                 new Vector4(.07f, .16f, .23f, .9f));
-            _ui.Text(label, 22, ClientSize.Y - 94, pixel, White, centered: false);
-            _ui.Text(details, 22, ClientSize.Y - 74, pixel, White, centered: false);
-            _ui.Text(biome, 22, ClientSize.Y - 54, pixel, White, centered: false);
-            _ui.Text(temperature, 22, ClientSize.Y - 34, pixel, White, centered: false);
+            _ui.Text(label, 22, ClientSize.Y - 114, pixel, White, centered: false);
+            _ui.Text(details, 22, ClientSize.Y - 94, pixel, White, centered: false);
+            _ui.Text(biome, 22, ClientSize.Y - 74, pixel, White, centered: false);
+            _ui.Text(temperature, 22, ClientSize.Y - 54, pixel, White, centered: false);
+            _ui.Text(rainfall, 22, ClientSize.Y - 34, pixel, White, centered: false);
         }
     }
 
@@ -442,7 +446,8 @@ internal sealed class EvolveWindow : GameWindow
                 typeAction && ScreenLayout.TypeFor(button.Action) == _session.SelectedType ||
                 button.Action == UiAction.SeedField && _seedFocused ||
                 button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
-                button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared;
+                button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared ||
+                button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -588,6 +593,11 @@ internal sealed class EvolveWindow : GameWindow
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.ElevationByCellId is not null)
                     _viewMode = _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation;
+                break;
+            case UiAction.ToggleRainfall:
+                if (_session.Screen == GameScreen.World &&
+                    _session.State.Landmass?.Climate?.BasePrecipitationMmByCellId is not null)
+                    _viewMode = _viewMode == MapViewMode.Rainfall ? MapViewMode.Biomes : MapViewMode.Rainfall;
                 break;
             case UiAction.ToggleInfrared:
                 if (_session.Screen == GameScreen.World && _session.State.Landmass?.Climate is not null)

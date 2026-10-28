@@ -4,6 +4,9 @@ namespace GEvolve.State.Game;
 /// No current-temperature copy or climatic events are maintained.</summary>
 public sealed record ClimateState(string ModelVersion, short[] BaseTemperatureTenthsByCellId)
 {
+    public ushort[]? BasePrecipitationMmByCellId { get; init; }
+    public byte[]? BaseMoistureByCellId { get; init; }
+    public string? PrecipitationModelVersion { get; init; }
     public short GlobalOffsetTenths { get; init; }
     public Dictionary<int, short>? RegionalOffsetsTenthsByCellId { get; init; }
 
