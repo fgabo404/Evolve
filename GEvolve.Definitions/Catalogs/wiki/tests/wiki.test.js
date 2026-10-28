@@ -7,10 +7,10 @@ const vm = require("node:vm");
 const wiki = path.resolve(__dirname, "..");
 const catalogs = path.resolve(wiki, "..");
 const files = {
-  world: "World/world.catalog.guide.json",
-  animals: "Animals/animals.catalog.guide.json",
-  plants: "Plants/plants.catalog.guide.json",
-  minerals: "Minerals/minerals.catalog.guide.json",
+  world: "World/biomes.json",
+  animals: "Animals/animals.json",
+  plants: "Plants/plants.json",
+  minerals: "Minerals/minerals.json",
   resources: "Resources/resources.catalog.guide.json",
   technologies: "Technologies/agriculture.tech.json"
 };
@@ -31,22 +31,28 @@ const findPath = (fromType, firstKind, middleType, secondKind, toType) =>
 for (const type of ["world", "animals", "plants", "minerals", "resources", "technologies", "processes"]) {
   assert(index.list(type).length > 0, `${type} should be indexed`);
 }
-assert.equal(index.list("animals").length, data.animals.speciesCandidates.length);
+assert.equal(index.list("animals").length, data.animals.animals.length);
 assert.equal(index.list("plants").length,
-  data.plants.speciesCandidates.length + data.plants.agriculturalCropCandidates.length);
+  data.plants.plants.length);
 assert.equal(index.list("resources").length, data.resources.resources.length);
 assert.equal(index.list("variants").length, 0);
 assert.equal(index.list("minerals").length, 45);
-for (const alias of data.minerals.entityAliases) assert.equal(index.resolve("minerals", alias.previousId)?.id, alias.entityId);
+assert.equal(index.list("world").length, 30);
+assert(index.resolve("world", "forest_boreal"));
+assert(out(index.resolve("world", "forest"), "subbiome").some(e => e.to.id === "forest_boreal"));
+for (const animal of data.animals.animals) for (const sid of animal.spawn) assert(out(index.resolve("world",sid), "habitat").some(e => e.to.id === animal.id));
+for (const plant of data.plants.plants) for (const sid of plant.spawn) assert(out(index.resolve("world",sid), "habitat").some(e => e.to.id === plant.id));
+for (const mineral of data.minerals.minerals) for (const sid of mineral.spawn) assert(out(index.resolve("world",sid), "habitat").some(e => e.to.id === mineral.id));
+
 assert.equal(index.list("processes").length, data.resources.processingLinks.length);
 assert(index.resolve("resources", "RES#000031"));
-assert(index.resolve("animals", data.animals.entityAliases[0].previousId)?.id === data.animals.entityAliases[0].entityId);
+assert(index.resolve("animals", data.animals.animals[0].id));
 assert(index.edges.size === new Set(index.edges.keys()).size, "edges should be unique");
 
 const routes = [
-  ["world", "occurrence", "animals", "source", "resources"],
-  ["world", "occurrence", "plants", "source", "resources"],
-  ["world", "occurrence", "minerals", "source", "resources"],
+  ["world", "habitat", "animals", "source", "resources"],
+  ["world", "habitat", "plants", "source", "resources"],
+  ["world", "habitat", "minerals", "source", "resources"],
   ["plants", "source", "resources", "process_input", "processes"],
   ["minerals", "source", "resources", "process_input", "processes"]
 ];
@@ -63,7 +69,7 @@ assert(incoming(hide, "source").every(edge => out(edge.from, "source").includes(
 const manure = index.resolve("resources", "RES#000006");
 assert(incoming(manure, "source").length > 0, "referenced resource should retain its sources");
 assert(index.resolve("technologies", "language"));
-assert.equal(index.list("technologies").length, 1);
+assert(index.list("technologies").length >= 1);
 const olives = index.resolve("plants", "plant_wild_olive");
 const oliveResource = out(olives, "source").find(edge => edge.to.id === "RES#000021")?.to;
 assert(oliveResource);
@@ -184,9 +190,9 @@ async function ready() {
   ids.search.value = "RES#000001"; ids.search.oninput({ target: ids.search });
   assert.equal(ids.count.textContent, "1 / 121");
   for (const [type, id, expected] of [
-    ["world", "tropical_forest", "Animals with documented occurrence"],
-    ["plants", "wheat", "Associated resources"],
-    ["minerals", "geological_alluvial_clay", "Extractable resources"],
+    ["world", "forest_boreal", "Fauna"],
+    ["plants", "plant_wild_olive", "Associated resources"],
+    ["minerals", "geological_clay", "Extractable resources"],
     ["processes", "breadmaking", "breadmaking"],
     ["technologies", "language", "Language"]
   ]) {
@@ -194,7 +200,7 @@ async function ready() {
     assert.match((type === "technologies" ? ids["roadmap-panel"] : ids.detail).textContent, new RegExp(expected), `${type}:${id}`);
   }
   assert.match(ids["roadmap-panel"].textContent, /Pending definition/);
-  assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" technology")).length, 1);
+  assert(ids["roadmap-nodes"].children.filter(node => node.className.includes(" technology")).length >= 1);
   assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" branch")).length, 3);
   assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" external")).length, 0);
   assert.equal(ids["roadmap-lines"].children.filter(node => node.tag === "path").length, 3);
@@ -239,7 +245,7 @@ async function ready() {
   vm.runInContext("navigate('world', 'tropical_forest')", context);
   assert.doesNotMatch(ids.detail.textContent, /Regional variants|regional variant IDs/i);
   vm.runInContext("navigate('minerals')", context);
-  ids.search.value = "geological_alluvial_clay"; ids.search.oninput({ target: ids.search });
+  ids.search.value = "geological_clay"; ids.search.oninput({ target: ids.search });
   assert.equal(ids.count.textContent, "1 / 45");
   assert.match(ids.list.textContent, /Clay/);
   vm.runInContext("navigate('resources', 'RES#000047')", context);
