@@ -1,0 +1,4742 @@
+{
+  "animals": [
+    {
+      "id": "animal_golden_eagle",
+      "name": {
+        "en": "Golden Eagle",
+        "es": "Águila real"
+      },
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie",
+        "plains_steppe",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "ANM#000170",
+      "name": {
+        "en": "Moose",
+        "es": "Alces"
+      },
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "collect_shed_antlers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_shed_antlers",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "ANM#000171",
+      "name": {
+        "en": "Antelopes",
+        "es": "Antílopes"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_australian_scrub_birds",
+      "name": {
+        "en": "Australian Scrub Birds",
+        "es": "Aves de matorral australiano"
+      },
+      "spawn": [
+        "forest_subtropical",
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_birds_of_paradise",
+      "name": {
+        "en": "Birds of Paradise",
+        "es": "Aves del paraíso"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "capture",
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_shorebirds_and_waterbirds",
+      "name": {
+        "en": "Shorebirds and Waterbirds",
+        "es": "Aves limícolas y acuáticas"
+      },
+      "spawn": [
+        "forest_wooded_swamp",
+        "plains_open_wetland",
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "gathering",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "ANM#000172",
+      "name": {
+        "en": "Baboons",
+        "es": "Babuinos"
+      },
+      "spawn": [
+        "forest_subtropical",
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_atlantic_cod",
+      "name": {
+        "en": "Atlantic Cod",
+        "es": "Bacalao del Atlántico, Atlántico norte"
+      },
+      "spawn": [
+        "marine_open_ocean"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000030",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000034",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "filleting",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_regional_migratory_whales",
+      "name": {
+        "en": "Regional Migratory Whales",
+        "es": "Ballenas migratorias, según región"
+      },
+      "spawn": [
+        "marine_open_ocean",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000035",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000038",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "recover_hard_parts"
+      ]
+    },
+    {
+      "id": "animal_american_bison",
+      "name": {
+        "en": "American Bison",
+        "es": "Bisonte americano"
+      },
+      "spawn": [
+        "plains_prairie"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "comb_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "collect_shed_fiber",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "comb_fiber",
+        "collect_shed_fiber"
+      ]
+    },
+    {
+      "id": "animal_muskox",
+      "name": {
+        "en": "Muskox",
+        "es": "Buey almizclero"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "polar_north_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "comb_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "collect_shed_fiber",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "comb_fiber",
+        "collect_shed_fiber"
+      ]
+    },
+    {
+      "id": "animal_african_buffalo",
+      "name": {
+        "en": "African Buffalo",
+        "es": "Búfalo africano"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_snowy_owl",
+      "name": {
+        "en": "Snowy Owl",
+        "es": "Búho nival"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "polar_north_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_przewalski_horse",
+      "name": {
+        "en": "Przewalski Horse",
+        "es": "Caballo de Przewalski, Asia central"
+      },
+      "spawn": [
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_cockatoos_and_savanna_birds",
+      "name": {
+        "en": "Cockatoos and Savanna Birds",
+        "es": "Cacatúas y aves de sabana"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "capture",
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_wild_bactrian_camel",
+      "name": {
+        "en": "Wild Bactrian Camel",
+        "es": "Camello bactriano salvaje, regiones remotas de Asia central"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "shear_and_release",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "comb_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "collect_shed_fiber",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "shear_and_release",
+        "comb_fiber",
+        "collect_shed_fiber"
+      ]
+    },
+    {
+      "id": "ANM#000173",
+      "name": {
+        "en": "Crabs",
+        "es": "Cangrejos"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "gathering",
+        "shellfish_processing"
+      ]
+    },
+    {
+      "id": "ANM#000174",
+      "name": {
+        "en": "Kangaroos",
+        "es": "Canguros"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_capybara",
+      "name": {
+        "en": "Capybara",
+        "es": "Capibara, cerca de agua"
+      },
+      "spawn": [
+        "forest_wooded_swamp",
+        "plains_open_wetland"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_woodland_caribou",
+      "name": {
+        "en": "Woodland Caribou",
+        "es": "Caribú de bosque"
+      },
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "collect_shed_antlers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_shed_antlers",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_tundra_caribou",
+      "name": {
+        "en": "Tundra Caribou",
+        "es": "Caribú de tundra"
+      },
+      "spawn": [
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "collect_shed_antlers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_shed_antlers",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_southern_cassowary",
+      "name": {
+        "en": "Southern Cassowary",
+        "es": "Casuario del sur, Nueva Guinea y norte de Australia"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_plains_zebra",
+      "name": {
+        "en": "Plains Zebra",
+        "es": "Cebra de llanura"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_chimpanzee",
+      "name": {
+        "en": "Chimpanzee",
+        "es": "Chimpancé, zonas compatibles"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "ANM#000175",
+      "name": {
+        "en": "Deer",
+        "es": "Ciervos"
+      },
+      "spawn": [
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "collect_shed_antlers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_shed_antlers",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_andean_condor",
+      "name": {
+        "en": "Andean Condor",
+        "es": "Cóndor andino"
+      },
+      "spawn": [
+        "desert_salt_flat",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_european_rabbit",
+      "name": {
+        "en": "European Rabbit",
+        "es": "Conejo europeo, área nativa ibérica"
+      },
+      "spawn": [
+        "forest_temperate",
+        "plains_prairie"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_roadrunner",
+      "name": {
+        "en": "Roadrunner",
+        "es": "Correcaminos"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_coyote",
+      "name": {
+        "en": "Coyote",
+        "es": "Coyote"
+      },
+      "spawn": [
+        "desert_rocky",
+        "forest_temperate",
+        "plains_prairie",
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_cuscuses_and_other_arboreal_marsupials",
+      "name": {
+        "en": "Cuscuses and Other Arboreal Marsupials",
+        "es": "Cuscús y otros marsupiales arborícolas"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_rock_hyraxes",
+      "name": {
+        "en": "Rock Hyraxes",
+        "es": "Damanes de roca"
+      },
+      "spawn": [
+        "desert_rocky",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_dingo",
+      "name": {
+        "en": "Dingo",
+        "es": "Dingo"
+      },
+      "spawn": [
+        "plains_savanna",
+        "plains_prairie"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_introduced_domestic_or_feral_dromedary",
+      "name": {
+        "en": "Introduced Domestic or Feral Dromedary",
+        "es": "Dromedario doméstico o asilvestrado: solo si fue introducido"
+      },
+      "spawn": [],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "shear_and_release",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "comb_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "collect_shed_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000042",
+          "acquisitionMethod": "milking",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000006",
+          "acquisitionMethod": "collect_manure",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "shear_and_release",
+        "comb_fiber",
+        "collect_shed_fiber",
+        "milking",
+        "collect_manure"
+      ]
+    },
+    {
+      "id": "animal_elephant",
+      "name": {
+        "en": "Elephant",
+        "es": "Elefante"
+      },
+      "spawn": [
+        "plains_savanna",
+        "forest_tropical",
+        "forest_subtropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000045",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000046",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_coastal_elephant_seals",
+      "name": {
+        "en": "Coastal Elephant Seals",
+        "es": "Elefantes marinos en costas"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000033",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_emu",
+      "name": {
+        "en": "Emu",
+        "es": "Emú, zonas abiertas compatibles"
+      },
+      "spawn": [
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_short_beaked_echidna",
+      "name": {
+        "en": "Short-Beaked Echidna",
+        "es": "Equidna de hocico corto"
+      },
+      "spawn": [
+        "forest_subtropical",
+        "forest_temperate"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_regional_seals",
+      "name": {
+        "en": "Regional Seals",
+        "es": "Focas de especies regionales"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000033",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_coastal_seals_and_sea_lions",
+      "name": {
+        "en": "Coastal Seals and Sea Lions",
+        "es": "Focas y lobos marinos en costas apropiadas"
+      },
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000033",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "ANM#000178",
+      "name": {
+        "en": "Gazelles",
+        "es": "Gacelas"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "plains_savanna",
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_red_junglefowl",
+      "name": {
+        "en": "Red Junglefowl",
+        "es": "Gallina roja de la jungla (Gallus gallus)"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_gelada",
+      "name": {
+        "en": "Gelada",
+        "es": "Gelada, altiplano etíope"
+      },
+      "spawn": [
+        "plains_steppe",
+        "mountain_alpine"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_subarctic_wolverine",
+      "name": {
+        "en": "Subarctic Wolverine",
+        "es": "Glotón en transición subártica"
+      },
+      "spawn": [
+        "forest_boreal",
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_western_gorilla",
+      "name": {
+        "en": "Western Gorilla",
+        "es": "Gorila occidental, África central occidental"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_macaws",
+      "name": {
+        "en": "Macaws",
+        "es": "Guacamayas"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "capture",
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "ANM#000179",
+      "name": {
+        "en": "Guanacos",
+        "es": "Guanacos"
+      },
+      "spawn": [
+        "plains_prairie",
+        "plains_steppe",
+        "mountain_alpine"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "shear_and_release",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "capture",
+        "shearing",
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "shear_and_release"
+      ]
+    },
+    {
+      "id": "ANM#000186",
+      "name": {
+        "en": "Ibexes",
+        "es": "Íbices"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "ANM#000180",
+      "name": {
+        "en": "Wild boars",
+        "es": "Jabalíes"
+      },
+      "spawn": [
+        "forest_subtropical",
+        "forest_temperate"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000045",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_jaguar",
+      "name": {
+        "en": "Jaguar",
+        "es": "Jaguar"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_wooded_swamp",
+        "plains_open_wetland"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_regional_jerboas_and_gerbils",
+      "name": {
+        "en": "Regional Jerboas and Gerbils",
+        "es": "Jerbos y gerbillos regionales"
+      },
+      "spawn": [
+        "desert_sandy"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_giraffe",
+      "name": {
+        "en": "Giraffe",
+        "es": "Jirafa"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_antarctic_krill",
+      "name": {
+        "en": "Antarctic Krill",
+        "es": "Krill antártico, océano Austral"
+      },
+      "spawn": [
+        "marine_open_ocean",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "shellfish_processing"
+      ]
+    },
+    {
+      "id": "animal_lemming",
+      "name": {
+        "en": "Lemming",
+        "es": "Lemming"
+      },
+      "spawn": [
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_lion",
+      "name": {
+        "en": "Lion",
+        "es": "León"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_snow_leopard",
+      "name": {
+        "en": "Snow Leopard",
+        "es": "Leopardo de las nieves"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_arctic_hare",
+      "name": {
+        "en": "Arctic Hare",
+        "es": "Liebre ártica"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "polar_north_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_lynx",
+      "name": {
+        "en": "Lynx",
+        "es": "Lince"
+      },
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_wolf",
+      "name": {
+        "en": "Wolf",
+        "es": "Lobo"
+      },
+      "spawn": [
+        "plains_savanna",
+        "plains_open_wetland",
+        "plains_steppe",
+        "mountain_alpine",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie",
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "ANM#000181",
+      "name": {
+        "en": "Marmots",
+        "es": "Marmotas"
+      },
+      "spawn": [
+        "desert_rocky",
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_regional_mussels_and_oysters",
+      "name": {
+        "en": "Regional Mussels and Oysters",
+        "es": "Mejillones y ostras, según región"
+      },
+      "spawn": [
+        "plains_open_wetland",
+        "marine_estuary_littoral"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "collect_empty_shells",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000043",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "gathering",
+        "fishing",
+        "shellfish_processing",
+        "collect_empty_shells"
+      ]
+    },
+    {
+      "id": "animal_tropical_mollusks_and_bivalves",
+      "name": {
+        "en": "Tropical Mollusks and Bivalves",
+        "es": "Moluscos y bivalvos tropicales"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_mangrove"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "collect_empty_shells",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000043",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "gathering",
+        "fishing",
+        "shellfish_processing",
+        "collect_empty_shells"
+      ]
+    },
+    {
+      "id": "animal_howler_monkey",
+      "name": {
+        "en": "Howler Monkey",
+        "es": "Mono aullador"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_wooded_swamp"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_greater_rhea",
+      "name": {
+        "en": "Greater Rhea",
+        "es": "Ñandú común, Pampas"
+      },
+      "spawn": [
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_wildebeest",
+      "name": {
+        "en": "Wildebeest",
+        "es": "Ñu"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_okapi",
+      "name": {
+        "en": "Okapi",
+        "es": "Okapi, cuenca del Congo"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_onager",
+      "name": {
+        "es": "Onagro",
+        "en": "Onager"
+      },
+      "spawn": [
+        "plains_steppe",
+        "desert_rocky"
+      ],
+      "domestication": false,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_arabian_oryx",
+      "name": {
+        "en": "Arabian Oryx",
+        "es": "Órix de Arabia, Arabia"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_giant_anteater",
+      "name": {
+        "en": "Giant Anteater",
+        "es": "Oso hormiguero gigante"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_wooded_swamp",
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "ANM#000182",
+      "name": {
+        "en": "Bears",
+        "es": "Osos"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_temperate",
+        "forest_boreal",
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_estuarine_oysters_and_other_bivalves",
+      "name": {
+        "en": "Estuarine Oysters and Other Bivalves",
+        "es": "Ostras y otros bivalvos de estuario"
+      },
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "collect_empty_shells",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000043",
+          "acquisitionMethod": "shellfish_processing",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "gathering",
+        "fishing",
+        "shellfish_processing",
+        "collect_empty_shells"
+      ]
+    },
+    {
+      "id": "animal_ocellated_turkey",
+      "name": {
+        "en": "Ocellated Turkey",
+        "es": "Pavo ocelado, Yucatán y zonas vecinas"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_indian_peafowl",
+      "name": {
+        "en": "Indian Peafowl",
+        "es": "Pavo real azul, subcontinente indio"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_collared_peccary",
+      "name": {
+        "en": "Collared Peccary",
+        "es": "Pecarí de collar"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_wooded_swamp",
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000045",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts"
+      ]
+    },
+    {
+      "id": "animal_regional_reef_fish",
+      "name": {
+        "en": "Regional Reef Fish",
+        "es": "Peces arrecifales, especies regionales"
+      },
+      "spawn": [
+        "marine_reef"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000030",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000034",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "filleting",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_juvenile_estuarine_fish",
+      "name": {
+        "en": "Juvenile Estuarine Fish",
+        "es": "Peces juveniles de estuario"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000030",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000034",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "filleting",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_regional_polar_fish",
+      "name": {
+        "en": "Regional Polar Fish",
+        "es": "Peces polares regionales"
+      },
+      "spawn": [
+        "marine_open_ocean",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000030",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000034",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "filleting",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_perentie",
+      "name": {
+        "en": "Perentie",
+        "es": "Perentie (varano gigante)"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_prairie_dog",
+      "name": {
+        "en": "Prairie Dog",
+        "es": "Perrito de la pradera"
+      },
+      "spawn": [
+        "plains_prairie",
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_island_petrels_and_albatrosses",
+      "name": {
+        "en": "Island Petrels and Albatrosses",
+        "es": "Petreles y albatros en islas apropiadas"
+      },
+      "spawn": [
+        "marine_open_ocean",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "gathering",
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "ANM#000183",
+      "name": {
+        "en": "Penguins",
+        "es": "Pingüinos"
+      },
+      "spawn": [
+        "marine_open_ocean",
+        "polar_south_ice"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "gathering",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_puma",
+      "name": {
+        "en": "Puma",
+        "es": "Puma"
+      },
+      "spawn": [
+        "forest_temperate",
+        "plains_prairie",
+        "mountain_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "ANM#000184",
+      "name": {
+        "en": "Bearded vultures",
+        "es": "Quebrantahuesos"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "pluck_carcass",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000040",
+          "acquisitionMethod": "collect_shed_feathers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "pluck_carcass",
+        "collect_shed_feathers",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_chamois",
+      "name": {
+        "en": "Chamois",
+        "es": "Rebeco"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_reindeer",
+      "name": {
+        "en": "Reindeer",
+        "es": "Reno"
+      },
+      "spawn": [
+        "forest_boreal",
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000036",
+          "acquisitionMethod": "collect_shed_antlers",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000042",
+          "acquisitionMethod": "milking",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000006",
+          "acquisitionMethod": "collect_manure",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_shed_antlers",
+        "recover_tendons",
+        "milking",
+        "collect_manure"
+      ]
+    },
+    {
+      "id": "animal_eurasian_saiga",
+      "name": {
+        "en": "Eurasian Saiga",
+        "es": "Saiga, estepas euroasiáticas"
+      },
+      "spawn": [
+        "plains_steppe"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_regional_sardines",
+      "name": {
+        "en": "Regional Sardines",
+        "es": "Sardinas regionales"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_open_ocean"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000030",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000034",
+          "acquisitionMethod": "filleting",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "fishing",
+        "filleting",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_regional_rattlesnakes",
+      "name": {
+        "en": "Regional Rattlesnakes",
+        "es": "Serpientes de cascabel regionales"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_himalayan_tahr",
+      "name": {
+        "en": "Himalayan Tahr",
+        "es": "Tahr del Himalaya"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "ANM#000185",
+      "name": {
+        "en": "Tapirs",
+        "es": "Tapires"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_wooded_swamp",
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_tiger",
+      "name": {
+        "en": "Tiger",
+        "es": "Tigre, en hábitats adecuados"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_desert_tortoise",
+      "name": {
+        "en": "Desert Tortoise",
+        "es": "Tortuga del desierto"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "gathering",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_sea_turtles",
+      "name": {
+        "en": "Sea Turtles",
+        "es": "Tortugas marinas en zonas de alimentación y anidación"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral",
+        "marine_open_ocean"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "gathering",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_regional_land_tortoises",
+      "name": {
+        "en": "Regional Land Tortoises",
+        "es": "Tortugas terrestres regionales"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000039",
+          "acquisitionMethod": "collect_eggs",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "gathering",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "collect_eggs"
+      ]
+    },
+    {
+      "id": "animal_regional_wallabies",
+      "name": {
+        "en": "Regional Wallabies",
+        "es": "Ualabíes regionales"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_aurochs",
+      "name": {
+        "es": "Uro",
+        "en": "Aurochs"
+      },
+      "spawn": [
+        "plains_prairie",
+        "plains_steppe",
+        "forest_temperate"
+      ],
+      "domestication": false,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons"
+      ]
+    },
+    {
+      "id": "animal_vicuna",
+      "name": {
+        "en": "Vicuna",
+        "es": "Vicuña"
+      },
+      "spawn": [
+        "desert_salt_flat",
+        "plains_steppe",
+        "mountain_alpine"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "shear_and_release",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "capture",
+        "shearing",
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "shear_and_release"
+      ]
+    },
+    {
+      "id": "animal_andean_viscacha",
+      "name": {
+        "en": "Andean Viscacha",
+        "es": "Vizcacha andina"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_rock_dwelling_viscachas",
+      "name": {
+        "en": "Rock-Dwelling Viscachas",
+        "es": "Vizcachas en roquedos"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    },
+    {
+      "id": "animal_wild_yak",
+      "name": {
+        "en": "Wild Yak",
+        "es": "Yak salvaje, altiplano tibetano"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000037",
+          "acquisitionMethod": "recover_hard_parts",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000106",
+          "acquisitionMethod": "recover_tendons",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "recover_carcass_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "comb_fiber",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000041",
+          "acquisitionMethod": "collect_shed_fiber",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning",
+        "recover_hard_parts",
+        "recover_tendons",
+        "recover_carcass_fiber",
+        "comb_fiber",
+        "collect_shed_fiber"
+      ]
+    },
+    {
+      "id": "ANM#000169",
+      "name": {
+        "en": "Foxes",
+        "es": "Zorros"
+      },
+      "spawn": [
+        "desert_rocky",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra"
+      ],
+      "domestication": null,
+      "resources": [
+        {
+          "resourceId": "RES#000029",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000105",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000032",
+          "acquisitionMethod": "butchering",
+          "quantity": null
+        },
+        {
+          "resourceId": "RES#000031",
+          "acquisitionMethod": "skinning",
+          "quantity": null
+        }
+      ],
+      "uses": [
+        "hunting",
+        "butchering",
+        "skinning"
+      ]
+    }
+  ]
+}

@@ -36,7 +36,7 @@
           "fauna": [
             "ANM#000178",
             "animal_arabian_oryx",
-            "animal_desert_tortoise",
+            "animal_land_tortoise",
             "animal_regional_jerboas_and_gerbils",
             "animal_wild_bactrian_camel"
           ],
@@ -103,10 +103,9 @@
             "ANM#000181",
             "animal_arabian_oryx",
             "animal_coyote",
-            "animal_desert_tortoise",
+            "animal_land_tortoise",
             "animal_onager",
             "animal_perentie",
-            "animal_regional_land_tortoises",
             "animal_regional_rattlesnakes",
             "animal_roadrunner",
             "animal_rock_hyraxes",
@@ -323,13 +322,13 @@
             "ANM#000175",
             "ANM#000180",
             "ANM#000185",
-            "animal_australian_scrub_birds",
             "animal_collared_peccary",
             "animal_cuscuses_and_other_arboreal_marsupials",
             "animal_elephant",
             "animal_indian_peafowl",
             "animal_jaguar",
             "animal_red_junglefowl",
+            "animal_scrub_birds",
             "animal_short_beaked_echidna",
             "animal_tiger"
           ],
@@ -398,10 +397,10 @@
             "animal_golden_eagle",
             "animal_lynx",
             "animal_puma",
+            "animal_reindeer",
             "animal_short_beaked_echidna",
             "animal_tiger",
-            "animal_wolf",
-            "animal_woodland_caribou"
+            "animal_wolf"
           ],
           "minerals": [
             "geological_bituminous_coal",
@@ -462,8 +461,7 @@
             "animal_lynx",
             "animal_reindeer",
             "animal_subarctic_wolverine",
-            "animal_wolf",
-            "animal_woodland_caribou"
+            "animal_wolf"
           ],
           "minerals": [
             "geological_bituminous_coal",
@@ -568,8 +566,6 @@
             "ANM#000178",
             "ANM#000185",
             "animal_african_buffalo",
-            "animal_australian_scrub_birds",
-            "animal_cockatoos_and_savanna_birds",
             "animal_collared_peccary",
             "animal_dingo",
             "animal_elephant",
@@ -580,6 +576,7 @@
             "animal_lion",
             "animal_plains_zebra",
             "animal_regional_wallabies",
+            "animal_scrub_birds",
             "animal_wildebeest",
             "animal_wolf"
           ],
@@ -771,7 +768,7 @@
             "animal_collared_peccary",
             "animal_giant_anteater",
             "animal_jaguar",
-            "animal_regional_mussels_and_oysters",
+            "animal_mollusks",
             "animal_shorebirds_and_waterbirds",
             "animal_wolf"
           ],
@@ -810,9 +807,9 @@
           ],
           "fauna": [
             "ANM#000173",
+            "animal_mollusks",
             "animal_regional_reef_fish",
-            "animal_sea_turtles",
-            "animal_tropical_mollusks_and_bivalves"
+            "animal_sea_turtles"
           ],
           "minerals": [
             "geological_calcareous_sand",
@@ -846,13 +843,11 @@
           "fauna": [
             "ANM#000173",
             "animal_coastal_elephant_seals",
-            "animal_coastal_seals_and_sea_lions",
-            "animal_estuarine_oysters_and_other_bivalves",
             "animal_juvenile_estuarine_fish",
-            "animal_regional_mussels_and_oysters",
+            "animal_mollusks",
             "animal_regional_sardines",
-            "animal_regional_seals",
             "animal_sea_turtles",
+            "animal_seals",
             "animal_shorebirds_and_waterbirds"
           ],
           "minerals": [
@@ -886,8 +881,8 @@
           "fauna": [
             "ANM#000173",
             "animal_juvenile_estuarine_fish",
-            "animal_shorebirds_and_waterbirds",
-            "animal_tropical_mollusks_and_bivalves"
+            "animal_mollusks",
+            "animal_shorebirds_and_waterbirds"
           ],
           "minerals": [
             "geological_seashells",
@@ -920,11 +915,11 @@
             "ANM#000183",
             "animal_antarctic_krill",
             "animal_atlantic_cod",
-            "animal_island_petrels_and_albatrosses",
             "animal_regional_migratory_whales",
             "animal_regional_polar_fish",
             "animal_regional_sardines",
-            "animal_sea_turtles"
+            "animal_sea_turtles",
+            "animal_seabirds"
           ],
           "minerals": [
             "geological_polymetallic_nodules"
@@ -973,7 +968,6 @@
             "animal_reindeer",
             "animal_snowy_owl",
             "animal_subarctic_wolverine",
-            "animal_tundra_caribou",
             "animal_wolf"
           ],
           "minerals": [
@@ -1049,13 +1043,13 @@
             "ANM#000184",
             "ANM#000186",
             "animal_andean_condor",
-            "animal_andean_viscacha",
             "animal_chamois",
             "animal_gelada",
             "animal_golden_eagle",
             "animal_himalayan_tahr",
             "animal_snow_leopard",
             "animal_vicuna",
+            "animal_viscacha",
             "animal_wild_yak",
             "animal_wolf"
           ],
@@ -1107,14 +1101,13 @@
             "ANM#000184",
             "ANM#000186",
             "animal_andean_condor",
-            "animal_andean_viscacha",
             "animal_chamois",
             "animal_golden_eagle",
             "animal_himalayan_tahr",
             "animal_puma",
-            "animal_rock_dwelling_viscachas",
             "animal_rock_hyraxes",
             "animal_snow_leopard",
+            "animal_viscacha",
             "animal_wild_yak"
           ],
           "minerals": [
@@ -1175,8 +1168,8 @@
             "animal_chamois",
             "animal_golden_eagle",
             "animal_himalayan_tahr",
-            "animal_rock_dwelling_viscachas",
-            "animal_rock_hyraxes"
+            "animal_rock_hyraxes",
+            "animal_viscacha"
           ],
           "minerals": [
             "geological_sandstone",
@@ -1239,7 +1232,7 @@
             "animal_muskox",
             "animal_regional_migratory_whales",
             "animal_regional_polar_fish",
-            "animal_regional_seals",
+            "animal_seals",
             "animal_snowy_owl"
           ],
           "minerals": [
@@ -1294,10 +1287,10 @@
             "ANM#000183",
             "animal_antarctic_krill",
             "animal_coastal_elephant_seals",
-            "animal_island_petrels_and_albatrosses",
             "animal_regional_migratory_whales",
             "animal_regional_polar_fish",
-            "animal_regional_seals"
+            "animal_seabirds",
+            "animal_seals"
           ],
           "minerals": [
             "geological_bituminous_coal",
