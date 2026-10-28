@@ -484,34 +484,6 @@
       ]
     }
   ],
-  "elevationScale": {
-    "minLevel": 0,
-    "maxLevel": 100,
-    "metersPerLevel": 40,
-    "seaLevel": 0,
-    "marineDepthSeparate": true
-  },
-  "polarSystem": {
-    "type": "mixed",
-    "permanentCore": {
-      "absoluteLatitudeMin": 80,
-      "absoluteLatitudeMax": 90
-    },
-    "climaticTransition": {
-      "absoluteLatitudeMin": 65,
-      "absoluteLatitudeMax": 80,
-      "dependsOn": [
-        "temperature",
-        "elevation"
-      ]
-    },
-    "polarSurfaceMayBeOcean": true,
-    "polarDoesNotConvertWaterToLand": true
-  },
-  "impassableSummits": {
-    "aboveElevationLevel": 100,
-    "impassable": true
-  },
   "classificationFactors": [
     "elevation",
     "latitude",
