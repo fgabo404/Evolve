@@ -1,0 +1,1542 @@
+{
+  "plants": [
+    {
+      "id": "PLT#000191",
+      "name": {
+        "en": "Birches",
+        "es": "Abedules"
+      },
+      "spawn": [
+        "forest_boreal",
+        "tundra_tundra"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000192",
+      "name": {
+        "en": "Acacias",
+        "es": "Acacias"
+      },
+      "spawn": [
+        "plains_savanna",
+        "forest_subtropical",
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_olive",
+      "name": {
+        "en": "Wild Olive",
+        "es": "Acebuche"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000021",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_agaves",
+      "name": {
+        "en": "Agaves",
+        "es": "Agaves"
+      },
+      "spawn": [
+        "desert_rocky",
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000193",
+      "name": {
+        "en": "Larches",
+        "es": "Alerces"
+      },
+      "spawn": [
+        "forest_boreal"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_polar_marine_algae",
+      "name": {
+        "en": "Polar Marine Algae",
+        "es": "Algas marinas polares"
+      },
+      "spawn": [
+        "marine_open_ocean"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_tropical_marine_algae",
+      "name": {
+        "en": "Tropical Marine Algae",
+        "es": "Algas marinas tropicales"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_open_ocean"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_regional_brown_and_red_algae",
+      "name": {
+        "en": "Regional Brown and Red Algae",
+        "es": "Algas pardas y rojas regionales"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_open_ocean"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_halophytic_shrubs",
+      "name": {
+        "en": "Halophytic Shrubs",
+        "es": "Arbustos halófitos"
+      },
+      "spawn": [
+        "desert_salt_flat"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_australian_saltbushes",
+      "name": {
+        "en": "Australian Saltbushes",
+        "es": "Arbustos salinos australianos"
+      },
+      "spawn": [
+        "desert_salt_flat",
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_xerophytic_shrubs",
+      "name": {
+        "en": "Xerophytic Shrubs",
+        "es": "Arbustos xerófitos"
+      },
+      "spawn": [
+        "desert_rocky",
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_shrubs_and_cushion_plants",
+      "name": {
+        "en": "Shrubs and Cushion Plants",
+        "es": "Arbustos y plantas almohadilladas"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_maples",
+      "name": {
+        "en": "Maples",
+        "es": "Arces"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000194",
+      "name": {
+        "en": "Wormwoods",
+        "es": "Artemisas"
+      },
+      "spawn": [
+        "desert_rocky",
+        "plains_steppe"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_arctic_blueberries",
+      "name": {
+        "en": "Arctic Blueberries",
+        "es": "Arándanos árticos"
+      },
+      "spawn": [
+        "tundra_tundra"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_hazel",
+      "name": {
+        "en": "Hazel",
+        "es": "Avellano"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000195",
+      "name": {
+        "en": "Bamboos",
+        "es": "Bambúes"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000196",
+      "name": {
+        "en": "Wild bananas",
+        "es": "Bananos silvestres"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_banksias",
+      "name": {
+        "en": "Banksias",
+        "es": "Banksias"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_african_baobab",
+      "name": {
+        "en": "African Baobab",
+        "es": "Baobab africano"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_tundra_berries",
+      "name": {
+        "en": "Tundra Berries",
+        "es": "Bayas de tundra"
+      },
+      "spawn": [
+        "tundra_tundra"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000198",
+      "name": {
+        "en": "Kelp",
+        "es": "Kelp"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_open_ocean"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_cape_bulbs_and_geophytes",
+      "name": {
+        "en": "Cape Bulbs and Geophytes",
+        "es": "Bulbos y geófitas del Cabo"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_cacao",
+      "name": {
+        "en": "Wild Cacao",
+        "es": "Cacao silvestre, en su distribución nativa"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000024",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_south_american_cacti",
+      "name": {
+        "en": "South American Cacti",
+        "es": "Cactáceas sudamericanas regionales"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_squashes",
+      "name": {
+        "en": "Wild Squashes",
+        "es": "Calabazas silvestres (Cucurbita spp.)"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000019",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_brazil_nut",
+      "name": {
+        "en": "Brazil Nut",
+        "es": "Castaña de Brasil, Amazonía"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_asian_chestnuts",
+      "name": {
+        "en": "Asian Chestnuts",
+        "es": "Castaños asiáticos"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_barley",
+      "name": {
+        "en": "Wild Barley",
+        "es": "Cebada silvestre, en sus regiones nativas"
+      },
+      "spawn": [
+        "plains_steppe"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000008",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_coigue",
+      "name": {
+        "en": "Coigue",
+        "es": "Coigüe (Nothofagus dombeyi)"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_patagonian_tussock_grasses",
+      "name": {
+        "en": "Patagonian Tussock Grasses",
+        "es": "Coirones patagónicos (Festuca y afines)"
+      },
+      "spawn": [
+        "plains_steppe"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_edelweiss",
+      "name": {
+        "en": "Edelweiss",
+        "es": "Edelweiss"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000204",
+      "name": {
+        "en": "Oaks",
+        "es": "Robles"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_mountain_junipers",
+      "name": {
+        "en": "Mountain Junipers",
+        "es": "Enebros de montaña"
+      },
+      "spawn": [
+        "mountain_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_ethiopian_highland_ensete",
+      "name": {
+        "en": "Ethiopian Highland Ensete",
+        "es": "Ensete en tierras altas etíopes apropiadas"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_heaths",
+      "name": {
+        "en": "Heaths",
+        "es": "Erica spp."
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_cordgrasses_and_saltmarsh_grasses",
+      "name": {
+        "en": "Cordgrasses and Saltmarsh Grasses",
+        "es": "Espartina y otros pastos de marisma (regiones compatibles)"
+      },
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000197",
+      "name": {
+        "en": "Eucalypts",
+        "es": "Eucaliptos"
+      },
+      "spawn": [
+        "forest_subtropical",
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_marine_phytoplankton",
+      "name": {
+        "en": "Marine Phytoplankton",
+        "es": "Fitoplancton marino"
+      },
+      "spawn": [
+        "marine_open_ocean"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_beans",
+      "name": {
+        "en": "Wild Beans",
+        "es": "Frijoles silvestres (Phaseolus spp.)"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000015",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_gentians",
+      "name": {
+        "en": "Gentians",
+        "es": "Gencianas"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_blue_grama",
+      "name": {
+        "en": "Blue Grama",
+        "es": "Grama azul (Bouteloua gracilis)"
+      },
+      "spawn": [
+        "plains_prairie"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_cerrado_grasses",
+      "name": {
+        "en": "Cerrado Grasses",
+        "es": "Gramíneas del Cerrado"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_ephemeral_rainfall_grasses",
+      "name": {
+        "en": "Ephemeral Rainfall Grasses",
+        "es": "Gramíneas efímeras tras lluvias"
+      },
+      "spawn": [
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_northern_australian_native_grasses",
+      "name": {
+        "en": "Northern Australian Native Grasses",
+        "es": "Gramíneas nativas del norte"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_pampas_grasses",
+      "name": {
+        "en": "Pampas Grasses",
+        "es": "Gramíneas pampeanas"
+      },
+      "spawn": [
+        "plains_prairie"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_european_beech",
+      "name": {
+        "en": "European Beech",
+        "es": "Haya europea"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_ichu_grass",
+      "name": {
+        "en": "Ichu Grass",
+        "es": "Ichu"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_creosote_bushes",
+      "name": {
+        "en": "Creosote Bushes",
+        "es": "Jarillas (Larrea spp.), Monte"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_shea_tree",
+      "name": {
+        "en": "Shea Tree",
+        "es": "Karité, sabanas de África occidental"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_lenga_beech",
+      "name": {
+        "en": "Lenga Beech",
+        "es": "Lenga (Nothofagus pumilio)"
+      },
+      "spawn": [
+        "forest_temperate",
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_east_african_giant_lobelias",
+      "name": {
+        "en": "East African Giant Lobelias",
+        "es": "Lobelias gigantes, montañas de África oriental"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000199",
+      "name": {
+        "en": "Lichens",
+        "es": "Líquenes"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000200",
+      "name": {
+        "en": "Mangroves",
+        "es": "Mangles"
+      },
+      "spawn": [
+        "marine_mangrove"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_manzanitas",
+      "name": {
+        "en": "Manzanitas",
+        "es": "Manzanitas (Arctostaphylos spp.)"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_mesquites",
+      "name": {
+        "en": "Mesquites",
+        "es": "Mezquites"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_cloudberry",
+      "name": {
+        "en": "Cloudberry",
+        "es": "Mora de los pantanos"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "forest_boreal"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_mosses",
+      "name": {
+        "en": "Mosses",
+        "es": "Musgos"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "forest_boreal",
+        "forest_wooded_swamp"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_prickly_pears",
+      "name": {
+        "en": "Prickly Pears",
+        "es": "Nopales (Opuntia spp.)"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_kola_trees",
+      "name": {
+        "en": "Kola Trees",
+        "es": "Nuez de cola (Cola spp.)"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_african_oil_palm",
+      "name": {
+        "en": "African Oil Palm",
+        "es": "Palma aceitera africana"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_regional_savanna_palms",
+      "name": {
+        "en": "Regional Savanna Palms",
+        "es": "Palmas de sabana regionales"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_regional_palms_and_dipterocarps",
+      "name": {
+        "en": "Regional Palms and Dipterocarps",
+        "es": "Palmas y dipterocarpáceas regionales"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_palms_and_pandanus",
+      "name": {
+        "en": "Palms and Pandanus",
+        "es": "Palmas y pandanus"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_date_palm",
+      "name": {
+        "en": "Date Palm",
+        "es": "Palmera datilera en oasis y áreas de cultivo"
+      },
+      "spawn": [
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wetland_pandanus",
+      "name": {
+        "en": "Wetland Pandanus",
+        "es": "Pandanus en zonas húmedas"
+      },
+      "spawn": [
+        "plains_open_wetland",
+        "forest_wooded_swamp"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_sugarcane_relatives",
+      "name": {
+        "en": "Wild Sugarcane Relatives",
+        "es": "Parientes silvestres de caña de azúcar (Saccharum spp.)"
+      },
+      "spawn": [
+        "plains_open_wetland",
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_potato_relatives",
+      "name": {
+        "en": "Wild Potato Relatives",
+        "es": "Parientes silvestres de la papa"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_quinoa_relatives",
+      "name": {
+        "en": "Wild Quinoa Relatives",
+        "es": "Parientes silvestres de la quinua"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "plains_steppe"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_sahelian_wild_pearl_millet_relatives",
+      "name": {
+        "en": "Sahelian Wild Pearl Millet Relatives",
+        "es": "Parientes silvestres del mijo perla, Sahel"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_afroalpine_grasses",
+      "name": {
+        "en": "Afroalpine Grasses",
+        "es": "Pastos afroalpinos"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_alpine_grasses",
+      "name": {
+        "en": "Alpine Grasses",
+        "es": "Pastos alpinos"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_asian_alpine_grasses",
+      "name": {
+        "en": "Asian Alpine Grasses",
+        "es": "Pastos alpinos asiáticos"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_big_bluestem",
+      "name": {
+        "en": "Big Bluestem",
+        "es": "Pastos altos (Andropogon gerardii)"
+      },
+      "spawn": [
+        "plains_prairie"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_regional_desert_grasses",
+      "name": {
+        "en": "Regional Desert Grasses",
+        "es": "Pastos desérticos regionales"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_eurasian_steppe_grasses",
+      "name": {
+        "en": "Eurasian Steppe Grasses",
+        "es": "Pastos esteparios euroasiáticos"
+      },
+      "spawn": [
+        "plains_steppe"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_regional_seagrasses",
+      "name": {
+        "en": "Regional Seagrasses",
+        "es": "Pastos marinos (Thalassia y otros géneros regionales)"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_subantarctic_grasses",
+      "name": {
+        "en": "Subantarctic Grasses",
+        "es": "Pastos subantárticos"
+      },
+      "spawn": [
+        "tundra_tundra"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_pequi",
+      "name": {
+        "en": "Pequi",
+        "es": "Pequi (Caryocar brasiliense), Cerrado"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000201",
+      "name": {
+        "en": "Pines",
+        "es": "Pinos"
+      },
+      "spawn": [
+        "forest_boreal",
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "PLT#000202",
+      "name": {
+        "en": "Cushion plants",
+        "es": "Plantas almohadilladas"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_atacama_coastal_fog_plants",
+      "name": {
+        "en": "Atacama Coastal Fog Plants",
+        "es": "Plantas de niebla costera, sectores de Atacama"
+      },
+      "spawn": [
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_estuarine_halophytes",
+      "name": {
+        "en": "Estuarine Halophytes",
+        "es": "Plantas halófitas de estuario"
+      },
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_proteas",
+      "name": {
+        "en": "Proteas",
+        "es": "Proteas"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000203",
+      "name": {
+        "en": "Spruces",
+        "es": "Píceas"
+      },
+      "spawn": [
+        "forest_boreal"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_queuna_trees",
+      "name": {
+        "en": "Queuna Trees",
+        "es": "Queñua (Polylepis spp.)"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_soapbark_tree",
+      "name": {
+        "en": "Soapbark Tree",
+        "es": "Quillay"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_african_raffia_palms",
+      "name": {
+        "en": "African Raffia Palms",
+        "es": "Rafia africana (Raphia spp.)"
+      },
+      "spawn": [
+        "forest_wooded_swamp",
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_restios",
+      "name": {
+        "en": "Restios",
+        "es": "Restios"
+      },
+      "spawn": [
+        "forest_subtropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_asian_oaks_and_maples",
+      "name": {
+        "en": "Asian Oaks and Maples",
+        "es": "Robles y arces asiáticos"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_high_altitude_rhododendrons",
+      "name": {
+        "en": "High-Altitude Rhododendrons",
+        "es": "Rododendros de altura"
+      },
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_sonoran_saguaro",
+      "name": {
+        "en": "Sonoran Saguaro",
+        "es": "Saguaro, Sonora"
+      },
+      "spawn": [
+        "desert_rocky",
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "PLT#000205",
+      "name": {
+        "en": "Willows",
+        "es": "Sauces"
+      },
+      "spawn": [
+        "tundra_tundra",
+        "forest_boreal"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_saxaul",
+      "name": {
+        "en": "Saxaul",
+        "es": "Saxaúl (Haloxylon spp.)"
+      },
+      "spawn": [
+        "desert_sandy"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_giant_groundsels",
+      "name": {
+        "en": "Giant Groundsels",
+        "es": "Senecios gigantes (Dendrosenecio spp.)"
+      },
+      "spawn": [
+        "mountain_alpine"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_african_wild_sorghums",
+      "name": {
+        "en": "African Wild Sorghums",
+        "es": "Sorgos silvestres africanos"
+      },
+      "spawn": [
+        "plains_savanna"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_spinifex_grasses",
+      "name": {
+        "en": "Spinifex Grasses",
+        "es": "Spinifex (Triodia spp.)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_wild_taro",
+      "name": {
+        "en": "Wild Taro",
+        "es": "Taro silvestre en su área nativa"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_taro_and_regional_aroids",
+      "name": {
+        "en": "Taro and Regional Aroids",
+        "es": "Taro y otras aráceas regionales"
+      },
+      "spawn": [
+        "forest_wooded_swamp",
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_native_teak",
+      "name": {
+        "en": "Native Teak",
+        "es": "Teca en su distribución nativa"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_mesoamerican_teosinte",
+      "name": {
+        "en": "Mesoamerican Teosinte",
+        "es": "Teosinte, en su distribución mesoamericana"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_southwest_asian_wild_wheat",
+      "name": {
+        "en": "Southwest Asian Wild Wheat",
+        "es": "Trigo silvestre, solo en sus regiones nativas del sudoeste asiático"
+      },
+      "spawn": [
+        "plains_steppe"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000007",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_mesoamerican_vanilla",
+      "name": {
+        "en": "Mesoamerican Vanilla",
+        "es": "Vainilla (Vanilla planifolia), Mesoamérica"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_native_wild_grapevine",
+      "name": {
+        "en": "Native Wild Grapevine",
+        "es": "Vid silvestre en hábitats nativos"
+      },
+      "spawn": [
+        "forest_temperate"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000020",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_eelgrass_and_other_seagrasses",
+      "name": {
+        "en": "Eelgrass and Other Seagrasses",
+        "es": "Zostera y otros pastos marinos"
+      },
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_amazonian_rubber_tree",
+      "name": {
+        "en": "Amazonian Rubber Tree",
+        "es": "Árbol del caucho (Hevea brasiliensis), Amazonía"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_regional_tropical_timber_trees",
+      "name": {
+        "en": "Regional Tropical Timber Trees",
+        "es": "Árboles de maderas tropicales regionales"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [
+        {
+          "resourceId": "RES#000001",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "plant_miombo_trees",
+      "name": {
+        "en": "Miombo Trees",
+        "es": "Árboles de miombo (Brachystegia spp.), donde corresponda"
+      },
+      "spawn": [
+        "plains_savanna",
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    },
+    {
+      "id": "plant_sal_trees",
+      "name": {
+        "en": "Sal Trees",
+        "es": "Árboles de sal (Shorea robusta), regiones adecuadas"
+      },
+      "spawn": [
+        "forest_tropical"
+      ],
+      "cultivation": null,
+      "resources": [],
+      "uses": []
+    }
+  ]
+}

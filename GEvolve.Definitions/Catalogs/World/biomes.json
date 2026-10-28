@@ -23,14 +23,12 @@
           },
           "flora": [
             "plant_agaves",
-            "plant_australian_saltbushes",
             "plant_date_palm",
-            "plant_ephemeral_rainfall_grasses",
+            "plant_desert_grasses",
             "plant_mesquites",
-            "plant_regional_desert_grasses",
+            "plant_saltbushes",
             "plant_saxaul",
             "plant_sonoran_saguaro",
-            "plant_spinifex_grasses",
             "plant_xerophytic_shrubs"
           ],
           "fauna": [
@@ -89,12 +87,11 @@
             "plant_agaves",
             "plant_atacama_coastal_fog_plants",
             "plant_creosote_bushes",
+            "plant_desert_grasses",
             "plant_mesquites",
             "plant_prickly_pears",
-            "plant_regional_desert_grasses",
             "plant_sonoran_saguaro",
             "plant_south_american_cacti",
-            "plant_spinifex_grasses",
             "plant_xerophytic_shrubs"
           ],
           "fauna": [
@@ -163,8 +160,7 @@
             "hemisphere": "either"
           },
           "flora": [
-            "plant_australian_saltbushes",
-            "plant_halophytic_shrubs"
+            "plant_saltbushes"
           ],
           "fauna": [
             "animal_andean_condor",
@@ -231,11 +227,9 @@
             "plant_mesoamerican_vanilla",
             "plant_miombo_trees",
             "plant_native_teak",
-            "plant_palms_and_pandanus",
-            "plant_regional_palms_and_dipterocarps",
             "plant_regional_tropical_timber_trees",
             "plant_sal_trees",
-            "plant_taro_and_regional_aroids",
+            "plant_tropical_palms",
             "plant_wild_beans",
             "plant_wild_cacao",
             "plant_wild_squashes",
@@ -377,7 +371,6 @@
             "PLT#000201",
             "PLT#000204",
             "plant_asian_chestnuts",
-            "plant_asian_oaks_and_maples",
             "plant_coigue",
             "plant_european_beech",
             "plant_hazel",
@@ -506,8 +499,8 @@
           "flora": [
             "plant_african_raffia_palms",
             "plant_mosses",
-            "plant_taro_and_regional_aroids",
-            "plant_wetland_pandanus"
+            "plant_wetland_pandanus",
+            "plant_wild_taro"
           ],
           "fauna": [
             "ANM#000185",
@@ -551,12 +544,11 @@
             "PLT#000197",
             "plant_african_baobab",
             "plant_african_wild_sorghums",
-            "plant_cerrado_grasses",
             "plant_miombo_trees",
-            "plant_northern_australian_native_grasses",
             "plant_pequi",
-            "plant_regional_savanna_palms",
+            "plant_prairie_grasses",
             "plant_sahelian_wild_pearl_millet_relatives",
+            "plant_savanna_vegetation",
             "plant_shea_tree"
           ],
           "fauna": [
@@ -622,9 +614,7 @@
             "hemisphere": "either"
           },
           "flora": [
-            "plant_big_bluestem",
-            "plant_blue_grama",
-            "plant_pampas_grasses"
+            "plant_prairie_grasses"
           ],
           "fauna": [
             "ANM#000169",
@@ -690,9 +680,8 @@
           },
           "flora": [
             "PLT#000194",
-            "plant_eurasian_steppe_grasses",
-            "plant_patagonian_tussock_grasses",
             "plant_southwest_asian_wild_wheat",
+            "plant_steppe_grasses",
             "plant_wild_barley",
             "plant_wild_quinoa_relatives"
           ],
@@ -802,8 +791,8 @@
             "hemisphere": "either"
           },
           "flora": [
-            "plant_regional_seagrasses",
-            "plant_tropical_marine_algae"
+            "plant_marine_algae",
+            "plant_seagrasses"
           ],
           "fauna": [
             "ANM#000173",
@@ -835,10 +824,9 @@
           "flora": [
             "PLT#000198",
             "plant_cordgrasses_and_saltmarsh_grasses",
-            "plant_eelgrass_and_other_seagrasses",
             "plant_estuarine_halophytes",
-            "plant_regional_brown_and_red_algae",
-            "plant_regional_seagrasses"
+            "plant_marine_algae",
+            "plant_seagrasses"
           ],
           "fauna": [
             "ANM#000173",
@@ -906,10 +894,8 @@
           },
           "flora": [
             "PLT#000198",
-            "plant_marine_phytoplankton",
-            "plant_polar_marine_algae",
-            "plant_regional_brown_and_red_algae",
-            "plant_tropical_marine_algae"
+            "plant_marine_algae",
+            "plant_marine_phytoplankton"
           ],
           "fauna": [
             "ANM#000183",
@@ -951,10 +937,9 @@
           "flora": [
             "PLT#000191",
             "PLT#000199",
-            "PLT#000202",
             "PLT#000205",
-            "plant_arctic_blueberries",
             "plant_cloudberry",
+            "plant_cushion_plants",
             "plant_mosses",
             "plant_subantarctic_grasses",
             "plant_tundra_berries"
@@ -1020,10 +1005,8 @@
           },
           "flora": [
             "PLT#000199",
-            "PLT#000202",
-            "plant_afroalpine_grasses",
             "plant_alpine_grasses",
-            "plant_asian_alpine_grasses",
+            "plant_cushion_plants",
             "plant_east_african_giant_lobelias",
             "plant_edelweiss",
             "plant_ethiopian_highland_ensete",
@@ -1033,7 +1016,6 @@
             "plant_ichu_grass",
             "plant_lenga_beech",
             "plant_queuna_trees",
-            "plant_shrubs_and_cushion_plants",
             "plant_wild_potato_relatives",
             "plant_wild_quinoa_relatives"
           ],
