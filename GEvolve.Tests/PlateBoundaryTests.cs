@@ -53,7 +53,8 @@ public static class PlateBoundaryTests
             "Plate diagnostic colors distinguish plates and oceans");
 
         foreach (var (size, seed) in new[] {
-            (GridSize.Small, 2026), (GridSize.Medium, 42), (GridSize.Large, -731) })
+            (GridSize.Small, 2026), (GridSize.Medium, 42),
+            (GridSize.Large, -731), (GridSize.Enormous, 2026) })
         {
             var generated = new LandmassGenerationService().Generate(
                 LandmassProfiles.Create(size, LandmassType.Pangaea, seed));

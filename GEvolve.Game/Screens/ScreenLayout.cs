@@ -5,7 +5,7 @@ namespace GEvolve.Game.Screens;
 public enum UiAction
 {
     Create, Options, Exit, Back, Generate,
-    Small, Medium, Large,
+    Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic
 }
@@ -58,6 +58,8 @@ public static class ScreenLayout
                     columnWidth, optionHeight)),
                 new(UiAction.Large, "Grande", new(left, top + 2 * (optionHeight + optionGap),
                     columnWidth, optionHeight)),
+                new(UiAction.Enormous, "Enorme", new(left, top + 3 * (optionHeight + optionGap),
+                    columnWidth, optionHeight)),
                 new(UiAction.Continents, "Continentes", new(right, top,
                     columnWidth, optionHeight)),
                 new(UiAction.Pangaea, "Pangea", new(right, top + optionHeight + optionGap,
@@ -83,6 +85,7 @@ public static class ScreenLayout
             return [new(UiAction.Small, "Pequeño", new(12, 146, 83, 32)),
                 new(UiAction.Medium, "Mediano", new(101, 146, 83, 32)),
                 new(UiAction.Large, "Grande", new(190, 146, 83, 32)),
+                new(UiAction.Enormous, "Enorme", new(279, 146, 83, 32)),
                 new(UiAction.ToggleGrayscale, "Ver alturas (B/N)", new(12, 188, 261, 36)),
                 new(UiAction.ToggleInfrared, "INFRARROJO", new(12, 230, 261, 36)),
                 new(UiAction.ToggleRainfall, "PRECIPITACIONES", new(12, 272, 261, 36)),
@@ -99,6 +102,7 @@ public static class ScreenLayout
         UiAction.Small => GridSize.Small,
         UiAction.Medium => GridSize.Medium,
         UiAction.Large => GridSize.Large,
+        UiAction.Enormous => GridSize.Enormous,
         _ => throw new ArgumentOutOfRangeException(nameof(action))
     };
 

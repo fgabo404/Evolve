@@ -49,7 +49,8 @@ internal sealed class EvolveWindow : GameWindow
         (GridSize.Small, LandmassType.Pangaea, 42),
         (GridSize.Medium, LandmassType.Pangaea, -731),
         (GridSize.Large, LandmassType.SmallContinents, 2026),
-        (GridSize.Large, LandmassType.Archipelagos, 2026)
+        (GridSize.Large, LandmassType.Archipelagos, 2026),
+        (GridSize.Enormous, LandmassType.Pangaea, 2026)
     ];
 
     public EvolveWindow(bool graphicsSmoke = false) : base(GameWindowSettings.Default, new NativeWindowSettings
@@ -368,7 +369,8 @@ internal sealed class EvolveWindow : GameWindow
             centered: false);
         string size = grid.Definition.Size switch
         {
-            GridSize.Small => "PEQUEÑO", GridSize.Medium => "MEDIANO", _ => "GRANDE"
+            GridSize.Small => "PEQUEÑO", GridSize.Medium => "MEDIANO",
+            GridSize.Large => "GRANDE", _ => "ENORME"
         };
         if (ClientSize.X >= 600)
             _ui.Text($"{size}  {grid.Definition.Columns} X {grid.Definition.Rows}",
@@ -460,7 +462,7 @@ internal sealed class EvolveWindow : GameWindow
         {
             var r = button.Bounds;
             _hover.TryGetValue(button.Action, out float hover);
-            bool sizeAction = button.Action is UiAction.Small or UiAction.Medium or UiAction.Large;
+            bool sizeAction = button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous;
             bool typeAction = button.Action is UiAction.Continents or UiAction.Pangaea or
                 UiAction.SmallContinents or UiAction.Archipelagos;
             bool selected = sizeAction && ScreenLayout.SizeFor(button.Action) == _session.SelectedSize ||
@@ -630,7 +632,7 @@ internal sealed class EvolveWindow : GameWindow
                 if (_session.Screen == GameScreen.World && _session.State.Landmass?.Climate is not null)
                     _viewMode = _viewMode == MapViewMode.Infrared ? MapViewMode.Biomes : MapViewMode.Infrared;
                 break;
-            case UiAction.Small or UiAction.Medium or UiAction.Large:
+            case UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous:
                 if (_session.Screen == GameScreen.World)
                 {
                     GridSize newSize = ScreenLayout.SizeFor(action);

@@ -1,6 +1,6 @@
 ﻿# Biomas, pendientes y representación del terreno
 
-La clasificación `biomes-3` se ejecuta en Engine después de aceptar el terreno. Pangea conserva `landmass-4`, semillas, intentos, superficie, placas y elevaciones 0–100. No se suaviza el relieve ni se introduce aleatoriedad. La clasificación todavía no utiliza temperatura ni humedad: esta distribución es provisional. La temperatura se calcula después, como etapa independiente documentada en [TEMPERATURE.md](TEMPERATURE.md), sin cambiar estas reglas.
+La clasificación `biomes-3` se ejecuta en Engine después de aceptar el terreno. Pangea utiliza `landmass-5` desde el cambio autorizado de tamaños y número de placas (16 por mundo); la elevación sigue en 0–100. No se suaviza el relieve ni se introduce aleatoriedad. La clasificación todavía no utiliza temperatura ni humedad: esta distribución es provisional. La temperatura se calcula después, como etapa independiente documentada en [TEMPERATURE.md](TEMPERATURE.md), sin cambiar estas reglas.
 
 ## Catálogo y latitud
 
@@ -16,7 +16,7 @@ Primero se filtra por superficie, elevación, latitud absoluta y hemisferio. Los
 
 La unidad es **niveles de elevación por paso entre centros hexagonales**, no grados ni metros. El resultado es un byte 0–100. Se respeta la conexión horizontal y se excluyen vecinos inexistentes en los bordes norte y sur. Los océanos no intervienen: su altura cero no crea pendientes terrestres artificiales en las costas. Una tierra sin vecinos terrestres tiene pendiente 0; los océanos almacenan 0. Sin elevaciones, el arreglo permanece `null`.
 
-`LandmassState.SlopeByCellId` almacena un byte por celda (50.000 bytes en Grande), alineado por ID, sin modificar las alturas originales. `BiomeClassifier.GetCell` devuelve altura, latitud, bioma, subbioma, pendiente y condición de cumbre. La caché del clasificador incluye superficie, altura y pendiente por fila: igual altura no implica igual paisaje. Game no recalcula pendientes.
+`LandmassState.SlopeByCellId` almacena un byte por celda (60.000 bytes en Grande, 106.800 bytes en Enorme), alineado por ID, sin modificar las alturas originales. `BiomeClassifier.GetCell` devuelve altura, latitud, bioma, subbioma, pendiente y condición de cumbre. La caché del clasificador incluye superficie, altura y pendiente por fila: igual altura no implica igual paisaje. Game no recalcula pendientes.
 
 ## Prioridades provisionales
 

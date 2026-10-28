@@ -46,3 +46,7 @@ Los **salares** no se infieren de aridez sin geología; tampoco se infieren hume
 Si faltan datos climáticos completos, el clasificador conserva el criterio basado en elevación, latitud y pendiente. Los mapas guardados mantienen su clasificación; los nuevos aplican `biomes-4`. El clima base se conserva separado de los modificadores futuros de calentamiento global.
 
 Se incluye un test específico: **26,7 °C, 81 mm/año, humedad 7/100, latitud 13,1° S, elevación 12** debe clasificarse como desierto arenoso, no sabana.
+
+## Resoluciones landmass-5
+
+El modelo meteorológico permanece sin recalibrar; ahora se ejecuta sobre cuatro tamaños: 200×133, 250×167, 300×200 y 400×267. La calibración hidrológica continental sigue pendiente.

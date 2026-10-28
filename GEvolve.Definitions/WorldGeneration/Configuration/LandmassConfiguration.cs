@@ -30,21 +30,33 @@ public static class LandmassProfiles
     {
         _ = HexGridDefinitions.Get(size);
         if (!Enum.IsDefined(type)) throw new ArgumentOutOfRangeException(nameof(type));
+        // The four profiles now cover more cells; keep geographic feature
+        // density proportional to area instead of reusing the old 7k/15k/50k profiles.
         return type switch
         {
             LandmassType.Continents => new(size, type, seed, EvolveVersion.LandmassGenerator,
-                Continents: new(.35, size switch { GridSize.Small => 3,
-                    GridSize.Medium => 4, _ => 6 }, size switch { GridSize.Small => 25,
-                    GridSize.Medium => 32, _ => 48 }, .48, 9, .002)),
+                Continents: new(.35, size switch {
+                    GridSize.Small => 4, GridSize.Medium => 5,
+                    GridSize.Large => 6, _ => 8
+                }, size switch {
+                    GridSize.Small => 34, GridSize.Medium => 39,
+                    GridSize.Large => 48, _ => 60
+                }, .48, 9, .002)),
             LandmassType.Pangaea => new(size, type, seed, EvolveVersion.LandmassGenerator,
                 Pangaea: new(.40, .58, 7, .0015, .32)),
             LandmassType.SmallContinents => new(size, type, seed, EvolveVersion.LandmassGenerator,
-                SmallContinents: new(.30, size switch { GridSize.Small => 12,
-                    GridSize.Medium => 22, _ => 58 }, size switch { GridSize.Small => 9.5,
-                    GridSize.Medium => 10.5, _ => 11.5 }, 2, .38, 15, .004)),
+                SmallContinents: new(.30, size switch {
+                    GridSize.Small => 36, GridSize.Medium => 52,
+                    GridSize.Large => 76, _ => 124
+                }, size switch {
+                    GridSize.Small => 11.5, GridSize.Medium => 12.5,
+                    GridSize.Large => 13.5, _ => 14.5
+                }, 2, .38, 15, .004)),
             LandmassType.Archipelagos => new(size, type, seed, EvolveVersion.LandmassGenerator,
-                Archipelagos: new(.20, size switch { GridSize.Small => 14,
-                    GridSize.Medium => 28, _ => 92 }, 12, 1.2, 3.5, .35, 20)),
+                Archipelagos: new(.20, size switch {
+                    GridSize.Small => 55, GridSize.Medium => 88,
+                    GridSize.Large => 128, _ => 220
+                }, 12, 1.2, 3.5, .35, 20)),
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }

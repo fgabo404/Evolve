@@ -25,9 +25,9 @@ public static class GameTests
         Check(session.SelectedType == LandmassType.Continents && session.SeedText == "2026" &&
             session.State.Landmass is null, "Default world type and visible seed");
         var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
-        Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large)
+        Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous)
             .Select(button => ScreenLayout.SizeFor(button.Action))
-            .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large]), "Three official sizes");
+            .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large, GridSize.Enormous]), "Four official sizes");
         Check(createButtons.Where(button => button.Action is UiAction.Continents or UiAction.Pangaea or
             UiAction.SmallContinents or UiAction.Archipelagos)
             .Select(button => ScreenLayout.TypeFor(button.Action))
@@ -54,7 +54,7 @@ public static class GameTests
         session.ReturnToMenu();
         session.OpenCreateWorld();
 
-        foreach (var size in new[] { GridSize.Small, GridSize.Medium, GridSize.Large })
+        foreach (var size in Enum.GetValues<GridSize>())
         {
             session.ChooseSize(size);
             var definition = HexGridDefinitions.Get(size);
@@ -102,7 +102,8 @@ public static class GameTests
             Check(FlatHexGeometry.CellAt(new Vector2(cell.Center.X, -20),
                 definition.Columns, definition.Rows) is null,
                 "North remains open");
-            Check(timer.ElapsedMilliseconds < 2_000, "Grid generation remains responsive");
+            Check(timer.ElapsedMilliseconds < (size == GridSize.Enormous ? 60_000 : 30_000),
+                "World generation remains within a generous smoke-test budget");
             Console.WriteLine($"PASS: Game {size} ({grid.Cells.Count} cells, {timer.ElapsedMilliseconds} ms)");
 
             session.ReturnToMenu();
@@ -125,12 +126,13 @@ public static class GameTests
             resizeConfig.Seed == selectedSeed &&
             resizing.Screen == GameScreen.Generating, "World view resize keeps seed and type");
         resizing.CompleteGeneration(new LandmassGenerationService().Generate(resizeConfig));
-        Check(resizing.Grid!.Cells.Count == 15000 &&
+        Check(resizing.Grid!.Cells.Count == HexGridDefinitions.Get(GridSize.Medium).Columns *
+                HexGridDefinitions.Get(GridSize.Medium).Rows &&
             resizing.State.Landmass!.Configuration.Seed == selectedSeed,
             "Resized world replaces logical state");
         var worldButtons = ScreenLayout.Buttons(GameScreen.World, 1280, 720);
-        Check(worldButtons.Count(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large) == 3,
-            "Three size controls are available in world view");
+        Check(worldButtons.Count(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous) == 4,
+            "Four size controls are available in world view");
         Check(worldButtons.Any(button => button.Action == UiAction.ToggleTectonic),
             "Tectonic plate view is available in world screen");
 

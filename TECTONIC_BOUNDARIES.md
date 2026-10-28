@@ -36,3 +36,7 @@ dotnet run --project GEvolve.Game
 ```
 
 Se añadieron pruebas para aristas únicas, vecinos válidos, costura horizontal, distancias, ausencia de falsos límites, color de placas, determinismo y botón de interfaz. La ejecución local de .NET y OpenGL **no se ha realizado en este entorno**. Tras validar, actualizar `ROADMAP_ACCIDENTES_GEOGRAFICOS.md` marcando la etapa como completada con las evidencias y el commit.
+
+## Cambio de línea base en landmass-5
+
+Pangea ahora usa 16 semillas de placa para todos los tamaños (Pequeño 200×133, Mediano 250×167, Grande 300×200, Enorme 400×267). La modificación de la cantidad de placas fue solicitada expresamente; el análisis derivado de fronteras no cambia. Las antiguas huellas de tectónica no son comparables entre versiones.

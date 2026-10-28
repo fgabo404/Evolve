@@ -1,6 +1,6 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.2 · **Fecha:** 2026-10-28  
+**Versión:** 2.3 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** fase 01 implementada en código, **pendiente de compilación, pruebas y revisión visual**; **0/18 etapas aprobadas**  
 **Siguiente trabajo:** **validar la fase 01 — Mapa de límites de placas tectónicas**.  
@@ -14,7 +14,7 @@ Agregar los accidentes naturales que faltan en el mundo de Pangea como **capas g
 
 ### Reglas innegociables
 
-1. **No cambiar `PangaeaGenerator`, ni `SurfaceByCellId`, `ElevationByCellId`, `PlateByCellId`, las costas, la topología o la semilla.** Conservar las regresiones tectónicas existentes.
+1. **Nueva línea base autorizada:** cuatro tamaños cercanos a 3:2 y 16 placas de Pangea en `landmass-5`. A partir de esta revisión, no cambiar la tectónica, costas, elevaciones ni placas sin autorización. Las huellas de `landmass-4` quedan como referencias históricas.
 2. Las estructuras nuevas son **datos superpuestos**; no modifican la elevación, aunque una futura fase de erosión o geomorfología podría proponerse por separado.
 3. Usar únicamente los **seis vecinos reales** de `HexTopology`, con continuidad este-oeste y sin unir norte/sur.
 4. Igual configuración y semilla deben producir los mismos datos, IDs y geometrías. Evitar porcentajes forzados o ubicaciones aleatorias sin criterio geográfico.
@@ -157,7 +157,7 @@ Por tanto:
 
 #### [ ] 18 — Validación integral y rendimiento
 - Compilar, ejecutar tests del motor, interfaz y guardado/carga; revisar varias semillas y tamaños.
-- Verificar **36 regresiones tectónicas** de superficie, altura y placas (sin modificación).
+- Verificar **48 combinaciones** (4 tamaños × 4 tipos × 3 semillas), determinismo de superficie, altura y placas. Las huellas de `landmass-4` ya no son comparables.
 - Medir volcanes por frontera, cuencas y lagos, caudal y continuidad de ríos, coste de memoria y renderizado.
 - **Aceptación:** ningún río sin desembocadura, accidentes coherentes, determinismo y rendimiento aceptable.
 
@@ -206,3 +206,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.1:** **reordenar la implementación para comenzar por los accidentes relacionados con las placas tectónicas** (límites, aptitud volcánica, volcanes y vistas); después lagos, ríos y demás accidentes. Ninguna fase implementada todavía. Se mantiene intacto el generador tectónico de Pangea.
 
 - **2026-10-28 · v2.2:** fase 01 codificada y publicada para revisión: `PlateBoundaryMap` analiza límites y distancia; vista de placas con colores, aristas y selección. Se agregaron pruebas. **La fase sigue [ ] hasta compilar, probar y aprobar.** No se generaron volcanes y no se modificó Pangea.
+
+- **2026-10-28 · v2.3:** nuevo conjunto de tamaños **200×133, 250×167, 300×200 y 400×267**, y **16 placas** independientemente de la resolución de Pangea. El cambio solicitado altera la línea base tectónica del generador **landmass-5**. Los volcanes siguen pendientes. Véase [WORLD_SIZES_AND_PLATES.md](WORLD_SIZES_AND_PLATES.md).

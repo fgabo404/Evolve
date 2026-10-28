@@ -10,15 +10,18 @@ public static class GridTests
     {
         foreach (var (size, columns, rows) in new[]
         {
-            (GridSize.Small, 100, 70),
-            (GridSize.Medium, 150, 100),
-            (GridSize.Large, 250, 200)
+            (GridSize.Small, 200, 133),
+            (GridSize.Medium, 250, 167),
+            (GridSize.Large, 300, 200),
+            (GridSize.Enormous, 400, 267)
         })
         {
             var definition = HexGridDefinitions.Get(size);
             Check(definition.Columns == columns && definition.Rows == rows &&
                 definition.Orientation == GridOrientation.FlatTop &&
                 definition.WrapHorizontal && !definition.WrapVertical, "Official configuration");
+            Check(Math.Abs(definition.Columns / (double)definition.Rows - 1.5) < .01,
+                "All four world grids are approximately 3:2");
             var grid = HexGrid.Generate(definition);
             Check(grid.Cells.Count == columns * rows, "Cell count");
             Check(grid.Cells.Select(cell => cell.Id).Distinct().Count() == grid.Cells.Count, "Unique IDs");

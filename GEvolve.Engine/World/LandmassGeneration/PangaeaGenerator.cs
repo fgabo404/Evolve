@@ -6,6 +6,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>Modelo experimental determinista: placas Voronoi, velocidades y relieve.</summary>
 public sealed class PangaeaGenerator : ILandmassGenerator
 {
+    public const int NumberOfPlates = 16;
     public LandmassType Type => LandmassType.Pangaea;
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
         => GenerateTectonic(topology, configuration, attempt).Surface;
@@ -17,7 +18,8 @@ public sealed class PangaeaGenerator : ILandmassGenerator
             ?? throw new ArgumentException("Missing Pangaea parameters.");
         int width=topology.Columns, height=topology.Rows, count=topology.Count;
         var random = new DeterministicRandom(configuration.Seed, (uint)(0x7100 + attempt));
-        int numberOfPlates = Math.Clamp(count / 310, 18, 70);
+        // Planet-scale plate count remains constant across map resolutions.
+        int numberOfPlates = NumberOfPlates;
         var centerX = new double[numberOfPlates];
         var centerY = new double[numberOfPlates];
         var speedX = new double[numberOfPlates];
