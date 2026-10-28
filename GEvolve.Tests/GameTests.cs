@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Game;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
@@ -21,10 +22,37 @@ public static class GameTests
         session.OpenCreateWorld();
         Check(session.Screen == GameScreen.CreateWorld && session.SelectedSize == GridSize.Small,
             "Create screen defaults to Small");
+        Check(session.SelectedType == LandmassType.Continents && session.SeedText == "2026" &&
+            session.State.Landmass is null, "Default world type and visible seed");
         var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
         Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large)
             .Select(button => ScreenLayout.SizeFor(button.Action))
             .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large]), "Three official sizes");
+        Check(createButtons.Where(button => button.Action is UiAction.Continents or UiAction.Pangaea or
+            UiAction.SmallContinents or UiAction.Archipelagos)
+            .Select(button => ScreenLayout.TypeFor(button.Action))
+            .SequenceEqual(Enum.GetValues<LandmassType>()), "Four official world types");
+        Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
+            createButtons.Any(button => button.Action == UiAction.RandomSeed),
+            "Editable and random seed controls");
+        session.SetSeedText("2147483648");
+        Check(Throws<FormatException>(() => session.BeginGeneration()) &&
+            session.Screen == GameScreen.CreateWorld && session.Error is not null,
+            "Out-of-range seed is rejected without leaving the form");
+        session.RandomizeSeed();
+        Check(int.TryParse(session.SeedText, out _), "Random seed is a valid integer");
+        session.SetSeedText("-731");
+        session.ChooseType(LandmassType.Pangaea);
+        var request = session.BeginGeneration();
+        Check(session.Screen == GameScreen.Generating && request.Seed == -731 &&
+            request.Type == LandmassType.Pangaea && session.Grid is null,
+            "Generation begins without an implicit grid");
+        session.CompleteGeneration(new LandmassGenerationService().Generate(request));
+        Check(session.Screen == GameScreen.World &&
+            session.State.Landmass?.Configuration == request,
+            "Background-style completion transfers Engine result into State");
+        session.ReturnToMenu();
+        session.OpenCreateWorld();
 
         foreach (var size in new[] { GridSize.Small, GridSize.Medium, GridSize.Large })
         {
@@ -36,8 +64,19 @@ public static class GameTests
             Check(session.Screen == GameScreen.World && ReferenceEquals(grid, session.Grid),
                 "One Engine grid serves the world screen");
             Check(session.State.HexGrid?.Definition == definition &&
+                session.State.Landmass?.Configuration.Size == size &&
                 grid.Cells.Count == definition.Columns * definition.Rows &&
                 definition.Orientation == GridOrientation.FlatTop, "Effective state and cell count");
+
+            byte[] surface = session.State.Landmass!.SurfaceByCellId;
+            int landId = Array.IndexOf(surface, (byte)1);
+            int oceanId = Array.IndexOf(surface, (byte)0);
+            Check(landId >= 0 && oceanId >= 0 &&
+                session.SelectAt(grid.Cells[landId].Center)?.Id == landId &&
+                session.State.Landmass.IsLand(landId) &&
+                session.SelectAt(grid.Cells[oceanId].Center)?.Id == oceanId &&
+                !session.State.Landmass.IsLand(oceanId),
+                "Land and ocean selection retain the original IDs");
 
             var cell = grid.Cells[definition.Columns * (definition.Rows / 2) + 2];
             Check(session.SelectAt(cell.Center)?.Id == cell.Id, "Cell selection");
@@ -68,7 +107,8 @@ public static class GameTests
 
             session.ReturnToMenu();
             Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
-                session.State.HexGrid is null && session.SelectedCell is null,
+                session.State.HexGrid is null && session.State.Landmass is null &&
+                session.SelectedCell is null,
                 "Returning to menu releases logical world");
             session.OpenCreateWorld();
         }
@@ -85,5 +125,11 @@ public static class GameTests
     private static void Check(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);
+    }
+
+    private static bool Throws<T>(Action action) where T : Exception
+    {
+        try { action(); return false; }
+        catch (T) { return true; }
     }
 }

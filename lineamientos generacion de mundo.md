@@ -1,6 +1,6 @@
 # Evolve — Lineamientos de generación del mundo
 
-**Estado:** Capa 01 implementada; capas 02–04 pendientes. **Actualizado:** 2026-10-27.
+**Estado:** Capas 01 y 02 implementadas en v0.001; capas 03–04 pendientes. **Actualizado:** 2026-10-27.
 **Alcance:** capas 01–04. Los valores explícitamente pendientes no son reglas aprobadas ni deben completarse por inferencia.
 **Fuentes:** acuerdos de diseño del proyecto y `fgabo404/EvolveDoc`: `data/world/world.catalog.guide.json`, `lang/es/world.catalog.guide.md`, `lang/es/tecnologias-arquitectura.md`.
 
@@ -11,7 +11,7 @@
 - `GEvolve.State`: conserva configuración efectiva, semilla, resultados generados y cambios posteriores; la estrategia definitiva de snapshots está pendiente.
 - `GEvolve.Game`: única aplicación gráfica; tendrá dos modos de visualización (2D y 3D) sobre el mismo mundo de Engine/State. El antiguo Simulator web y el prototipo 3D fueron retirados.
 
-Las capas son **lógicas y secuenciales**, no renderizadores independientes. La Capa 01 está implementada por encargo explícito; las capas posteriores permanecen sin implementar.
+Las capas son **lógicas y secuenciales**, no renderizadores independientes. Las capas 01 y 02 están implementadas; las posteriores permanecen sin implementar.
 
 ## Capa 01 — Grid de hexágonos (acordada)
 
@@ -30,7 +30,7 @@ Las capas son **lógicas y secuenciales**, no renderizadores independientes. La 
 - La Capa 01 se genera solo al solicitarla con **Generar mundo** desde `GEvolve.Game`; al iniciar no existe un grid activo. La vista estratégica 2D usa OpenGL con un hexágono base instanciado en los centros visibles, sin enviar una operación independiente por celda a la GPU. La cámara y la selección se apoyan en la geometría de Engine.
 - Convenio de la implementación: columnas impares desplazadas hacia abajo (`odd-q`); ID estable `fila × columnas + columna`; axial `(q, r) = (columna, fila − ⌊columna/2⌋)`. Para los anchos pares oficiales, el cierre horizontal traslada `(q, r)` por `(±ancho, ∓ancho/2)`. Así se conserva la fila, la distancia entre centros y la vecindad geométrica sin duplicar celdas.
 
-## Capa 02 — Forma de masas terrestres (categorías acordadas)
+## Capa 02 — Forma de masas terrestres (v0.001)
 
 Cuatro opciones del perfil de forma terrestre:
 
@@ -39,9 +39,22 @@ Cuatro opciones del perfil de forma terrestre:
 3. **Continentes pequeños** (`small_continents`): mayor fragmentación en varias masas continentales menores.
 4. **Archipiélagos** (`archipelagos`): numerosas islas y conjuntos insulares.
 
-**Resultado lógico de esta capa:** distribución tierra/agua para cada hexágono, compatible con continuidad este–oeste y con una semilla reproducible. Estos identificadores son etiquetas de diseño propuestas, no nuevos IDs operativos aprobados.
+**Resultado lógico:** un byte por ID de hexágono (`0` océano, `1` tierra), sin cambiar la topología ni generar elevaciones o biomas. Los identificadores anteriores describen los tipos; el enum ejecutable está en `GEvolve.Definitions`. El mapa, la semilla, el perfil efectivo, la versión del generador y el intento elegido quedan en `GEvolve.State` y se recuperan sin regenerar.
 
-**Pendiente:** algoritmos concretos (ruidos u otros), porcentajes de océano, cantidad y tamaño de masas, anchura de estrechos, relación con polos, suavizado y parámetros de cada perfil. No heredar automáticamente los `WorldPresets` ni los algoritmos del prototipo `GEvolve.Engine`; son antecedentes técnicos, no aprobación de sus valores.
+Cada tipo utiliza una estrategia espacial propia en `GEvolve.Engine.World.LandmassGeneration`:
+
+| Tipo | Estrategia | Tierra objetivo experimental |
+| --- | --- | ---: |
+| Continentes | Núcleos separados, crecimiento de varios frentes y costas irregulares | 35 % |
+| Pangea | Región principal única que crece por frentes conectados | 40 % |
+| Continentes pequeños | Muchos núcleos de alcance limitado con corredores oceánicos | 30 % |
+| Archipiélagos | Cadenas curvas y agrupaciones de islas de tamaño variable | 20 % |
+
+Los valores de v0.001 son provisionales: rangos de referencia 30–40 %, 35–45 %, 25–35 % y 15–25 %, respectivamente. `LandmassProfiles` centraliza los parámetros efectivos por tamaño y algoritmo (núcleos o cadenas, separación, radios, ruido e irregularidad). No proceden de los `WorldPresets` del prototipo anterior. `LandmassGenerationService` comprueba cobertura y morfología con `LandmassAnalysis` y limita los reintentos deterministas a cuatro. El análisis usa componentes hexagonales reales, tamaños, masa dominante, distribución e islas; un continente que cruza el borde este–oeste sigue siendo uno solo.
+
+El ruido coherente multiescala se interpola con periodicidad horizontal exacta. La separación de núcleos y la expansión emplean vecinos y distancias con cierre este–oeste; norte y sur no se conectan. La misma combinación de tamaño, tipo, semilla entera, parámetros efectivos y versión `landmass-1` produce el mismo resultado. Un cambio futuro que altere ese resultado debe cambiar la versión del generador.
+
+**Aún por decidir:** relación de esta forma con polos, anchuras de estrechos como regla de juego, erosión y parámetros definitivos. Estas ausencias no invalidan los perfiles experimentales actuales.
 
 ## Capa 03 — Elevaciones (cuatro niveles documentados)
 
@@ -101,15 +114,14 @@ Game (vistas 2D y 3D) leen los mismos resultados
 
 ### Separación entre definición y estado
 
-`EvolveDoc` mantiene antecedentes, candidatos y guías de diseño. Este documento reúne los lineamientos **vigentes para la nueva generación**; las configuraciones ejecutables deberán incorporarse luego a `GEvolve.Definitions` mediante contratos aprobados. Los resultados por hexágono y datos de partida corresponden a `GEvolve.State`. Aún no hay contrato definitivo para `WorldState`, `HexState`, `EntityState` ni `WorldSnapshot`.
+`EvolveDoc` mantiene antecedentes, candidatos y guías de diseño. Este documento reúne los lineamientos **vigentes para la nueva generación**; los perfiles experimentales ejecutables de la Capa 02 están en `GEvolve.Definitions`. Los resultados por hexágono y datos de partida corresponden a `GEvolve.State`. El formato de guardado 2 incluye Capa 02 y `GameSaveStore` aún lee el formato 1. Aún no hay contrato definitivo para `WorldState`, `HexState`, `EntityState` ni `WorldSnapshot`.
 
 ### Decisiones explícitamente pospuestas
 
-- Parámetros cuantitativos de cada forma terrestre.
-- Algoritmos de ruido, composición y erosión.
-- Sistema de coordenadas/indexación exacto con wrap horizontal.
+- Parámetros definitivos de cada forma terrestre; los de v0.001 son experimentales.
+- Algoritmos de composición y erosión posteriores a la Capa 02.
 - Relación entre alturas físicas y niveles 0–3.
 - Cálculo climático y reglas de asignación de biomas.
-- Versionado del generador y persistencia completa del mapa.
+- Estrategia definitiva de snapshots y persistencia de capas futuras.
 
 **Regla de trabajo:** diseñar y aprobar cada capa antes de encargar su implementación. Los valores heredados del primer prototipo 3D y del generador anterior son referencias, no decisiones obligatorias.

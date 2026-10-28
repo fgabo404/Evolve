@@ -1,9 +1,10 @@
 using GEvolve.Engine.Grid;
+using GEvolve.State.Game;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GEvolve.Game.Graphics;
 
-/// <summary>Un hexágono unitario y centros visibles en un VBO; una llamada instanciada.</summary>
+/// <summary>Un hexágono unitario y superficies por ID; dos lotes instanciados por vista.</summary>
 public sealed class HexGridRenderer : IDisposable
 {
     private const float Root3Half = .8660254f;
@@ -11,52 +12,70 @@ public sealed class HexGridRenderer : IDisposable
         #version 330 core
         layout(location = 0) in vec2 aVertex;
         layout(location = 1) in vec2 aCenter;
+        layout(location = 2) in float aSurface;
         uniform vec2 uViewport;
         uniform vec2 uCamera;
         uniform float uScale;
         uniform float uTop;
+        out float vSurface;
         void main() {
             vec2 pixel = (aCenter + aVertex - uCamera) * uScale + vec2(0.0, uTop);
             gl_Position = vec4(2.0 * pixel.x / uViewport.x - 1.0,
                 1.0 - 2.0 * pixel.y / uViewport.y, 0.0, 1.0);
+            vSurface = aSurface;
         }
         """;
     private const string FragmentShader = """
         #version 330 core
+        in float vSurface;
+        uniform int uOutline;
         out vec4 color;
-        void main() { color = vec4(0.67, 0.71, 0.75, 1.0); }
+        void main() {
+            if (uOutline != 0) color = vec4(0.32, 0.42, 0.48, 0.55);
+            else if (vSurface > 0.5) color = vec4(0.35, 0.57, 0.32, 1.0);
+            else color = vec4(0.32, 0.55, 0.71, 1.0);
+        }
         """;
 
     private readonly HexGrid _grid;
+    private readonly LandmassState _landmass;
     private readonly ShaderProgram _shader;
     private readonly int _vao;
     private readonly int _hexVbo;
     private readonly int _instanceVbo;
-    private float[] _centers = [];
+    private float[] _instances = [];
     private int _instanceCount;
     private int _cameraVersion = -1;
 
     public int VisibleInstanceCount => _instanceCount;
 
-    public HexGridRenderer(HexGrid grid)
+    public HexGridRenderer(HexGrid grid, LandmassState landmass)
     {
+        if (landmass.SurfaceByCellId.Length != grid.Cells.Count ||
+            landmass.Configuration.Size != grid.Definition.Size)
+            throw new ArgumentException("Landmass state differs from the grid.", nameof(landmass));
         _grid = grid;
+        _landmass = landmass;
         _shader = new ShaderProgram(VertexShader, FragmentShader);
         _vao = GL.GenVertexArray();
         _hexVbo = GL.GenBuffer();
         _instanceVbo = GL.GenBuffer();
         GL.BindVertexArray(_vao);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _hexVbo);
-        float[] vertices = [1, 0, .5f, Root3Half, -.5f, Root3Half,
-            -1, 0, -.5f, -Root3Half, .5f, -Root3Half];
+        float[] vertices = [0, 0, 1, 0, .5f, Root3Half, -.5f, Root3Half,
+            -1, 0, -.5f, -Root3Half, .5f, -Root3Half, 1, 0];
         GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float),
             vertices, BufferUsageHint.StaticDraw);
         GL.EnableVertexAttribArray(0);
         GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.EnableVertexAttribArray(1);
-        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
         GL.VertexAttribDivisor(1, 1);
+        GL.EnableVertexAttribArray(2);
+        GL.VertexAttribPointer(2, 1, VertexAttribPointerType.Float, false,
+            3 * sizeof(float), 2 * sizeof(float));
+        GL.VertexAttribDivisor(2, 1);
         GL.BindVertexArray(0);
     }
 
@@ -75,7 +94,10 @@ public sealed class HexGridRenderer : IDisposable
         GL.Uniform1(_shader.Uniform("uScale"), camera.Scale);
         GL.Uniform1(_shader.Uniform("uTop"), (float)MapCamera2D.TopBarHeight);
         GL.BindVertexArray(_vao);
-        GL.DrawArraysInstanced(PrimitiveType.LineLoop, 0, 6, _instanceCount);
+        GL.Uniform1(_shader.Uniform("uOutline"), 0);
+        GL.DrawArraysInstanced(PrimitiveType.TriangleFan, 0, 8, _instanceCount);
+        GL.Uniform1(_shader.Uniform("uOutline"), 1);
+        GL.DrawArraysInstanced(PrimitiveType.LineLoop, 1, 6, _instanceCount);
         GL.BindVertexArray(0);
     }
 
@@ -83,19 +105,22 @@ public sealed class HexGridRenderer : IDisposable
     {
         VisibleHexRange range = camera.VisibleRange();
         int count = range.Count;
-        if (_centers.Length < count * 2) _centers = new float[count * 2];
+        if (_instances.Length < count * 3) _instances = new float[count * 3];
         int index = 0;
+        int columns = _grid.Definition.Columns;
         for (int row = range.FirstRow; row <= range.LastRow; row++)
         for (int column = range.FirstColumn; column <= range.LastColumn; column++)
         {
             var center = FlatHexGeometry.Center(new GridAddress(column, row));
-            _centers[index++] = center.X;
-            _centers[index++] = center.Y;
+            int wrapped = ((column % columns) + columns) % columns;
+            _instances[index++] = center.X;
+            _instances[index++] = center.Y;
+            _instances[index++] = _landmass.SurfaceByCellId[row * columns + wrapped];
         }
-        _instanceCount = index / 2;
+        _instanceCount = index / 3;
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.BufferData(BufferTarget.ArrayBuffer, index * sizeof(float),
-            _centers, BufferUsageHint.StreamDraw);
+            _instances, BufferUsageHint.StreamDraw);
     }
 
     public void Dispose()

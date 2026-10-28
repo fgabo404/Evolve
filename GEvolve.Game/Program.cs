@@ -1,7 +1,9 @@
 using System.Numerics;
 using System.Diagnostics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
+using GEvolve.Definitions.Versioning;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
 using OpenTK.Graphics.OpenGL4;
@@ -28,7 +30,21 @@ internal sealed class EvolveWindow : GameWindow
     private Vector2 _lastPointer;
     private bool _dirty = true;
     private readonly bool _graphicsSmoke;
-    private int _smokeStep;
+    private Task<GeneratedWorld>? _pendingGeneration;
+    private bool _seedFocused;
+    private int _smokeScenario = -1;
+    private bool _smokeZoomed;
+    private long _generationStarted;
+    private double _rendererPreparationMilliseconds;
+    private static readonly (GridSize Size, LandmassType Type, int Seed)[] SmokeCases =
+    [
+        (GridSize.Small, LandmassType.Continents, 2026),
+        (GridSize.Medium, LandmassType.Continents, 2026),
+        (GridSize.Large, LandmassType.Continents, 2026),
+        (GridSize.Large, LandmassType.Pangaea, 2026),
+        (GridSize.Large, LandmassType.SmallContinents, 2026),
+        (GridSize.Large, LandmassType.Archipelagos, 2026)
+    ];
 
     public EvolveWindow(bool graphicsSmoke = false) : base(GameWindowSettings.Default, new NativeWindowSettings
     {
@@ -57,6 +73,41 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
+        if (_pendingGeneration is { IsCompleted: true } completed)
+        {
+            _pendingGeneration = null;
+            if (_session.Screen == GameScreen.Generating)
+            {
+                try
+                {
+                    GeneratedWorld result = completed.GetAwaiter().GetResult();
+                    _session.CompleteGeneration(result);
+                    var preparation = Stopwatch.StartNew();
+                    _gridRenderer?.Dispose();
+                    _gridRenderer = new HexGridRenderer(result.Grid, result.Landmass);
+                    preparation.Stop();
+                    _rendererPreparationMilliseconds = preparation.Elapsed.TotalMilliseconds;
+                    _camera.Fit(result.Grid.Definition.Columns, result.Grid.Definition.Rows,
+                        ClientSize.X, ClientSize.Y);
+                    if (_graphicsSmoke)
+                        Console.WriteLine($"Generate {result.Grid.Definition.Size} " +
+                            $"{result.Landmass.Configuration.Type}: " +
+                            $"{Stopwatch.GetElapsedTime(_generationStarted).TotalMilliseconds:F1} ms total, " +
+                            $"{_rendererPreparationMilliseconds:F1} ms GPU preparation, " +
+                            $"{result.Statistics.LandFraction:P1} land, " +
+                            $"{result.Statistics.ComponentCount} components");
+                }
+                catch (Exception error)
+                {
+                    Console.Error.WriteLine(error);
+                    _gridRenderer?.Dispose();
+                    _gridRenderer = null;
+                    _session.GenerationFailed("NO SE PUDO GENERAR EL MUNDO");
+                }
+            }
+            else if (completed.IsFaulted) _ = completed.Exception;
+            _dirty = true;
+        }
         var mouse = MousePosition;
         UiAction? hovered = Hit(mouse.X, mouse.Y);
         foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
@@ -94,32 +145,46 @@ internal sealed class EvolveWindow : GameWindow
         if (error != OpenTK.Graphics.OpenGL4.ErrorCode.NoError)
             throw new InvalidOperationException($"OpenGL smoke test failed: {error}");
         if (_session.Screen == GameScreen.World)
-            Console.WriteLine($"OpenGL {_session.Grid!.Definition.Size}: " +
+            Console.WriteLine($"OpenGL {_session.Grid!.Definition.Size} " +
+                $"{_session.State.Landmass!.Configuration.Type}: " +
                 $"{_gridRenderer!.VisibleInstanceCount} visible instances, " +
                 $"{Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} ms frame");
-        switch (_smokeStep++)
+        if (_session.Screen == GameScreen.MainMenu && _smokeScenario == -1)
         {
-            case 0: Activate(UiAction.Create); break;
-            case 1: Activate(UiAction.Generate); break;
-            case 2: Activate(UiAction.Back); break;
-            case 3:
-                Activate(UiAction.Create); Activate(UiAction.Medium);
-                Activate(UiAction.Generate); break;
-            case 4: Activate(UiAction.Back); break;
-            case 5:
-                Activate(UiAction.Create); Activate(UiAction.Large);
-                Activate(UiAction.Generate); break;
-            case 6:
-                _camera.Zoom(8, new Vector2(ClientSize.X / 2f, ClientSize.Y / 2f));
-                _camera.Pan(120, 20);
-                _session.SelectAt(_camera.ScreenToWorld(
-                    new Vector2(ClientSize.X / 2f, ClientSize.Y / 2f)));
-                if (_session.SelectedCell is null)
-                    throw new InvalidOperationException("OpenGL smoke selection failed.");
-                _dirty = true;
-                break;
-            default: Close(); break;
+            _smokeScenario = 0;
+            Activate(UiAction.Create);
+            return;
         }
+        if (_session.Screen == GameScreen.CreateWorld)
+        {
+            if (_session.Error is { } generationError)
+                throw new InvalidOperationException($"OpenGL smoke generation failed: {generationError}");
+            var item = SmokeCases[_smokeScenario];
+            _session.ChooseSize(item.Size);
+            _session.ChooseType(item.Type);
+            _session.SetSeedText(item.Seed.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            StartGeneration();
+            return;
+        }
+        if (_session.Screen != GameScreen.World) return;
+        if (_smokeScenario < SmokeCases.Length - 1)
+        {
+            ReturnToMenu();
+            _smokeScenario++;
+            Activate(UiAction.Create);
+        }
+        else if (!_smokeZoomed)
+        {
+            _camera.Zoom(8, new Vector2(ClientSize.X / 2f, ClientSize.Y / 2f));
+            _camera.Pan(120, 20);
+            _session.SelectAt(_camera.ScreenToWorld(
+                new Vector2(ClientSize.X / 2f, ClientSize.Y / 2f)));
+            if (_session.SelectedCell is null)
+                throw new InvalidOperationException("OpenGL smoke selection failed.");
+            _smokeZoomed = true;
+            _dirty = true;
+        }
+        else Close();
     }
 
     private void RenderMenu()
@@ -133,8 +198,10 @@ internal sealed class EvolveWindow : GameWindow
         float titlePixel = Math.Clamp(w / 145f, 5, 9);
         if (_session.Screen == GameScreen.MainMenu)
         {
-            _ui.Text("EVOLVE", center, h * .17f, titlePixel, White);
-            _ui.Text("Civilization Simulator", center, h * .17f + titlePixel * 9,
+            float versionPixel = Math.Clamp(w / 205f, 4, 6.5f);
+            _ui.Text($"{EvolveVersion.GameName} {EvolveVersion.Display}",
+                center, h * .17f, versionPixel, White);
+            _ui.Text("Civilization Simulator", center, h * .17f + versionPixel * 9,
                 Math.Clamp(w / 480f, 1.5f, 2.5f), Muted);
         }
         else if (_session.Screen == GameScreen.CreateWorld)
@@ -143,6 +210,19 @@ internal sealed class EvolveWindow : GameWindow
                 Math.Clamp(w / 420f, 2, 3.2f), White);
             _ui.Text("Elige el tamaño del grid", center, MathF.Max(66, h * .16f),
                 1.8f, Muted);
+            var buttons = ScreenLayout.Buttons(GameScreen.CreateWorld, ClientSize.X, ClientSize.Y);
+            var size = buttons.First(button => button.Action == UiAction.Small).Bounds;
+            var type = buttons.First(button => button.Action == UiAction.Continents).Bounds;
+            var seed = buttons.First(button => button.Action == UiAction.SeedField).Bounds;
+            _ui.Text("Tamaño", size.X, size.Y - 24, 1.8f, Muted, centered: false);
+            _ui.Text("Tipo de mundo", type.X, type.Y - 24, 1.8f, Muted, centered: false);
+            _ui.Text("Semilla", seed.X, seed.Y - 24, 1.8f, Muted, centered: false);
+            _ui.Text(EvolveVersion.Display, 16, h - 27, 1.7f, Muted, centered: false);
+        }
+        else if (_session.Screen == GameScreen.Generating)
+        {
+            _ui.Text("Generando mundo", center, h * .39f, 4, White);
+            _ui.Text("Distribuyendo tierra y océanos", center, h * .52f, 2, Muted);
         }
         else
         {
@@ -187,7 +267,8 @@ internal sealed class EvolveWindow : GameWindow
             new Vector4(.06f, .13f, .20f, 1));
         _ui.Rect(0, MapCamera2D.TopBarHeight - 2, ClientSize.X, 2,
             new Vector4(.28f, .54f, .63f, 1));
-        _ui.Text("EVOLVE", 18, 18, 3, White, centered: false);
+        _ui.Text($"EVOLVE {EvolveVersion.Display}", 18, 19, 2.4f, White,
+            centered: false);
         string size = grid.Definition.Size switch
         {
             GridSize.Small => "PEQUEÑO", GridSize.Medium => "MEDIANO", _ => "GRANDE"
@@ -196,9 +277,10 @@ internal sealed class EvolveWindow : GameWindow
             _ui.Text($"{size}  {grid.Definition.Columns} X {grid.Definition.Rows}",
                 ClientSize.X / 2f, 22, 1.8f, Muted);
         DrawButtons();
-        if (_session.SelectedCell is { } cell)
+        if (_session.SelectedCell is { } cell && _session.State.Landmass is { } landmass)
         {
-            string label = $"CELDA {cell.Id}  C:{cell.Address.Column}  F:{cell.Address.Row}";
+            string surface = landmass.IsLand(cell.Id) ? "TIERRA" : "OCÉANO";
+            string label = $"CELDA {cell.Id}  C:{cell.Address.Column}  F:{cell.Address.Row}  {surface}";
             float labelWidth = (label.Length * 6 - 1) * 1.8f;
             _ui.Rect(12, ClientSize.Y - 43, labelWidth + 20, 31,
                 new Vector4(.07f, .16f, .23f, .9f));
@@ -213,31 +295,44 @@ internal sealed class EvolveWindow : GameWindow
         {
             var r = button.Bounds;
             _hover.TryGetValue(button.Action, out float hover);
-            bool selectedSize = _session.Screen == GameScreen.CreateWorld &&
-                button.Action is UiAction.Small or UiAction.Medium or UiAction.Large &&
-                ScreenLayout.SizeFor(button.Action) == _session.SelectedSize;
+            bool sizeAction = button.Action is UiAction.Small or UiAction.Medium or UiAction.Large;
+            bool typeAction = button.Action is UiAction.Continents or UiAction.Pangaea or
+                UiAction.SmallContinents or UiAction.Archipelagos;
+            bool selected = sizeAction && ScreenLayout.SizeFor(button.Action) == _session.SelectedSize ||
+                typeAction && ScreenLayout.TypeFor(button.Action) == _session.SelectedType ||
+                button.Action == UiAction.SeedField && _seedFocused;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
                 ? new(.12f, .35f, .45f, 1) : new(.16f, .24f, .31f, 1);
             Vector4 color = Vector4.Lerp(baseColor, new Vector4(.27f, .44f, .52f, 1), hover);
             _ui.Rect(r.X, r.Y, r.Width, r.Height, color);
-            _ui.Border(r.X, r.Y, r.Width, r.Height, selectedSize ? 2.5f : 1.5f,
-                selectedSize ? Accent : new Vector4(.37f, .51f, .59f, 1));
-            if (selectedSize || hover > .05f)
+            _ui.Border(r.X, r.Y, r.Width, r.Height, selected ? 2.5f : 1.5f,
+                selected ? Accent : new Vector4(.37f, .51f, .59f, 1));
+            if (selected || hover > .05f)
                 _ui.Rect(r.X, r.Y, 4, r.Height, Accent);
-            if (_session.Screen == GameScreen.CreateWorld &&
-                button.Action is UiAction.Small or UiAction.Medium or UiAction.Large)
+            if (sizeAction)
             {
                 var definition = HexGridDefinitions.Get(ScreenLayout.SizeFor(button.Action));
-                _ui.Text(button.Text, r.X + r.Width / 2, r.Y + 7,
-                    MathF.Min(2.4f, r.Height / 18), White);
+                _ui.Text(button.Text, r.X + r.Width / 2, r.Y + 4,
+                    MathF.Min(2.2f, r.Height / 18), White);
                 _ui.Text($"{definition.Columns} X {definition.Rows}  {(definition.Columns * definition.Rows).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} HEXÁGONOS",
-                    r.X + r.Width / 2, r.Y + r.Height - 16, 1.5f, Muted);
+                    r.X + r.Width / 2, r.Y + r.Height - 12, 1.2f, Muted);
+            }
+            else if (button.Action == UiAction.SeedField)
+            {
+                const float pixel = 2.2f;
+                _ui.Text(_session.SeedText, r.X + 13,
+                    r.Y + (r.Height - 7 * pixel) / 2, pixel, White, centered: false);
+                if (_seedFocused)
+                    _ui.Rect(r.X + 13 + _session.SeedText.Length * 6 * pixel,
+                        r.Y + 9, 2, r.Height - 18, Accent);
             }
             else
             {
-                float pixel = _session.Screen == GameScreen.World ? 1.9f : 2.5f;
+                float pixel = _session.Screen == GameScreen.World ? 1.9f :
+                    typeAction || button.Action == UiAction.RandomSeed ?
+                        MathF.Min(2.1f, (r.Width - 16) / (button.Text.Length * 6f)) : 2.5f;
                 _ui.Text(button.Text, r.X + r.Width / 2,
                     r.Y + (r.Height - 7 * pixel) / 2, pixel, White);
             }
@@ -291,6 +386,8 @@ internal sealed class EvolveWindow : GameWindow
         }
         else if (_pressed is { } action && Hit(position.X, position.Y) == action)
             Activate(action);
+        else if (_session.Screen == GameScreen.CreateWorld)
+            _seedFocused = false;
         _pressed = null;
         _dirty = true;
     }
@@ -306,11 +403,28 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnKeyDown(KeyboardKeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (_session.Screen == GameScreen.CreateWorld && _seedFocused &&
+            e.Key == Keys.Backspace)
+        {
+            if (_session.SeedText.Length > 0)
+                _session.SetSeedText(_session.SeedText[..^1]);
+            _dirty = true;
+            return;
+        }
         if (e.Key == Keys.Escape && _session.Screen != GameScreen.MainMenu)
         {
+            _seedFocused = false;
             ReturnToMenu();
             _dirty = true;
         }
+    }
+
+    protected override void OnTextInput(TextInputEventArgs e)
+    {
+        base.OnTextInput(e);
+        if (_session.Screen != GameScreen.CreateWorld || !_seedFocused) return;
+        _session.SetSeedText(_session.SeedText + e.AsString);
+        _dirty = true;
     }
 
     private void Activate(UiAction action)
@@ -323,28 +437,36 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.Back: ReturnToMenu(); break;
             case UiAction.Small or UiAction.Medium or UiAction.Large:
                 _session.ChooseSize(ScreenLayout.SizeFor(action)); break;
-            case UiAction.Generate: GenerateWorld(); break;
+            case UiAction.Continents or UiAction.Pangaea or UiAction.SmallContinents or
+                UiAction.Archipelagos:
+                _session.ChooseType(ScreenLayout.TypeFor(action)); break;
+            case UiAction.SeedField: _seedFocused = true; break;
+            case UiAction.RandomSeed: _session.RandomizeSeed(); break;
+            case UiAction.Generate: StartGeneration(); break;
         }
+        if (action != UiAction.SeedField) _seedFocused = false;
         _hover.Clear();
         _dirty = true;
     }
 
-    private void GenerateWorld()
+    private void StartGeneration()
     {
+        if (_pendingGeneration is not null) return;
         try
         {
-            var grid = _session.GenerateWorld();
-            _gridRenderer?.Dispose();
-            _gridRenderer = new HexGridRenderer(grid);
-            _camera.Fit(grid.Definition.Columns, grid.Definition.Rows,
-                ClientSize.X, ClientSize.Y);
+            LandmassConfiguration configuration = _session.BeginGeneration();
+            _generationStarted = Stopwatch.GetTimestamp();
+            _pendingGeneration = Task.Run(() =>
+                new LandmassGenerationService().Generate(configuration));
+        }
+        catch (FormatException)
+        {
+            // GameSession ya mantiene un mensaje de validación legible.
         }
         catch (Exception error)
         {
             Console.Error.WriteLine(error);
-            _gridRenderer?.Dispose();
-            _gridRenderer = null;
-            _session.GenerationFailed("No se pudo generar el mundo. Vuelve a intentarlo.");
+            _session.GenerationFailed("NO SE PUDO GENERAR EL MUNDO");
         }
     }
 
@@ -353,6 +475,7 @@ internal sealed class EvolveWindow : GameWindow
         _gridRenderer?.Dispose();
         _gridRenderer = null;
         _session.ReturnToMenu();
+        _seedFocused = false;
         _hover.Clear();
     }
 
