@@ -13,26 +13,35 @@ public sealed class HexGridRenderer : IDisposable
         layout(location = 0) in vec2 aVertex;
         layout(location = 1) in vec2 aCenter;
         layout(location = 2) in vec3 aColor;
+        layout(location = 3) in float aHeight;
         uniform vec2 uViewport;
         uniform vec2 uCamera;
         uniform float uScale;
         uniform float uTop;
         out vec3 vColor;
+        out float vHeight;
         void main() {
             vec2 pixel = (aCenter + aVertex - uCamera) * uScale + vec2(0.0, uTop);
             gl_Position = vec4(2.0 * pixel.x / uViewport.x - 1.0,
                 1.0 - 2.0 * pixel.y / uViewport.y, 0.0, 1.0);
             vColor = aColor;
+            vHeight = aHeight;
         }
         """;
     private const string FragmentShader = """
         #version 330 core
         in vec3 vColor;
+        in float vHeight;
         uniform int uOutline;
+        uniform int uGrayscale;
         out vec4 color;
         void main() {
             if (uOutline != 0) color = vec4(0.32, 0.42, 0.48, 0.55);
             else color = vec4(vColor, 1.0);
+            if (uGrayscale != 0 && vHeight >= 0.0) {
+                color = uOutline != 0 ? vec4(vec3(0.4), 0.55)
+                    : vec4(vec3(vHeight), 1.0);
+            }
         }
         """;
 
@@ -69,16 +78,20 @@ public sealed class HexGridRenderer : IDisposable
         GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.EnableVertexAttribArray(1);
-        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
         GL.VertexAttribDivisor(1, 1);
         GL.EnableVertexAttribArray(2);
         GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false,
-            5 * sizeof(float), 2 * sizeof(float));
+            6 * sizeof(float), 2 * sizeof(float));
         GL.VertexAttribDivisor(2, 1);
+        GL.EnableVertexAttribArray(3);
+        GL.VertexAttribPointer(3, 1, VertexAttribPointerType.Float, false,
+            6 * sizeof(float), 5 * sizeof(float));
+        GL.VertexAttribDivisor(3, 1);
         GL.BindVertexArray(0);
     }
 
-    public void Draw(MapCamera2D camera, int width, int height)
+    public void Draw(MapCamera2D camera, int width, int height, bool grayscale = false)
     {
         if (camera.Columns != _grid.Definition.Columns || camera.Rows != _grid.Definition.Rows)
             throw new InvalidOperationException("Camera and grid dimensions differ.");
@@ -88,6 +101,7 @@ public sealed class HexGridRenderer : IDisposable
             _cameraVersion = camera.Version;
         }
         _shader.Use();
+        GL.Uniform1(_shader.Uniform("uGrayscale"), grayscale ? 1 : 0);
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);
         GL.Uniform2(_shader.Uniform("uCamera"), camera.X, camera.Y);
         GL.Uniform1(_shader.Uniform("uScale"), camera.Scale);
@@ -104,7 +118,7 @@ public sealed class HexGridRenderer : IDisposable
     {
         VisibleHexRange range = camera.VisibleRange();
         int count = range.Count;
-        if (_instances.Length < count * 5) _instances = new float[count * 5];
+        if (_instances.Length < count * 6) _instances = new float[count * 6];
         int index = 0;
         int columns = _grid.Definition.Columns;
         for (int row = range.FirstRow; row <= range.LastRow; row++)
@@ -118,8 +132,10 @@ public sealed class HexGridRenderer : IDisposable
             _instances[index++] = color.X;
             _instances[index++] = color.Y;
             _instances[index++] = color.Z;
+            _instances[index++] = _landmass.ElevationByCellId is { } heights
+                ? heights[row * columns + wrapped] / 100f : -1f;
         }
-        _instanceCount = index / 5;
+        _instanceCount = index / 6;
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.BufferData(BufferTarget.ArrayBuffer, index * sizeof(float),
             _instances, BufferUsageHint.StreamDraw);

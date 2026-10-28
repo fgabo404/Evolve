@@ -36,6 +36,8 @@ internal sealed class EvolveWindow : GameWindow
     private bool _seedFocused;
     private int _smokeScenario = -1;
     private bool _smokeZoomed;
+    private bool _grayscale;
+    private int _smokeViewStep;
     private long _generationStarted;
     private double _rendererPreparationMilliseconds;
     private static readonly (GridSize Size, LandmassType Type, int Seed)[] SmokeCases =
@@ -145,7 +147,6 @@ internal sealed class EvolveWindow : GameWindow
     private void VerifyBiomePixels()
     {
         var terrain = _session.State.Landmass!;
-        if (terrain.ElevationByCellId is null) return;
         var checkedBiomes = new HashSet<string>(StringComparer.Ordinal);
         var visible = _camera.VisibleRange();
         var pixels = new byte[4];
@@ -154,8 +155,10 @@ internal sealed class EvolveWindow : GameWindow
         for (int column = visible.FirstColumn; column <= visible.LastColumn; column++)
         {
             int id = row * columns + ((column % columns) + columns) % columns;
-            string? biome = terrain.Biomes?.Get(id).BiomeId;
-            if (biome is null || checkedBiomes.Contains(biome)) continue;
+            string biome = terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
+            if (_grayscale && terrain.ElevationByCellId is { } levels)
+                biome = $"height {levels[id]}";
+            if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
             // Evitar las tarjetas, los botones y el texto de la interfaz.
             if (screen.X < 310 || screen.X > ClientSize.X - 20 ||
@@ -163,7 +166,9 @@ internal sealed class EvolveWindow : GameWindow
             int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
             int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-            Vector3 expected = BiomePalette.ForBiome(biome) * 255;
+            Vector3 expected = BiomePalette.ForCell(terrain, id) * 255;
+            if (_grayscale)
+                expected = new Vector3(terrain.ElevationByCellId![id] / 100f * 255);
             if (Math.Abs(pixels[0] - expected.X) > 2 || Math.Abs(pixels[1] - expected.Y) > 2 ||
                 Math.Abs(pixels[2] - expected.Z) > 2)
                 throw new InvalidOperationException($"Rendered biome color mismatch: {biome}, cell {id}.");
@@ -171,7 +176,7 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (checkedBiomes.Count < 2)
             throw new InvalidOperationException("Insufficient visible biome colors in graphics smoke.");
-        Console.WriteLine($"OpenGL biome pixels verified: {string.Join(", ", checkedBiomes)}");
+        Console.WriteLine($"OpenGL {(_grayscale ? "grayscale" : "color")} pixels verified: {string.Join(", ", checkedBiomes)}");
     }
 
     private void AdvanceGraphicsSmoke(long started)
@@ -203,8 +208,22 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
+        if (_smokeViewStep < 2)
+        {
+            var terrain = _session.State.Landmass;
+            var selected = _session.SelectedCell;
+            int cameraVersion = _camera.Version;
+            Activate(UiAction.ToggleGrayscale);
+            if (!ReferenceEquals(terrain, _session.State.Landmass) ||
+                selected != _session.SelectedCell || cameraVersion != _camera.Version ||
+                _pendingGeneration is not null)
+                throw new InvalidOperationException("Changing map view altered the world or camera.");
+            _smokeViewStep++;
+            return;
+        }
         if (_smokeScenario < SmokeCases.Length - 1)
         {
+            _smokeViewStep = 0;
             ReturnToMenu();
             _smokeScenario++;
             Activate(UiAction.Create);
@@ -278,7 +297,7 @@ internal sealed class EvolveWindow : GameWindow
                 (float)Math.Max(ClientSize.Y, 1)));
         GL.Enable(EnableCap.ScissorTest);
         GL.Scissor(0, 0, FramebufferSize.X, scissorHeight);
-        _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y);
+        _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, _grayscale);
         GL.Disable(EnableCap.ScissorTest);
 
         if (_session.SelectedCell is { } selected)
@@ -386,7 +405,8 @@ internal sealed class EvolveWindow : GameWindow
                 UiAction.SmallContinents or UiAction.Archipelagos;
             bool selected = sizeAction && ScreenLayout.SizeFor(button.Action) == _session.SelectedSize ||
                 typeAction && ScreenLayout.TypeFor(button.Action) == _session.SelectedType ||
-                button.Action == UiAction.SeedField && _seedFocused;
+                button.Action == UiAction.SeedField && _seedFocused ||
+                button.Action == UiAction.ToggleGrayscale && _grayscale;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -419,7 +439,11 @@ internal sealed class EvolveWindow : GameWindow
                 float pixel = _session.Screen == GameScreen.World ? 1.9f :
                     typeAction || button.Action == UiAction.RandomSeed ?
                         MathF.Min(2.1f, (r.Width - 16) / (button.Text.Length * 6f)) : 2.5f;
-                _ui.Text(button.Text, r.X + r.Width / 2,
+                string text = button.Action == UiAction.ToggleGrayscale
+                    ? _session.State.Landmass?.ElevationByCellId is null ? "Alturas pendientes"
+                        : _grayscale ? "Ver colores" : button.Text
+                    : button.Text;
+                _ui.Text(text, r.X + r.Width / 2,
                     r.Y + (r.Height - 7 * pixel) / 2, pixel, White);
             }
         }
@@ -521,6 +545,11 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.Options: _session.OpenOptions(); break;
             case UiAction.Exit: Close(); break;
             case UiAction.Back: ReturnToMenu(); break;
+            case UiAction.ToggleGrayscale:
+                if (_session.Screen == GameScreen.World &&
+                    _session.State.Landmass?.ElevationByCellId is not null)
+                    _grayscale = !_grayscale;
+                break;
             case UiAction.Small or UiAction.Medium or UiAction.Large:
                 if (_session.Screen == GameScreen.World)
                 {
@@ -571,6 +600,7 @@ internal sealed class EvolveWindow : GameWindow
         _gridRenderer?.Dispose();
         _gridRenderer = null;
         _session.ReturnToMenu();
+        _grayscale = false;
         _seedFocused = false;
         _hover.Clear();
     }
