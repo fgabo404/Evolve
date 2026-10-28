@@ -4,12 +4,18 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 /// <summary>Trayectorias curvas que depositan islas de tamaño y silueta variables.</summary>
-public sealed class ArchipelagosGenerator : ILandmassGenerator
+public sealed class ArchipelagosGenerator : IPlateAwareLandmassGenerator
 {
     public LandmassType Type => LandmassType.Archipelagos;
 
+    // Keep the legacy path callable, while the staged world passes existing plates.
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
+        => Generate(topology, configuration, attempt, ReadOnlySpan<byte>.Empty);
+
+    public byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
+        int attempt, ReadOnlySpan<byte> plates)
     {
+        var tectonics = new PlateSurfaceInfluence(topology, plates, configuration.Seed);
         var profile = configuration.Archipelagos
             ?? throw new ArgumentException("Archipelago parameters are missing.");
         var random = new DeterministicRandom(configuration.Seed, (uint)(0xA7C4 + attempt));
@@ -22,6 +28,28 @@ public sealed class ArchipelagosGenerator : ILandmassGenerator
         {
             double x = random.NextInt(topology.Columns);
             double y = topology.Rows * (.1 + .8 * random.NextDouble());
+            // Most chains begin near tectonic boundaries; others form independent
+            // intraplate island groups. This is a geographic preference, not a
+            // guarantee that every plate border creates islands.
+            if (tectonics.Enabled && random.NextDouble() < .75)
+            {
+                int bestColumn = (int)x, bestRow = (int)y;
+                int bestDistance = tectonics.DistanceToBoundary(
+                    topology.Id(bestColumn, bestRow));
+                for (int sample = 0; sample < 24 && bestDistance > 0; sample++)
+                {
+                    int candidateColumn = random.NextInt(topology.Columns);
+                    int candidateRow = (int)(topology.Rows * (.1 + .8 * random.NextDouble()));
+                    int distance = tectonics.DistanceToBoundary(
+                        topology.Id(candidateColumn, candidateRow));
+                    if (distance >= bestDistance) continue;
+                    bestDistance = distance;
+                    bestColumn = candidateColumn;
+                    bestRow = candidateRow;
+                }
+                x = bestColumn;
+                y = bestRow;
+            }
             double heading = random.NextDouble() * Math.PI * 2;
             double curve = (random.NextDouble() - .5) * .18;
             for (int step = 0; step < profile.StepsPerChain && land < target; step++)
@@ -30,8 +58,9 @@ public sealed class ArchipelagosGenerator : ILandmassGenerator
                 int row = Math.Clamp((int)Math.Round(y), 0, topology.Rows - 1);
                 int center = topology.Id(column, row);
                 int island = chain * profile.StepsPerChain + step;
-                double radius = profile.MinimumIslandRadius + random.NextDouble() *
-                    (profile.MaximumIslandRadius - profile.MinimumIslandRadius);
+                double radius = (profile.MinimumIslandRadius + random.NextDouble() *
+                    (profile.MaximumIslandRadius - profile.MinimumIslandRadius)) *
+                    tectonics.IslandFactor(center);
                 Stamp(center, radius, chain, island);
                 if (step % 5 == 0 && land < target)
                 {

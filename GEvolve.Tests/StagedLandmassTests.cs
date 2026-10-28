@@ -57,6 +57,26 @@ public static class StagedLandmassTests
 
                 if (type != LandmassType.Pangaea)
                 {
+                    // The staged generator must consume tectonics while preserving
+                    // the legacy no-plates mode for older callers.
+                    if (size == GridSize.Small)
+                    {
+                        IPlateAwareLandmassGenerator surfaceGenerator = type switch
+                        {
+                            LandmassType.Continents => new ContinentsGenerator(),
+                            LandmassType.SmallContinents => new SmallContinentsGenerator(),
+                            LandmassType.Archipelagos => new ArchipelagosGenerator(),
+                            _ => throw new InvalidOperationException("Unexpected world type")
+                        };
+                        var landWithPlates = surfaceGenerator.Generate(
+                            topology, config, landmass.DeterministicAttempt, ids);
+                        var legacyLand = surfaceGenerator.Generate(
+                            topology, config, landmass.DeterministicAttempt);
+                        Check(landWithPlates.SequenceEqual(landmass.SurfaceByCellId) &&
+                            !legacyLand.SequenceEqual(landWithPlates) &&
+                            ids.SequenceEqual(platesPreview),
+                            "Tectonics influence the coastline while the original legacy path remains available");
+                    }
                     byte[] platesCopy = ids.ToArray();
                     var recalculated = relief.Generate(
                         topology, landmass.SurfaceByCellId, platesCopy,

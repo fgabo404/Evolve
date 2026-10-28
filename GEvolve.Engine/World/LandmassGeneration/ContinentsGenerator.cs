@@ -4,13 +4,19 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 /// <summary>Núcleos distantes compiten por expansión irregular con cuotas distintas.</summary>
-public sealed class ContinentsGenerator : ILandmassGenerator
+public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
 {
     private readonly record struct Frontier(int Id, int Owner, double Cost);
     public LandmassType Type => LandmassType.Continents;
 
+    // Keep the legacy path callable, while the staged world passes existing plates.
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
+        => Generate(topology, configuration, attempt, ReadOnlySpan<byte>.Empty);
+
+    public byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
+        int attempt, ReadOnlySpan<byte> plates)
     {
+        var tectonics = new PlateSurfaceInfluence(topology, plates, configuration.Seed);
         var profile = configuration.Continents
             ?? throw new ArgumentException("Continents parameters are missing.");
         var random = new DeterministicRandom(configuration.Seed, (uint)(0xC011 + attempt));
@@ -59,7 +65,9 @@ public sealed class ContinentsGenerator : ILandmassGenerator
                 int column = neighbor % topology.Columns, row = neighbor / topology.Columns;
                 double noise = PeriodicNoise.Sample(column, row, topology.Columns,
                     topology.Rows, profile.NoiseFrequency, configuration.Seed + attempt * 1543);
-                double next = cost + Math.Max(.18, 1 + profile.CoastRoughness * noise);
+                double next = cost + Math.Max(.18,
+                    1 + profile.CoastRoughness * noise +
+                    tectonics.ExpansionCost(from, neighbor));
                 frontier.Enqueue(new Frontier(neighbor, owner, next), next + neighbor * 1e-9);
             }
         }

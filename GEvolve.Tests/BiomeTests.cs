@@ -79,7 +79,7 @@ public static class BiomeTests
                 LandmassProfiles.Create(size, type, seed));
             var terrain = generated.Landmass;
             Check(terrain.SurfaceByCellId.Length == generated.Grid.Cells.Count &&
-                terrain.Configuration.GeneratorVersion == "landmass-7",
+                terrain.Configuration.GeneratorVersion == "landmass-8",
                 "Current size and generator version agree");
             if (type == LandmassType.Pangaea)
             {

@@ -4,12 +4,18 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 /// <summary>Regiones locales con radio y cuota propios; corredores de agua entre núcleos.</summary>
-public sealed class SmallContinentsGenerator : ILandmassGenerator
+public sealed class SmallContinentsGenerator : IPlateAwareLandmassGenerator
 {
     public LandmassType Type => LandmassType.SmallContinents;
 
+    // Keep the legacy path callable, while the staged world passes existing plates.
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
+        => Generate(topology, configuration, attempt, ReadOnlySpan<byte>.Empty);
+
+    public byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
+        int attempt, ReadOnlySpan<byte> plates)
     {
+        var tectonics = new PlateSurfaceInfluence(topology, plates, configuration.Seed);
         var profile = configuration.SmallContinents
             ?? throw new ArgumentException("Small-continent parameters are missing.");
         var random = new DeterministicRandom(configuration.Seed, (uint)(0x5C0A + attempt));
@@ -42,7 +48,9 @@ public sealed class SmallContinentsGenerator : ILandmassGenerator
                     double noise = PeriodicNoise.Sample(column, row, topology.Columns,
                         topology.Rows, profile.NoiseFrequency,
                         configuration.Seed + attempt * 2203 + owner * 79);
-                    if (distance > radius * (1 + profile.CoastRoughness * noise)) continue;
+                    if (distance > radius *
+                        (1 + profile.CoastRoughness * noise) *
+                        tectonics.RadiusFactor(core, neighbor)) continue;
                     bool touchesOther = false;
                     foreach (int adjacent in topology.Neighbors(neighbor))
                         if (owners[adjacent] >= 0 && owners[adjacent] != owner)

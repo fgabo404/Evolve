@@ -41,3 +41,7 @@ La versión `landmass-5` de este documento queda como referencia histórica de t
 ## Actualización landmass-7
 
 Los cuatro tipos de mundo comparten tamaños y placas `tectonic-plates-2`; ahora cada uno genera sus propias superficies y alturas en el pipeline activo. Los tamaños de la tabla anterior no cambian. `landmass-7` sustituye a `landmass-6` como versión de nuevos mundos.
+
+## Actualización landmass-8
+
+Las dimensiones 200×133, 250×167, 300×200 y 400×267 y las 16 placas continúan iguales. `landmass-8` añade influencia tectónica en las **masas terrestres** de Continentes, Continentes pequeños y Archipiélagos, además de la influencia que ya tenían las elevaciones. Pangea conserva su generador basado en placas. Las capas climáticas y de biomas permanecen separadas.

@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.7 · **Fecha:** 2026-10-28  
+**Versión:** 2.8 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar los cuatro tipos de masas terrestres con las mismas 16 placas y elevaciones por tipo (capa 02)**. Generación jugable pausada antes de continentes.  
+**Siguiente trabajo:** **validar visualmente las cuatro masas terrestres y elevaciones ahora guiadas por las mismas 16 placas (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -227,3 +227,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.6:** activada **capa 02: Pangea**, integrada con las 16 placas inmutables. `PangaeaFromPlatesGenerator` recupera selección tectónica de regiones, crecimiento continental, costas y elevaciones del sistema anterior; `WorldGenerationService` ahora produce superficie y alturas sin generar clima ni biomas. Se añadieron modos visuales **superficie / alturas / placas** y pruebas. **Otros tipos de mapa pendientes.** Generador de nuevos mundos: `landmass-6`. Mantener las fases de accidentes geográficos sin marcar hasta validar. Ver [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md).
 
 - **2026-10-28 · v2.7:** capa 02 integrada para **Pangea, Continentes, Continentes pequeños y Archipiélagos**. Los cuatro conservan las placas `tectonic-plates-2` sin cambiarlas, mantienen distintos algoritmos de superficie y generan elevaciones 0–100 según cada tipo. `landmass-7`, UI y pruebas actualizadas. Temperatura, precipitaciones, pendientes y biomas siguen sin activarse en el nuevo pipeline. Pendiente compilar, ejecutar las pruebas y aprobar visualmente.
+
+- **2026-10-28 · v2.8:** `landmass-8` refina las costas y formas de los cuatro tipos (Pangea ya era plate-aware; los otros tres ahora incorporan guía tectónica leve en superficie, no solo elevación). Se mantienen los cuatro tamaños, 16 placas inmutables, vista previa tectónica y algoritmos propios por tipo. La implementación aún exige `dotnet build`, `GEvolve.Tests` y revisión visual antes de aprobación; clima y biomas no se reactivan.

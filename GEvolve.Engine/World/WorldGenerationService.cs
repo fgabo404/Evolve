@@ -25,7 +25,7 @@ public sealed class WorldGenerationService
         // The same 16 plate IDs exist for every world type at the same size/seed.
         byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
 
-        ILandmassGenerator? landmassGenerator = configuration.Type switch
+        IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch
         {
             LandmassType.Pangaea => null,
             LandmassType.Continents => new ContinentsGenerator(),
@@ -44,9 +44,9 @@ public sealed class WorldGenerationService
             else
             {
                 // Each existing land generator preserves its distinct distribution:
-                // large separated landmasses, smaller landmasses or island chains.
-                // The same plate IDs drive topography and are never overwritten.
-                surface = landmassGenerator!.Generate(topology, configuration, attempt);
+                // large separate continents, small landmasses or island chains.
+                // Plate guidance gently influences their surface *and* shared relief.
+                surface = landmassGenerator!.Generate(topology, configuration, attempt, plates);
                 last = LandmassAnalysis.Analyze(topology, surface);
                 if (!LandmassGenerationService.MeetsProfile(configuration.Type, last))
                     continue;
