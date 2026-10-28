@@ -277,6 +277,23 @@ internal sealed class EvolveWindow : GameWindow
             _ui.Text($"{size}  {grid.Definition.Columns} X {grid.Definition.Rows}",
                 ClientSize.X / 2f, 22, 1.8f, Muted);
         DrawButtons();
+        if (_session.State.Landmass is { } worldInfo)
+        {
+            string kind = worldInfo.Configuration.Type switch
+            {
+                LandmassType.Pangaea => "PANGEA",
+                LandmassType.Continents => "CONTINENTES",
+                LandmassType.SmallContinents => "CONTINENTES PEQUEÑOS",
+                _ => "ARCHIPIÉLAGOS"
+            };
+            float infoWidth = MathF.Min(270, ClientSize.X - 24);
+            _ui.Rect(12, MapCamera2D.TopBarHeight + 12, infoWidth, 63,
+                new Vector4(.06f, .13f, .20f, .91f));
+            _ui.Text($"MUNDO: {kind}", 22, MapCamera2D.TopBarHeight + 22,
+                1.6f, White, centered: false);
+            _ui.Text($"SEMILLA: {worldInfo.Configuration.Seed}",
+                22, MapCamera2D.TopBarHeight + 48, 1.8f, Accent, centered: false);
+        }
         if (_session.SelectedCell is { } cell && _session.State.Landmass is { } landmass)
         {
             string surface = landmass.IsLand(cell.Id) ? "TIERRA" : "OCÉANO";

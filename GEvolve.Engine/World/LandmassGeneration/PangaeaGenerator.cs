@@ -3,7 +3,7 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
-/// <summary>Pangea 2.0: esqueleto continental ancho, costas multiescala y corrección hexagonal.</summary>
+/// <summary>Pangea 2.x: esqueleto continental ancho, costa accidentada multiescala y corrección hexagonal.</summary>
 public sealed class PangaeaGenerator : ILandmassGenerator
 {
     public LandmassType Type => LandmassType.Pangaea;
@@ -32,13 +32,13 @@ public sealed class PangaeaGenerator : ILandmassGenerator
             ?? throw new ArgumentException("Pangaea parameters missing.");
         int columns = topology.Columns, rows = topology.Rows, count = topology.Count;
         var rng = new DeterministicRandom(configuration.Seed, (uint)(0xA9EA + attempt));
-        double offset = (rng.NextDouble() - .5) * columns * .10;
+        double offset = (rng.NextDouble() - .5) * columns * .18;
         Node Perturb(Node n, double movement) => new(
             Mod(n.X * columns + offset + (rng.NextDouble() - .5) * movement * columns, columns),
             Math.Clamp(n.Y * rows + (rng.NextDouble() - .5) * movement * rows, 3, rows - 4),
             n.Radius * Math.Min(columns, rows) * (.90 + rng.NextDouble() * .20));
-        var main = Backbone.Select(n => Perturb(n, .075)).ToArray();
-        var arms = Branches.Select(b => Perturb(b.Node, .11)).ToArray();
+        var main = Backbone.Select(n => Perturb(n, .12)).ToArray();
+        var arms = Branches.Select(b => Perturb(b.Node, .17)).ToArray();
         var influence = new double[count];
         Array.Fill(influence, -1000);
         double deltaX(double x, double center)
@@ -80,7 +80,8 @@ public sealed class PangaeaGenerator : ILandmassGenerator
         // Entrantes marinos anchos, deformados por el mismo desplazamiento horizontal.
         foreach(var bay in new [] { (56d,36d,15d,15d,12d),(14d,22d,12d,16d,13d),(85d,46d,11d,12d,11d) })
         {
-            double cx=Mod(bay.Item1/100*columns+offset,columns), cy=bay.Item2/70*rows;
+            double cx=Mod(bay.Item1/100*columns+offset+(rng.NextDouble()-.5)*columns*.10,columns);
+            double cy=Math.Clamp(bay.Item2/70*rows+(rng.NextDouble()-.5)*rows*.10,2,rows-3);
             double sx=bay.Item3/100*columns, sy=bay.Item4/70*rows;
             for(int row=0;row<rows;row++)
             for(int col=0;col<columns;col++)
@@ -94,11 +95,18 @@ public sealed class PangaeaGenerator : ILandmassGenerator
         for(int col=0;col<columns;col++)
         {
             int id=row*columns+col;
-            ranking[id]=influence[id] + profile.CoastRoughness*5*
-                PeriodicNoise.Sample(col,row,columns,rows,profile.NoiseFrequency,
-                    configuration.Seed+attempt*1877) +
-                PeriodicNoise.Sample(col,row,columns,rows,profile.NoiseFrequency*2,
-                    configuration.Seed+1999+attempt*1877);
+            // Cuatro bandas: accidentes grandes, bahías, puntas y detalles costeros.
+            // El mapa sigue siendo periódico en X. No alteramos su conectividad aquí.
+            double broad = PeriodicNoise.Sample(col,row,columns,rows,
+                Math.Max(2,profile.NoiseFrequency/2),configuration.Seed+311+attempt*1877);
+            double medium = PeriodicNoise.Sample(col,row,columns,rows,
+                profile.NoiseFrequency,configuration.Seed+1013+attempt*1877);
+            double fine = PeriodicNoise.Sample(col,row,columns,rows,
+                profile.NoiseFrequency*2,configuration.Seed+1999+attempt*1877);
+            double detail = PeriodicNoise.Sample(col,row,columns,rows,
+                profile.NoiseFrequency*4,configuration.Seed+2999+attempt*1877);
+            ranking[id]=influence[id]+profile.CoastRoughness*
+                (6.0*broad+8.0*medium+4.5*fine+2.0*detail);
         }
         var sorted=(double[])ranking.Clone();
         Array.Sort(sorted);

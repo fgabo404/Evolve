@@ -24,7 +24,7 @@ public static class LandmassTests
     {
         Check(EvolveVersion.GameName == "Evolve" && EvolveVersion.Display == "v0.001" &&
             EvolveVersion.Technical == new Version(0, 0, 1, 0) &&
-            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-2",
+            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-3",
             "Independent game, save and generator versions");
         var service = new LandmassGenerationService();
         Check(service.Generators.Count == 4 &&

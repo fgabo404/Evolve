@@ -1,3 +1,9 @@
+## En desarrollo — Ajustes de Pangea y HUD
+
+- Pangea con costas más accidentadas mediante cuatro escalas de ruido periódico, mayor variación de ramificaciones y golfos.
+- Panel en el mapa que muestra el tipo de mundo y la semilla activa tras cada generación/regeneración.
+- Versión del generador `landmass-3`. No se modifica la etiqueta histórica `v0.001`.
+
 ## En desarrollo — Pangea 2.0
 
 - Nuevo esqueleto continental ramificado, costas periódicas y golfos; una sola masa conectada sin aguas interiores cerradas.

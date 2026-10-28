@@ -14,3 +14,5 @@ Cada concepto evoluciona de forma independiente. Incrementar la versión del gen
 ## Revisión en desarrollo
 
 El generador activo ahora se identifica como `landmass-2` debido al nuevo algoritmo Pangea 2.0. No se reescribe la etiqueta `v0.001` ni su resultado histórico. Los demás algoritmos conservan su implementación anterior.
+
+La siguiente iteración experimental usa `landmass-3` por los cambios deterministas en Pangea. La versión visual del juego sigue siendo `v0.001` hasta un futuro hito publicado; la etiqueta Git original es inmutable.
