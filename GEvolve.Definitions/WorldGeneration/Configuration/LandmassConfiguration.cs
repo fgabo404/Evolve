@@ -35,13 +35,10 @@ public static class LandmassProfiles
         return type switch
         {
             LandmassType.Continents => new(size, type, seed, EvolveVersion.LandmassGenerator,
-                Continents: new(.35, size switch {
-                    GridSize.Small => 4, GridSize.Medium => 5,
-                    GridSize.Large => 6, _ => 8
-                }, size switch {
+                Continents: new(.35, ContinentCountForSeed(seed), size switch {
                     GridSize.Small => 34, GridSize.Medium => 39,
                     GridSize.Large => 48, _ => 60
-                }, .48, 9, .002)),
+                }, .58, 9, .002)),
             LandmassType.Pangaea => new(size, type, seed, EvolveVersion.LandmassGenerator,
                 Pangaea: new(.40, .58, 7, .0015, .32)),
             LandmassType.SmallContinents => new(size, type, seed, EvolveVersion.LandmassGenerator,
@@ -59,5 +56,21 @@ public static class LandmassProfiles
                 }, 12, 1.2, 3.5, .35, 20)),
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
+    }
+
+    /// <summary>
+    /// Main continent count is controlled ONLY by the seed, not by world size,
+    /// resolution, landmass attempt, or the number of tectonic plates.
+    /// Stable integer mixing keeps all five counts available across seeds.
+    /// </summary>
+    public static int ContinentCountForSeed(int seed)
+    {
+        uint hash = unchecked((uint)seed ^ 0xC011D37u);
+        hash ^= hash >> 16;
+        hash = unchecked(hash * 0x7FEB352Du);
+        hash ^= hash >> 15;
+        hash = unchecked(hash * 0x846CA68Bu);
+        hash ^= hash >> 16;
+        return 2 + (int)(hash % 5);
     }
 }

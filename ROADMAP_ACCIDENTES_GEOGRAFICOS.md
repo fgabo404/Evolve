@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.8 · **Fecha:** 2026-10-28  
+**Versión:** 2.9 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar visualmente las cuatro masas terrestres y elevaciones ahora guiadas por las mismas 16 placas (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
+**Siguiente trabajo:** **validar visualmente la generación de 2–6 continentes grandes por semilla (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -229,3 +229,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.7:** capa 02 integrada para **Pangea, Continentes, Continentes pequeños y Archipiélagos**. Los cuatro conservan las placas `tectonic-plates-2` sin cambiarlas, mantienen distintos algoritmos de superficie y generan elevaciones 0–100 según cada tipo. `landmass-7`, UI y pruebas actualizadas. Temperatura, precipitaciones, pendientes y biomas siguen sin activarse en el nuevo pipeline. Pendiente compilar, ejecutar las pruebas y aprobar visualmente.
 
 - **2026-10-28 · v2.8:** `landmass-8` refina las costas y formas de los cuatro tipos (Pangea ya era plate-aware; los otros tres ahora incorporan guía tectónica leve en superficie, no solo elevación). Se mantienen los cuatro tamaños, 16 placas inmutables, vista previa tectónica y algoritmos propios por tipo. La implementación aún exige `dotnet build`, `GEvolve.Tests` y revisión visual antes de aprobación; clima y biomas no se reactivan.
+
+- **2026-10-28 · v2.9:** `landmass-9` adapta únicamente **Continentes**: número de masas principales aleatorio determinista entre 2 y 6 (igual semilla ⇒ mismo número a cualquier resolución); núcleos separados, tamaños desiguales, costas por ruido multiescala/domain warping, corredores oceánicos y pequeñas islas secundarias sin puentes. Se mantienen sin tocar las placas, Pangea, Continentes pequeños y Archipiélagos. Se añadieron pruebas de conteo por semilla, tamaño y componentes. **Pendiente:** compilación, ejecución y aprobación visual antes de marcarlo como validado.

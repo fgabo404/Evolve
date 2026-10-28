@@ -14,6 +14,22 @@ public static class StagedLandmassTests
         var relief = new PlateAwareElevationGenerator();
         var allTypes = Enum.GetValues<LandmassType>();
 
+        // Every value between two and six must be reachable, but a given seed
+        // must produce one count across the four map resolutions.
+        var possibleCounts = Enumerable.Range(-80, 161)
+            .Select(LandmassProfiles.ContinentCountForSeed).Distinct().Order().ToArray();
+        Check(possibleCounts.SequenceEqual([2, 3, 4, 5, 6]),
+            "Seeds can produce any number from two through six continents");
+        foreach (int continentSeed in new[] { -731, 0, 42, 2026, int.MaxValue })
+        {
+            int expected = LandmassProfiles.ContinentCountForSeed(continentSeed);
+            Check(expected is >= 2 and <= 6 &&
+                Enum.GetValues<GridSize>().All(size =>
+                    LandmassProfiles.Create(size, LandmassType.Continents, continentSeed)
+                        .Continents!.CoreCount == expected),
+                "Number of main continents depends on seed, never map size");
+        }
+
         foreach (var size in Enum.GetValues<GridSize>())
         {
             var generated = new Dictionary<LandmassType, GeneratedWorld>();
@@ -51,6 +67,16 @@ public static class StagedLandmassTests
                     world.Statistics.LandCells > 0 &&
                     world.Statistics.LandCells < topology.Count,
                     "Each type retains its own original geographic landmass profile");
+                if (type == LandmassType.Continents)
+                {
+                    int expectedContinents = config.Continents!.CoreCount;
+                    int actualContinents = world.Statistics.ComponentSizes.Count(cells => cells >= 100);
+                    Check(expectedContinents is >= 2 and <= 6 &&
+                        actualContinents == expectedContinents &&
+                        world.Statistics.DominantLandShare < .75 &&
+                        world.Statistics.LandFraction is >= .27 and <= .43,
+                        "Seed-selected continent count, separated mainlands and ocean coverage");
+                }
                 Check(landmass.Climate is null && landmass.SlopeByCellId is null &&
                     landmass.Biomes is null,
                     "Temperature, precipitation, slopes and biomes are still separate stages");
@@ -149,7 +175,8 @@ public static class StagedLandmassTests
                 LandmassGenerationService.MeetsProfile(type, world.Statistics),
                 "Alternate seed preserves landmass identity and universal tectonics");
         }
-        Console.WriteLine("PASS: all four stage 02 types, unique shapes, relief, tectonics, persistence");
+        Console.WriteLine("PASS: seed-selected 2..6 main continents across sizes, " +
+            "four stage 02 types, unique shapes, relief, tectonics, persistence");
     }
 
     private static void Check(bool condition, string message)
