@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Game;
 using GEvolve.Game.Graphics;
@@ -28,10 +29,9 @@ public static class GameTests
         Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous)
             .Select(button => ScreenLayout.SizeFor(button.Action))
             .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large, GridSize.Enormous]), "Four official sizes");
-        Check(createButtons.Where(button => button.Action is UiAction.Continents or UiAction.Pangaea or
-            UiAction.SmallContinents or UiAction.Archipelagos)
-            .Select(button => ScreenLayout.TypeFor(button.Action))
-            .SequenceEqual(Enum.GetValues<LandmassType>()), "Four official world types");
+        Check(!createButtons.Any(button => button.Action is UiAction.Continents or UiAction.Pangaea or
+            UiAction.SmallContinents or UiAction.Archipelagos),
+            "Stage 02 world-type controls stay hidden until land generation resumes");
         Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
             createButtons.Any(button => button.Action == UiAction.RandomSeed),
             "Editable and random seed controls");
@@ -47,7 +47,7 @@ public static class GameTests
         Check(session.Screen == GameScreen.Generating && request.Seed == -731 &&
             request.Type == LandmassType.Pangaea && session.Grid is null,
             "Generation begins without an implicit grid");
-        session.CompleteGeneration(new LandmassGenerationService().Generate(request));
+        session.CompleteGeneration(new WorldGenerationService().Generate(request));
         Check(session.Screen == GameScreen.World &&
             session.State.Landmass?.Configuration == request,
             "Background-style completion transfers Engine result into State");
@@ -68,15 +68,15 @@ public static class GameTests
                 grid.Cells.Count == definition.Columns * definition.Rows &&
                 definition.Orientation == GridOrientation.FlatTop, "Effective state and cell count");
 
-            byte[] surface = session.State.Landmass!.SurfaceByCellId;
-            int landId = Array.IndexOf(surface, (byte)1);
-            int oceanId = Array.IndexOf(surface, (byte)0);
-            Check(landId >= 0 && oceanId >= 0 &&
-                session.SelectAt(grid.Cells[landId].Center)?.Id == landId &&
-                session.State.Landmass.IsLand(landId) &&
-                session.SelectAt(grid.Cells[oceanId].Center)?.Id == oceanId &&
-                !session.State.Landmass.IsLand(oceanId),
-                "Land and ocean selection retain the original IDs");
+            var preview = session.State.Landmass!;
+            Check(preview.TectonicPreviewOnly &&
+                preview.PlateByCellId is { } plates &&
+                plates.Length == grid.Cells.Count &&
+                plates.Distinct().Count() == 16 &&
+                preview.SurfaceByCellId.All(value => value == 0) &&
+                preview.ElevationByCellId is null &&
+                preview.Climate is null && preview.Biomes is null,
+                "Stage 01 generates only 16 tectonic plates, no continents or climate");
 
             var cell = grid.Cells[definition.Columns * (definition.Rows / 2) + 2];
             Check(session.SelectAt(cell.Center)?.Id == cell.Id, "Cell selection");
@@ -125,7 +125,7 @@ public static class GameTests
             resizeConfig.Type == LandmassType.Pangaea &&
             resizeConfig.Seed == selectedSeed &&
             resizing.Screen == GameScreen.Generating, "World view resize keeps seed and type");
-        resizing.CompleteGeneration(new LandmassGenerationService().Generate(resizeConfig));
+        resizing.CompleteGeneration(new WorldGenerationService().Generate(resizeConfig));
         Check(resizing.Grid!.Cells.Count == HexGridDefinitions.Get(GridSize.Medium).Columns *
                 HexGridDefinitions.Get(GridSize.Medium).Rows &&
             resizing.State.Landmass!.Configuration.Seed == selectedSeed,

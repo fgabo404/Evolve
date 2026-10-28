@@ -29,5 +29,6 @@ SlopeTests.Run();
 TemperatureTests.Run();
 PrecipitationTests.Run();
 PlateBoundaryTests.Run();
+TectonicPlateTests.Run();
 GameTests.Run();
 return 0;

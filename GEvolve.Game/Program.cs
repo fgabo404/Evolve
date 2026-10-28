@@ -3,6 +3,7 @@ using System.Diagnostics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Definitions.Versioning;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.BiomeGeneration;
 using GEvolve.State.Game;
@@ -36,7 +37,7 @@ internal sealed class EvolveWindow : GameWindow
     private bool _seedFocused;
     private int _smokeScenario = -1;
     private bool _smokeZoomed;
-    private MapViewMode _viewMode;
+    private MapViewMode _viewMode = MapViewMode.Tectonic;
     private int _smokeViewStep;
     private long _generationStarted;
     private double _rendererPreparationMilliseconds;
@@ -92,6 +93,8 @@ internal sealed class EvolveWindow : GameWindow
                     var preparation = Stopwatch.StartNew();
                     _gridRenderer?.Dispose();
                     _gridRenderer = new HexGridRenderer(result.Grid, result.Landmass);
+                    _viewMode = result.Landmass.TectonicPreviewOnly
+                        ? MapViewMode.Tectonic : MapViewMode.Biomes;
                     preparation.Stop();
                     _rendererPreparationMilliseconds = preparation.Elapsed.TotalMilliseconds;
                     _camera.Fit(result.Grid.Definition.Columns, result.Grid.Definition.Rows,
@@ -158,6 +161,7 @@ internal sealed class EvolveWindow : GameWindow
         for (int column = visible.FirstColumn; column <= visible.LastColumn; column++)
         {
             int id = row * columns + ((column % columns) + columns) % columns;
+            if (_session.SelectedCell?.Id == id) continue; // selection overlay differs from terrain pixels
             string biome = terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
             if (_viewMode == MapViewMode.Elevation && terrain.ElevationByCellId is { } levels)
                 biome = $"height {levels[id]}";
@@ -220,11 +224,7 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
-        UiAction[] viewActions = [UiAction.ToggleGrayscale, UiAction.ToggleInfrared,
-            UiAction.ToggleGrayscale, UiAction.ToggleGrayscale,
-            UiAction.ToggleInfrared, UiAction.ToggleInfrared,
-            UiAction.ToggleRainfall, UiAction.ToggleRainfall,
-            UiAction.ToggleTectonic, UiAction.ToggleTectonic];
+        UiAction[] viewActions = [UiAction.ToggleTectonic, UiAction.ToggleTectonic];
         if (_smokeViewStep < viewActions.Length)
         {
             var terrain = _session.State.Landmass;
@@ -236,7 +236,7 @@ internal sealed class EvolveWindow : GameWindow
             var action = viewActions[_smokeViewStep];
             var expectedMode = action == UiAction.ToggleTectonic &&
                 terrain?.PlateByCellId is not null
-                ? _viewMode == MapViewMode.Tectonic ? MapViewMode.Biomes : MapViewMode.Tectonic
+                ? MapViewMode.Tectonic
                 : action == UiAction.ToggleRainfall &&
                 terrain?.Climate?.BasePrecipitationMmByCellId is not null
                 ? _viewMode == MapViewMode.Rainfall ? MapViewMode.Biomes : MapViewMode.Rainfall
@@ -308,10 +308,13 @@ internal sealed class EvolveWindow : GameWindow
                 1.8f, Muted);
             var buttons = ScreenLayout.Buttons(GameScreen.CreateWorld, ClientSize.X, ClientSize.Y);
             var size = buttons.First(button => button.Action == UiAction.Small).Bounds;
-            var type = buttons.First(button => button.Action == UiAction.Continents).Bounds;
+            // The map-type choices will return with the next generation phase.
             var seed = buttons.First(button => button.Action == UiAction.SeedField).Bounds;
             _ui.Text("Tamaño", size.X, size.Y - 24, 1.8f, Muted, centered: false);
-            _ui.Text("Tipo de mundo", type.X, type.Y - 24, 1.8f, Muted, centered: false);
+            _ui.Text("CAPA 01: PLACAS TECTÓNICAS", size.X + size.Width + 36,
+                size.Y + 6, 1.8f, Accent, centered: false);
+            _ui.Text("Continentes y océanos: siguiente fase", size.X + size.Width + 36,
+                size.Y + 42, 1.3f, Muted, centered: false);
             _ui.Text("Semilla", seed.X, seed.Y - 24, 1.8f, Muted, centered: false);
             _ui.Text(EvolveVersion.Display, 16, h - 27, 1.7f, Muted, centered: false);
         }
@@ -398,23 +401,41 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (_session.State.Landmass is { } worldInfo)
         {
-            string kind = worldInfo.Configuration.Type switch
-            {
-                LandmassType.Pangaea => "PANGEA",
-                LandmassType.Continents => "CONTINENTES",
-                LandmassType.SmallContinents => "CONTINENTES PEQUEÑOS",
-                _ => "ARCHIPIÉLAGOS"
-            };
+            string kind = worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
+                worldInfo.Configuration.Type switch
+                {
+                    LandmassType.Pangaea => "PANGEA",
+                    LandmassType.Continents => "CONTINENTES",
+                    LandmassType.SmallContinents => "CONTINENTES PEQUEÑOS",
+                    _ => "ARCHIPIÉLAGOS"
+                };
             float infoWidth = MathF.Min(270, ClientSize.X - 24);
             _ui.Rect(12, MapCamera2D.TopBarHeight + 12, infoWidth, 63,
                 new Vector4(.06f, .13f, .20f, .91f));
-            _ui.Text($"MUNDO: {kind}", 22, MapCamera2D.TopBarHeight + 22,
+            _ui.Text($"CAPA: {kind}", 22, MapCamera2D.TopBarHeight + 22,
                 1.6f, White, centered: false);
             _ui.Text($"SEMILLA: {worldInfo.Configuration.Seed}",
                 22, MapCamera2D.TopBarHeight + 48, 1.8f, Accent, centered: false);
         }
         if (_session.SelectedCell is { } cell && _session.State.Landmass is { } landmass)
         {
+            if (landmass.TectonicPreviewOnly)
+            {
+                var boundaries = _gridRenderer.PlateBoundaries!;
+                string line1 = $"CELDA {cell.Id}  C:{cell.Address.Column}  F:{cell.Address.Row}";
+                string line2 = $"PLACA: {landmass.PlateByCellId![cell.Id]}  LÍMITE: " +
+                    (boundaries.BoundaryByCellId[cell.Id] ? "SÍ" : "NO") +
+                    $"  DIST: {boundaries.DistanceToBoundaryByCellId[cell.Id]} HEX";
+                float pixel = MathF.Min(1.6f, (ClientSize.X - 48) /
+                    (6f * Math.Max(line1.Length, line2.Length)));
+                float panelWidth = Math.Max(line1.Length, line2.Length) * 6 * pixel + 20;
+                _ui.Rect(12, ClientSize.Y - 66, panelWidth, 56,
+                    new Vector4(.07f, .16f, .23f, .9f));
+                _ui.Text(line1, 22, ClientSize.Y - 57, pixel, White, centered: false);
+                _ui.Text(line2, 22, ClientSize.Y - 35, pixel, White, centered: false);
+            }
+            else
+            {
             string surface = landmass.IsLand(cell.Id) ? "TIERRA" : "OCÉANO";
             string label = $"CELDA {cell.Id}  C:{cell.Address.Column}  F:{cell.Address.Row}  {surface}";
             var environment = BiomeClassifier.GetCell(landmass, cell.Id);
@@ -452,6 +473,7 @@ internal sealed class EvolveWindow : GameWindow
             for (int index = 0; index < lines.Length; index++)
                 _ui.Text(lines[index], 22, ClientSize.Y - panelHeight - 3 + 20 * index,
                     pixel, White, centered: false);
+            }
         }
     }
 
@@ -621,7 +643,9 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.ToggleTectonic:
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.PlateByCellId is not null)
-                    _viewMode = _viewMode == MapViewMode.Tectonic ? MapViewMode.Biomes : MapViewMode.Tectonic;
+                    _viewMode = _session.State.Landmass?.TectonicPreviewOnly == true
+                        ? MapViewMode.Tectonic
+                        : _viewMode == MapViewMode.Tectonic ? MapViewMode.Biomes : MapViewMode.Tectonic;
                 break;
             case UiAction.ToggleRainfall:
                 if (_session.Screen == GameScreen.World &&
@@ -664,7 +688,7 @@ internal sealed class EvolveWindow : GameWindow
                 : regenerate ? _session.BeginRegeneration() : _session.BeginGeneration();
             _generationStarted = Stopwatch.GetTimestamp();
             _pendingGeneration = Task.Run(() =>
-                new LandmassGenerationService().Generate(configuration));
+                new WorldGenerationService().Generate(configuration));
         }
         catch (FormatException)
         {
@@ -682,7 +706,7 @@ internal sealed class EvolveWindow : GameWindow
         _gridRenderer?.Dispose();
         _gridRenderer = null;
         _session.ReturnToMenu();
-        _viewMode = MapViewMode.Biomes;
+        _viewMode = MapViewMode.Tectonic;
         _seedFocused = false;
         _hover.Clear();
     }

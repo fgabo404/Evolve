@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.State.Game;
 
@@ -136,7 +137,7 @@ public sealed class GameSession
         var configuration = BeginGeneration();
         try
         {
-            CompleteGeneration(new LandmassGenerationService().Generate(configuration));
+            CompleteGeneration(new WorldGenerationService().Generate(configuration));
             return Grid!;
         }
         catch

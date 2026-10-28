@@ -10,7 +10,7 @@ public static class MapViewColors
     public static Vector3 ForCell(LandmassState terrain, int id, MapViewMode mode) => mode switch
     {
         MapViewMode.Tectonic when terrain.PlateByCellId is { } plates =>
-            PlatePalette.ForPlate(plates[id], !terrain.IsLand(id)),
+            PlatePalette.ForPlate(plates[id], !terrain.TectonicPreviewOnly && !terrain.IsLand(id)),
         MapViewMode.Rainfall when terrain.Climate?.BasePrecipitationMmByCellId is { } rainfall =>
             RainfallPalette.ForMillimetres(rainfall[id]),
         MapViewMode.Infrared when terrain.Climate is { } climate =>

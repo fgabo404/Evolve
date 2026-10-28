@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.3 · **Fecha:** 2026-10-28  
+**Versión:** 2.4 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
-**Estado:** fase 01 implementada en código, **pendiente de compilación, pruebas y revisión visual**; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar la fase 01 — Mapa de límites de placas tectónicas**.  
+**Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
+**Siguiente trabajo:** **validar el generador independiente de placas irregulares (etapa 01)**. Generación jugable pausada antes de continentes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -27,29 +27,40 @@ Agregar los accidentes naturales que faltan en el mundo de Pangea como **capas g
 11. No modificar aún flora, fauna, minerales, biomas o tecnologías sin una etapa explícita aprobada.
 12. No marcar una fase como completada sin compilar, ejecutar pruebas, revisar sus resultados y registrar el commit.
 
-## 2. Punto de partida: qué datos tectónicos existen
+## 2. Orden definitivo de generación (acordado)
 
-La implementación actual de `PangaeaGenerator` devuelve tres arreglos: **superficie, elevación y ID de placa**. Dentro de la generación también calcula centros, velocidades, compresión y extensión, **pero estos últimos datos no quedan persistidos**.
+La **cuadrícula hexagonal es infraestructura**, no una capa numerada. Cada nuevo mundo, independientemente del tipo de masa continental, comienza con **la misma tectónica para una semilla y tamaño dados**:
 
-Por tanto:
+```text
+0. Preparar cuadrícula hexagonal (infraestructura)
+1. Generar placas tectónicas (TODOS los tipos de mundo)    ← ACTIVA AHORA
+2. Elegir y generar tipo de mapa (Pangea, continentes, etc.)
+   ├── Tierra / océanos
+   └── Elevaciones
+3. Temperatura
+4. Precipitaciones y humedad
+5. Pendientes y biomas
+6. Mundo completo
+```
 
-- **Sí** podemos detectar límites entre placas, proximidad a fronteras, relieves montañosos y continuidad de posibles alineaciones.
-- **No** podemos etiquetar confiablemente una frontera como zona de subducción, divergencia o transformación **solo** con `PlateByCellId`. No toda frontera es volcánica; no toda montaña es un volcán.
-- Para una clasificación tectónica científicamente más sólida necesitaremos un **modelo derivado externo y verificable** o una extensión explícitamente aprobada de los datos tectónicos de salida. **No se modificará el generador por defecto**.
-- En la primera versión, las ubicaciones volcánicas serán **candidatos plausibles** según datos disponibles y parámetros explícitos, no afirmaciones de subducción comprobada.
+**Pausa intencional:** en la interfaz actual solo corre la etapa 1: placas irregulares, coloreadas, con fronteras visibles. Las etapas 2–6 permanecen implementadas en el código histórico de `LandmassGenerationService` y sus generadores, pero **no se ejecutan desde el juego** mientras reestructuramos su integración.
+
+Se añadió `WorldGenerationService` para la secuencia nueva y `TectonicPlateGenerator` como capa independiente. Las placas se forman por crecimiento simultáneo de regiones hexagonales con resistencias espaciales periódicas, diferencias de tamaño y conectividad garantizada; esto evita los bordes rectos del Voronoi anterior. **Modelo geomorfológico estilizado**, aún no simula límites cinemáticos, subducción ni desplazamientos reales.
+
+**Estado provisional:** el preview utiliza `LandmassState.TectonicPreviewOnly=true` y `SurfaceByCellId` relleno de ceros solo como compatibilidad. **No son océanos generados**, ni existe relieve/clima/biomas todavía. La selección de tipo de mapa se ha ocultado temporalmente en la UI, pero su lógica se conserva para la etapa 2.
 
 ## 3. Roadmap secuencial
 
 ### Bloque A — Accidentes tectónicos (PRIMERO)
 
-#### [ ] 01 — Detectar límites de placas · EN REVISIÓN
-**Entrada:** `PlateByCellId`, `ElevationByCellId`, `HexTopology`.
+#### [ ] 01 — Formas y límites de las placas, independientes del tipo de mapa · EN REVISIÓN
+**Entrada:** semilla, tamaño, `HexTopology`.
 
-- Identificar bordes entre hexágonos de placas distintas; agruparlos en tramos y medir distancia de cada hexágono a una frontera.
+- Generar 16 placas irregulares conectadas mediante crecimiento ponderado, contornos naturales y tamaños diferentes para todos los tipos de mapa. Después identificar sus bordes, aristas únicas y distancia a una frontera.
 - Separar la geometría de la frontera de cualquier interpretación geológica de su actividad.
 - Generar una **vista de diagnóstico de placas/fronteras** o exportación de estadísticas, sin volcanes todavía.
 - **Aceptación:** fronteras coinciden con cambios de placa; costura este-oeste correcta; sin modificar arrays; determinismo y pruebas con distintas semillas.
-- **Entrega preparada:** mapa derivado de bordes únicos, distancia mínima a un límite y vista **PLACAS TECTÓNICAS** con colores y trazos hexagonales. Incluye pruebas automatizadas para límites, continuidad este-oeste y determinismo. **Pendiente:** ejecutar `dotnet build`, `dotnet run --project GEvolve.Tests`, revisión gráfica y aceptación del usuario. No hay volcanes colocados en esta fase.
+- **Entrega preparada:** `TectonicPlateGenerator` independiente de Pangea, `WorldGenerationService` que detiene la ejecución tras las placas, mapa de bordes únicos y vista **CAPA 01: PLACAS**. Se añadieron pruebas para conectividad, tamaños desiguales, las cuatro resoluciones, semillas, independencia del tipo de mapa, persistencia y unión horizontal. **Pendiente:** ejecutar build/tests, revisión gráfica y aprobación; aún no hay volcanes.
 
 #### [ ] 02 — Aptitud volcánica y clasificación de candidatos
 - Calcular una puntuación reproducible a partir de distancia a límites, relieve, topología y exclusiones explícitas.
@@ -208,3 +219,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.2:** fase 01 codificada y publicada para revisión: `PlateBoundaryMap` analiza límites y distancia; vista de placas con colores, aristas y selección. Se agregaron pruebas. **La fase sigue [ ] hasta compilar, probar y aprobar.** No se generaron volcanes y no se modificó Pangea.
 
 - **2026-10-28 · v2.3:** nuevo conjunto de tamaños **200×133, 250×167, 300×200 y 400×267**, y **16 placas** independientemente de la resolución de Pangea. El cambio solicitado altera la línea base tectónica del generador **landmass-5**. Los volcanes siguen pendientes. Véase [WORLD_SIZES_AND_PLATES.md](WORLD_SIZES_AND_PLATES.md).
+
+- **2026-10-28 · v2.4:** acuerdo de nuevas capas: etapa 01 placas para todos los mundos; 02 tipo de mapa/superficie/altura; 03 temperatura; 04 precipitación; 05 pendiente/bioma. Se incorpora generador de placas irregulares e independiente; en el juego solo se activa la primera capa. Se mantienen sin borrar los generadores y capas anteriores. Etapa 01 pendiente de validación de compilación y mapa.
