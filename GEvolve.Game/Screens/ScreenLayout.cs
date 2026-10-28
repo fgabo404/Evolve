@@ -7,7 +7,7 @@ public enum UiAction
     Create, Options, Exit, Back, Generate,
     Small, Medium, Large,
     Continents, Pangaea, SmallContinents, Archipelagos,
-    SeedField, RandomSeed
+    SeedField, RandomSeed, Regenerate
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -80,7 +80,9 @@ public static class ScreenLayout
             return [new(UiAction.Back, "Volver", new(menuX,
                 MathF.Max(260, height * .55f), menuWidth, menuHeight))];
         if (screen == GameScreen.World)
-            return [new(UiAction.Back, "Menú principal",
+            return [new(UiAction.Regenerate, "Regenerar mundo",
+                new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
+                new(UiAction.Back, "Menú principal",
                 new(MathF.Max(8, width - 190), 11, MathF.Min(180, width - 16), 36))];
         return [];
     }

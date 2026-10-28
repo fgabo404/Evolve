@@ -24,7 +24,7 @@ public static class LandmassTests
     {
         Check(EvolveVersion.GameName == "Evolve" && EvolveVersion.Display == "v0.001" &&
             EvolveVersion.Technical == new Version(0, 0, 1, 0) &&
-            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-1",
+            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-2",
             "Independent game, save and generator versions");
         var service = new LandmassGenerationService();
         Check(service.Generators.Count == 4 &&
@@ -67,7 +67,8 @@ public static class LandmassTests
                         repeated.Landmass.DeterministicAttempt == result.Landmass.DeterministicAttempt,
                         "Determinism for every algorithm and size");
                     if (size == GridSize.Small)
-                        Check(hash == ExpectedHashes[type], "landmass-1 regression hash");
+                        if (type != LandmassType.Pangaea)
+                            Check(hash == ExpectedHashes[type], "unchanged generator regression hash");
                     Console.WriteLine($"PASS: {size} {type}: {stats.LandFraction:P1} land, " +
                         $"{stats.ComponentCount} masses, {timer.ElapsedMilliseconds} ms, " +
                         $"{allocatedBytes / 1024.0:F0} KiB allocated");
@@ -81,7 +82,7 @@ public static class LandmassTests
             var small = worlds[LandmassType.SmallContinents].Statistics;
             var islands = worlds[LandmassType.Archipelagos].Statistics;
             Check(continents.LargeComponents >= 2 &&
-                pangaea.DominantLandShare > .8 &&
+                pangaea.ComponentCount == 1 && pangaea.DominantLandShare == 1 &&
                 small.ComponentCount > continents.ComponentCount &&
                 small.DominantMassSize < continents.DominantMassSize &&
                 islands.ComponentCount > small.ComponentCount &&

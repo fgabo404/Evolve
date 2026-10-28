@@ -10,3 +10,7 @@
 | Formato de guardado | `2` | Esquema de persistencia. El lector admite también el formato `1` sin Capa 02. |
 
 Cada concepto evoluciona de forma independiente. Incrementar la versión del generador cuando una modificación altere el mapa determinista para los mismos parámetros y semilla. Incrementar el formato de guardado si cambia el esquema persistido y documentar la compatibilidad de lectura. La versión visible identifica un conjunto publicado de funciones, sin implicar un calendario de lanzamientos. No mover ni reutilizar etiquetas Git publicadas.
+
+## Revisión en desarrollo
+
+El generador activo ahora se identifica como `landmass-2` debido al nuevo algoritmo Pangea 2.0. No se reescribe la etiqueta `v0.001` ni su resultado histórico. Los demás algoritmos conservan su implementación anterior.

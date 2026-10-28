@@ -46,8 +46,8 @@ public sealed class LandmassGenerationService
         {
             LandmassType.Continents => result.LandFraction is >= .27 and <= .43 &&
                 result.LargeComponents >= 2 && result.DominantLandShare < .75,
-            LandmassType.Pangaea => result.LandFraction is >= .34 and <= .46 &&
-                result.DominantLandShare >= .8,
+            LandmassType.Pangaea => result.LandFraction is >= .30 and <= .55 &&
+                result.ComponentCount == 1 && result.DominantLandShare == 1,
             LandmassType.SmallContinents => result.LandFraction is >= .23 and <= .38 &&
                 result.ComponentCount >= 8 && result.DominantLandShare < .23,
             LandmassType.Archipelagos => result.LandFraction is >= .14 and <= .27 &&

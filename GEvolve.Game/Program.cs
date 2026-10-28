@@ -443,18 +443,20 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.SeedField: _seedFocused = true; break;
             case UiAction.RandomSeed: _session.RandomizeSeed(); break;
             case UiAction.Generate: StartGeneration(); break;
+            case UiAction.Regenerate: StartGeneration(regenerate: true); break;
         }
         if (action != UiAction.SeedField) _seedFocused = false;
         _hover.Clear();
         _dirty = true;
     }
 
-    private void StartGeneration()
+    private void StartGeneration(bool regenerate = false)
     {
         if (_pendingGeneration is not null) return;
         try
         {
-            LandmassConfiguration configuration = _session.BeginGeneration();
+            LandmassConfiguration configuration = regenerate
+                ? _session.BeginRegeneration() : _session.BeginGeneration();
             _generationStarted = Stopwatch.GetTimestamp();
             _pendingGeneration = Task.Run(() =>
                 new LandmassGenerationService().Generate(configuration));

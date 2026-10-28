@@ -5,7 +5,7 @@
     <FileVersion>0.0.1.0</FileVersion>
     <EvolveGameName>Evolve</EvolveGameName>
     <EvolveDisplayVersion>v0.001</EvolveDisplayVersion>
-    <EvolveGeneratorVersion>landmass-1</EvolveGeneratorVersion>
+    <EvolveGeneratorVersion>landmass-2</EvolveGeneratorVersion>
     <EvolveSaveFormatVersion>2</EvolveSaveFormatVersion>
   </PropertyGroup>
   <ItemGroup>

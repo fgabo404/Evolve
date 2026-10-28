@@ -89,6 +89,18 @@ public sealed class GameSession
         return configuration;
     }
 
+    public LandmassConfiguration BeginRegeneration()
+    {
+        if (Screen != GameScreen.World || State.Landmass is null)
+            throw new InvalidOperationException("Generate a world before regenerating.");
+        SelectedSize = State.Landmass.Configuration.Size;
+        SelectedType = State.Landmass.Configuration.Type;
+        SeedText = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue)
+            .ToString(CultureInfo.InvariantCulture);
+        Screen = GameScreen.CreateWorld;
+        return BeginGeneration();
+    }
+
     public void CompleteGeneration(GeneratedWorld result)
     {
         if (Screen != GameScreen.Generating)

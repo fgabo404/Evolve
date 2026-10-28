@@ -1,3 +1,9 @@
+## En desarrollo — Pangea 2.0
+
+- Nuevo esqueleto continental ramificado, costas periódicas y golfos; una sola masa conectada sin aguas interiores cerradas.
+- Botón Regenerar mundo en el mapa: nueva semilla manteniendo tamaño y tipo de mundo.
+- Identificador de generación actualizado a `landmass-2`. La etiqueta histórica `v0.001` no se modifica.
+
 # Historial de Evolve
 
 ## v0.001 — Primera prueba de generación del mundo
