@@ -36,8 +36,21 @@ public static class GameSaveStore
                 state.HexGrid.Definition.Rows) ||
             landmass.SurfaceByCellId.Any(surface => surface is not 0 and not 1) ||
             (landmass.ElevationByCellId is { } heights &&
-                (heights.Length != landmass.SurfaceByCellId.Length || heights.Any(level => level > 3))) ||
+                (heights.Length != landmass.SurfaceByCellId.Length || heights.Any(level => level > 100))) ||
             (landmass.PlateByCellId is { } plates && plates.Length != landmass.SurfaceByCellId.Length))
             throw new InvalidDataException("Invalid landmass save data.");
+        if (landmass.Biomes is { } biomes)
+        {
+            if (string.IsNullOrWhiteSpace(biomes.ClassifierVersion) ||
+                string.IsNullOrWhiteSpace(biomes.CatalogHash) ||
+                biomes.Assignments.Length is < 1 or > 256 ||
+                biomes.AssignmentByCellId.Length != landmass.SurfaceByCellId.Length ||
+                biomes.AssignmentByCellId.Any(index => index >= biomes.Assignments.Length) ||
+                biomes.Assignments.Any(entry => entry is null || !Enum.IsDefined(entry.Status) ||
+                    (entry.Status == BiomeClassificationStatus.Assigned
+                        ? string.IsNullOrWhiteSpace(entry.BiomeId) || string.IsNullOrWhiteSpace(entry.SubbiomeId)
+                        : entry.BiomeId is not null || entry.SubbiomeId is not null)))
+                throw new InvalidDataException("Invalid biome save data.");
+        }
     }
 }

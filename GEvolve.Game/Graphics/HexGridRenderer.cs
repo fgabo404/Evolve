@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GEvolve.Game.Graphics;
 
-/// <summary>Un hexágono unitario y superficies por ID; dos lotes instanciados por vista.</summary>
+/// <summary>Un hexágono unitario y colores por ID; dos lotes instanciados por vista.</summary>
 public sealed class HexGridRenderer : IDisposable
 {
     private const float Root3Half = .8660254f;
@@ -12,28 +12,27 @@ public sealed class HexGridRenderer : IDisposable
         #version 330 core
         layout(location = 0) in vec2 aVertex;
         layout(location = 1) in vec2 aCenter;
-        layout(location = 2) in float aSurface;
+        layout(location = 2) in vec3 aColor;
         uniform vec2 uViewport;
         uniform vec2 uCamera;
         uniform float uScale;
         uniform float uTop;
-        out float vSurface;
+        out vec3 vColor;
         void main() {
             vec2 pixel = (aCenter + aVertex - uCamera) * uScale + vec2(0.0, uTop);
             gl_Position = vec4(2.0 * pixel.x / uViewport.x - 1.0,
                 1.0 - 2.0 * pixel.y / uViewport.y, 0.0, 1.0);
-            vSurface = aSurface;
+            vColor = aColor;
         }
         """;
     private const string FragmentShader = """
         #version 330 core
-        in float vSurface;
+        in vec3 vColor;
         uniform int uOutline;
         out vec4 color;
         void main() {
             if (uOutline != 0) color = vec4(0.32, 0.42, 0.48, 0.55);
-            else if (vSurface > 0.5) color = vec4(0.35, 0.57, 0.32, 1.0);
-            else color = vec4(0.32, 0.55, 0.71, 1.0);
+            else color = vec4(vColor, 1.0);
         }
         """;
 
@@ -70,11 +69,11 @@ public sealed class HexGridRenderer : IDisposable
         GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.EnableVertexAttribArray(1);
-        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
         GL.VertexAttribDivisor(1, 1);
         GL.EnableVertexAttribArray(2);
-        GL.VertexAttribPointer(2, 1, VertexAttribPointerType.Float, false,
-            3 * sizeof(float), 2 * sizeof(float));
+        GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false,
+            5 * sizeof(float), 2 * sizeof(float));
         GL.VertexAttribDivisor(2, 1);
         GL.BindVertexArray(0);
     }
@@ -105,7 +104,7 @@ public sealed class HexGridRenderer : IDisposable
     {
         VisibleHexRange range = camera.VisibleRange();
         int count = range.Count;
-        if (_instances.Length < count * 3) _instances = new float[count * 3];
+        if (_instances.Length < count * 5) _instances = new float[count * 5];
         int index = 0;
         int columns = _grid.Definition.Columns;
         for (int row = range.FirstRow; row <= range.LastRow; row++)
@@ -115,9 +114,12 @@ public sealed class HexGridRenderer : IDisposable
             int wrapped = ((column % columns) + columns) % columns;
             _instances[index++] = center.X;
             _instances[index++] = center.Y;
-            _instances[index++] = _landmass.SurfaceByCellId[row * columns + wrapped];
+            var color = BiomePalette.ForCell(_landmass, row * columns + wrapped);
+            _instances[index++] = color.X;
+            _instances[index++] = color.Y;
+            _instances[index++] = color.Z;
         }
-        _instanceCount = index / 3;
+        _instanceCount = index / 5;
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.BufferData(BufferTarget.ArrayBuffer, index * sizeof(float),
             _instances, BufferUsageHint.StreamDraw);

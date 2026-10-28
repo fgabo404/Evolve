@@ -4,6 +4,8 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Definitions.Versioning;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World.LandmassGeneration;
+using GEvolve.Engine.World.BiomeGeneration;
+using GEvolve.State.Game;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
 using OpenTK.Graphics.OpenGL4;
@@ -134,8 +136,42 @@ internal sealed class EvolveWindow : GameWindow
         if (_session.Screen == GameScreen.World) RenderWorld();
         else RenderMenu();
         _ui.Flush(ClientSize.X, ClientSize.Y);
+        if (_graphicsSmoke && _session.Screen == GameScreen.World && !_smokeZoomed)
+            VerifyBiomePixels();
         SwapBuffers();
         if (_graphicsSmoke) AdvanceGraphicsSmoke(started);
+    }
+
+    private void VerifyBiomePixels()
+    {
+        var terrain = _session.State.Landmass!;
+        if (terrain.ElevationByCellId is null) return;
+        var checkedBiomes = new HashSet<string>(StringComparer.Ordinal);
+        var visible = _camera.VisibleRange();
+        var pixels = new byte[4];
+        int columns = _session.Grid!.Definition.Columns;
+        for (int row = visible.FirstRow; row <= visible.LastRow; row++)
+        for (int column = visible.FirstColumn; column <= visible.LastColumn; column++)
+        {
+            int id = row * columns + ((column % columns) + columns) % columns;
+            string? biome = terrain.Biomes?.Get(id).BiomeId;
+            if (biome is null || checkedBiomes.Contains(biome)) continue;
+            Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
+            // Evitar las tarjetas, los botones y el texto de la interfaz.
+            if (screen.X < 310 || screen.X > ClientSize.X - 20 ||
+                screen.Y < 150 || screen.Y > ClientSize.Y - 100) continue;
+            int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
+            int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
+            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
+            Vector3 expected = BiomePalette.ForBiome(biome) * 255;
+            if (Math.Abs(pixels[0] - expected.X) > 2 || Math.Abs(pixels[1] - expected.Y) > 2 ||
+                Math.Abs(pixels[2] - expected.Z) > 2)
+                throw new InvalidOperationException($"Rendered biome color mismatch: {biome}, cell {id}.");
+            checkedBiomes.Add(biome);
+        }
+        if (checkedBiomes.Count < 2)
+            throw new InvalidOperationException("Insufficient visible biome colors in graphics smoke.");
+        Console.WriteLine($"OpenGL biome pixels verified: {string.Join(", ", checkedBiomes)}");
     }
 
     private void AdvanceGraphicsSmoke(long started)
@@ -316,10 +352,25 @@ internal sealed class EvolveWindow : GameWindow
         {
             string surface = landmass.IsLand(cell.Id) ? "TIERRA" : "OCÉANO";
             string label = $"CELDA {cell.Id}  C:{cell.Address.Column}  F:{cell.Address.Row}  {surface}";
-            float labelWidth = (label.Length * 6 - 1) * 1.8f;
-            _ui.Rect(12, ClientSize.Y - 43, labelWidth + 20, 31,
+            var environment = BiomeClassifier.GetCell(landmass, cell.Id);
+            string height = environment.Elevation?.ToString() ?? "PENDIENTE";
+            string details = $"ALT: {height}  LAT: {environment.Latitude:F1}";
+            string biome = environment.Biome.Status switch
+            {
+                BiomeClassificationStatus.Assigned =>
+                    $"{environment.Biome.BiomeId} / {environment.Biome.SubbiomeId}",
+                BiomeClassificationStatus.MissingElevation => "BIOMA: ELEVACIÓN PENDIENTE",
+                BiomeClassificationStatus.NotGenerated => "BIOMA: CLASIFICACIÓN PENDIENTE",
+                _ => "BIOMA: SIN COINCIDENCIA EN CATÁLOGO"
+            };
+            float pixel = MathF.Min(1.6f, (ClientSize.X - 48) /
+                (6f * Math.Max(label.Length, Math.Max(details.Length, biome.Length))));
+            float labelWidth = Math.Max(label.Length, Math.Max(details.Length, biome.Length)) * 6 * pixel;
+            _ui.Rect(12, ClientSize.Y - 83, labelWidth + 20, 71,
                 new Vector4(.07f, .16f, .23f, .9f));
-            _ui.Text(label, 22, ClientSize.Y - 34, 1.8f, White, centered: false);
+            _ui.Text(label, 22, ClientSize.Y - 74, pixel, White, centered: false);
+            _ui.Text(details, 22, ClientSize.Y - 54, pixel, White, centered: false);
+            _ui.Text(biome, 22, ClientSize.Y - 34, pixel, White, centered: false);
         }
     }
 

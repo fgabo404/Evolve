@@ -1201,7 +1201,7 @@
           },
           "elevationLevel": {
             "min": 0,
-            "max": 80
+            "max": 100
           },
           "latitudeDegrees": {
             "min": 65,

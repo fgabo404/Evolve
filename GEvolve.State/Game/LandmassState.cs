@@ -8,5 +8,6 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
 {
     public byte[]? ElevationByCellId { get; init; }
     public byte[]? PlateByCellId { get; init; }
+    public BiomeState? Biomes { get; init; }
     public bool IsLand(int cellId) => SurfaceByCellId[cellId] == 1;
 }

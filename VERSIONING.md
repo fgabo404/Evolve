@@ -16,3 +16,5 @@ Cada concepto evoluciona de forma independiente. Incrementar la versión del gen
 El generador activo ahora se identifica como `landmass-2` debido al nuevo algoritmo Pangea 2.0. No se reescribe la etiqueta `v0.001` ni su resultado histórico. Los demás algoritmos conservan su implementación anterior.
 
 La siguiente iteración experimental usa `landmass-3` por los cambios deterministas en Pangea. La versión visual del juego sigue siendo `v0.001` hasta un futuro hito publicado; la etiqueta Git original es inmutable.
+
+La revisión activa de Pangea usa `landmass-4` con alturas tectónicas 0–100. La clasificación posterior de biomas usa `biomes-1` y registra el hash del catálogo en su estado; no cambia `landmass-4` porque conserva exactamente el terreno. El campo opcional `LandmassState.Biomes` amplía el formato 2 manteniendo la lectura de guardados anteriores sin ese campo. Véase [BIOMES.md](BIOMES.md).

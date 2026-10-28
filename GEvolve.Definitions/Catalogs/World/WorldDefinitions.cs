@@ -14,7 +14,12 @@ public sealed class BiomeDefinition {
  public string Id {get;set;} = "";
  public Dictionary<string,string>? Name {get;set;}
  public bool? InterfaceCategoryOnly {get;set;}
+ public List<SubbiomeDefinition> Subbiomes {get;set;} = [];
 }
+public sealed record BiomeRange(double Min, double Max);
+public sealed record BiomeLatitudeRange(double Min, double Max, string Hemisphere);
+public sealed record SubbiomeDefinition(string Id, BiomeRange ElevationLevel,
+    BiomeLatitudeRange LatitudeDegrees);
 public sealed class RegionalVariantDefinition {
  public string Id {get;set;} = "";
  public string? BiomeId {get;set;}
