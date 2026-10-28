@@ -1,202 +1,206 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.0 · **Fecha:** 2026-10-28  
+**Versión:** 2.1 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
-**Estado:** diseño y organización; **0/16 etapas completadas**  
-**Etapa siguiente:** **01 — Drenaje topográfico y cuencas**.  
-**Alcance:** accidentes geográficos naturales que faltan en el mundo de Pangea: lagos, ríos, volcanes, costas y formaciones derivadas.
+**Estado:** planificación; **0/18 etapas completadas**  
+**Siguiente etapa:** **01 — Mapa de límites de placas tectónicas**.  
+**Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
-> **Una etapa por vez.** Cada etapa se implementará, medirá y validará antes de comenzar la siguiente. Este archivo es la fuente de seguimiento. Las marcas no prueban implementación hasta que se registre su validación y commit.
+> Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
 
-## 1. Objetivo y principios
+## 1. Objetivo
 
-Crear una capa geográfica **posterior** a la generación tectónica: la superficie y el relieve son entradas inmutables, y los accidentes son datos superpuestos consultables en los hexágonos.
+Agregar los accidentes naturales que faltan en el mundo de Pangea como **capas geográficas posteriores** a su generación: volcanes y campos volcánicos, fallas/rifts etiquetados, lagos, ríos, deltas, cascadas, cañones, accidentes costeros, humedales y manifestaciones geotérmicas.
 
-### Reglas aprobadas
+### Reglas innegociables
 
-1. **No modificar `PangaeaGenerator`**, distribución/movimiento de placas, costas, `SurfaceByCellId`, `PlateByCellId`, `ElevationByCellId`, pendientes ni semillas del mundo. Conservar las 36 regresiones tectónicas.
-2. Respetar los seis vecinos reales de `HexTopology` y la unión horizontal del mapa. Los extremos norte/sur **no** se envuelven entre sí.
-3. Igual semilla + misma versión de datos/modelo = mismos accidentes, IDs y rutas. Evitar porcentajes arbitrarios de accidentes.
-4. Los lagos ocupan **hexágonos completos** de agua continental (sin convertirlos en océanos). Pueden ser de agua dulce o salada según el balance hídrico futuro.
-5. **Todo río permanente generado desemboca en un lago o en el océano.** Un río puede entrar a un lago y volver a salir; cada tramo de su red tiene receptor válido. Las cuencas secas no reciben ríos permanentes ficticios.
-6. **Ríos pequeños/ riachuelos:** segmentos sobre **lados/vértices** de los hexágonos, al estilo Civilization VI. **Ríos navegables:** recorridos continuos de **hexágonos completos**. Ambas formas pertenecen a **la misma red** y una corriente puede cambiar de clase.
-7. El caudal, la navegabilidad, los volcanes y los lagos derivan de factores geográficos verificables, no de colocación puramente aleatoria. La variación determinista solo rompe empates o añade diversidad compatible.
-8. Cumbres terrestres con elevación **85–100** siguen siendo infranqueables. Esto no impide que el agua nazca en montañas.
-9. La precipitación actual (`precipitation-2`) **necesita calibración**; no fijar la cantidad de agua de lagos y ríos a partir de un modelo todavía desbalanceado.
-10. Mantener persistencia compatible con guardados anteriores y estructuras compactas por ID. No añadir cambios de biomas, flora, fauna, minerales ni mecánicas económicas sin una etapa explícita.
+1. **No cambiar `PangaeaGenerator`, ni `SurfaceByCellId`, `ElevationByCellId`, `PlateByCellId`, las costas, la topología o la semilla.** Conservar las regresiones tectónicas existentes.
+2. Las estructuras nuevas son **datos superpuestos**; no modifican la elevación, aunque una futura fase de erosión o geomorfología podría proponerse por separado.
+3. Usar únicamente los **seis vecinos reales** de `HexTopology`, con continuidad este-oeste y sin unir norte/sur.
+4. Igual configuración y semilla deben producir los mismos datos, IDs y geometrías. Evitar porcentajes forzados o ubicaciones aleatorias sin criterio geográfico.
+5. Persistir versiones y estructuras compactas, con compatibilidad para guardados antiguos.
+6. Los lagos serán **agua continental distinta del océano**, ocupando hexágonos completos; su nivel, salinidad y permanencia requieren balance hídrico.
+7. **Todos los ríos permanentes terminan en un lago o en el mar**; pueden atravesar un lago y continuar aguas abajo. No inventar ríos permanentes hacia depresiones secas.
+8. **Riachuelos**: trazos por lados y vértices, como en Civilization VI. **Ríos navegables**: caminos continuos de hexágonos completos. Una sola red lógica puede cambiar de representación a lo largo del cauce.
+9. Las cumbres terrestres desde elevación 85 siguen infranqueables para unidades terrestres.
+10. **La precipitación actual necesita calibración** antes de decidir el llenado definitivo de los lagos o los caudales.
+11. No modificar aún flora, fauna, minerales, biomas o tecnologías sin una etapa explícita aprobada.
+12. No marcar una fase como completada sin compilar, ejecutar pruebas, revisar sus resultados y registrar el commit.
 
-## 2. Secuencia de generación prevista
+## 2. Punto de partida: qué datos tectónicos existen
 
-```text
-Pangea: superficie + placas + elevaciones (INTOCABLE)
-  ↓
-Geografía base: latitud + pendiente + costas
-  ↓
-Temperatura + vientos + precipitación (calibración pendiente)
-  ↓
-Drenaje topográfico / depresiones / cuencas
-  ↓
-Balance hídrico → lagos y cuerpos de agua continentales
-  ↓
-Acumulación fluvial → riachuelos y ríos navegables
-  ↓
-Accidentes derivados: deltas, estuarios, cascadas, humedales...
-  ↓
-Accidentes tectónicos: volcanes y manifestaciones volcánicas
-  ↓
-Clasificación ecológica refinada + vistas del juego
-```
+La implementación actual de `PangaeaGenerator` devuelve tres arreglos: **superficie, elevación y ID de placa**. Dentro de la generación también calcula centros, velocidades, compresión y extensión, **pero estos últimos datos no quedan persistidos**.
 
-El orden es lógico, no obliga a recalcular todo siempre. Puede ser necesario **calcular un drenaje preliminar** antes de llenar lagos y actualizar las conexiones una vez establecidos los cuerpos de agua. El diseño impedirá dependencias circulares.
+Por tanto:
 
-## 3. Roadmap por etapas
+- **Sí** podemos detectar límites entre placas, proximidad a fronteras, relieves montañosos y continuidad de posibles alineaciones.
+- **No** podemos etiquetar confiablemente una frontera como zona de subducción, divergencia o transformación **solo** con `PlateByCellId`. No toda frontera es volcánica; no toda montaña es un volcán.
+- Para una clasificación tectónica científicamente más sólida necesitaremos un **modelo derivado externo y verificable** o una extensión explícitamente aprobada de los datos tectónicos de salida. **No se modificará el generador por defecto**.
+- En la primera versión, las ubicaciones volcánicas serán **candidatos plausibles** según datos disponibles y parámetros explícitos, no afirmaciones de subducción comprobada.
 
-### Bloque A — Lagos y cuencas (primero)
+## 3. Roadmap secuencial
 
-#### [ ] 01 — Drenaje topográfico y detección de depresiones
-- Adaptar **Priority-Flood** a los seis vecinos de la malla; calcular cotas hidrológicas auxiliares, dirección/receptor y cuencas sin alterar elevaciones.
-- Identificar cuencas que conectan al mar, depresiones cerradas y posibles umbrales de desbordamiento. Resolver mesetas y empates sin ciclos.
-- **Entrega:** mapa interno de drenaje, cuencas y estadísticas, **sin lagos ni ríos dibujados**.
-- **Aceptación:** receptores vecinos válidos, sin ciclos, unión este-oeste correcta, hashes del relieve originales intactos.
+### Bloque A — Accidentes tectónicos (PRIMERO)
 
-#### [ ] 02 — Candidatos geométricos de lagos
-- Agrupar depresiones; medir fondo, cota de rebose, extensión potencial y salida opcional.
-- Distinguir cuenca cerrada, cuenca abierta y microdepresión. Evitar lagos artificiales por resolución/empates.
-- **Entrega:** candidatos de `Lake` con geometría, sin afirmar presencia de agua permanente.
-- **Aceptación:** celdas conectadas, sin solapamiento de candidatos definitivos ni conversión accidental a océano.
+#### [ ] 01 — Detectar límites de placas
+**Entrada:** `PlateByCellId`, `ElevationByCellId`, `HexTopology`.
 
-#### [ ] 03 — Recalibrar precipitación y balance de agua
-- Medir lluvia y humedad sobre nueve o más Pangeas (tamaños y semillas); revisar la sequedad continental observada.
-- Ajustar transporte de vapor, evaporación continental, barlovento/sotavento y convergencia con curvas suaves **sin imponer cuotas de biomas**.
-- Definir balance hídrico inicial por cuenca: entradas, evaporación, infiltración y desbordamiento.
-- **Entrega:** modelo climático e hídrico medido y documentado, apto para dimensionar lagos y caudales.
-- **Aceptación:** contraste de rangos y mapas secos/húmedos; reproducibilidad; no alterar terreno/temperatura base; tests compilados y ejecutados.
+- Identificar bordes entre hexágonos de placas distintas; agruparlos en tramos y medir distancia de cada hexágono a una frontera.
+- Separar la geometría de la frontera de cualquier interpretación geológica de su actividad.
+- Generar una **vista de diagnóstico de placas/fronteras** o exportación de estadísticas, sin volcanes todavía.
+- **Aceptación:** fronteras coinciden con cambios de placa; costura este-oeste correcta; sin modificar arrays; determinismo y pruebas con distintas semillas.
+- **Entrega:** mapa tectónico derivado (no cambia Pangea). **Primer objetivo a implementar.**
 
-#### [ ] 04 — Generación de lagos reales
-- Determinar qué depresiones se llenan, nivel y extensión de agua; permitir lagos abiertos, endorreicos, temporales y cuencas secas.
-- Salinidad: no inferirla solo por baja lluvia; modelar balance/endorreísmo y dejar desconocido lo que no pueda justificarse.
-- **Entrega:** estado lacustre compacto con IDs estables, `cells`, `waterLevel`, `type`, `outletCellId?`.
-- **Aceptación:** inundación coherente, desagües válidos, balance razonable y océano original intacto.
+#### [ ] 02 — Aptitud volcánica y clasificación de candidatos
+- Calcular una puntuación reproducible a partir de distancia a límites, relieve, topología y exclusiones explícitas.
+- Distinguir candidatos de **arco/limítrofe** y **puntos calientes interiores** únicamente como hipótesis; no llamar subducción o rift real a una frontera no caracterizada.
+- Estudiar si se necesitan datos de convergencia/divergencia; documentar limitaciones antes de decidir ampliaciones.
+- **Aceptación:** ubicaciones justificables, sin volcanes indiscriminados a lo largo de toda frontera; distribución inspeccionable por semilla.
+- **Entrega:** mapa de aptitud y candidatos, aún sin entidades volcánicas finales.
 
-#### [ ] 05 — Renderizado y selección de lagos
-- Superponer agua continental sin cambiar tierra/océano; crear vista **HIDROGRAFÍA** reutilizable por los ríos.
-- Mostrar al seleccionar: ID, tipo, extensión, nivel y desagüe.
-- **Aceptación:** colores, hit-testing, persistencia y rendimiento; la vista no modifica el estado.
+#### [ ] 03 — Generar volcanes y campos volcánicos
+- Elegir candidatos locales de alta aptitud con distancia mínima/agrupamiento coherente; IDs estables por celda.
+- Registrar `id`, `cellId`, `type` y `status`; usar `status = unknown` hasta contar con un modelo de actividad.
+- Distinguir volcán aislado, alineación/campo volcánico y puntos calientes solo cuando los datos lo respalden.
+- **Aceptación:** sin alterar elevaciones ni biomas; densidades razonables al comparar semillas; guardado/carga y regresiones tectónicas.
+- **Entrega:** `VolcanoState` o entidades volcánicas persistibles.
 
-### Bloque B — Red fluvial única (después de los lagos)
+#### [ ] 04 — Otros rasgos tectónicos derivados
+- Detectar y etiquetar posibles **fallas, alineaciones, zonas fracturadas y valles de rift** como rasgos geológicos derivados.
+- No simular movimiento de fallas ni abrir rifts modificando la geografía. Evitar diagnosticar tipo de falla sin cinemática.
+- Identificar calderas o cráteres **solo como propiedades de volcanes representados**, no como depresiones inventadas en elevación.
+- **Aceptación:** trazados coherentes con límites/relieve; nomenclatura honesta sobre incertidumbre.
+- **Entrega:** accidentes tectónicos secundarios consultables.
 
-#### [ ] 06 — Red de drenaje permanente, nacimientos y caudales
-- Acumular aportes por cuenca según la lluvia calibrada y resolver tramos de paso por lagos.
-- Establecer la topología lógica de fuentes, afluentes, confluencias y destinos.
-- **Entrega:** red fluvial independiente de su representación visual.
-- **Aceptación:** **todos los ríos permanentes terminan en un lago o mar**, rutas sin ciclos ni extremos sin resolver, salvo excepciones definidas y aprobadas.
+#### [ ] 05 — Renderizado y selección tectónica
+- Superponer símbolos de volcanes y líneas de límites/fallas con interruptores independientes.
+- Al seleccionar: tipo, estado, celda, placa y fundamento de la ubicación; compatibilidad con vistas de biomas, temperatura y precipitaciones.
+- **Aceptación:** símbolos no modifican el mundo, selección estable, rendimiento, persistencia y prueba visual.
+- **Entrega:** primera capa de **ACCIDENTES GEOGRÁFICOS** visible en el juego.
 
-#### [ ] 07 — Riachuelos sobre lados y vértices
-- Convertir cursos menores en segmentos conectados por bordes/vértices hexagonales.
-- Canonicalizar bordes compartidos; resolver confluencias, giros y continuidad en costuras del mundo.
-- **Entrega:** riachuelos visibles sin ocupar celdas enteras.
-- **Aceptación:** sin segmentos duplicados, conexiones rotas ni cambios del bioma bajo el cauce.
+### Bloque B — Lagos y cuencas (SEGUNDO)
 
-#### [ ] 08 — Grandes ríos navegables por hexágonos
-- Seleccionar tramos por caudal, continuidad, anchura aproximada y baja pendiente; no hacer navegable toda la longitud de un río.
-- Trazar caminos continuos de **hexágonos fluviales**, distintos de los océanos y de los lagos.
-- **Entrega:** ríos navegables visibles y consultables; interfaz común con riachuelos.
-- **Aceptación:** transición coherente riachuelo→río navegable, navegación sin rutas discontinuas y territorio base intacto.
+#### [ ] 06 — Drenaje topográfico y detección de depresiones
+- Adaptar **Priority-Flood** a los seis vecinos hexagonales, manteniendo una elevación hidrológica auxiliar.
+- Determinar receptores de flujo, cuencas, umbrales de rebose y posibles salidas al océano sin ciclos.
+- **Entrega:** drenaje interno y estadísticas, sin lagos visibles.
+- **Aceptación:** direcciones vecinas válidas, continuidad este-oeste, determinismo y terreno intacto.
 
-#### [ ] 09 — Desembocaduras, estuarios y deltas
-- Identificar la llegada de ríos al mar; distinguir estuario/delta solo cuando caudal, pendiente y geometría costera lo permitan.
-- Los deltas no añaden automáticamente nuevas tierras ni modifican las costas originales.
-- **Entrega:** desembocaduras y accidentes asociados al flujo.
-- **Aceptación:** ningún río termina sobre tierra seca ni fuera del mapa; las salidas son consistentes.
+#### [ ] 07 — Candidatos geométricos de lagos
+- Identificar fondos, áreas inundables, cotas de rebose, cuencas abiertas y endorreicas.
+- Evitar microdepresiones falsas y solapamiento de áreas seleccionadas.
+- **Entrega:** candidatos lacustres sin afirmar que tengan agua.
+- **Aceptación:** geometría conexa, posibles salidas válidas y océano sin cambios.
 
-### Bloque C — Accidentes volcánicos y tectónicos
+#### [ ] 08 — Calibración de precipitación y balance hídrico
+- Revisar la sequedad continental de `precipitation-2`, evaporación, transporte de vapor, sombras de lluvia y estabilidad del modelo.
+- Medir distribuciones en nueve o más mapas de Pangea; sin cuotas arbitrarias de bosques o desiertos.
+- Definir aportes, infiltración, evaporación y desbordamiento por cuenca.
+- **Entrega:** modelo calibrado con estadísticas y pruebas ejecutadas.
+- **Aceptación:** resultados reproducibles, mapas contrastados y terreno/temperatura base intactos.
 
-#### [ ] 10 — Aptitud volcánica por placas y relieve
-- Usar `PlateByCellId`, límites de placa y relieve para candidatos geológicos. Distinguir límite de placa de un volcán comprobado.
-- **Limitación actual:** velocidades y convergencia/divergencia se calculan dentro de `PangaeaGenerator` pero **no se persisten**. No inventar subducción ni actividad volcánica a partir de solo IDs.
-- Si hacen falta metadatos tectónicos, diseñar una **salida derivada externa** que no cambie ni una línea del generador, o pedir aprobación explícita antes de ampliar su API.
-- **Entrega:** mapa de aptitud/candidatos volcánicos, sin cráteres ni conos simulados todavía.
-- **Aceptación:** candidatos plausibles, no todas las fronteras volcánicas, tectónica intacta.
+#### [ ] 09 — Generar lagos reales
+- Elegir depresiones con agua suficiente; calcular nivel, celdas inundadas, tamaño y salida opcional.
+- Permitir lagos abiertos, endorreicos, estacionales y cuencas secas; salinidad solo cuando el balance lo justifique.
+- **Entrega:** `LakeState` persistible, con IDs estables y separación explícita respecto del mar.
+- **Aceptación:** niveles coherentes, lagos conectados, salidas válidas y sin cambiar `SurfaceByCellId`.
 
-#### [ ] 11 — Volcanes y campos volcánicos
-- Colocar volcanes discretos según aptitud tectónica y excepciones fundamentadas (puntos calientes).
-- Estado activo/durmiente/extinto solo si un modelo explícito lo respalda; si no, estado **indeterminado**.
-- Guardar `id`, `cellId`, tipo y estado; representar la estructura sin cambiar la altura tectónica.
-- **Entrega:** volcanes visibles, seleccionables y persistibles.
-- **Aceptación:** datos reproducibles, sin distribuciones aleatorias absurdas ni cambios de elevación.
+#### [ ] 10 — Visualización hidrográfica de lagos
+- Representar lagos sobre hexágonos enteros y crear vista **HIDROGRAFÍA**.
+- Mostrar extensión, nivel, tipo y desagüe al seleccionar.
+- **Aceptación:** guardado/carga, selección, rendimiento y colores sin cambios en el terreno base.
 
-### Bloque D — Accidentes derivados del relieve, agua y costas
+### Bloque C — Red fluvial (TERCERO)
 
-#### [ ] 12 — Cascadas, rápidos, gargantas y cañones
-- Cascadas y rápidos donde exista un cauce y un descenso apropiado entre hexágonos.
-- Gargantas, barrancos y cañones como **rasgos identificados** en relieve/pendiente; la excavación por erosión real es futura y necesitaría una autorización de modificación de terreno.
-- **Entrega:** rasgos secundarios asociados a ríos y montañas.
-- **Aceptación:** no hay cascadas sin curso de agua ni cañones que alteren elevaciones.
+#### [ ] 11 — Red lógica de ríos y acumulación de caudal
+- Acumular escorrentía aguas arriba, fuentes, afluentes y caudales sobre las cuencas ya validadas.
+- Conectar rutas a un lago o al mar; no generar ríos permanentes sin destino acuático.
+- **Entrega:** red fluvial única sin dependencia del dibujo.
+- **Aceptación:** sin ciclos ni extremos inconexos, confluencias válidas y destino de agua confirmado.
 
-#### [ ] 13 — Costas: cabos, bahías, playas y acantilados
-- Detectar contornos, curvaturas, pendientes y vecinos marinos para **etiquetar** formas costeras existentes.
-- No crear nuevas penínsulas, islas, archipiélagos ni cambiar la línea litoral actual.
-- **Entrega:** accidentes costeros consultables; posible representación específica.
-- **Aceptación:** costa, océano y placas originales idénticos.
+#### [ ] 12 — Riachuelos sobre lados/vértices de hexágonos
+- Convertir cursos menores a geometría continua de lados/vértices; canonicalizar los bordes compartidos.
+- **Entrega:** riachuelos visibles sin ocupar ni modificar el hexágono subyacente.
+- **Aceptación:** sin duplicaciones, saltos gráficos ni cruces espurios.
 
-#### [ ] 14 — Humedales, manantiales y manifestaciones geotérmicas
-- Humedales vinculados a lagos, desbordamientos, nivel hídrico y drenaje deficiente.
-- Manantiales/acuíferos solo cuando exista una aproximación explícita de aguas subterráneas; sin inventarlos por ruido.
-- Aguas termales y géiseres solo con proximidad/aptitud geotérmica y disponibilidad de agua justificadas.
-- **Entrega:** accidentes de agua/geotermia derivados, nunca sustitutos arbitrarios del bioma.
-- **Aceptación:** dependencia comprobable de agua, relieve o volcanismo.
+#### [ ] 13 — Ríos navegables por hexágonos completos
+- Seleccionar tramos navegables por caudal, anchura aproximada, continuidad y pendiente; no por porcentaje aleatorio.
+- Trazar cadenas de hexágonos con transición coherente de riachuelos a grandes ríos.
+- **Entrega:** cursos navegables distinguibles de océanos y lagos.
+- **Aceptación:** continuidad, destinos válidos, navegabilidad razonable y superficie original intacta.
 
-### Bloque E — Integración y validación general
+#### [ ] 14 — Desembocaduras, estuarios y deltas
+- Identificar contactos río-mar/lago y diferenciar deltas y estuarios por geometría costera, caudal y pendiente.
+- No añadir tierra al océano ni modificar costas para representar un delta.
+- **Entrega:** desembocaduras y rasgos fluviales derivados.
+- **Aceptación:** todos los recorridos terminan en cuerpos de agua válidos y sin segmentos perdidos.
 
-#### [ ] 15 — Integración ecológica y capas de visualización
-- Reflejar agua superficial en humedales, márgenes fluviales y oasis; conservar las restricciones del catálogo.
-- Integrar la capa **ACCIDENTES GEOGRÁFICOS** con filtros de agua, volcanismo y relieve (aprovechar HIDROGRAFÍA).
-- Preparar consultas para futuras ciudades, navegación, recursos, transporte y eventos naturales **sin implementar esas mecánicas**.
-- **Aceptación:** superposiciones independientes, consultas por ID, sin sobrescribir biomas ni alterar la tectónica.
+### Bloque D — Otros accidentes del agua, relieve y costas
 
-#### [ ] 16 — Auditoría de determinismo, rendimiento y regresiones
-- Revisar todas las fases con distintas semillas/tamaños y pruebas de guardado/carga y compatibilidad.
-- Medir número/superficie de lagos, longitudes y clases de ríos, descargas al mar, volcanes y accidentes por región.
-- Verificar las **36 regresiones tectónicas** y comparar hashes de superficie, elevación y placas.
-- **Aceptación:** sin ríos desconectados, sin lagos inválidos, sin volcanes mal fundamentados, buena respuesta del renderizador y ninguna alteración de Pangea.
+#### [ ] 15 — Cascadas, rápidos, gargantas y cañones
+- Cascadas/rápidos solo con cauce existente y descenso suficiente.
+- Etiquetar gargantas, barrancos y cañones según relieve y pendientes, sin excavar ni deformar el terreno.
+- **Aceptación:** rasgos vinculados a datos reales del mundo y no duplicados.
 
-## 4. Modelo de datos provisional
+#### [ ] 16 — Accidentes costeros, humedales y geotermia
+- Detectar **cabos, bahías, playas y acantilados** a partir de la línea de costa actual.
+- Detectar **humedales** cerca de agua superficial o mal drenaje; **manantiales** solo si existe modelo de agua subterránea.
+- Detectar **aguas termales/géiseres** solo cuando exista aptitud geotérmica y agua suficiente.
+- **Aceptación:** costa intacta; no inventar agua subterránea ni actividad geotérmica sin fundamento.
+
+### Bloque E — Integración y auditoría
+
+#### [ ] 17 — Integración ecológica y consultas
+- Exponer relaciones entre accidentes y hexágonos; preparar efectos futuros en biomas, recursos, navegación y asentamientos.
+- Integrar filtros de vistas (tectónica, agua y relieve) sin sobrescribir biomas ni modificar los catálogos salvo aprobación posterior.
+- **Aceptación:** consulta compacta por ID y capas superpuestas independientes.
+
+#### [ ] 18 — Validación integral y rendimiento
+- Compilar, ejecutar tests del motor, interfaz y guardado/carga; revisar varias semillas y tamaños.
+- Verificar **36 regresiones tectónicas** de superficie, altura y placas (sin modificación).
+- Medir volcanes por frontera, cuencas y lagos, caudal y continuidad de ríos, coste de memoria y renderizado.
+- **Aceptación:** ningún río sin desembocadura, accidentes coherentes, determinismo y rendimiento aceptable.
+
+## 4. Estructura provisional (no definitiva)
 
 ```text
 GeographyState
+├── Tectonics
+│   ├── boundaryEdges[]                # fase 01 (derivable)
+│   ├── volcanicSuitabilityByCellId[]  # fase 02 (derivable)
+│   ├── volcanoes[]                    # fase 03
+│   │   ├── id
+│   │   ├── cellId
+│   │   ├── type
+│   │   └── status
+│   └── tectonicFeatures[]             # fase 04
 ├── Hydrography
-│   ├── drainageReceiverByCellId[]   # fase 01
-│   ├── basinIdByCellId[]             # fase 01
-│   ├── lakes[]                       # fases 02–05
-│   └── rivers[]                      # fases 06–09
+│   ├── drainageReceiverByCellId[]     # fase 06 (derivable)
+│   ├── basinIdByCellId[]              # fase 06 (derivable)
+│   ├── lakes[]                        # fases 07–10
+│   └── rivers[]                       # fases 11–14
 │       ├── id
 │       ├── destinationWaterBodyId
-│       ├── smallRiverEdges[]         # bordes/vértices
-│       └── navigableCells[]          # hexágonos completos
-├── Volcanoes[]                       # fases 10–11
-│   ├── id
-│   ├── cellId
-│   ├── type
-│   └── status
-└── Features[]                        # fases 09, 12–14
+│       ├── smallRiverEdges[]          # lados/vértices
+│       └── navigableCells[]           # hexágonos completos
+└── Features[]                         # fases 14–16
     ├── id
     ├── type
     └── cellIds[]
 ```
 
-Es **un esquema conceptual, no un JSON ni contrato de persistencia definitivo**. Acordaremos los campos mínimos de cada entidad al implementar su fase. Reutilizar referencias por ID para no duplicar cauces y accidentes derivados.
+No es aún un contrato de persistencia: se definirán los campos mínimos fase a fase y no se guardarán copias de datos calculables sin una razón de rendimiento.
 
-## 5. Criterios transversales de revisión
+## 5. Actualización del roadmap
 
-Para cada etapa se documentarán: propósito, entradas, método, límites, semillas probadas, mediciones, pruebas automatizadas, regresiones tectónicas, captura visual cuando aplique y enlace del commit.
+- **Pendiente:** `[ ]`. **Completada, probada y aprobada:** `[x]`.
+- Durante el trabajo, mantener `[ ]` e indicar **EN CURSO** hasta validar.
+- Para cada fase registrar: semilla/tamaño, algoritmos, pruebas y resultados, captura si aplica, límites conocidos y **SHA/enlace del commit**.
+- Si una etapa no supera la validación, se corrige antes de avanzar. No tocar Pangea para arreglar problemas de capas posteriores.
+- El siguiente trabajo será **solo la fase 01**, no una implementación simultánea de volcanes y todas las demás capas.
 
-- `[ ]` pendiente · `[x]` implementada, probada y aprobada.
-- Si está en curso, conservar `[ ]` e indicar **EN CURSO** en el texto hasta aprobar.
-- No marcar completado solo por subir código; primero comprobar compilación, pruebas y resultados.
-- Si un resultado contradice el objetivo, calibrar **esa capa**, no modificar Pangea para corregir porcentajes.
-- Cada cambio debe actualizar la versión/historial y registrar el commit con enlace.
+## 6. Historial de decisiones
 
-## 6. Decisiones e historial
-
-- **2026-10-28 — v1.0:** roadmap inicial de hidrografía; lagos antes que ríos. Riachuelos por bordes y ríos navegables por hexágonos. Todos los ríos permanentes desembocan en lago o mar.
-- **2026-10-28 — v2.0:** convertirlo en roadmap maestro de **accidentes geográficos**: se incorporan volcanes, accidentes costeros, cascadas, cañones, humedales y geotermia, con sus dependencias. La precipitación se calibra antes del llenado de lagos y del caudal final. No se ha comenzado ninguna fase de implementación.
+- **2026-10-28 · v1.0:** plan de hidrografía: lagos antes que ríos, dos clases de río y desembocadura obligatoria en lago u océano.
+- **2026-10-28 · v2.0:** roadmap maestro con volcanes, costas, agua y accidentes derivados.
+- **2026-10-28 · v2.1:** **reordenar la implementación para comenzar por los accidentes relacionados con las placas tectónicas** (límites, aptitud volcánica, volcanes y vistas); después lagos, ríos y demás accidentes. Ninguna fase implementada todavía. Se mantiene intacto el generador tectónico de Pangea.
