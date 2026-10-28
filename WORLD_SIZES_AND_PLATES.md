@@ -45,3 +45,7 @@ Los cuatro tipos de mundo comparten tamaños y placas `tectonic-plates-2`; ahora
 ## Actualización landmass-8
 
 Las dimensiones 200×133, 250×167, 300×200 y 400×267 y las 16 placas continúan iguales. `landmass-8` añade influencia tectónica en las **masas terrestres** de Continentes, Continentes pequeños y Archipiélagos, además de la influencia que ya tenían las elevaciones. Pangea conserva su generador basado en placas. Las capas climáticas y de biomas permanecen separadas.
+
+## landmass-10 · Corteza continental en el modo Continentes
+
+No se modifican los cuatro tamaños ni las 16 placas; se calcula una distribución de corteza continental/oceánica entre generación de placas y distribución de tierra **solo en Continentes**. El número de continentes principales sigue siendo de 2 a 6 según la semilla, para todas las resoluciones. Las demás modalidades conservan sus generadores.

@@ -121,3 +121,21 @@ El nuevo `ContinentsGenerator` aplica un **crecimiento multiorigen con cola de p
 Se conservan **pequeñas islas secundarias** como componentes aisladas de uno o dos hexágonos, sin puentes involuntarios que fusionen los continentes. La cantidad de continentes principales se valida por componentes terrestres de tamaño continental, diferenciándolas de esas pequeñas islas. El pipeline conserva el mismo relieve `PlateAwareElevationGenerator` y los demás tipos de mapa siguen con sus algoritmos actuales.
 
 **Únicas áreas modificadas:** `LandmassProfiles` para el conteo semilla→N, `ContinentsGenerator` para crecimiento y costas, pruebas y documentación. Pangea, Continentes pequeños, Archipiélagos y la generación tectónica no se alteran. `landmass-9` distingue el nuevo resultado terrestre de `landmass-8`. Pendiente compilar `dotnet build`, ejecutar `GEvolve.Tests` y revisar los mapas en OpenGL antes de dar por aprobada la silueta.
+
+## Continentes con corteza continental y oceánica (landmass-10)
+
+**Referente geológico:** en la Tierra, las placas no son continentes ni las fronteras de placas son costas. Una placa puede contener corteza continental y oceánica (por ejemplo, grandes sectores oceánicos de la placa norteamericana), y los márgenes de corteza continental pueden quedar sumergidos. Esto se usa como **principio de diseño**, no como una simulación real de movimientos, edad, espesor, subducción ni acreción.
+
+La capa 01 `tectonic-plates-2` sigue generando las **16 placas universales e inmutables**. Solo la ruta de tipo **Continentes** incorpora ahora la etapa intermedia `ContinentalCrustGenerator`:
+
+1. **Geometría de placas:** encuentra los hexágonos de frontera y forma el grafo de placas vecinas respetando la costura este–oeste; una propagación BFS calcula la profundidad al interior de cada placa.
+2. **Núcleos continentales:** selecciona `LandmassProfiles.ContinentCountForSeed(seed)` (2–6, mismo número en todas las resoluciones) y ubica cada núcleo en el interior de **una placa real y distinta**. La primera raíz favorece placas extensas; el resto se distribuye mediante máxima separación entre centros tectónicos.
+3. **Modelo de corteza:** `ContinentalCrustMap` produce `CrustByCellId` (0 corteza oceánica, 1 continental), `EmergenceAffinityByCellId` y núcleos/placas de origen. La afinidad pondera **distancia espacial a raíces, distancia a través del grafo tectónico, deformación del dominio y ruido continuo multiescala**. La corteza continental puede ocupar sectores de varias placas; una placa puede contener ambos tipos. Este resultado intermedio se calcula de manera determinista para generar continentes, sin modificar `PlateByCellId`.
+4. **Superficie emergida:** `ContinentsGenerator` utiliza crecimiento multiorigen con cuotas desiguales y conserva costas con Domain Warping. **La preferencia por corteza continental domina los costos**; las zonas oceánicas cuestan bastante más, pero no están prohibidas, para permitir márgenes y ajustes de presupuesto. Se conservan corredores marítimos y pequeñas islas aisladas.
+5. **Elevación:** `PlateAwareElevationGenerator` continúa calculando alturas 0–100 desde la superficie y las **mismas placas tectónicas**. En esta etapa no se simula cinemática de convergencia/divergencia ni se derivan límites activos.
+
+La ruta histórica sin matriz de placas sigue existiendo para pruebas y compatibilidad de `LandmassGenerationService`; **el juego usa la ruta con placas** desde `WorldGenerationService`. Ningún cambio afecta la lógica terrestre de Pangea, Continentes pequeños o Archipiélagos; tampoco se activan temperatura, precipitación ni biomas.
+
+**Versión:** `landmass-10`. Las pruebas `StagedLandmassTests` verifican la relación entre núcleos y placas, las dos clases de corteza, márgenes continentales sumergidos, determinismo, conectividad, 2–6 continentes y el contrato compartido. **Pendiente de ejecutar .NET y revisar la silueta en el juego.**
+
+Referencias de principio geológico: USGS, *This Dynamic Earth*, https://pubs.usgs.gov/gip/dynamic/tectonic.html; USGS, *The Interior of the Earth*, https://pubs.usgs.gov/gip/interior/.

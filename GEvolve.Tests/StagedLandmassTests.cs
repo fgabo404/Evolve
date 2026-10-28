@@ -76,6 +76,43 @@ public static class StagedLandmassTests
                         world.Statistics.DominantLandShare < .75 &&
                         world.Statistics.LandFraction is >= .27 and <= .43,
                         "Seed-selected continent count, separated mainlands and ocean coverage");
+
+                    // The plate mosaic MUST decide where the continental
+                    // nuclei and crust go, not merely tweak coast noise.
+                    var crustGenerator = new ContinentalCrustGenerator();
+                    var crust = crustGenerator.Generate(
+                        topology, ids, expectedContinents, config.Seed);
+                    Check(crust.MainContinentCoreCells.Length == expectedContinents &&
+                        crust.MainContinentCorePlates.Distinct().Count() == expectedContinents &&
+                        crust.CrustByCellId.Length == topology.Count &&
+                        crust.EmergenceAffinityByCellId.Length == topology.Count &&
+                        crust.MainContinentCoreCells.Select((cell, i) =>
+                            ids[cell] == crust.MainContinentCorePlates[i]).All(value => value) &&
+                        crust.MainContinentCoreCells.All(cell =>
+                            crust.CrustByCellId[cell] == 1) &&
+                        crust.CrustByCellId.Contains((byte)0) &&
+                        crust.CrustByCellId.Contains((byte)1),
+                        "Plate interiors seed continents and both crust types exist");
+                    int continentalLand = Enumerable.Range(0, topology.Count)
+                        .Count(id => landmass.SurfaceByCellId[id] == 1 &&
+                            crust.CrustByCellId[id] == 1);
+                    int submergedContinentalCrust = Enumerable.Range(0, topology.Count)
+                        .Count(id => landmass.SurfaceByCellId[id] == 0 &&
+                            crust.CrustByCellId[id] == 1);
+                    Check(continentalLand > world.Statistics.LandCells / 2 &&
+                        submergedContinentalCrust > 0 &&
+                        Enumerable.Range(0, topology.Count).Any(cell =>
+                            crust.CrustByCellId[cell] == 0 &&
+                            landmass.SurfaceByCellId[cell] == 0),
+                        "Most emergent land follows continental crust, but shelves can be submerged");
+                    var repeatedCrust = crustGenerator.Generate(
+                        topology, ids, expectedContinents, config.Seed);
+                    Check(repeatedCrust.CrustByCellId.SequenceEqual(crust.CrustByCellId) &&
+                        repeatedCrust.EmergenceAffinityByCellId.SequenceEqual(
+                            crust.EmergenceAffinityByCellId) &&
+                        repeatedCrust.MainContinentCoreCells.SequenceEqual(
+                            crust.MainContinentCoreCells),
+                        "Plate-based crust and continent roots are deterministic");
                 }
                 Check(landmass.Climate is null && landmass.SlopeByCellId is null &&
                     landmass.Biomes is null,
@@ -175,8 +212,8 @@ public static class StagedLandmassTests
                 LandmassGenerationService.MeetsProfile(type, world.Statistics),
                 "Alternate seed preserves landmass identity and universal tectonics");
         }
-        Console.WriteLine("PASS: seed-selected 2..6 main continents across sizes, " +
-            "four stage 02 types, unique shapes, relief, tectonics, persistence");
+        Console.WriteLine("PASS: plate-born continental/oceanic crust and seed-selected " +
+            "2..6 continents across sizes; relief, tectonics and persistence");
     }
 
     private static void Check(bool condition, string message)

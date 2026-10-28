@@ -4,8 +4,9 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 /// <summary>
-/// Two to six distinct, unequal continents. Their count is selected only by
-/// the world seed, never by the hex resolution or the retry number.
+/// Two to six distinct, unequal continents. Their seeds lie inside actual
+/// tectonic plates; continental/oceanic crust drives where land can emerge.
+/// Count depends only on the world seed, never on resolution or retries.
 /// </summary>
 public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
 {
@@ -29,7 +30,13 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
 
         int count = topology.Count;
         int width = topology.Columns, height = topology.Rows;
-        int[] cores = ChooseDistantCores();
+        // Continental/oceanic crust is computed FROM the actual plate mosaic,
+        // before emerging coastlines are drawn. With no plate array the old
+        // land-only route is retained for historical callers.
+        ContinentalCrustMap? crust = plates.IsEmpty ? null :
+            new ContinentalCrustGenerator().Generate(
+                topology, plates, profile.CoreCount, configuration.Seed);
+        int[] cores = crust?.MainContinentCoreCells ?? ChooseDistantCores();
         int islandCells = (int)(count * profile.IslandFraction);
         int[] budgets = UnequalBudgets(
             (int)Math.Round(count * profile.TargetLandFraction) - islandCells,
@@ -150,9 +157,18 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
             foreach (int neighbor in topology.Neighbors(from))
             {
                 if (owners[neighbor] != -1) continue;
+                // Prefer buoyant continental crust, including shelves shared
+                // across plates. Oceanic sectors remain mostly submerged, though
+                // a growing mainland can traverse a marginal sector if needed.
+                // Crust affinity now dominates the continental growth costs;
+                // plate borders alone are not mistaken for coastlines.
+                double geology = crust is null
+                    ? tectonics.ExpansionCost(from, neighbor)
+                    : Math.Clamp(.95 - 1.55 * crust.EmergenceAffinityByCellId[neighbor] +
+                        (crust.CrustByCellId[neighbor] == 0 ? 1.20 : 0), -.65, 3.5) +
+                        .18 * tectonics.ExpansionCost(from, neighbor);
                 double next = cost + Math.Max(.18,
-                    1 + profile.CoastRoughness * coastResistance[neighbor] +
-                    tectonics.ExpansionCost(from, neighbor));
+                    1 + profile.CoastRoughness * coastResistance[neighbor] + geology);
                 frontier.Enqueue(new Frontier(neighbor, owner, next),
                     next + neighbor * 1e-9);
             }

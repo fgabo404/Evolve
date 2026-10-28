@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.9 · **Fecha:** 2026-10-28  
+**Versión:** 3.0 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar visualmente la generación de 2–6 continentes grandes por semilla (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
+**Siguiente trabajo:** **validar visualmente continentes tectónicamente coherentes (2–6 por semilla) sobre regiones de corteza continental y oceánica (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -231,3 +231,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.8:** `landmass-8` refina las costas y formas de los cuatro tipos (Pangea ya era plate-aware; los otros tres ahora incorporan guía tectónica leve en superficie, no solo elevación). Se mantienen los cuatro tamaños, 16 placas inmutables, vista previa tectónica y algoritmos propios por tipo. La implementación aún exige `dotnet build`, `GEvolve.Tests` y revisión visual antes de aprobación; clima y biomas no se reactivan.
 
 - **2026-10-28 · v2.9:** `landmass-9` adapta únicamente **Continentes**: número de masas principales aleatorio determinista entre 2 y 6 (igual semilla ⇒ mismo número a cualquier resolución); núcleos separados, tamaños desiguales, costas por ruido multiescala/domain warping, corredores oceánicos y pequeñas islas secundarias sin puentes. Se mantienen sin tocar las placas, Pangea, Continentes pequeños y Archipiélagos. Se añadieron pruebas de conteo por semilla, tamaño y componentes. **Pendiente:** compilación, ejecución y aprobación visual antes de marcarlo como validado.
+
+- **2026-10-28 · v3.0:** `landmass-10`: el tipo **Continentes** incorpora `ContinentalCrustGenerator`, usando núcleos interiores de placas, vecindad tectónica y campo de afinidad de corteza continental/oceánica antes de generar tierra. Mantiene núcleos distintos por semilla, costas irregulares, cuerpos oceánicos, islas secundarias y elevaciones preexistentes; Pangea/Pequeños/Archipiélagos no cambiaron. Requiere validación .NET y visual. **Esta es una heurística procedural inspirada en la Tierra**, sin cinemática geológica.
