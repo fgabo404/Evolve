@@ -6,6 +6,7 @@ namespace GEvolve.State.Game;
 public sealed record LandmassState(LandmassConfiguration Configuration,
     byte[] SurfaceByCellId, int DeterministicAttempt)
 {
+    public byte[]? ElevationByCellId { get; init; }
     public byte[]? PlateByCellId { get; init; }
     public bool IsLand(int cellId) => SurfaceByCellId[cellId] == 1;
 }
