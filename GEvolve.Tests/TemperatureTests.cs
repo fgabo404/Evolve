@@ -85,11 +85,14 @@ public static class TemperatureTests
                     var color = MapViewColors.ForCell(terrain, id, mode);
                     if (mode == MapViewMode.Infrared)
                         Check(color == ThermalPalette.ForCelsius(climate.CurrentCelsius(id)), "Thermal palette includes oceans and summits");
+                    else if (mode == MapViewMode.Tectonic && terrain.PlateByCellId is { } plates)
+                        Check(color == PlatePalette.ForPlate(plates[id], !terrain.IsLand(id)),
+                            "Tectonic view uses original plate IDs");
                     else if (mode == MapViewMode.Rainfall)
                         Check(color == RainfallPalette.ForMillimetres(
                             climate.BasePrecipitationMmByCellId![id]),
                             "Rainfall view shows precipitation even on summits");
-                    else if (terrain.IsImpassableSummit(id))
+                    else if (mode != MapViewMode.Tectonic && terrain.IsImpassableSummit(id))
                         Check(color == Vector3.One, "Summits stay white in terrain views");
                 }
             }

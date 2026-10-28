@@ -131,6 +131,8 @@ public static class GameTests
         var worldButtons = ScreenLayout.Buttons(GameScreen.World, 1280, 720);
         Check(worldButtons.Count(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large) == 3,
             "Three size controls are available in world view");
+        Check(worldButtons.Any(button => button.Action == UiAction.ToggleTectonic),
+            "Tectonic plate view is available in world screen");
 
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })

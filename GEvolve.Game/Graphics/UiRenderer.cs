@@ -85,6 +85,18 @@ public sealed class UiRenderer : IDisposable
         Triangle(x, y, x + width, y + height, x, y + height, color);
     }
 
+    public void Line(Vector2 a, Vector2 b, float thickness, Vector4 color)
+    {
+        Vector2 delta = b - a;
+        float length = delta.Length();
+        if (length < .001f) return;
+        Vector2 normal = new(-delta.Y, delta.X);
+        normal *= thickness / (2 * length);
+        Vector2 p = a + normal, q = a - normal, r = b - normal, s = b + normal;
+        Triangle(p.X, p.Y, q.X, q.Y, r.X, r.Y, color);
+        Triangle(p.X, p.Y, r.X, r.Y, s.X, s.Y, color);
+    }
+
     public void Border(float x, float y, float width, float height, float thickness, Vector4 color)
     {
         Rect(x, y, width, thickness, color);

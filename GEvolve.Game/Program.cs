@@ -165,6 +165,8 @@ internal sealed class EvolveWindow : GameWindow
                 biome = $"thermal {terrain.Climate!.CurrentCelsius(id):F0}";
             if (_viewMode == MapViewMode.Rainfall)
                 biome = $"rainfall {terrain.Climate!.BasePrecipitationMmByCellId![id]}";
+            if (_viewMode == MapViewMode.Tectonic && terrain.PlateByCellId is { } plates)
+                biome = $"plate {plates[id]}";
             if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
             // Evitar las tarjetas, los botones y el texto de la interfaz.
@@ -173,7 +175,7 @@ internal sealed class EvolveWindow : GameWindow
             int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
             int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-            if (_viewMode is not (MapViewMode.Infrared or MapViewMode.Rainfall) &&
+            if (_viewMode is not (MapViewMode.Infrared or MapViewMode.Rainfall or MapViewMode.Tectonic) &&
                 terrain.IsImpassableSummit(id) &&
                 (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
                 throw new InvalidOperationException($"Summit {id} is not pure white.");
@@ -220,7 +222,8 @@ internal sealed class EvolveWindow : GameWindow
         UiAction[] viewActions = [UiAction.ToggleGrayscale, UiAction.ToggleInfrared,
             UiAction.ToggleGrayscale, UiAction.ToggleGrayscale,
             UiAction.ToggleInfrared, UiAction.ToggleInfrared,
-            UiAction.ToggleRainfall, UiAction.ToggleRainfall];
+            UiAction.ToggleRainfall, UiAction.ToggleRainfall,
+            UiAction.ToggleTectonic, UiAction.ToggleTectonic];
         if (_smokeViewStep < viewActions.Length)
         {
             var terrain = _session.State.Landmass;
@@ -230,7 +233,10 @@ internal sealed class EvolveWindow : GameWindow
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
             var action = viewActions[_smokeViewStep];
-            var expectedMode = action == UiAction.ToggleRainfall &&
+            var expectedMode = action == UiAction.ToggleTectonic &&
+                terrain?.PlateByCellId is not null
+                ? _viewMode == MapViewMode.Tectonic ? MapViewMode.Biomes : MapViewMode.Tectonic
+                : action == UiAction.ToggleRainfall &&
                 terrain?.Climate?.BasePrecipitationMmByCellId is not null
                 ? _viewMode == MapViewMode.Rainfall ? MapViewMode.Biomes : MapViewMode.Rainfall
                 : action == UiAction.ToggleInfrared && terrain?.Climate is not null
@@ -333,6 +339,8 @@ internal sealed class EvolveWindow : GameWindow
         GL.Scissor(0, 0, FramebufferSize.X, scissorHeight);
         _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, _viewMode);
         GL.Disable(EnableCap.ScissorTest);
+        if (_viewMode == MapViewMode.Tectonic)
+            _gridRenderer.DrawPlateBoundaries(_ui, _camera);
 
         if (_session.SelectedCell is { } selected)
         {
@@ -426,16 +434,22 @@ internal sealed class EvolveWindow : GameWindow
                 BiomeClassificationStatus.NotGenerated => "BIOMA: CLASIFICACIÓN PENDIENTE",
                 _ => "BIOMA: SIN COINCIDENCIA EN CATÁLOGO"
             };
-            float pixel = MathF.Min(1.6f, (ClientSize.X - 48) /
-                (6f * Math.Max(rainfall.Length, Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length))))));
-            float labelWidth = Math.Max(rainfall.Length, Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length)))) * 6 * pixel;
-            _ui.Rect(12, ClientSize.Y - 123, labelWidth + 20, 111,
+            string? plateInfo = landmass.PlateByCellId is { } plateIds &&
+                _gridRenderer.PlateBoundaries is { } boundaries
+                ? $"PLACA: {plateIds[cell.Id]}  LÍMITE: {(boundaries.BoundaryByCellId[cell.Id] ? "SÍ" : "NO")}  DIST: {boundaries.DistanceToBoundaryByCellId[cell.Id]} HEX"
+                : null;
+            string[] lines = plateInfo is null
+                ? [label, details, biome, temperature, rainfall]
+                : [label, details, biome, temperature, rainfall, plateInfo];
+            int maxLength = lines.Max(line => line.Length);
+            float pixel = MathF.Min(1.6f, (ClientSize.X - 48) / (6f * maxLength));
+            float labelWidth = maxLength * 6 * pixel;
+            int panelHeight = lines.Length * 20 + 11;
+            _ui.Rect(12, ClientSize.Y - panelHeight - 12, labelWidth + 20, panelHeight,
                 new Vector4(.07f, .16f, .23f, .9f));
-            _ui.Text(label, 22, ClientSize.Y - 114, pixel, White, centered: false);
-            _ui.Text(details, 22, ClientSize.Y - 94, pixel, White, centered: false);
-            _ui.Text(biome, 22, ClientSize.Y - 74, pixel, White, centered: false);
-            _ui.Text(temperature, 22, ClientSize.Y - 54, pixel, White, centered: false);
-            _ui.Text(rainfall, 22, ClientSize.Y - 34, pixel, White, centered: false);
+            for (int index = 0; index < lines.Length; index++)
+                _ui.Text(lines[index], 22, ClientSize.Y - panelHeight - 3 + 20 * index,
+                    pixel, White, centered: false);
         }
     }
 
@@ -454,7 +468,8 @@ internal sealed class EvolveWindow : GameWindow
                 button.Action == UiAction.SeedField && _seedFocused ||
                 button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
                 button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared ||
-                button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall;
+                button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall ||
+                button.Action == UiAction.ToggleTectonic && _viewMode == MapViewMode.Tectonic;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -600,6 +615,11 @@ internal sealed class EvolveWindow : GameWindow
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.ElevationByCellId is not null)
                     _viewMode = _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation;
+                break;
+            case UiAction.ToggleTectonic:
+                if (_session.Screen == GameScreen.World &&
+                    _session.State.Landmass?.PlateByCellId is not null)
+                    _viewMode = _viewMode == MapViewMode.Tectonic ? MapViewMode.Biomes : MapViewMode.Tectonic;
                 break;
             case UiAction.ToggleRainfall:
                 if (_session.Screen == GameScreen.World &&

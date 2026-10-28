@@ -28,5 +28,6 @@ BiomeTests.Run();
 SlopeTests.Run();
 TemperatureTests.Run();
 PrecipitationTests.Run();
+PlateBoundaryTests.Run();
 GameTests.Run();
 return 0;

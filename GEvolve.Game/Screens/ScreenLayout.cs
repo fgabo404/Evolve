@@ -7,7 +7,7 @@ public enum UiAction
     Create, Options, Exit, Back, Generate,
     Small, Medium, Large,
     Continents, Pangaea, SmallContinents, Archipelagos,
-    SeedField, RandomSeed, Regenerate, ToggleGrayscale, ToggleInfrared, ToggleRainfall
+    SeedField, RandomSeed, Regenerate, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -86,6 +86,7 @@ public static class ScreenLayout
                 new(UiAction.ToggleGrayscale, "Ver alturas (B/N)", new(12, 188, 261, 36)),
                 new(UiAction.ToggleInfrared, "INFRARROJO", new(12, 230, 261, 36)),
                 new(UiAction.ToggleRainfall, "PRECIPITACIONES", new(12, 272, 261, 36)),
+                new(UiAction.ToggleTectonic, "PLACAS TECTÓNICAS", new(12, 314, 261, 36)),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",

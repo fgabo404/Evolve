@@ -1,5 +1,8 @@
 using GEvolve.Engine.Grid;
 using GEvolve.State.Game;
+using GEvolve.Engine.World.LandmassGeneration.Shared;
+using GEvolve.Engine.World.Tectonics;
+using System.Numerics;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GEvolve.Game.Graphics;
@@ -54,6 +57,8 @@ public sealed class HexGridRenderer : IDisposable
 
     private readonly HexGrid _grid;
     private readonly LandmassState _landmass;
+    private readonly HexTopology? _plateTopology;
+    public PlateBoundaryMap? PlateBoundaries { get; }
     private readonly ShaderProgram _shader;
     private readonly int _vao;
     private readonly int _hexVbo;
@@ -72,6 +77,11 @@ public sealed class HexGridRenderer : IDisposable
             throw new ArgumentException("Landmass state differs from the grid.", nameof(landmass));
         _grid = grid;
         _landmass = landmass;
+        if (landmass.PlateByCellId is not null)
+        {
+            _plateTopology = new HexTopology(grid);
+            PlateBoundaries = PlateBoundaryMap.Analyze(_plateTopology, landmass);
+        }
         _shader = new ShaderProgram(VertexShader, FragmentShader);
         _vao = GL.GenVertexArray();
         _hexVbo = GL.GenBuffer();
@@ -115,7 +125,7 @@ public sealed class HexGridRenderer : IDisposable
         }
         _shader.Use();
         GL.Uniform1(_shader.Uniform("uGrayscale"), viewMode == MapViewMode.Elevation ? 1 : 0);
-        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode is MapViewMode.Infrared or MapViewMode.Rainfall ? 1 : 0);
+        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode is MapViewMode.Infrared or MapViewMode.Rainfall or MapViewMode.Tectonic ? 1 : 0);
         var summitColor = BiomePalette.ImpassableSummitColor;
         GL.Uniform3(_shader.Uniform("uSummitColor"), summitColor.X, summitColor.Y, summitColor.Z);
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);
@@ -128,6 +138,46 @@ public sealed class HexGridRenderer : IDisposable
         GL.Uniform1(_shader.Uniform("uOutline"), 1);
         GL.DrawArraysInstanced(PrimitiveType.LineLoop, 1, 6, _instanceCount);
         GL.BindVertexArray(0);
+    }
+
+    /// <summary>Draw real shared edges on the visible hex copies, including wrap.</summary>
+    public void DrawPlateBoundaries(UiRenderer ui, MapCamera2D camera)
+    {
+        if (_plateTopology is null || PlateBoundaries is null ||
+            _landmass.PlateByCellId is not { } plates) return;
+        var range = camera.VisibleRange();
+        int columns = _plateTopology.Columns;
+        var tint = new Vector4(.99f, .84f, .28f, .95f);
+        float thickness = Math.Clamp(camera.Scale * .16f, 1.2f, 4.2f);
+        for (int row = range.FirstRow; row <= range.LastRow; row++)
+        for (int column = range.FirstColumn; column <= range.LastColumn; column++)
+        {
+            int wrapped = ((column % columns) + columns) % columns;
+            int id = row * columns + wrapped;
+            if (!PlateBoundaries.BoundaryByCellId[id]) continue;
+            Vector2 center = FlatHexGeometry.Center(new GridAddress(column, row));
+            foreach (int neighbor in _plateTopology.Neighbors(id))
+            {
+                if (id >= neighbor || plates[id] == plates[neighbor]) continue;
+                int deltaColumn = neighbor % columns - wrapped;
+                if (deltaColumn > columns / 2) deltaColumn -= columns;
+                else if (deltaColumn < -columns / 2) deltaColumn += columns;
+                Vector2 other = FlatHexGeometry.Center(
+                    new GridAddress(column + deltaColumn, neighbor / columns));
+                Vector2 delta = other - center;
+                float length = delta.Length();
+                if (length < .01f) continue;
+                Vector2 normal = new(-delta.Y / length, delta.X / length);
+                Vector2 middle = (center + other) / 2;
+                Vector2 a = camera.WorldToScreen(middle - normal * .5f);
+                Vector2 b = camera.WorldToScreen(middle + normal * .5f);
+                if (MathF.Max(a.X, b.X) < 0 || MathF.Min(a.X, b.X) > camera.ViewWidth ||
+                    MathF.Max(a.Y, b.Y) < MapCamera2D.TopBarHeight ||
+                    MathF.Min(a.Y, b.Y) > camera.ViewHeight + MapCamera2D.TopBarHeight)
+                    continue;
+                ui.Line(a, b, thickness, tint);
+            }
+        }
     }
 
     private void UpdateVisible(MapCamera2D camera)

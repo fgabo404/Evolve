@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.1 · **Fecha:** 2026-10-28  
+**Versión:** 2.2 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
-**Estado:** planificación; **0/18 etapas completadas**  
-**Siguiente etapa:** **01 — Mapa de límites de placas tectónicas**.  
+**Estado:** fase 01 implementada en código, **pendiente de compilación, pruebas y revisión visual**; **0/18 etapas aprobadas**  
+**Siguiente trabajo:** **validar la fase 01 — Mapa de límites de placas tectónicas**.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -42,14 +42,14 @@ Por tanto:
 
 ### Bloque A — Accidentes tectónicos (PRIMERO)
 
-#### [ ] 01 — Detectar límites de placas
+#### [ ] 01 — Detectar límites de placas · EN REVISIÓN
 **Entrada:** `PlateByCellId`, `ElevationByCellId`, `HexTopology`.
 
 - Identificar bordes entre hexágonos de placas distintas; agruparlos en tramos y medir distancia de cada hexágono a una frontera.
 - Separar la geometría de la frontera de cualquier interpretación geológica de su actividad.
 - Generar una **vista de diagnóstico de placas/fronteras** o exportación de estadísticas, sin volcanes todavía.
 - **Aceptación:** fronteras coinciden con cambios de placa; costura este-oeste correcta; sin modificar arrays; determinismo y pruebas con distintas semillas.
-- **Entrega:** mapa tectónico derivado (no cambia Pangea). **Primer objetivo a implementar.**
+- **Entrega preparada:** mapa derivado de bordes únicos, distancia mínima a un límite y vista **PLACAS TECTÓNICAS** con colores y trazos hexagonales. Incluye pruebas automatizadas para límites, continuidad este-oeste y determinismo. **Pendiente:** ejecutar `dotnet build`, `dotnet run --project GEvolve.Tests`, revisión gráfica y aceptación del usuario. No hay volcanes colocados en esta fase.
 
 #### [ ] 02 — Aptitud volcánica y clasificación de candidatos
 - Calcular una puntuación reproducible a partir de distancia a límites, relieve, topología y exclusiones explícitas.
@@ -204,3 +204,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v1.0:** plan de hidrografía: lagos antes que ríos, dos clases de río y desembocadura obligatoria en lago u océano.
 - **2026-10-28 · v2.0:** roadmap maestro con volcanes, costas, agua y accidentes derivados.
 - **2026-10-28 · v2.1:** **reordenar la implementación para comenzar por los accidentes relacionados con las placas tectónicas** (límites, aptitud volcánica, volcanes y vistas); después lagos, ríos y demás accidentes. Ninguna fase implementada todavía. Se mantiene intacto el generador tectónico de Pangea.
+
+- **2026-10-28 · v2.2:** fase 01 codificada y publicada para revisión: `PlateBoundaryMap` analiza límites y distancia; vista de placas con colores, aristas y selección. Se agregaron pruebas. **La fase sigue [ ] hasta compilar, probar y aprobar.** No se generaron volcanes y no se modificó Pangea.

@@ -3,12 +3,14 @@ using GEvolve.State.Game;
 
 namespace GEvolve.Game.Graphics;
 
-public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall }
+public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall, Tectonic }
 
 public static class MapViewColors
 {
     public static Vector3 ForCell(LandmassState terrain, int id, MapViewMode mode) => mode switch
     {
+        MapViewMode.Tectonic when terrain.PlateByCellId is { } plates =>
+            PlatePalette.ForPlate(plates[id], !terrain.IsLand(id)),
         MapViewMode.Rainfall when terrain.Climate?.BasePrecipitationMmByCellId is { } rainfall =>
             RainfallPalette.ForMillimetres(rainfall[id]),
         MapViewMode.Infrared when terrain.Climate is { } climate =>
