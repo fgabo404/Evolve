@@ -24,7 +24,7 @@ public static class LandmassTests
     {
         Check(EvolveVersion.GameName == "Evolve" && EvolveVersion.Display == "v0.001" &&
             EvolveVersion.Technical == new Version(0, 0, 1, 0) &&
-            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-5",
+            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-4",
             "Independent game, save and generator versions");
         var service = new LandmassGenerationService();
         Check(service.Generators.Count == 4 &&
@@ -92,9 +92,11 @@ public static class LandmassTests
 
         VerifyPeriodicSeam();
         VerifyPersistence(service);
-        var tectonic = service.Generate(LandmassProfiles.Create(GridSize.Small, LandmassType.Pangaea, 2026));
-        Check(tectonic.Landmass.PlateByCellId is { Length: 7000 },
-            "Tectonic plate IDs retained without provisional elevations");
+        var tectonic = service.Generate(LandmassProfiles.Create(GridSize.Small,LandmassType.Pangaea,2026));
+        Check(tectonic.Landmass.ElevationByCellId is { Length: 7000 } heights &&
+            heights.All(value=>value<=3) &&
+            tectonic.Landmass.PlateByCellId is { Length: 7000 },
+            "Tectonic elevation and plate IDs align with hex cells");
     }
 
     private static void VerifyPeriodicSeam()
@@ -140,6 +142,7 @@ public static class LandmassTests
                 loaded.HexGrid?.Definition == result.Grid.Definition &&
                 loaded.Landmass?.Configuration == result.Landmass.Configuration &&
                 loaded.Landmass.SurfaceByCellId.SequenceEqual(result.Landmass.SurfaceByCellId) &&
+                loaded.Landmass.ElevationByCellId!.SequenceEqual(result.Landmass.ElevationByCellId!) &&
                 loaded.Landmass.PlateByCellId!.SequenceEqual(result.Landmass.PlateByCellId!),
                 "Capa 02 survives save/load without regeneration");
 
