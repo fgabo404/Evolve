@@ -87,6 +87,10 @@ public static class StagedLandmassTests
                         crust.CrustByCellId.Length == topology.Count &&
                         crust.EmergenceAffinityByCellId.Length == topology.Count &&
                         crust.ProvinceByCellId.Length == topology.Count &&
+                        crust.CollisionByCellId.Length == topology.Count &&
+                        crust.RiftByCellId.Length == topology.Count &&
+                        crust.CollisionByCellId.Any(value => value > 0) &&
+                        crust.RiftByCellId.Any(value => value > 0) &&
                         crust.MainContinentCoreCells.Select((cell, i) =>
                             ids[cell] == crust.MainContinentCorePlates[i]).All(value => value) &&
                         crust.MainContinentCoreCells.All(cell =>
@@ -113,6 +117,10 @@ public static class StagedLandmassTests
                     Check(repeatedCrust.CrustByCellId.SequenceEqual(crust.CrustByCellId) &&
                         repeatedCrust.ProvinceByCellId.SequenceEqual(
                             crust.ProvinceByCellId) &&
+                        repeatedCrust.CollisionByCellId.SequenceEqual(
+                            crust.CollisionByCellId) &&
+                        repeatedCrust.RiftByCellId.SequenceEqual(
+                            crust.RiftByCellId) &&
                         repeatedCrust.EmergenceAffinityByCellId.SequenceEqual(
                             crust.EmergenceAffinityByCellId) &&
                         repeatedCrust.MainContinentCoreCells.SequenceEqual(
@@ -138,6 +146,11 @@ public static class StagedLandmassTests
                         internalPlateBorderOnLand > 0,
                         "Coasts need not trace plate boundaries and continental " +
                         "land crosses some tectonic borders");
+                    Check(crust.MainContinentCoreCells.Distinct().Count() ==
+                            expectedContinents &&
+                        crust.MainContinentCorePlates.Distinct().Count() ==
+                            expectedContinents,
+                        "Independent ancient cratons survive the tectonic assembly");
                 }
                 Check(landmass.Climate is null && landmass.SlopeByCellId is null &&
                     landmass.Biomes is null,
@@ -161,9 +174,12 @@ public static class StagedLandmassTests
                         var legacyLand = surfaceGenerator.Generate(
                             topology, config, landmass.DeterministicAttempt);
                         Check(landWithPlates.SequenceEqual(landmass.SurfaceByCellId) &&
-                            !legacyLand.SequenceEqual(landWithPlates) &&
+                            (type == LandmassType.Continents
+                                ? legacyLand.SequenceEqual(landWithPlates)
+                                : !legacyLand.SequenceEqual(landWithPlates)) &&
                             ids.SequenceEqual(platesPreview),
-                            "Tectonics influence the coastline while the original legacy path remains available");
+                            "Continents automatically reconstruct universal tectonics; " +
+                            "older non-continental generator entry points remain compatible");
                     }
                     byte[] platesCopy = ids.ToArray();
                     var recalculated = relief.Generate(
@@ -237,7 +253,7 @@ public static class StagedLandmassTests
                 LandmassGenerationService.MeetsProfile(type, world.Statistics),
                 "Alternate seed preserves landmass identity and universal tectonics");
         }
-        Console.WriteLine("PASS: plate-born continental/oceanic crust and seed-selected " +
+        Console.WriteLine("PASS: tectonic terrane assembly and seed-selected " +
             "2..6 continents across sizes; relief, tectonics and persistence");
     }
 

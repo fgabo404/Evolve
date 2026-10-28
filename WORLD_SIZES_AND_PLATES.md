@@ -53,3 +53,7 @@ No se modifican los cuatro tamaños ni las 16 placas; se calcula una distribuci�
 ## landmass-11 · Nivel del mar y masas continentales
 
 Se conservan **200×133, 250×167, 300×200 y 400×267** y las 16 placas de `tectonic-plates-2` para todo tipo de mundo. Solo `Continentes` cambia de generación terrestre: sus estructuras corticales se trazan desde las placas, la costa emergida depende de un nivel marino global y los márgenes continentales pueden quedar inundados. Se mantiene el conteo 2–6 según semilla.
+
+## landmass-12 · Ensamblaje tectónico
+
+El tipo Continentes utiliza los mismos 16 IDs tectónicos de `tectonic-plates-2` y las dimensiones oficiales. Los continentes principales se ensamblan desde núcleos cratónicos y fragmentos tectónicos, sin asignar cuotas de superficie a las masas individuales. El número por semilla se mantiene entre 2 y 6 en todas las resoluciones.

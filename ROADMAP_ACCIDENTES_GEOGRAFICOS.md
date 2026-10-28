@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 3.1 · **Fecha:** 2026-10-28  
+**Versión:** 3.2 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar visualmente el nuevo generador continental por corteza, rifts y nivel del mar, sin cuotas de expansión (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
+**Siguiente trabajo:** **validar visualmente el ensamblaje tectónico de cratones, fragmentos acrecionados y rifts en Continentes (capa 02)**. Las cuatro opciones de mapa están activas; clima y biomas siguen pendientes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -235,3 +235,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v3.0:** `landmass-10`: el tipo **Continentes** incorpora `ContinentalCrustGenerator`, usando núcleos interiores de placas, vecindad tectónica y campo de afinidad de corteza continental/oceánica antes de generar tierra. Mantiene núcleos distintos por semilla, costas irregulares, cuerpos oceánicos, islas secundarias y elevaciones preexistentes; Pangea/Pequeños/Archipiélagos no cambiaron. Requiere validación .NET y visual. **Esta es una heurística procedural inspirada en la Tierra**, sin cinemática geológica.
 
 - **2026-10-28 · v3.1:** `landmass-11` reemplaza la ruta activa `Continentes` basada en cuotas de expansión por un esquema de corteza orientada por placas y emergencias determinadas por nivel del mar. Se conservan los 2–6 continentes por semilla y la tectónica universal. `Pangea`, `Continentes pequeños`, `Archipiélagos` y las elevaciones compartidas quedan sin cambios. **Pendiente ejecutar suite .NET y revisar resultado gráfico; no marcar aún como aprobado.**
+
+- **2026-10-28 · v3.2:** `landmass-12` reemplaza el modo Continentes por ensamblaje tectónico procedural. Usa 2–6 cratones ligados a placas existentes, múltiples terrenos acrecionados dirigidos a contactos reales, señales de colisión y rifting, corteza continental sumergible y un nivel del mar global. No altera Pangea, Continentes pequeños ni Archipiélagos. **Falta compilación .NET y aprobación visual.**
