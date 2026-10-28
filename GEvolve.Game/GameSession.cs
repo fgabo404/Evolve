@@ -102,17 +102,36 @@ public sealed class GameSession
         return BeginGeneration();
     }
 
-    /// <summary>Recrea el mismo tipo y semilla con otro tamaño desde la vista del mundo.</summary>
+    /// <summary>
+    /// Rebuild a world with a different size and/or landmass type while keeping
+    /// its deterministic seed. The tectonic layout stays shared at equal size/seed.
+    /// </summary>
+    public LandmassConfiguration BeginReconfigure(GridSize size, LandmassType type)
+    {
+        if (Screen != GameScreen.World || State.Landmass is null)
+            throw new InvalidOperationException("Generate a world before changing its configuration.");
+        _ = HexGridDefinitions.Get(size);
+        if (!Enum.IsDefined(type)) throw new ArgumentOutOfRangeException(nameof(type));
+        int seed = State.Landmass.Configuration.Seed;
+        SelectedSize = size;
+        SelectedType = type;
+        SeedText = seed.ToString(CultureInfo.InvariantCulture);
+        Screen = GameScreen.CreateWorld;
+        return BeginGeneration();
+    }
+
     public LandmassConfiguration BeginResize(GridSize size)
     {
         if (Screen != GameScreen.World || State.Landmass is null)
             throw new InvalidOperationException("Generate a world before changing its size.");
-        _ = HexGridDefinitions.Get(size);
-        SelectedSize = size;
-        SelectedType = State.Landmass.Configuration.Type;
-        SeedText = State.Landmass.Configuration.Seed.ToString(CultureInfo.InvariantCulture);
-        Screen = GameScreen.CreateWorld;
-        return BeginGeneration();
+        return BeginReconfigure(size, State.Landmass.Configuration.Type);
+    }
+
+    public LandmassConfiguration BeginChangeType(LandmassType type)
+    {
+        if (Screen != GameScreen.World || State.Landmass is null)
+            throw new InvalidOperationException("Generate a world before changing its type.");
+        return BeginReconfigure(State.Landmass.Configuration.Size, type);
     }
 
     public void CompleteGeneration(GeneratedWorld result)

@@ -35,6 +35,8 @@ internal sealed class EvolveWindow : GameWindow
     private readonly bool _graphicsSmoke;
     private Task<GeneratedWorld>? _pendingGeneration;
     private bool _seedFocused;
+    // A real, overlayed dropdown instead of four always-visible buttons.
+    private UiAction? _openDropdown;
     private int _smokeScenario = -1;
     private bool _smokeZoomed;
     private MapViewMode _viewMode = MapViewMode.Biomes;
@@ -120,7 +122,7 @@ internal sealed class EvolveWindow : GameWindow
         }
         var mouse = MousePosition;
         UiAction? hovered = Hit(mouse.X, mouse.Y);
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in VisibleControls())
         {
             _hover.TryGetValue(button.Action, out float value);
             float target = hovered == button.Action ? 1 : 0;
@@ -314,13 +316,13 @@ internal sealed class EvolveWindow : GameWindow
             _ui.Text("Elige el tamaño del grid", center, MathF.Max(66, h * .16f),
                 1.8f, Muted);
             var buttons = ScreenLayout.Buttons(GameScreen.CreateWorld, ClientSize.X, ClientSize.Y);
-            var size = buttons.First(button => button.Action == UiAction.Small).Bounds;
-            var type = buttons.First(button => button.Action == UiAction.Pangaea).Bounds;
+            var size = buttons.First(button => button.Action == UiAction.SizeSelect).Bounds;
+            var type = buttons.First(button => button.Action == UiAction.TypeSelect).Bounds;
             var seed = buttons.First(button => button.Action == UiAction.SeedField).Bounds;
             _ui.Text("Tamaño", size.X, size.Y - 24, 1.8f, Muted, centered: false);
             _ui.Text("Tipo de mundo", type.X, type.Y - 24, 1.8f, Muted, centered: false);
-            // Both columns are now occupied by four real choices.
-            // The landmass choice controls only stage 02, not the plate mosaic.
+            // Both dropdowns choose only the size/type of the next world;
+            // stage 01 plates continue to depend exclusively on size and seed.
             _ui.Text("Semilla", seed.X, seed.Y - 24, 1.8f, Muted, centered: false);
             _ui.Text(EvolveVersion.Display, 16, h - 27, 1.7f, Muted, centered: false);
         }
@@ -481,6 +483,7 @@ internal sealed class EvolveWindow : GameWindow
                     pixel, White, centered: false);
             }
         }
+        DrawDropdown(); // Last overlay: above height labels, selected cells and buttons.
     }
 
     private void DrawButtons()
@@ -495,6 +498,7 @@ internal sealed class EvolveWindow : GameWindow
                 UiAction.SmallContinents or UiAction.Archipelagos;
             bool selected = sizeAction && ScreenLayout.SizeFor(button.Action) == _session.SelectedSize ||
                 typeAction && ScreenLayout.TypeFor(button.Action) == _session.SelectedType ||
+                button.Action == _openDropdown ||
                 button.Action == UiAction.SeedField && _seedFocused ||
                 button.Action == UiAction.ToggleSurface && _viewMode == MapViewMode.Biomes ||
                 button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
@@ -511,13 +515,16 @@ internal sealed class EvolveWindow : GameWindow
                 selected ? Accent : new Vector4(.37f, .51f, .59f, 1));
             if (selected || hover > .05f)
                 _ui.Rect(r.X, r.Y, 4, r.Height, Accent);
-            if (sizeAction)
+            if (button.Action is UiAction.SizeSelect or UiAction.TypeSelect)
             {
-                var definition = HexGridDefinitions.Get(ScreenLayout.SizeFor(button.Action));
-                _ui.Text(button.Text, r.X + r.Width / 2, r.Y + 4,
-                    MathF.Min(2.2f, r.Height / 18), White);
-                _ui.Text($"{definition.Columns} X {definition.Rows}  {(definition.Columns * definition.Rows).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} HEXÁGONOS",
-                    r.X + r.Width / 2, r.Y + r.Height - 12, 1.2f, Muted);
+                string choice = button.Action == UiAction.SizeSelect
+                    ? $"TAMAÑO: {ScreenLayout.SizeLabel(_session.SelectedSize)}"
+                    : $"MUNDO: {ScreenLayout.TypeLabel(_session.SelectedType)}";
+                float pixel = MathF.Min(1.9f, (r.Width - 48) / (choice.Length * 6f));
+                _ui.Text(choice, r.X + 12, r.Y + (r.Height - 7 * pixel) / 2,
+                    pixel, White, centered: false);
+                _ui.Text(_openDropdown == button.Action ? "^" : "V",
+                    r.X + r.Width - 18, r.Y + (r.Height - 14) / 2, 2, Accent);
             }
             else if (button.Action == UiAction.SeedField)
             {
@@ -544,10 +551,63 @@ internal sealed class EvolveWindow : GameWindow
                     r.Y + (r.Height - 7 * pixel) / 2, pixel, White);
             }
         }
+
+        if (_session.Screen == GameScreen.CreateWorld) DrawDropdown();
+    }
+
+    private void DrawDropdown()
+    {
+        if (_ui is null) return;
+        if (_openDropdown is not { } selector) return;
+        foreach (var option in ScreenLayout.DropdownOptions(
+            _session.Screen, ClientSize.X, ClientSize.Y, selector))
+        {
+            UiRect r = option.Bounds;
+            bool chosen = selector == UiAction.SizeSelect
+                ? ScreenLayout.SizeFor(option.Action) == _session.SelectedSize
+                : ScreenLayout.TypeFor(option.Action) == _session.SelectedType;
+            _hover.TryGetValue(option.Action, out float hover);
+            Vector4 baseColor = chosen
+                ? new Vector4(.17f, .38f, .46f, 1)
+                : new Vector4(.12f, .22f, .29f, 1);
+            _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
+                new Vector4(.02f, .05f, .09f, .9f));
+            _ui.Rect(r.X, r.Y, r.Width, r.Height,
+                Vector4.Lerp(baseColor, new Vector4(.26f, .45f, .53f, 1), hover));
+            _ui.Border(r.X, r.Y, r.Width, r.Height, 1.5f,
+                chosen ? Accent : new Vector4(.37f, .51f, .59f, 1));
+            string label = option.Text;
+            if (selector == UiAction.SizeSelect)
+            {
+                var definition = HexGridDefinitions.Get(ScreenLayout.SizeFor(option.Action));
+                label += $"  {definition.Columns} X {definition.Rows}";
+            }
+            float px = MathF.Min(1.9f, (r.Width - 38) / (label.Length * 6f));
+            _ui.Text(label, r.X + 12, r.Y + (r.Height - 7 * px) / 2,
+                px, White, centered: false);
+            if (chosen)
+                _ui.Text("V", r.X + r.Width - 16,
+                    r.Y + (r.Height - 14) / 2, 2, Accent);
+        }
+    }
+
+    private IEnumerable<UiButton> VisibleControls()
+    {
+        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+            yield return button;
+        if (_openDropdown is not { } selector) yield break;
+        foreach (var option in ScreenLayout.DropdownOptions(
+            _session.Screen, ClientSize.X, ClientSize.Y, selector))
+            yield return option;
     }
 
     private UiAction? Hit(float x, float y)
     {
+        // The open dropdown overlays the map and any controls below it.
+        if (_openDropdown is { } selector)
+            foreach (var option in ScreenLayout.DropdownOptions(
+                _session.Screen, ClientSize.X, ClientSize.Y, selector))
+                if (option.Bounds.Contains(x, y)) return option.Action;
         foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
             if (button.Bounds.Contains(x, y)) return button.Action;
         return null;
@@ -559,6 +619,18 @@ internal sealed class EvolveWindow : GameWindow
         if (e.Button != MouseButton.Left) return;
         Vector2 position = new(MousePosition.X, MousePosition.Y);
         _pressed = Hit(position.X, position.Y);
+        if (_openDropdown is not null &&
+            _pressed is not (UiAction.SizeSelect or UiAction.TypeSelect or
+                UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous or
+                UiAction.Continents or UiAction.Pangaea or UiAction.SmallContinents or
+                UiAction.Archipelagos))
+        {
+            _openDropdown = null;
+            _pressed = null;
+            _hover.Clear();
+            _dirty = true;
+            return; // Dismiss outside click; do not pan or select a world hex.
+        }
         if (_session.Screen == GameScreen.World &&
             position.Y >= MapCamera2D.TopBarHeight && _pressed is null)
         {
@@ -618,6 +690,13 @@ internal sealed class EvolveWindow : GameWindow
             _dirty = true;
             return;
         }
+        if (e.Key == Keys.Escape && _openDropdown is not null)
+        {
+            _openDropdown = null;
+            _hover.Clear();
+            _dirty = true;
+            return;
+        }
         if (e.Key == Keys.Escape && _session.Screen != GameScreen.MainMenu)
         {
             _seedFocused = false;
@@ -638,6 +717,9 @@ internal sealed class EvolveWindow : GameWindow
     {
         switch (action)
         {
+            case UiAction.SizeSelect or UiAction.TypeSelect:
+                _openDropdown = _openDropdown == action ? null : action;
+                break;
             case UiAction.Create: _session.OpenCreateWorld(); break;
             case UiAction.Options: _session.OpenOptions(); break;
             case UiAction.Exit: Close(); break;
@@ -669,17 +751,28 @@ internal sealed class EvolveWindow : GameWindow
                     _viewMode = _viewMode == MapViewMode.Infrared ? MapViewMode.Biomes : MapViewMode.Infrared;
                 break;
             case UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous:
+                if (_openDropdown != UiAction.SizeSelect) break;
+                _openDropdown = null;
+                GridSize newSize = ScreenLayout.SizeFor(action);
                 if (_session.Screen == GameScreen.World)
                 {
-                    GridSize newSize = ScreenLayout.SizeFor(action);
                     if (_session.SelectedSize != newSize)
-                        StartGeneration(resize: newSize);
+                        StartGeneration(changeSize: newSize);
                 }
-                else _session.ChooseSize(ScreenLayout.SizeFor(action));
+                else _session.ChooseSize(newSize);
                 break;
             case UiAction.Continents or UiAction.Pangaea or UiAction.SmallContinents or
                 UiAction.Archipelagos:
-                _session.ChooseType(ScreenLayout.TypeFor(action)); break;
+                if (_openDropdown != UiAction.TypeSelect) break;
+                _openDropdown = null;
+                LandmassType newType = ScreenLayout.TypeFor(action);
+                if (_session.Screen == GameScreen.World)
+                {
+                    if (_session.SelectedType != newType)
+                        StartGeneration(changeType: newType);
+                }
+                else _session.ChooseType(newType);
+                break;
             case UiAction.SeedField: _seedFocused = true; break;
             case UiAction.RandomSeed: _session.RandomizeSeed(); break;
             case UiAction.Generate: StartGeneration(); break;
@@ -690,14 +783,19 @@ internal sealed class EvolveWindow : GameWindow
         _dirty = true;
     }
 
-    private void StartGeneration(bool regenerate = false, GridSize? resize = null)
+    private void StartGeneration(bool regenerate = false,
+        GridSize? changeSize = null, LandmassType? changeType = null)
     {
         if (_pendingGeneration is not null) return;
         try
         {
-            LandmassConfiguration configuration = resize is { } size
-                ? _session.BeginResize(size)
-                : regenerate ? _session.BeginRegeneration() : _session.BeginGeneration();
+            LandmassConfiguration configuration =
+                changeSize is not null || changeType is not null
+                    ? _session.BeginReconfigure(
+                        changeSize ?? _session.SelectedSize,
+                        changeType ?? _session.SelectedType)
+                    : regenerate ? _session.BeginRegeneration() : _session.BeginGeneration();
+            _openDropdown = null;
             _generationStarted = Stopwatch.GetTimestamp();
             _pendingGeneration = Task.Run(() =>
                 new WorldGenerationService().Generate(configuration));

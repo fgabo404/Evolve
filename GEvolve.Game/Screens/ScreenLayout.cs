@@ -5,6 +5,7 @@ namespace GEvolve.Game.Screens;
 public enum UiAction
 {
     Create, Options, Exit, Back, Generate,
+    SizeSelect, TypeSelect,
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic
@@ -45,7 +46,7 @@ public static class ScreenLayout
             float optionHeight = Math.Clamp(height / 16f, 32, 45);
             float optionGap = Math.Clamp(height / 80f, 6, 9);
             float right = left + columnWidth + gapX;
-            float seedY = top + 4 * (optionHeight + optionGap) + 15;
+            float seedY = top + 4 * (optionHeight + optionGap) + 32;
             float seedHeight = Math.Clamp(height / 18f, 35, 44);
             float fieldWidth = total * .64f;
             float actionHeight = Math.Clamp(height / 15f, 40, 52);
@@ -53,21 +54,10 @@ public static class ScreenLayout
             float actionWidth = MathF.Min(390, total);
             float actionX = center - actionWidth / 2;
             return [
-                new(UiAction.Small, "Pequeño", new(left, top, columnWidth, optionHeight)),
-                new(UiAction.Medium, "Mediano", new(left, top + optionHeight + optionGap,
-                    columnWidth, optionHeight)),
-                new(UiAction.Large, "Grande", new(left, top + 2 * (optionHeight + optionGap),
-                    columnWidth, optionHeight)),
-                new(UiAction.Enormous, "Enorme", new(left, top + 3 * (optionHeight + optionGap),
-                    columnWidth, optionHeight)),
-                new(UiAction.Continents, "Continentes",
+                new(UiAction.SizeSelect, "Tamaño",
+                    new(left, top, columnWidth, optionHeight)),
+                new(UiAction.TypeSelect, "Tipo de mundo",
                     new(right, top, columnWidth, optionHeight)),
-                new(UiAction.Pangaea, "Pangea",
-                    new(right, top + optionHeight + optionGap, columnWidth, optionHeight)),
-                new(UiAction.SmallContinents, "Continentes pequeños",
-                    new(right, top + 2 * (optionHeight + optionGap), columnWidth, optionHeight)),
-                new(UiAction.Archipelagos, "Archipiélagos",
-                    new(right, top + 3 * (optionHeight + optionGap), columnWidth, optionHeight)),
                 new(UiAction.SeedField, "Semilla", new(left, seedY,
                     fieldWidth, seedHeight)),
                 new(UiAction.RandomSeed, "Aleatoria", new(left + fieldWidth + gapX, seedY,
@@ -82,19 +72,67 @@ public static class ScreenLayout
             return [new(UiAction.Back, "Volver", new(menuX,
                 MathF.Max(260, height * .55f), menuWidth, menuHeight))];
         if (screen == GameScreen.World)
-            return [new(UiAction.Small, "Pequeño", new(12, 146, 83, 32)),
-                new(UiAction.Medium, "Mediano", new(101, 146, 83, 32)),
-                new(UiAction.Large, "Grande", new(190, 146, 83, 32)),
-                new(UiAction.Enormous, "Enorme", new(279, 146, 83, 32)),
-                new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, 188, 261, 36)),
-                new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, 230, 261, 36)),
-                new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, 272, 261, 36)),
+            return [
+                new(UiAction.SizeSelect, "Tamaño", new(12, 146, 261, 36)),
+                new(UiAction.TypeSelect, "Tipo de mundo", new(12, 192, 261, 36)),
+                new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, 248, 261, 36)),
+                new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, 290, 261, 36)),
+                new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, 332, 261, 36)),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",
                 new(MathF.Max(8, width - 190), 11, MathF.Min(180, width - 16), 36))];
         return [];
     }
+
+    /// <summary>Dropdown entries share their coordinates with hit testing and rendering.</summary>
+    public static IReadOnlyList<UiButton> DropdownOptions(GameScreen screen,
+        int width, int height, UiAction selector)
+    {
+        if (screen is not (GameScreen.CreateWorld or GameScreen.World) ||
+            selector is not (UiAction.SizeSelect or UiAction.TypeSelect))
+            return [];
+
+        var anchor = Buttons(screen, width, height)
+            .First(button => button.Action == selector).Bounds;
+        var actions = selector == UiAction.SizeSelect
+            ? SizeActions : TypeActions;
+        var labels = selector == UiAction.SizeSelect
+            ? SizeLabels : TypeLabels;
+        float itemHeight = anchor.Height;
+        var options = new UiButton[actions.Length];
+        for (int i = 0; i < actions.Length; i++)
+            options[i] = new UiButton(actions[i], labels[i],
+                new(anchor.X, anchor.Y + anchor.Height + 4 + i * itemHeight,
+                    anchor.Width, itemHeight));
+        return options;
+    }
+
+    private static readonly UiAction[] SizeActions =
+        [UiAction.Small, UiAction.Medium, UiAction.Large, UiAction.Enormous];
+    private static readonly UiAction[] TypeActions =
+        [UiAction.Continents, UiAction.Pangaea, UiAction.SmallContinents, UiAction.Archipelagos];
+    private static readonly string[] SizeLabels = ["Pequeño", "Mediano", "Grande", "Enorme"];
+    private static readonly string[] TypeLabels =
+        ["Continentes", "Pangea", "Continentes pequeños", "Archipiélagos"];
+
+    public static string SizeLabel(GridSize size) => size switch
+    {
+        GridSize.Small => SizeLabels[0],
+        GridSize.Medium => SizeLabels[1],
+        GridSize.Large => SizeLabels[2],
+        GridSize.Enormous => SizeLabels[3],
+        _ => throw new ArgumentOutOfRangeException(nameof(size))
+    };
+
+    public static string TypeLabel(LandmassType type) => type switch
+    {
+        LandmassType.Continents => TypeLabels[0],
+        LandmassType.Pangaea => TypeLabels[1],
+        LandmassType.SmallContinents => TypeLabels[2],
+        LandmassType.Archipelagos => TypeLabels[3],
+        _ => throw new ArgumentOutOfRangeException(nameof(type))
+    };
 
     public static GridSize SizeFor(UiAction action) => action switch
     {

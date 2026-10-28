@@ -103,3 +103,11 @@ La versión anterior `landmass-7` ya ofrecía las cuatro siluetas y elevaciones,
 **Contrato de la capa 02:** `PlateByCellId` (16 placas) + `SurfaceByCellId` (tierra y océano) + `ElevationByCellId` (0–100) para Pangea, Continentes, Continentes pequeños y Archipiélagos. Todas las capas climáticas futuras podrán consumir los mismos campos sin lógica distinta por tipo. Las capas 03–05 (temperatura, precipitación/humedad, pendiente y biomas) siguen **desactivadas en el pipeline nuevo**, aunque su código anterior se preserva.
 
 **Versión:** `landmass-8` para distinguir los nuevos resultados de `landmass-7`. Las huellas de terreno anteriores no deben compararse con esta revisión. Las pruebas incluyen las cuatro resoluciones y tipos, conservación de placas, determinismo, perfiles y diferencias entre la ruta original y la ruta guiada por placas. **Compilación, suite .NET y revisión OpenGL pendientes de validación local.**
+
+## Selector de tamaño y tipo (interfaz OpenGL)
+
+La pantalla **Crear mundo** y la vista **Mundo** usan dos controles desplegables: **Tamaño** (Pequeño 200×133, Mediano 250×167, Grande 300×200, Enorme 400×267) y **Tipo de mundo** (Continentes, Pangea, Continentes pequeños, Archipiélagos). Las opciones se dibujan por encima de los otros controles y se pueden cerrar al hacer clic fuera o pulsar Escape.
+
+En la vista de mundo, seleccionar una opción distinta invoca `GameSession.BeginReconfigure(size, type)`: **conserva la semilla**, modifica solo el parámetro elegido y vuelve a generar tierra/océanos/elevaciones con las mismas 16 placas tectónicas para la combinación de tamaño y semilla. No se genera nada al seleccionar la opción actual. `BeginResize` sigue funcionando como ruta compatible y `BeginChangeType` permite alterar solo el tipo. La ruta de generación de la pantalla Crear mundo conserva el campo de semilla editable.
+
+El cambio es de interfaz y sesión: **no altera la versión `landmass-8` ni el algoritmo tectónico o continental**. Las comprobaciones de menú y reconfiguración se extendieron en `GEvolve.Tests/GameTests.cs`; la ejecución .NET/OpenGL queda pendiente de validación local.

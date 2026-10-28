@@ -26,14 +26,20 @@ public static class GameTests
         Check(session.SelectedType == LandmassType.Pangaea && session.SeedText == "2026" &&
             session.State.Landmass is null, "Default world type and visible seed");
         var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
-        Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous)
+        Check(createButtons.Count(button =>
+                button.Action is UiAction.SizeSelect or UiAction.TypeSelect) == 2 &&
+            !createButtons.Any(button => button.Action is UiAction.Small or UiAction.Medium or
+                UiAction.Large or UiAction.Enormous or UiAction.Continents or UiAction.Pangaea or
+                UiAction.SmallContinents or UiAction.Archipelagos),
+            "Create World exposes two selectors rather than eight separate buttons");
+        Check(ScreenLayout.DropdownOptions(GameScreen.CreateWorld, 1280, 720, UiAction.SizeSelect)
             .Select(button => ScreenLayout.SizeFor(button.Action))
-            .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large, GridSize.Enormous]), "Four official sizes");
-        Check(createButtons.Where(button => button.Action is UiAction.Continents or UiAction.Pangaea or
-            UiAction.SmallContinents or UiAction.Archipelagos)
+            .SequenceEqual(Enum.GetValues<GridSize>()),
+            "World-size dropdown exposes four official sizes");
+        Check(ScreenLayout.DropdownOptions(GameScreen.CreateWorld, 1280, 720, UiAction.TypeSelect)
             .Select(button => ScreenLayout.TypeFor(button.Action))
             .SequenceEqual(Enum.GetValues<LandmassType>()),
-            "All four world types are selectable for stage 02");
+            "World-type dropdown exposes four distinct world types");
         Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
             createButtons.Any(button => button.Action == UiAction.RandomSeed),
             "Editable and random seed controls");
@@ -140,20 +146,63 @@ public static class GameTests
             resizing.State.Landmass!.Configuration.Seed == selectedSeed,
             "Resized world replaces logical state");
         var worldButtons = ScreenLayout.Buttons(GameScreen.World, 1280, 720);
-        Check(worldButtons.Count(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous) == 4,
-            "Four size controls are available in world view");
+        Check(worldButtons.Count(button =>
+                button.Action is UiAction.SizeSelect or UiAction.TypeSelect) == 2 &&
+            !worldButtons.Any(button => button.Action is UiAction.Small or UiAction.Medium or
+                UiAction.Large or UiAction.Enormous or UiAction.Continents or UiAction.Pangaea or
+                UiAction.SmallContinents or UiAction.Archipelagos),
+            "World map exposes size and landmass type selects");
         Check(worldButtons.Any(button => button.Action == UiAction.ToggleTectonic) &&
             worldButtons.Any(button => button.Action == UiAction.ToggleSurface) &&
             worldButtons.Any(button => button.Action == UiAction.ToggleGrayscale),
             "Stage 01 plates, stage 02 land and elevation are independently viewable");
 
+        // Change type directly in the world without returning to Create World;
+        // the original seed and plate IDs are preserved at the same resolution.
+        var beforeTypeChange = resizing.State.Landmass!;
+        byte[] oldPlates = beforeTypeChange.PlateByCellId!.ToArray();
+        byte[] oldSurface = beforeTypeChange.SurfaceByCellId.ToArray();
+        var changeType = resizing.BeginChangeType(LandmassType.Archipelagos);
+        Check(changeType.Type == LandmassType.Archipelagos &&
+            changeType.Size == GridSize.Medium &&
+            changeType.Seed == selectedSeed &&
+            resizing.Screen == GameScreen.Generating,
+            "Changing world type keeps size and seed during generation");
+        resizing.CompleteGeneration(new WorldGenerationService().Generate(changeType));
+        Check(resizing.State.Landmass!.Configuration.Type == LandmassType.Archipelagos &&
+            resizing.State.Landmass!.PlateByCellId!.SequenceEqual(oldPlates) &&
+            !resizing.State.Landmass.SurfaceByCellId.SequenceEqual(oldSurface),
+            "World type change regenerates land but keeps the universal tectonic plates");
+        var changeBoth = resizing.BeginReconfigure(GridSize.Small, LandmassType.Continents);
+        Check(changeBoth.Size == GridSize.Small &&
+            changeBoth.Type == LandmassType.Continents &&
+            changeBoth.Seed == selectedSeed,
+            "Both dropdown selections can regenerate using the same seed");
+        resizing.CompleteGeneration(new WorldGenerationService().Generate(changeBoth));
+        Check(resizing.State.Landmass!.Configuration.Size == GridSize.Small &&
+            resizing.State.Landmass.Configuration.Type == LandmassType.Continents &&
+            resizing.State.Landmass.Configuration.Seed == selectedSeed,
+            "Reconfiguration updates the live world state and selected options");
+
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })
-        foreach (var button in ScreenLayout.Buttons(screen, width, height))
-            Check(button.Bounds.X >= 0 && button.Bounds.Y >= 0 &&
-                button.Bounds.X + button.Bounds.Width <= width &&
-                button.Bounds.Y + button.Bounds.Height <= height,
-                "Buttons fit the window");
+        {
+            foreach (var button in ScreenLayout.Buttons(screen, width, height))
+                Check(button.Bounds.X >= 0 && button.Bounds.Y >= 0 &&
+                    button.Bounds.X + button.Bounds.Width <= width &&
+                    button.Bounds.Y + button.Bounds.Height <= height,
+                    "Buttons fit the window");
+            foreach (var selector in new[] { UiAction.SizeSelect, UiAction.TypeSelect })
+            {
+                var options = ScreenLayout.DropdownOptions(screen, width, height, selector);
+                Check(options.Count is 0 or 4, "Dropdown options exist on create and world screens");
+                foreach (var option in options)
+                    Check(option.Bounds.X >= 0 && option.Bounds.Y >= 0 &&
+                        option.Bounds.X + option.Bounds.Width <= width &&
+                        option.Bounds.Y + option.Bounds.Height <= height,
+                        "All four dropdown entries fit the window at every supported resolution");
+            }
+        }
     }
 
     private static void Check(bool condition, string message)
