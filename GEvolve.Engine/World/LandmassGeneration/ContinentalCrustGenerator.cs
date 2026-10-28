@@ -13,11 +13,12 @@ public sealed record ContinentalCrustMap(
     byte[] CrustByCellId,
     float[] EmergenceAffinityByCellId,
     int[] MainContinentCoreCells,
-    byte[] MainContinentCorePlates);
+    byte[] MainContinentCorePlates,
+    byte[] ProvinceByCellId);
 
 public sealed class ContinentalCrustGenerator
 {
-    public const string Version = "continental-crust-1";
+    public const string Version = "continental-crust-2";
 
     public ContinentalCrustMap Generate(
         HexTopology topology, ReadOnlySpan<byte> plateIds, int continentCount, int seed)
@@ -143,10 +144,22 @@ public sealed class ContinentalCrustGenerator
                 graphSteps[owner, p] = steps[p];
         }
 
+        // Distinct orientations and extents mimic inherited continental
+        // fragments. Each fragment can cross into neighboring tectonic plates.
+        // This is a static geologic reconstruction, not a time-step simulation.
+        double radius = Math.Sqrt(topology.Count * .35 /
+            (continentCount * Math.PI)) * 1.48;
+        var angles = new double[continentCount];
+        var stretches = new double[continentCount];
+        for (int i = 0; i < continentCount; i++)
+        {
+            angles[i] = random.NextDouble() * Math.PI * 2;
+            stretches[i] = .83 + .34 * random.NextDouble();
+        }
+
         var crust = new byte[topology.Count];
         var affinity = new float[topology.Count];
-        double radius = Math.Sqrt(topology.Count * .35 /
-            (continentCount * Math.PI)) * 1.55;
+        var province = new byte[topology.Count];
         int width = topology.Columns, height = topology.Rows;
         for (int cell = 0; cell < topology.Count; cell++)
         {
@@ -159,24 +172,66 @@ public sealed class ContinentalCrustGenerator
             double detail = PeriodicNoise.Sample(wx, wy, width, height, 18, seed ^ 0x135E48);
 
             double best = double.NegativeInfinity;
+            int dominant = 0;
             for (int owner = 0; owner < continentCount; owner++)
             {
                 int steps = graphSteps[owner, plate];
                 double plateAffinity = steps switch
                 {
-                    0 => .67,
-                    1 => .27,
-                    2 => -.08,
-                    _ => -.45
+                    0 => .43,
+                    1 => .16,
+                    2 => -.07,
+                    _ => -.24
                 };
-                double distance = topology.Distance(cell, hubs[owner]);
-                double candidate = .98 - distance / radius + plateAffinity +
-                    .50 * broad + .25 * medium + .08 * detail;
-                best = Math.Max(best, candidate);
+                int core = hubs[owner];
+                double dx = x - core % width;
+                dx -= width * Math.Round(dx / width);
+                double dy = y - core / width;
+                double direction = Math.Atan2(dy, dx) - angles[owner];
+                // Larger lobes, slimmer peninsulas and varying axes; no
+                // requirement for any coastline to trace a plate border.
+                double shape = Math.Clamp(
+                    stretches[owner] * (1 + .23 * Math.Cos(2 * direction) +
+                        .12 * Math.Sin(3 * direction)), .53, 1.65);
+                double distance = topology.Distance(cell, core) / (radius * shape);
+                double candidate = 1.22 - distance + plateAffinity +
+                    .46 * broad + .26 * medium + .12 * detail;
+                if (candidate > best)
+                {
+                    best = candidate;
+                    dominant = owner;
+                }
             }
             affinity[cell] = (float)best;
-            crust[cell] = best >= .08 ? (byte)1 : (byte)0;
+            province[cell] = (byte)dominant;
         }
-        return new ContinentalCrustMap(crust, affinity, hubs, hubPlates);
+
+        // Diffuse abrupt changes across plate margins; these boundaries
+        // contribute to crust history but should not become straight coastlines.
+        for (int pass = 0; pass < 2; pass++)
+        {
+            var smooth = new float[topology.Count];
+            for (int cell = 0; cell < topology.Count; cell++)
+            {
+                double total = affinity[cell] * 4;
+                int weight = 4;
+                foreach (int neighbor in topology.Neighbors(cell))
+                {
+                    total += affinity[neighbor];
+                    weight++;
+                }
+                smooth[cell] = (float)(total / weight);
+            }
+            affinity = smooth;
+        }
+        for (int cell = 0; cell < topology.Count; cell++)
+            crust[cell] = affinity[cell] >= .07 ? (byte)1 : (byte)0;
+
+        // A crust root is always continental even if a narrow plate happened
+        // to be smoothed below the continental threshold.
+        for (int owner = 0; owner < continentCount; owner++)
+            crust[hubs[owner]] = 1;
+
+        return new ContinentalCrustMap(crust, affinity, hubs, hubPlates, province);
     }
 }

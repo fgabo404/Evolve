@@ -86,10 +86,13 @@ public static class StagedLandmassTests
                         crust.MainContinentCorePlates.Distinct().Count() == expectedContinents &&
                         crust.CrustByCellId.Length == topology.Count &&
                         crust.EmergenceAffinityByCellId.Length == topology.Count &&
+                        crust.ProvinceByCellId.Length == topology.Count &&
                         crust.MainContinentCoreCells.Select((cell, i) =>
                             ids[cell] == crust.MainContinentCorePlates[i]).All(value => value) &&
                         crust.MainContinentCoreCells.All(cell =>
                             crust.CrustByCellId[cell] == 1) &&
+                        crust.MainContinentCoreCells.Select((cell, i) =>
+                            crust.ProvinceByCellId[cell] == i).All(ok => ok) &&
                         crust.CrustByCellId.Contains((byte)0) &&
                         crust.CrustByCellId.Contains((byte)1),
                         "Plate interiors seed continents and both crust types exist");
@@ -108,11 +111,33 @@ public static class StagedLandmassTests
                     var repeatedCrust = crustGenerator.Generate(
                         topology, ids, expectedContinents, config.Seed);
                     Check(repeatedCrust.CrustByCellId.SequenceEqual(crust.CrustByCellId) &&
+                        repeatedCrust.ProvinceByCellId.SequenceEqual(
+                            crust.ProvinceByCellId) &&
                         repeatedCrust.EmergenceAffinityByCellId.SequenceEqual(
                             crust.EmergenceAffinityByCellId) &&
                         repeatedCrust.MainContinentCoreCells.SequenceEqual(
                             crust.MainContinentCoreCells),
                         "Plate-based crust and continent roots are deterministic");
+                    int shorelineWithinPlate = 0, shorelineCrossingPlates = 0;
+                    int internalPlateBorderOnLand = 0;
+                    for (int cell = 0; cell < topology.Count; cell++)
+                    {
+                        if (landmass.SurfaceByCellId[cell] == 0) continue;
+                        foreach (int nb in topology.Neighbors(cell))
+                        {
+                            if (landmass.SurfaceByCellId[nb] == 0)
+                            {
+                                if (ids[cell] == ids[nb]) shorelineWithinPlate++;
+                                else shorelineCrossingPlates++;
+                            }
+                            else if (ids[cell] != ids[nb])
+                                internalPlateBorderOnLand++;
+                        }
+                    }
+                    Check(shorelineWithinPlate > shorelineCrossingPlates / 3 &&
+                        internalPlateBorderOnLand > 0,
+                        "Coasts need not trace plate boundaries and continental " +
+                        "land crosses some tectonic borders");
                 }
                 Check(landmass.Climate is null && landmass.SlopeByCellId is null &&
                     landmass.Biomes is null,

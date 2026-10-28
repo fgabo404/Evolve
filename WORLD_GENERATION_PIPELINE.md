@@ -139,3 +139,17 @@ La ruta histórica sin matriz de placas sigue existiendo para pruebas y compatib
 **Versión:** `landmass-10`. Las pruebas `StagedLandmassTests` verifican la relación entre núcleos y placas, las dos clases de corteza, márgenes continentales sumergidos, determinismo, conectividad, 2–6 continentes y el contrato compartido. **Pendiente de ejecutar .NET y revisar la silueta en el juego.**
 
 Referencias de principio geológico: USGS, *This Dynamic Earth*, https://pubs.usgs.gov/gip/dynamic/tectonic.html; USGS, *The Interior of the Earth*, https://pubs.usgs.gov/gip/interior/.
+
+## Nuevo enfoque de Continentes: corteza, elevación relativa y nivel del mar (landmass-11)
+
+Se reemplaza la **ruta activa** de la generación continental anterior porque el crecimiento por Dijkstra asignaba presupuestos de superficie para cada continente y podía invadir corteza oceánica para alcanzar cuotas. **Pangea, Continentes pequeños, Archipiélagos, la estructura de las 16 placas y el generador clásico de tres argumentos quedan intactos.**
+
+**Secuencia:** (1) formar placas independientes y conectadas; (2) seleccionar 2–6 núcleos en interiores tectónicos existentes, manteniendo ese número entre resoluciones para una semilla; (3) calcular fragmentos de corteza continental orientados, con diferentes estiramientos, preferencias de vecindad de placa y ruido multiescala, sobre una matriz continental/oceánica; (4) suavizar discontinuidades artificiales en los límites tectónicos; (5) modelar un **potencial de emergencia** continuo y seleccionar un **nivel del mar global** en lugar de cuotas por continente; (6) inundar corteza oceánica y plataformas bajas, conservar las masas conectadas a sus provincias tectónicas y permitir solamente fragmentos insulares pequeños y dispersos; (7) calcular alturas con el generador tectónico compartido.
+
+`ContinentalCrustGenerator` pasa a `continental-crust-2` y publica también `ProvinceByCellId`, indicando la procedencia del núcleo tectónico más afín por hexágono. `ContinentsGenerator.GenerateFromSeaLevel` **no usa Dijkstra para reclamar una cuota de tierra**, sino que prueba niveles marinos globales dentro de un perfil de cobertura aproximada, conserva los núcleos continentales y mantiene basins de rift simulados entre provincias que habrían quedado unidas por contacto artificial. Cuando existen fragmentos aislados, solo se conservan como islas pequeñas. La distribución de núcleos y fragmentos puede atravesar placas: las costas no equivalen a sus fronteras.
+
+**Naturaleza del modelo:** esto es una síntesis geomorfológica creíble para un videojuego **inspirada en la Tierra**, NO una reconstrucción física de millones de años de colisiones, dorsales, fragmentación, colmatación, tectónica activa o isostasia. Para modelar esos procesos científicamente habrá que añadir velocidades, convergencia/divergencia y evolución temporal reales en otra fase, no fingir que la versión actual ya lo hace.
+
+**Versión `landmass-11`**; se conservan objetivos generales de 35 % tierra y 2–6 continentes, y el servicio sigue exigiendo perfiles geográficos. Se añadieron comprobaciones de provincias, costas internas a placas, determinismo y continuidad. Pendiente validar con `dotnet build`, `dotnet run --project GEvolve.Tests` y revisión visual de la superficie.
+
+Referencia geológica de diseño: [USGS — What is a tectonic plate?](https://pubs.usgs.gov/gip/dynamic/tectonic.html) y [NOAA — tipos de fronteras](https://oceanexplorer.noaa.gov/ocean-fact/plate-boundaries/).

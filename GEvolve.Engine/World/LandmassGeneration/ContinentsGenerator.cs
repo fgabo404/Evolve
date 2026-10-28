@@ -4,8 +4,9 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 /// <summary>
-/// Two to six distinct, unequal continents. Their seeds lie inside actual
-/// tectonic plates; continental/oceanic crust drives where land can emerge.
+/// Two to six distinct, unequal continents. The staged generator extracts
+/// emergent land with a global sea level from plate-aware continental crust.
+/// The older quota-based generator remains only for legacy callers.
 /// Count depends only on the world seed, never on resolution or retries.
 /// </summary>
 public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
@@ -24,6 +25,8 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
             ?? throw new ArgumentException("Continents parameters are missing.");
         if (profile.CoreCount is < 2 or > 6)
             throw new ArgumentException("Continents need between two and six continental cores.");
+        if (!plates.IsEmpty)
+            return GenerateFromSeaLevel(topology, configuration, plates, attempt);
         var tectonics = new PlateSurfaceInfluence(topology, plates, configuration.Seed);
         var random = new DeterministicRandom(configuration.Seed,
             unchecked((uint)(0xC011 + attempt)));
@@ -203,6 +206,169 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
                     { safe = false; break; }
                 if (safe) { land[second] = 1; added++; }
             }
+        }
+    }
+
+    /// <summary>
+    /// Actual stage 02 pathway: tectonic provinces define continental crust,
+    /// relief potential defines sea level, and water basins separate fragments.
+    /// Unlike the historical Dijkstra surface algorithm, no continent receives
+    /// a quota of land cells to claim. This model is not geological time travel.
+    /// </summary>
+    private static byte[] GenerateFromSeaLevel(HexTopology topology,
+        LandmassConfiguration configuration, ReadOnlySpan<byte> plates, int attempt)
+    {
+        var profile = configuration.Continents
+            ?? throw new ArgumentException("Continents profile is required.");
+        var geology = new ContinentalCrustGenerator().Generate(
+            topology, plates, profile.CoreCount, configuration.Seed);
+        int count = topology.Count, width = topology.Columns, height = topology.Rows;
+        var random = new DeterministicRandom(configuration.Seed,
+            unchecked((uint)(0x5345414C + attempt)));
+
+        // A common sea level cuts a continuous geological potential. Marginal
+        // continental shelves can be submerged; oceanic crust has a lower
+        // buoyancy, so most deep-ocean cells cannot become mainlands.
+        var potential = new float[count];
+        for (int cell = 0; cell < count; cell++)
+        {
+            int x = cell % width, y = cell / width;
+            double wrinkle = PeriodicNoise.Sample(x, y, width, height,
+                profile.NoiseFrequency * 2 + 3,
+                unchecked(configuration.Seed ^ 0x65A2D7 ^ (attempt * 73)));
+            potential[cell] = geology.EmergenceAffinityByCellId[cell] +
+                (float)(.07 * wrinkle) -
+                (geology.CrustByCellId[cell] == 0 ? .85f : 0);
+        }
+
+        var sorted = potential.ToArray();
+        Array.Sort(sorted);
+
+        // Sea-level trials select a global datum, not separate land budgets.
+        // The accepted land percentage may vary within the geographic profile.
+        byte[]? best = null;
+        double bestPenalty = double.PositiveInfinity;
+        foreach (double percentileLand in new[] { .40, .44, .48, .52, .56, .36, .60 })
+        {
+            float seaLevel = sorted[Math.Clamp(
+                (int)Math.Round((1 - percentileLand) * (count - 1)), 0, count - 1)];
+            var candidates = new byte[count];
+            for (int cell = 0; cell < count; cell++)
+                if (potential[cell] >= seaLevel && geology.CrustByCellId[cell] == 1)
+                    candidates[cell] = 1;
+
+            // Failed rifts between unrelated proto-continental provinces
+            // create narrow submerged basins. Mark both shores simultaneously,
+            // so no order-dependent seam bridges are formed.
+            var rift = new bool[count];
+            for (int cell = 0; cell < count; cell++)
+            {
+                if (candidates[cell] == 0) continue;
+                foreach (int neighbor in topology.Neighbors(cell))
+                {
+                    if (candidates[neighbor] == 0 ||
+                        geology.ProvinceByCellId[cell] ==
+                            geology.ProvinceByCellId[neighbor]) continue;
+                    rift[cell] = true;
+                    rift[neighbor] = true;
+                }
+            }
+            for (int cell = 0; cell < count; cell++)
+                if (rift[cell]) candidates[cell] = 0;
+
+            // Keep the emerged mass attached to each geological continental
+            // nucleus. Isolated scraps are accepted only as small islands:
+            // large floating components would be spurious extra continents.
+            var accepted = new byte[count];
+            var queue = new int[count];
+            for (int owner = 0; owner < profile.CoreCount; owner++)
+            {
+                int origin = geology.MainContinentCoreCells[owner];
+                if (candidates[origin] == 0) continue;
+                int head = 0, tail = 0;
+                accepted[origin] = 1;
+                queue[tail++] = origin;
+                while (head < tail)
+                    foreach (int next in topology.Neighbors(queue[head++]))
+                    {
+                        if (candidates[next] == 0 || accepted[next] == 1 ||
+                            geology.ProvinceByCellId[next] != owner) continue;
+                        accepted[next] = 1;
+                        queue[tail++] = next;
+                    }
+            }
+
+            // Preserve tiny natural continental fragments near shelves, not
+            // additional large continents unrelated to the geological roots.
+            var seen = new bool[count];
+            for (int cell = 0; cell < count; cell++)
+            {
+                if (candidates[cell] == 0 || accepted[cell] != 0 || seen[cell]) continue;
+                int head = 0, tail = 0;
+                queue[tail++] = cell;
+                seen[cell] = true;
+                while (head < tail)
+                    foreach (int next in topology.Neighbors(queue[head++]))
+                    {
+                        if (candidates[next] == 0 || accepted[next] != 0 || seen[next])
+                            continue;
+                        seen[next] = true;
+                        queue[tail++] = next;
+                    }
+                if (tail > 24) continue;
+                for (int i = 0; i < tail; i++) accepted[queue[i]] = 1;
+            }
+
+            var statistics = LandmassAnalysis.Analyze(topology, accepted);
+            int principalCount = statistics.ComponentSizes.Count(size => size >= 100);
+            double penalty = Math.Abs(statistics.LandFraction -
+                profile.TargetLandFraction) +
+                .20 * Math.Abs(principalCount - profile.CoreCount) +
+                (statistics.DominantLandShare >= .75 ? .2 : 0);
+            if (penalty < bestPenalty)
+            {
+                bestPenalty = penalty;
+                best = accepted;
+            }
+            if (principalCount == profile.CoreCount &&
+                LandmassGenerationService.MeetsProfile(
+                    LandmassType.Continents, statistics))
+            {
+                // Oceanic hotspot islands are sparse and never determine the
+                // position of the main continents.
+                AddHotspotIslands(accepted, geology.CrustByCellId, topology,
+                    ref random, (int)(count * profile.IslandFraction));
+                return accepted;
+            }
+        }
+
+        // The caller's bounded retries provide a different minor sea-floor
+        // wrinkle for unusual seeds, while preserving the tectonic geometry.
+        if (best is null)
+            throw new InvalidOperationException("No sea-level candidates were evaluated.");
+        AddHotspotIslands(best, geology.CrustByCellId, topology,
+            ref random, (int)(count * profile.IslandFraction));
+        return best;
+    }
+
+    private static void AddHotspotIslands(byte[] land, byte[] crust,
+        HexTopology topology, ref DeterministicRandom random, int desired)
+    {
+        int added = 0;
+        int count = land.Length;
+        for (int attempt = 0; attempt < desired * 45 && added < desired; attempt++)
+        {
+            int cell = random.NextInt(count);
+            int row = cell / topology.Columns;
+            if (row < 2 || row >= topology.Rows - 2 ||
+                land[cell] != 0 || crust[cell] != 0)
+                continue;
+            bool touchesLand = false;
+            foreach (int next in topology.Neighbors(cell))
+                if (land[next] != 0) { touchesLand = true; break; }
+            if (touchesLand) continue;
+            land[cell] = 1;
+            added++;
         }
     }
 
