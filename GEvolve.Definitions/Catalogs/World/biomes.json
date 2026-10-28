@@ -22,7 +22,13 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000178",
+            "animal_arabian_oryx",
+            "animal_desert_tortoise",
+            "animal_regional_jerboas_and_gerbils",
+            "animal_wild_bactrian_camel"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -41,7 +47,20 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000178",
+            "ANM#000181",
+            "animal_arabian_oryx",
+            "animal_coyote",
+            "animal_desert_tortoise",
+            "animal_perentie",
+            "animal_regional_land_tortoises",
+            "animal_regional_rattlesnakes",
+            "animal_roadrunner",
+            "animal_rock_hyraxes",
+            "animal_wild_bactrian_camel"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -60,7 +79,10 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "animal_andean_condor",
+            "animal_vicuna"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -87,7 +109,26 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000177",
+            "ANM#000182",
+            "ANM#000185",
+            "animal_birds_of_paradise",
+            "animal_chimpanzee",
+            "animal_collared_peccary",
+            "animal_cuscuses_and_other_arboreal_marsupials",
+            "animal_giant_anteater",
+            "animal_howler_monkey",
+            "animal_jaguar",
+            "animal_macaws",
+            "animal_ocellated_turkey",
+            "animal_okapi",
+            "animal_red_junglefowl",
+            "animal_southern_cassowary",
+            "animal_tiger",
+            "animal_western_gorilla"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -106,7 +147,22 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000172",
+            "ANM#000175",
+            "ANM#000177",
+            "ANM#000180",
+            "ANM#000185",
+            "animal_australian_scrub_birds",
+            "animal_collared_peccary",
+            "animal_cuscuses_and_other_arboreal_marsupials",
+            "animal_indian_peafowl",
+            "animal_jaguar",
+            "animal_red_junglefowl",
+            "animal_short_beaked_echidna",
+            "animal_tiger"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -125,7 +181,22 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000170",
+            "ANM#000175",
+            "ANM#000180",
+            "ANM#000182",
+            "animal_coyote",
+            "animal_eurasian_lynx",
+            "animal_european_rabbit",
+            "animal_golden_eagle",
+            "animal_grey_wolf",
+            "animal_puma",
+            "animal_short_beaked_echidna",
+            "animal_tiger",
+            "animal_woodland_caribou"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -144,7 +215,18 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000170",
+            "ANM#000175",
+            "ANM#000182",
+            "animal_eurasian_lynx",
+            "animal_golden_eagle",
+            "animal_grey_wolf",
+            "animal_reindeer",
+            "animal_subarctic_wolverine",
+            "animal_woodland_caribou"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -163,7 +245,15 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000185",
+            "animal_capybara",
+            "animal_collared_peccary",
+            "animal_giant_anteater",
+            "animal_howler_monkey",
+            "animal_jaguar",
+            "animal_shorebirds_and_waterbirds"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -190,7 +280,28 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000171",
+            "ANM#000172",
+            "ANM#000174",
+            "ANM#000176",
+            "ANM#000178",
+            "ANM#000185",
+            "animal_african_buffalo",
+            "animal_australian_scrub_birds",
+            "animal_cockatoos_and_savanna_birds",
+            "animal_collared_peccary",
+            "animal_dingo",
+            "animal_emu",
+            "animal_giant_anteater",
+            "animal_giraffe",
+            "animal_greater_rhea",
+            "animal_lion",
+            "animal_maned_wolf",
+            "animal_plains_zebra",
+            "animal_regional_wallabies",
+            "animal_wildebeest"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -209,7 +320,21 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000175",
+            "ANM#000179",
+            "animal_american_bison",
+            "animal_coyote",
+            "animal_dingo",
+            "animal_emu",
+            "animal_european_rabbit",
+            "animal_golden_eagle",
+            "animal_greater_rhea",
+            "animal_grey_wolf",
+            "animal_prairie_dog",
+            "animal_puma"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -228,7 +353,23 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000178",
+            "ANM#000179",
+            "animal_coyote",
+            "animal_emu",
+            "animal_ethiopian_wolf",
+            "animal_eurasian_saiga",
+            "animal_gelada",
+            "animal_golden_eagle",
+            "animal_greater_rhea",
+            "animal_grey_wolf",
+            "animal_prairie_dog",
+            "animal_przewalski_horse",
+            "animal_vicuna",
+            "animal_wild_bactrian_camel"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -247,7 +388,16 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000185",
+            "animal_capybara",
+            "animal_collared_peccary",
+            "animal_giant_anteater",
+            "animal_jaguar",
+            "animal_maned_wolf",
+            "animal_regional_mussels_and_oysters",
+            "animal_shorebirds_and_waterbirds"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -274,7 +424,12 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000173",
+            "animal_regional_reef_fish",
+            "animal_sea_turtles",
+            "animal_tropical_mollusks_and_bivalves"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -293,7 +448,18 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000173",
+            "animal_coastal_elephant_seals",
+            "animal_coastal_seals_and_sea_lions",
+            "animal_estuarine_oysters_and_other_bivalves",
+            "animal_juvenile_estuarine_fish",
+            "animal_regional_mussels_and_oysters",
+            "animal_regional_sardines",
+            "animal_regional_seals",
+            "animal_sea_turtles",
+            "animal_shorebirds_and_waterbirds"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -312,7 +478,12 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000173",
+            "animal_juvenile_estuarine_fish",
+            "animal_shorebirds_and_waterbirds",
+            "animal_tropical_mollusks_and_bivalves"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -331,7 +502,16 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000183",
+            "animal_antarctic_krill",
+            "animal_atlantic_cod",
+            "animal_island_petrels_and_albatrosses",
+            "animal_regional_migratory_whales",
+            "animal_regional_polar_fish",
+            "animal_regional_sardines",
+            "animal_sea_turtles"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -358,7 +538,18 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000182",
+            "animal_arctic_hare",
+            "animal_grey_wolf",
+            "animal_lemming",
+            "animal_muskox",
+            "animal_reindeer",
+            "animal_snowy_owl",
+            "animal_subarctic_wolverine",
+            "animal_tundra_caribou"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -385,7 +576,22 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000179",
+            "ANM#000181",
+            "ANM#000184",
+            "ANM#000186",
+            "animal_andean_condor",
+            "animal_andean_viscacha",
+            "animal_chamois",
+            "animal_ethiopian_wolf",
+            "animal_gelada",
+            "animal_golden_eagle",
+            "animal_himalayan_tahr",
+            "animal_snow_leopard",
+            "animal_vicuna",
+            "animal_wild_yak"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -404,7 +610,21 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000181",
+            "ANM#000184",
+            "ANM#000186",
+            "animal_andean_condor",
+            "animal_andean_viscacha",
+            "animal_chamois",
+            "animal_golden_eagle",
+            "animal_himalayan_tahr",
+            "animal_puma",
+            "animal_rock_dwelling_viscachas",
+            "animal_rock_hyraxes",
+            "animal_snow_leopard",
+            "animal_wild_yak"
+          ],
           "minerals": [],
           "resources": []
         },
@@ -423,7 +643,16 @@
             "hemisphere": "either"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000184",
+            "ANM#000186",
+            "animal_andean_condor",
+            "animal_chamois",
+            "animal_golden_eagle",
+            "animal_himalayan_tahr",
+            "animal_rock_dwelling_viscachas",
+            "animal_rock_hyraxes"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -450,7 +679,14 @@
             "hemisphere": "north"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "animal_arctic_hare",
+            "animal_muskox",
+            "animal_regional_migratory_whales",
+            "animal_regional_polar_fish",
+            "animal_regional_seals",
+            "animal_snowy_owl"
+          ],
           "minerals": [],
           "resources": []
         }
@@ -477,7 +713,15 @@
             "hemisphere": "south"
           },
           "flora": [],
-          "fauna": [],
+          "fauna": [
+            "ANM#000183",
+            "animal_antarctic_krill",
+            "animal_coastal_elephant_seals",
+            "animal_island_petrels_and_albatrosses",
+            "animal_regional_migratory_whales",
+            "animal_regional_polar_fish",
+            "animal_regional_seals"
+          ],
           "minerals": [],
           "resources": []
         }

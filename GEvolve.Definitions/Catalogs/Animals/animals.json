@@ -6,7 +6,10 @@
         "en": "Moose",
         "es": "Alces"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -60,7 +63,9 @@
         "en": "Antelopes",
         "es": "Antílopes"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -108,7 +113,10 @@
         "en": "Australian Scrub Birds",
         "es": "Aves de matorral australiano"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_subtropical",
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -156,7 +164,9 @@
         "en": "Birds of Paradise",
         "es": "Aves del paraíso"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -205,7 +215,12 @@
         "en": "Shorebirds and Waterbirds",
         "es": "Aves limícolas y acuáticas"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_wooded_swamp",
+        "plains_open_wetland",
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -254,7 +269,10 @@
         "en": "Baboons",
         "es": "Babuinos"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_subtropical",
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -290,7 +308,9 @@
         "en": "Atlantic Cod",
         "es": "Bacalao del Atlántico, Atlántico norte"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_open_ocean"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -331,7 +351,11 @@
         "en": "Regional Migratory Whales",
         "es": "Ballenas migratorias, según región"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_open_ocean",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -372,7 +396,9 @@
         "en": "American Bison",
         "es": "Bisonte americano"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_prairie"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -438,7 +464,10 @@
         "en": "Muskox",
         "es": "Buey almizclero"
       },
-      "spawn": [],
+      "spawn": [
+        "tundra_tundra",
+        "polar_north_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -504,7 +533,9 @@
         "en": "African Buffalo",
         "es": "Búfalo africano"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -552,7 +583,10 @@
         "en": "Snowy Owl",
         "es": "Búho nival"
       },
-      "spawn": [],
+      "spawn": [
+        "tundra_tundra",
+        "polar_north_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -600,7 +634,9 @@
         "en": "Przewalski Horse",
         "es": "Caballo de Przewalski, Asia central"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -642,7 +678,9 @@
         "en": "Cockatoos and Savanna Birds",
         "es": "Cacatúas y aves de sabana"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -691,7 +729,11 @@
         "en": "Wild Bactrian Camel",
         "es": "Camello bactriano salvaje, regiones remotas de Asia central"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -757,7 +799,11 @@
         "en": "Crabs",
         "es": "Cangrejos"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -783,7 +829,9 @@
         "en": "Kangaroos",
         "es": "Canguros"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -819,7 +867,10 @@
         "en": "Capybara",
         "es": "Capibara, cerca de agua"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_wooded_swamp",
+        "plains_open_wetland"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -855,7 +906,10 @@
         "en": "Woodland Caribou",
         "es": "Caribú de bosque"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -909,7 +963,9 @@
         "en": "Tundra Caribou",
         "es": "Caribú de tundra"
       },
-      "spawn": [],
+      "spawn": [
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -963,7 +1019,9 @@
         "en": "Southern Cassowary",
         "es": "Casuario del sur, Nueva Guinea y norte de Australia"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1017,7 +1075,9 @@
         "en": "Plains Zebra",
         "es": "Cebra de llanura"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1059,7 +1119,9 @@
         "en": "Chimpanzee",
         "es": "Chimpancé, zonas compatibles"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1095,7 +1157,12 @@
         "en": "Deer",
         "es": "Ciervos"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1149,7 +1216,10 @@
         "en": "European Rabbit",
         "es": "Conejo europeo, área nativa ibérica"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "plains_prairie"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1185,7 +1255,9 @@
         "en": "Roadrunner",
         "es": "Correcaminos"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1233,7 +1305,12 @@
         "en": "Coyote",
         "es": "Coyote"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky",
+        "forest_temperate",
+        "plains_prairie",
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1269,7 +1346,10 @@
         "en": "Cuscuses and Other Arboreal Marsupials",
         "es": "Cuscús y otros marsupiales arborícolas"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1305,7 +1385,12 @@
         "en": "Andean Condor",
         "es": "Cóndor andino"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_salt_flat",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1353,7 +1438,11 @@
         "en": "Rock Hyraxes",
         "es": "Damanes de roca"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1389,7 +1478,10 @@
         "en": "Dingo",
         "es": "Dingo"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna",
+        "plains_prairie"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1503,7 +1595,9 @@
         "en": "African elephants",
         "es": "Elefantes africanos"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1556,7 +1650,10 @@
         "en": "Asian elephants",
         "es": "Elefantes asiáticos"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1610,7 +1707,10 @@
         "en": "Coastal Elephant Seals",
         "es": "Elefantes marinos en costas"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_estuary_littoral",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1651,7 +1751,11 @@
         "en": "Emu",
         "es": "Emú, zonas abiertas compatibles"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1705,7 +1809,10 @@
         "en": "Short-Beaked Echidna",
         "es": "Equidna de hocico corto"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_subtropical",
+        "forest_temperate"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1747,7 +1854,11 @@
         "en": "Regional Seals",
         "es": "Focas de especies regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_estuary_littoral",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1788,7 +1899,9 @@
         "en": "Coastal Seals and Sea Lions",
         "es": "Focas y lobos marinos en costas apropiadas"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1829,7 +1942,12 @@
         "en": "Gazelles",
         "es": "Gacelas"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "plains_savanna",
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1877,7 +1995,10 @@
         "en": "Red Junglefowl",
         "es": "Gallina roja de la jungla (Gallus gallus)"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1925,7 +2046,10 @@
         "en": "Gelada",
         "es": "Gelada, altiplano etíope"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_steppe",
+        "mountain_alpine"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1961,7 +2085,10 @@
         "en": "Subarctic Wolverine",
         "es": "Glotón en transición subártica"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_boreal",
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -1997,7 +2124,9 @@
         "en": "Western Gorilla",
         "es": "Gorila occidental, África central occidental"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2033,7 +2162,9 @@
         "en": "Macaws",
         "es": "Guacamayas"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2082,7 +2213,11 @@
         "en": "Guanacos",
         "es": "Guanacos"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_prairie",
+        "plains_steppe",
+        "mountain_alpine"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2138,7 +2273,10 @@
         "en": "Wild boars",
         "es": "Jabalíes"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_subtropical",
+        "forest_temperate"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2186,7 +2324,12 @@
         "en": "Jaguar",
         "es": "Jaguar"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_wooded_swamp",
+        "plains_open_wetland"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2222,7 +2365,9 @@
         "en": "Regional Jerboas and Gerbils",
         "es": "Jerbos y gerbillos regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_sandy"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2258,7 +2403,9 @@
         "en": "Giraffe",
         "es": "Jirafa"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2300,7 +2447,10 @@
         "en": "Antarctic Krill",
         "es": "Krill antártico, océano Austral"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_open_ocean",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2325,7 +2475,9 @@
         "en": "Lemming",
         "es": "Lemming"
       },
-      "spawn": [],
+      "spawn": [
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2361,7 +2513,10 @@
         "en": "Snow Leopard",
         "es": "Leopardo de las nieves"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2397,7 +2552,9 @@
         "en": "Lion",
         "es": "León"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2433,7 +2590,10 @@
         "en": "Arctic Hare",
         "es": "Liebre ártica"
       },
-      "spawn": [],
+      "spawn": [
+        "tundra_tundra",
+        "polar_north_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2469,7 +2629,10 @@
         "en": "Eurasian Lynx",
         "es": "Lince euroasiático"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2505,7 +2668,10 @@
         "en": "Maned Wolf",
         "es": "Lobo de crin, Cerrado"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2541,7 +2707,10 @@
         "en": "Ethiopian Wolf",
         "es": "Lobo etíope, tierras altas de Etiopía"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_steppe",
+        "mountain_alpine"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2577,7 +2746,13 @@
         "en": "Grey Wolf",
         "es": "Lobo gris"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2613,7 +2788,11 @@
         "en": "Marmots",
         "es": "Marmotas"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky",
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2649,7 +2828,10 @@
         "en": "Regional Mussels and Oysters",
         "es": "Mejillones y ostras, según región"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_open_wetland",
+        "marine_estuary_littoral"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2686,7 +2868,10 @@
         "en": "Tropical Mollusks and Bivalves",
         "es": "Moluscos y bivalvos tropicales"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_reef",
+        "marine_mangrove"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2723,7 +2908,10 @@
         "en": "Howler Monkey",
         "es": "Mono aullador"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_wooded_swamp"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2759,7 +2947,9 @@
         "en": "Okapi",
         "es": "Okapi, cuenca del Congo"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2801,7 +2991,12 @@
         "en": "Giant Anteater",
         "es": "Oso hormiguero gigante"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_wooded_swamp",
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2837,7 +3032,12 @@
         "en": "Bears",
         "es": "Osos"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_temperate",
+        "forest_boreal",
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2873,7 +3073,9 @@
         "en": "Estuarine Oysters and Other Bivalves",
         "es": "Ostras y otros bivalvos de estuario"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_estuary_littoral"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2910,7 +3112,9 @@
         "en": "Ocellated Turkey",
         "es": "Pavo ocelado, Yucatán y zonas vecinas"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -2958,7 +3162,9 @@
         "en": "Indian Peafowl",
         "es": "Pavo real azul, subcontinente indio"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_subtropical"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3006,7 +3212,13 @@
         "en": "Collared Peccary",
         "es": "Pecarí de collar"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_wooded_swamp",
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3048,7 +3260,9 @@
         "en": "Regional Reef Fish",
         "es": "Peces arrecifales, especies regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_reef"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3089,7 +3303,10 @@
         "en": "Juvenile Estuarine Fish",
         "es": "Peces juveniles de estuario"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3130,7 +3347,11 @@
         "en": "Regional Polar Fish",
         "es": "Peces polares regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_open_ocean",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3171,7 +3392,9 @@
         "en": "Perentie",
         "es": "Perentie (varano gigante)"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3213,7 +3436,10 @@
         "en": "Prairie Dog",
         "es": "Perrito de la pradera"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_prairie",
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3249,7 +3475,10 @@
         "en": "Island Petrels and Albatrosses",
         "es": "Petreles y albatros en islas apropiadas"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_open_ocean",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3298,7 +3527,10 @@
         "en": "Penguins",
         "es": "Pingüinos"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_open_ocean",
+        "polar_south_ice"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3347,7 +3579,11 @@
         "en": "Puma",
         "es": "Puma"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "plains_prairie",
+        "mountain_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3383,7 +3619,11 @@
         "en": "Bearded vultures",
         "es": "Quebrantahuesos"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3431,7 +3671,11 @@
         "en": "Chamois",
         "es": "Rebeco"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3479,7 +3723,10 @@
         "en": "Reindeer",
         "es": "Reno"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_boreal",
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3545,7 +3792,9 @@
         "en": "Eurasian Saiga",
         "es": "Saiga, estepas euroasiáticas"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3593,7 +3842,10 @@
         "en": "Regional Sardines",
         "es": "Sardinas regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_open_ocean"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3634,7 +3886,9 @@
         "en": "Regional Rattlesnakes",
         "es": "Serpientes de cascabel regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3670,7 +3924,11 @@
         "en": "Himalayan Tahr",
         "es": "Tahr del Himalaya"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3718,7 +3976,13 @@
         "en": "Tapirs",
         "es": "Tapires"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_wooded_swamp",
+        "plains_savanna",
+        "plains_open_wetland"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3760,7 +4024,11 @@
         "en": "Tiger",
         "es": "Tigre, en hábitats adecuados"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3796,7 +4064,10 @@
         "en": "Desert Tortoise",
         "es": "Tortuga del desierto"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3845,7 +4116,11 @@
         "en": "Sea Turtles",
         "es": "Tortugas marinas en zonas de alimentación y anidación"
       },
-      "spawn": [],
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral",
+        "marine_open_ocean"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3894,7 +4169,9 @@
         "en": "Regional Land Tortoises",
         "es": "Tortugas terrestres regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3943,7 +4220,9 @@
         "en": "Regional Wallabies",
         "es": "Ualabíes regionales"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -3979,7 +4258,11 @@
         "en": "Vicuna",
         "es": "Vicuña"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_salt_flat",
+        "plains_steppe",
+        "mountain_alpine"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4035,7 +4318,10 @@
         "en": "Andean Viscacha",
         "es": "Vizcacha andina"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4071,7 +4357,10 @@
         "en": "Rock-Dwelling Viscachas",
         "es": "Vizcachas en roquedos"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4107,7 +4396,10 @@
         "en": "Wild Yak",
         "es": "Yak salvaje, altiplano tibetano"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4173,7 +4465,16 @@
         "en": "Foxes",
         "es": "Zorros"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_rocky",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4209,7 +4510,15 @@
         "en": "Golden Eagle",
         "es": "Águila real"
       },
-      "spawn": [],
+      "spawn": [
+        "forest_temperate",
+        "forest_boreal",
+        "plains_prairie",
+        "plains_steppe",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4257,7 +4566,11 @@
         "en": "Ibexes",
         "es": "Íbices"
       },
-      "spawn": [],
+      "spawn": [
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4305,7 +4618,11 @@
         "en": "Greater Rhea",
         "es": "Ñandú común, Pampas"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4359,7 +4676,9 @@
         "en": "Wildebeest",
         "es": "Ñu"
       },
-      "spawn": [],
+      "spawn": [
+        "plains_savanna"
+      ],
       "domestication": null,
       "resources": [
         {
@@ -4407,7 +4726,10 @@
         "en": "Arabian Oryx",
         "es": "Órix de Arabia, Arabia"
       },
-      "spawn": [],
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky"
+      ],
       "domestication": null,
       "resources": [
         {
