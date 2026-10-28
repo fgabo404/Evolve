@@ -113,6 +113,25 @@ public static class GameTests
             session.OpenCreateWorld();
         }
 
+        var resizing = new GameSession();
+        resizing.OpenCreateWorld();
+        resizing.ChooseType(LandmassType.Pangaea);
+        resizing.SetSeedText("42");
+        resizing.GenerateWorld();
+        var selectedSeed = resizing.State.Landmass!.Configuration.Seed;
+        var resizeConfig = resizing.BeginResize(GridSize.Medium);
+        Check(resizeConfig.Size == GridSize.Medium &&
+            resizeConfig.Type == LandmassType.Pangaea &&
+            resizeConfig.Seed == selectedSeed &&
+            resizing.Screen == GameScreen.Generating, "World view resize keeps seed and type");
+        resizing.CompleteGeneration(new LandmassGenerationService().Generate(resizeConfig));
+        Check(resizing.Grid!.Cells.Count == 15000 &&
+            resizing.State.Landmass!.Configuration.Seed == selectedSeed,
+            "Resized world replaces logical state");
+        var worldButtons = ScreenLayout.Buttons(GameScreen.World, 1280, 720);
+        Check(worldButtons.Count(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large) == 3,
+            "Three size controls are available in world view");
+
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })
         foreach (var button in ScreenLayout.Buttons(screen, width, height))

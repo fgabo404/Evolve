@@ -101,6 +101,19 @@ public sealed class GameSession
         return BeginGeneration();
     }
 
+    /// <summary>Recrea el mismo tipo y semilla con otro tamaño desde la vista del mundo.</summary>
+    public LandmassConfiguration BeginResize(GridSize size)
+    {
+        if (Screen != GameScreen.World || State.Landmass is null)
+            throw new InvalidOperationException("Generate a world before changing its size.");
+        _ = HexGridDefinitions.Get(size);
+        SelectedSize = size;
+        SelectedType = State.Landmass.Configuration.Type;
+        SeedText = State.Landmass.Configuration.Seed.ToString(CultureInfo.InvariantCulture);
+        Screen = GameScreen.CreateWorld;
+        return BeginGeneration();
+    }
+
     public void CompleteGeneration(GeneratedWorld result)
     {
         if (Screen != GameScreen.Generating)

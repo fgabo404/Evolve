@@ -453,7 +453,14 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.Exit: Close(); break;
             case UiAction.Back: ReturnToMenu(); break;
             case UiAction.Small or UiAction.Medium or UiAction.Large:
-                _session.ChooseSize(ScreenLayout.SizeFor(action)); break;
+                if (_session.Screen == GameScreen.World)
+                {
+                    GridSize newSize = ScreenLayout.SizeFor(action);
+                    if (_session.SelectedSize != newSize)
+                        StartGeneration(resize: newSize);
+                }
+                else _session.ChooseSize(ScreenLayout.SizeFor(action));
+                break;
             case UiAction.Continents or UiAction.Pangaea or UiAction.SmallContinents or
                 UiAction.Archipelagos:
                 _session.ChooseType(ScreenLayout.TypeFor(action)); break;
@@ -467,13 +474,14 @@ internal sealed class EvolveWindow : GameWindow
         _dirty = true;
     }
 
-    private void StartGeneration(bool regenerate = false)
+    private void StartGeneration(bool regenerate = false, GridSize? resize = null)
     {
         if (_pendingGeneration is not null) return;
         try
         {
-            LandmassConfiguration configuration = regenerate
-                ? _session.BeginRegeneration() : _session.BeginGeneration();
+            LandmassConfiguration configuration = resize is { } size
+                ? _session.BeginResize(size)
+                : regenerate ? _session.BeginRegeneration() : _session.BeginGeneration();
             _generationStarted = Stopwatch.GetTimestamp();
             _pendingGeneration = Task.Run(() =>
                 new LandmassGenerationService().Generate(configuration));

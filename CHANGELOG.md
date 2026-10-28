@@ -1,3 +1,8 @@
+## En desarrollo — Selector de tamaño dentro del mapa
+
+- Controles Pequeño, Mediano y Grande en la vista estratégica, debajo del panel con tipo de mundo y semilla.
+- Al cambiar de tamaño se genera nuevamente el mismo tipo con la misma semilla; Regenerar mundo continúa usando una semilla nueva.
+
 ## En desarrollo — Ajustes de Pangea y HUD
 
 - Pangea con costas más accidentadas mediante cuatro escalas de ruido periódico, mayor variación de ramificaciones y golfos.

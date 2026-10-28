@@ -80,7 +80,10 @@ public static class ScreenLayout
             return [new(UiAction.Back, "Volver", new(menuX,
                 MathF.Max(260, height * .55f), menuWidth, menuHeight))];
         if (screen == GameScreen.World)
-            return [new(UiAction.Regenerate, "Regenerar mundo",
+            return [new(UiAction.Small, "Pequeño", new(12, 146, 83, 32)),
+                new(UiAction.Medium, "Mediano", new(101, 146, 83, 32)),
+                new(UiAction.Large, "Grande", new(190, 146, 83, 32)),
+                new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",
                 new(MathF.Max(8, width - 190), 11, MathF.Min(180, width - 16), 36))];
