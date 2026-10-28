@@ -38,8 +38,8 @@ public sealed class PangaeaGenerator : ILandmassGenerator
             for(int p=0;p<numberOfPlates;p++)
             {
                 double dx=Wrapped(x-centerX[p]),dy=y-centerY[p];
-                double distance=dx*dx+dy*dy;
-                if(distance<minimum){minimum=distance;best=p;}
+                double squaredDistance=dx*dx+dy*dy;
+                if(squaredDistance<minimum){minimum=squaredDistance;best=p;}
             }
             plates[id]=(byte)best;
         }
