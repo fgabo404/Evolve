@@ -158,6 +158,7 @@ internal sealed class EvolveWindow : GameWindow
             string biome = terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
             if (_grayscale && terrain.ElevationByCellId is { } levels)
                 biome = $"height {levels[id]}";
+            if (terrain.IsImpassableSummit(id)) biome = "impassable summit";
             if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
             // Evitar las tarjetas, los botones y el texto de la interfaz.
@@ -166,8 +167,10 @@ internal sealed class EvolveWindow : GameWindow
             int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
             int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
+            if (terrain.IsImpassableSummit(id) && (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
+                throw new InvalidOperationException($"Summit {id} is not pure white.");
             Vector3 expected = BiomePalette.ForCell(terrain, id) * 255;
-            if (_grayscale)
+            if (_grayscale && !terrain.IsImpassableSummit(id))
                 expected = new Vector3(terrain.ElevationByCellId![id] / 100f * 255);
             if (Math.Abs(pixels[0] - expected.X) > 2 || Math.Abs(pixels[1] - expected.Y) > 2 ||
                 Math.Abs(pixels[2] - expected.Z) > 2)
@@ -347,7 +350,8 @@ internal sealed class EvolveWindow : GameWindow
                 if(position.Y < MapCamera2D.TopBarHeight+10 || position.Y > ClientSize.Y-10 ||
                     position.X<10 || position.X>ClientSize.X-10)continue;
                 _ui.Text(elevations[row*cols+wrapped].ToString(),position.X,position.Y-5,
-                    1.3f,White);
+                    1.3f, _session.State.Landmass.IsImpassableSummit(row * cols + wrapped)
+                        ? new Vector4(.08f, .08f, .08f, 1) : White);
             }
         }
         if (_session.State.Landmass is { } worldInfo)
@@ -374,6 +378,7 @@ internal sealed class EvolveWindow : GameWindow
             var environment = BiomeClassifier.GetCell(landmass, cell.Id);
             string height = environment.Elevation?.ToString() ?? "PENDIENTE";
             string details = $"ALT: {height}  LAT: {environment.Latitude:F1}";
+            if (environment.IsImpassableSummit) details += "  CUMBRE INFRANQUEABLE";
             string biome = environment.Biome.Status switch
             {
                 BiomeClassificationStatus.Assigned =>

@@ -6,6 +6,7 @@ namespace GEvolve.Game.Graphics;
 /// <summary>Única asociación de bioma a color; compartida por todos sus subbiomas.</summary>
 public static class BiomePalette
 {
+    public static Vector3 ImpassableSummitColor { get; } = Rgb(0xFFFFFF);
     private static readonly IReadOnlyDictionary<string, Vector3> Colors =
         new Dictionary<string, Vector3>(StringComparer.Ordinal)
         {
@@ -23,7 +24,8 @@ public static class BiomePalette
         ? color : throw new ArgumentException($"No color for biome '{id}'.", nameof(id));
 
     public static Vector3 ForCell(LandmassState terrain, int id)
-        => terrain.Biomes?.Get(id) is { Status: BiomeClassificationStatus.Assigned, BiomeId: { } biome }
+        => terrain.IsImpassableSummit(id) ? ImpassableSummitColor
+            : terrain.Biomes?.Get(id) is { Status: BiomeClassificationStatus.Assigned, BiomeId: { } biome }
             ? ForBiome(biome)
             : terrain.IsLand(id) ? new(.35f, .57f, .32f) : new(.32f, .55f, .71f);
 

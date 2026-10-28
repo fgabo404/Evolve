@@ -14,26 +14,31 @@ public sealed class HexGridRenderer : IDisposable
         layout(location = 1) in vec2 aCenter;
         layout(location = 2) in vec3 aColor;
         layout(location = 3) in float aHeight;
+        layout(location = 4) in float aSummit;
         uniform vec2 uViewport;
         uniform vec2 uCamera;
         uniform float uScale;
         uniform float uTop;
         out vec3 vColor;
         out float vHeight;
+        out float vSummit;
         void main() {
             vec2 pixel = (aCenter + aVertex - uCamera) * uScale + vec2(0.0, uTop);
             gl_Position = vec4(2.0 * pixel.x / uViewport.x - 1.0,
                 1.0 - 2.0 * pixel.y / uViewport.y, 0.0, 1.0);
             vColor = aColor;
             vHeight = aHeight;
+            vSummit = aSummit;
         }
         """;
     private const string FragmentShader = """
         #version 330 core
         in vec3 vColor;
         in float vHeight;
+        in float vSummit;
         uniform int uOutline;
         uniform int uGrayscale;
+        uniform vec3 uSummitColor;
         out vec4 color;
         void main() {
             if (uOutline != 0) color = vec4(0.32, 0.42, 0.48, 0.55);
@@ -42,6 +47,7 @@ public sealed class HexGridRenderer : IDisposable
                 color = uOutline != 0 ? vec4(vec3(0.4), 0.55)
                     : vec4(vec3(vHeight), 1.0);
             }
+            if (uOutline == 0 && vSummit > 0.5) color = vec4(uSummitColor, 1.0);
         }
         """;
 
@@ -78,16 +84,20 @@ public sealed class HexGridRenderer : IDisposable
         GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.EnableVertexAttribArray(1);
-        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 7 * sizeof(float), 0);
         GL.VertexAttribDivisor(1, 1);
         GL.EnableVertexAttribArray(2);
         GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false,
-            6 * sizeof(float), 2 * sizeof(float));
+            7 * sizeof(float), 2 * sizeof(float));
         GL.VertexAttribDivisor(2, 1);
         GL.EnableVertexAttribArray(3);
         GL.VertexAttribPointer(3, 1, VertexAttribPointerType.Float, false,
-            6 * sizeof(float), 5 * sizeof(float));
+            7 * sizeof(float), 5 * sizeof(float));
         GL.VertexAttribDivisor(3, 1);
+        GL.EnableVertexAttribArray(4);
+        GL.VertexAttribPointer(4, 1, VertexAttribPointerType.Float, false,
+            7 * sizeof(float), 6 * sizeof(float));
+        GL.VertexAttribDivisor(4, 1);
         GL.BindVertexArray(0);
     }
 
@@ -102,6 +112,8 @@ public sealed class HexGridRenderer : IDisposable
         }
         _shader.Use();
         GL.Uniform1(_shader.Uniform("uGrayscale"), grayscale ? 1 : 0);
+        var summitColor = BiomePalette.ImpassableSummitColor;
+        GL.Uniform3(_shader.Uniform("uSummitColor"), summitColor.X, summitColor.Y, summitColor.Z);
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);
         GL.Uniform2(_shader.Uniform("uCamera"), camera.X, camera.Y);
         GL.Uniform1(_shader.Uniform("uScale"), camera.Scale);
@@ -118,7 +130,7 @@ public sealed class HexGridRenderer : IDisposable
     {
         VisibleHexRange range = camera.VisibleRange();
         int count = range.Count;
-        if (_instances.Length < count * 6) _instances = new float[count * 6];
+        if (_instances.Length < count * 7) _instances = new float[count * 7];
         int index = 0;
         int columns = _grid.Definition.Columns;
         for (int row = range.FirstRow; row <= range.LastRow; row++)
@@ -134,8 +146,9 @@ public sealed class HexGridRenderer : IDisposable
             _instances[index++] = color.Z;
             _instances[index++] = _landmass.ElevationByCellId is { } heights
                 ? heights[row * columns + wrapped] / 100f : -1f;
+            _instances[index++] = _landmass.IsImpassableSummit(row * columns + wrapped) ? 1f : 0f;
         }
-        _instanceCount = index / 6;
+        _instanceCount = index / 7;
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);
         GL.BufferData(BufferTarget.ArrayBuffer, index * sizeof(float),
             _instances, BufferUsageHint.StreamDraw);

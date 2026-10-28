@@ -10,4 +10,8 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public byte[]? PlateByCellId { get; init; }
     public BiomeState? Biomes { get; init; }
     public bool IsLand(int cellId) => SurfaceByCellId[cellId] == 1;
+    /// <summary>Condición consultable desde el estado persistido, sin duplicar alturas.</summary>
+    public bool IsImpassableSummit(int cellId) => IsLand(cellId) &&
+        ElevationByCellId is { } heights &&
+        heights[cellId] >= TerrainRules.ImpassableSummitMinimumElevation;
 }

@@ -889,7 +889,7 @@
           },
           "latitudeDegrees": {
             "min": 0,
-            "max": 75,
+            "max": 90,
             "hemisphere": "either"
           },
           "flora": [
@@ -995,7 +995,7 @@
             "es": "Alpino"
           },
           "elevationLevel": {
-            "min": 40,
+            "min": 50,
             "max": 90
           },
           "latitudeDegrees": {
@@ -1066,7 +1066,7 @@
             "es": "Rocoso"
           },
           "elevationLevel": {
-            "min": 30,
+            "min": 45,
             "max": 100
           },
           "latitudeDegrees": {

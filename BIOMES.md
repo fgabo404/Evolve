@@ -1,6 +1,6 @@
 # Clasificación inicial de biomas
 
-La clasificación `biomes-1` se ejecuta en Engine, después de aceptar el terreno generado. No cambia los algoritmos de masas terrestres, sus semillas, intentos, placas ni elevaciones. Pangea mantiene `landmass-4` y su escala 0–100. La temperatura, humedad, pendientes, fauna, flora y minerales no se generan.
+La clasificación `biomes-2` se ejecuta en Engine, después de aceptar el terreno generado. No cambia los algoritmos de masas terrestres, sus semillas, intentos, placas ni elevaciones. Pangea mantiene `landmass-4` y su escala 0–100. La temperatura, humedad, pendientes, fauna, flora y minerales no se generan.
 
 ## Catálogo y latitud
 
@@ -12,7 +12,7 @@ Para cubrir el dominio completo 0–100 se amplió únicamente el máximo de ele
 
 ## Selección provisional determinista
 
-Primero se filtra por superficie, elevación, latitud absoluta y hemisferio. Los límites del catálogo son inclusivos. En tierra se excluye `marine`; en océano se admiten únicamente `marine` o los biomas polares compatibles.
+Primero se filtra por superficie, elevación, latitud absoluta y hemisferio. Los límites del catálogo son inclusivos. En tierra se excluye `marine`; en océano se admite únicamente `marine`, incluso en los polos. `polar_north` y `polar_south` solo se asignan sobre tierra y conservan su restricción de hemisferio. Los océanos polares mantienen el azul `#287DB5`.
 
 Entre candidatos compatibles se aplica este orden:
 
@@ -25,7 +25,41 @@ Entre candidatos compatibles se aplica este orden:
 
 Este orden no inventa temperatura ni humedad. Dos candidatos indistinguibles por las variables disponibles se resuelven por ese orden estable, sin aleatoriedad. Las etiquetas como humedal, bosque o desierto son aproximaciones provisionales, no confirmación de condiciones climáticas. Acantilados como fallback tampoco afirma que exista una pendiente real.
 
-Con el catálogo actual todos los pares de elevación terrestre 0–100 y latitud −90..90 están cubiertos; el océano de Pangea usa la elevación original 0. Si un catálogo futuro deja un hueco, se conserva un estado explícito `NoCatalogMatch` con IDs nulos y se muestra «sin coincidencia en catálogo». Nunca se ajusta la altura ni se elige un ID incompatible. Si falta elevación, se usa `MissingElevation`: Continentes, Continentes pequeños y Archipiélagos mantienen sus datos originales y colores de superficie, y la selección informa «elevación pendiente».
+### Ajustes de biomes-2
+
+Se conservó el orden de prioridades y se modificaron únicamente tres rangos del catálogo:
+
+| Subbioma | Parámetro | Antes | Ahora |
+| --- | --- | ---: | ---: |
+| `marine_open_ocean` | Latitud máxima absoluta | 75 | 90 |
+| `mountain_rocky` | Elevación mínima | 30 | 45 |
+| `mountain_alpine` | Elevación mínima | 40 | 50 |
+
+Los nuevos mínimos dejan más margen a los biomas ordinarios compatibles con la elevación y latitud. No se ampliaron sus rangos. Acantilados conserva su función de último recurso compatible: puede quedar montaña a menor elevación donde ningún bioma ordinario cubra el punto. No se suaviza ni se modifica el terreno para forzar una transición.
+
+Comparación sobre el mismo terreno, contando el bioma `mountain` subyacente (también en cumbres):
+
+| Tamaño | Semilla | Antes | Ahora |
+| --- | ---: | ---: | ---: |
+| Pequeño | 2026 | 716 | 435 |
+| Pequeño | 42 | 909 | 681 |
+| Pequeño | −731 | 939 | 630 |
+| Mediano | 2026 | 1799 | 1087 |
+| Mediano | 42 | 2001 | 1483 |
+| Mediano | −731 | 2136 | 1383 |
+| Grande | 2026 | 5736 | 3245 |
+| Grande | 42 | 7417 | 4674 |
+| Grande | −731 | 5134 | 2992 |
+
+### Cumbres infranqueables
+
+`TerrainRules.ImpassableSummitMinimumElevation` establece el umbral 90. `LandmassState.IsImpassableSummit(id)` expone la condición: superficie terrestre y elevación 90–100. `BiomeClassifier.GetCell` también devuelve el indicador. El bioma y la altura original se conservan. El océano y las celdas sin altura nunca son cumbres.
+
+La condición se obtiene directamente del estado persistido, sin almacenar una máscara redundante que pueda desincronizarse. Sigue disponible al cargar una partida y no requiere regeneración ni un nuevo formato de guardado. Todavía no existe un sistema de movimiento que la aplique.
+
+La cumbre tiene relleno `#FFFFFF` con prioridad sobre cualquier bioma, incluso polar, y sobre el gris de la vista de alturas. Los contornos, la selección y las etiquetas siguen visibles; la altura se dibuja en texto oscuro sobre las cumbres blancas. El panel de selección muestra «CUMBRE INFRANQUEABLE». Los otros colores de bioma se conservan. La vista de alturas sigue usando altura/100 para el terreno de 0–89; las cumbres de 90–100 son blancas por esta regla especial.
+
+Con el catálogo actual todos los pares de elevación terrestre 0–100 y latitud −90..90 están cubiertos; el océano de Pangea usa la elevación original 0. Si un catálogo futuro deja un hueco, se conserva un estado explícito `NoCatalogMatch` con IDs nulos y se muestra «sin coincidencia en catálogo». Nunca se ajusta la altura ni se elige un ID incompatible. Si falta elevación en tierra, se usa `MissingElevation`: Continentes, Continentes pequeños y Archipiélagos mantienen sus datos originales, y la selección informa «elevación pendiente». Sus océanos también se clasifican como marinos usando la referencia de nivel marino 0 para consultar el catálogo, sin crear un arreglo de alturas ni cambiar el valor desconocido devuelto por la consulta del terreno. Todos los océanos generados se muestran azules.
 
 ## Estado y renderizado
 
@@ -40,3 +74,5 @@ El guardado añade un campo opcional dentro del formato 2. Los guardados de form
 `TerrainBaseline.txt` registra hashes capturados del commit `95af296` antes de integrar biomas: tres tamaños, cuatro generadores y semillas 2026, 42 y −731. Se comprueban superficie, elevaciones, placas e intento determinista de los 36 mundos. También se prueban cobertura del catálogo, límites inclusivos, hemisferios, repetición determinista, JSON alternativo, guardado/carga y compatibilidad con mapas sin alturas.
 
 `--graphics-smoke` compara píxeles leídos del framebuffer con la paleta de las celdas visibles de Pangea, además del recorrido gráfico existente. Esta lectura diagnóstica añade sincronización y no debe interpretarse como un benchmark de FPS.
+
+Las pruebas de biomes-2 verifican océanos marinos en todas las latitudes, polos terrestres, reducción de montaña frente a los conteos capturados en `29bc6aa`, umbral exacto 89/90/100, exclusión del océano y recuperación de la condición de cumbre después del guardado. OpenGL comprueba canales RGB exactamente 255 en las cumbres visibles, tanto en color como en la vista de alturas. Las 36 regresiones originales de superficie, elevación y placas siguen vigentes. Los guardados con biomas anteriores conservan su versión registrada; las nuevas reglas de distribución se aplican al generar o clasificar el mundo con biomes-2.

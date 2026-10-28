@@ -5,12 +5,12 @@ using GEvolve.State.Game;
 namespace GEvolve.Engine.World.BiomeGeneration;
 
 public sealed record CellEnvironment(byte? Elevation, double Latitude,
-    BiomeAssignment Biome);
+    BiomeAssignment Biome, bool IsImpassableSummit);
 
 /// <summary>Etapa posterior al terreno: no modifica superficie, alturas ni placas.</summary>
 public sealed class BiomeClassifier
 {
-    public const string Version = "biomes-1";
+    public const string Version = "biomes-2";
     private static readonly BiomeAssignment Missing = new(null, null,
         BiomeClassificationStatus.MissingElevation);
     private static readonly BiomeAssignment NoMatch = new(null, null,
@@ -50,8 +50,7 @@ public sealed class BiomeClassifier
 
     public static bool Matches(BiomeRule rule, bool land, byte elevation, double latitude)
     {
-        bool polar = rule.BiomeId is "polar_north" or "polar_south";
-        if (land ? rule.BiomeId == "marine" : rule.BiomeId != "marine" && !polar)
+        if (land ? rule.BiomeId == "marine" : rule.BiomeId != "marine")
             return false;
         var height = rule.Subbiome.ElevationLevel;
         var lat = rule.Subbiome.LatitudeDegrees;
@@ -65,6 +64,9 @@ public sealed class BiomeClassifier
     {
         if (!double.IsFinite(latitude) || latitude is < -90 or > 90 || elevation is > 100)
             throw new ArgumentOutOfRangeException(nameof(latitude));
+        // Sin relieve disponible, el océano usa la referencia marina del catálogo.
+        // Esto no crea ni modifica el arreglo de elevaciones del terreno.
+        if (!land && elevation is null) elevation = 0;
         if (elevation is not { } height) return Missing;
         foreach (var rule in _ordered)
             if (Matches(rule, land, height, latitude))
@@ -118,6 +120,6 @@ public sealed class BiomeClassifier
             throw new ArgumentOutOfRangeException(nameof(cellId));
         return new(terrain.ElevationByCellId?[cellId],
             Latitude(cellId / definition.Columns, definition.Rows),
-            terrain.Biomes?.Get(cellId) ?? NotGenerated);
+            terrain.Biomes?.Get(cellId) ?? NotGenerated, terrain.IsImpassableSummit(cellId));
     }
 }

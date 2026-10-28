@@ -10,6 +10,13 @@ using GEvolve.State.Persistence;
 
 public static class BiomeTests
 {
+    // Measured before biomes-2 on the unchanged terrain of commit 29bc6aa.
+    private static readonly Dictionary<(GridSize, int), int> MountainBaseline = new()
+    {
+        [(GridSize.Small, 2026)] = 716, [(GridSize.Small, 42)] = 909, [(GridSize.Small, -731)] = 939,
+        [(GridSize.Medium, 2026)] = 1799, [(GridSize.Medium, 42)] = 2001, [(GridSize.Medium, -731)] = 2136,
+        [(GridSize.Large, 2026)] = 5736, [(GridSize.Large, 42)] = 7417, [(GridSize.Large, -731)] = 5134
+    };
     public static void Run()
     {
         var classifier = new BiomeClassifier();
@@ -28,17 +35,22 @@ public static class BiomeTests
         }
         Check(BiomeClassifier.Latitude(0, 1) == 0, "Single-row equator");
         Check(classifier.Classify(false, 0, 0).SubbiomeId == "marine_open_ocean" &&
-            classifier.Classify(false, 0, 90).BiomeId == "polar_north" &&
-            classifier.Classify(false, 0, -90).BiomeId == "polar_south",
-            "Ocean and hemisphere-aware polar precedence");
+            classifier.Classify(false, 0, 90).BiomeId == "marine" &&
+            classifier.Classify(false, 0, -90).BiomeId == "marine" &&
+            classifier.Classify(true, 0, 90).BiomeId == "polar_north" &&
+            classifier.Classify(true, 0, -90).BiomeId == "polar_south",
+            "Polar oceans stay marine, polar land respects hemispheres");
+        VerifySummitBoundary();
         Check(classifier.Classify(true, null, 0).Status == BiomeClassificationStatus.MissingElevation,
             "Missing elevation is never fabricated");
         Check(classifier.Classify(false, 1, 0).Status == BiomeClassificationStatus.NoCatalogMatch,
             "Explicit fallback never assigns an out-of-range marine subbiome");
         for (int latitude = -90; latitude <= 90; latitude++)
         {
-            Check(classifier.Classify(false, 0, latitude).Status == BiomeClassificationStatus.Assigned,
+            Check(classifier.Classify(false, 0, latitude).BiomeId == "marine",
                 "Catalog covers ocean at every latitude");
+            Check(classifier.Classify(false, null, latitude).BiomeId == "marine",
+                "Ocean remains marine in generators without elevation arrays");
             for (int elevation = 0; elevation <= 100; elevation++)
                 Check(classifier.Classify(true, (byte)elevation, latitude).Status == BiomeClassificationStatus.Assigned,
                     $"Catalog covers all land elevations and latitudes: {elevation}/{latitude}");
@@ -72,6 +84,15 @@ public static class BiomeTests
             int seed = int.Parse(parts[2]);
             var generated = new LandmassGenerationService().Generate(LandmassProfiles.Create(size, type, seed));
             var terrain = generated.Landmass;
+            if (type == LandmassType.Pangaea)
+            {
+                int mountains = Enumerable.Range(0, terrain.SurfaceByCellId.Length)
+                    .Count(id => terrain.Biomes!.Get(id).BiomeId == "mountain");
+                int before = MountainBaseline[(size, seed)];
+                Check(mountains < before, $"Mountain coverage decreases for {size}/{seed}");
+                Console.WriteLine($"PASS: mountain cells {size}/{seed}: {before} -> {mountains} " +
+                    $"({100.0 * (before - mountains) / before:F1}% reduction)");
+            }
             Check(terrain.DeterministicAttempt == int.Parse(parts[3]) &&
                 Hash(terrain.SurfaceByCellId) == parts[4] &&
                 Hash(terrain.ElevationByCellId) == parts[5] &&
@@ -93,17 +114,28 @@ public static class BiomeTests
             for (int id = 0; id < terrain.SurfaceByCellId.Length; id++)
             {
                 var cell = BiomeClassifier.GetCell(terrain, id);
+                bool summit = terrain.IsLand(id) && cell.Elevation is >= 90 and <= 100;
+                Check(terrain.IsImpassableSummit(id) == summit && cell.IsImpassableSummit == summit,
+                    "Only land at elevation 90..100 is impassable");
                 Check(cell.Latitude is >= -90 and <= 90 && cell.Elevation is null or <= 100,
                     "Cell query returns original elevation and valid latitude");
-                var compatible = catalog.Rules.Where(rule => cell.Elevation is { } elevation &&
+                byte? catalogElevation = cell.Elevation ?? (terrain.IsLand(id) ? null : (byte?)0);
+                var compatible = catalog.Rules.Where(rule => catalogElevation is { } elevation &&
                     BiomeClassifier.Matches(rule, terrain.IsLand(id), elevation, cell.Latitude)).ToArray();
                 if (cell.Biome.Status == BiomeClassificationStatus.Assigned)
                 {
                     Check(compatible.Any(rule => rule.BiomeId == cell.Biome.BiomeId &&
                         rule.Subbiome.Id == cell.Biome.SubbiomeId),
                         "Every assigned ID belongs to its biome and respects all catalog ranges");
-                    Check(BiomePalette.ForCell(terrain, id) == BiomePalette.ForBiome(cell.Biome.BiomeId!),
-                        "Renderer color comes from assigned biome");
+                    Check(BiomePalette.ForCell(terrain, id) == (summit ? System.Numerics.Vector3.One
+                        : BiomePalette.ForBiome(cell.Biome.BiomeId!)),
+                        "Summits are pure white; other cells retain biome colors");
+                    if (!terrain.IsLand(id))
+                        Check(cell.Biome.BiomeId == "marine" && !summit &&
+                            BiomePalette.ForCell(terrain, id) == new System.Numerics.Vector3(40, 125, 181) / 255f,
+                            "All classified oceans, including poles, stay blue and passable");
+                    if (cell.Biome.BiomeId is "polar_north" or "polar_south")
+                        Check(terrain.IsLand(id), "Polar biomes are land-only");
                     assigned++;
                 }
                 else if (cell.Biome.Status == BiomeClassificationStatus.MissingElevation)
@@ -131,6 +163,20 @@ public static class BiomeTests
             $"{assigned} classified, {gaps} explicit catalog gaps");
     }
 
+    private static void VerifySummitBoundary()
+    {
+        var terrain = new LandmassState(LandmassProfiles.Create(GridSize.Small, LandmassType.Pangaea, 1),
+            [1, 1, 1, 1, 0, 0, 0, 0], 0)
+            { ElevationByCellId = [0, 89, 90, 100, 0, 89, 90, 100] };
+        for (int id = 0; id < 8; id++)
+            Check(terrain.IsImpassableSummit(id) == (id is 2 or 3), "Exact 89/90 threshold and ocean exclusion");
+        Check(!(terrain with { ElevationByCellId = null }).IsImpassableSummit(2),
+            "Unknown heights cannot create summits");
+        Check(BiomePalette.ForCell(terrain, 2) == System.Numerics.Vector3.One &&
+            BiomePalette.ForCell(terrain, 3) == System.Numerics.Vector3.One,
+            "White summit override does not depend on a biome");
+    }
+
     private static void VerifyCatalogDrivenRules()
     {
         const string custom = """
@@ -153,6 +199,9 @@ public static class BiomeTests
             var state = new GameState { HexGrid = new(generated.Grid.Definition), Landmass = generated.Landmass };
             GameSaveStore.Save(path, state);
             var loaded = GameSaveStore.Load(path).Landmass!;
+            Check(Enumerable.Range(0, loaded.SurfaceByCellId.Length).All(id =>
+                loaded.IsImpassableSummit(id) == generated.Landmass.IsImpassableSummit(id)),
+                "Impassable condition survives save/load without regeneration");
             Check(loaded.Biomes!.Assignments.SequenceEqual(state.Landmass.Biomes!.Assignments) &&
                 loaded.Biomes.AssignmentByCellId.SequenceEqual(state.Landmass.Biomes.AssignmentByCellId) &&
                 loaded.ElevationByCellId!.SequenceEqual(state.Landmass.ElevationByCellId!) &&
