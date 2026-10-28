@@ -29,12 +29,11 @@ public sealed class LandmassGenerationService
         for (int attempt = 0; attempt < 4; attempt++)
         {
             byte[] surface;
-            byte[]? elevation = null, plates = null;
+            byte[]? plates = null;
             if (generator is PangaeaGenerator tectonic)
             {
                 var result = tectonic.GenerateTectonic(topology, configuration, attempt);
                 surface = result.Surface;
-                elevation = result.Elevation;
                 plates = result.Plates;
             }
             else surface = generator.Generate(topology, configuration, attempt);
@@ -43,7 +42,7 @@ public sealed class LandmassGenerationService
             if (MeetsProfile(configuration.Type, statistics))
                 return new GeneratedWorld(grid,
                     new LandmassState(configuration, surface, attempt)
-                    { ElevationByCellId = elevation, PlateByCellId = plates }, statistics);
+                    { PlateByCellId = plates }, statistics);
         }
         throw new InvalidOperationException(
             $"Landmass generator could not satisfy {configuration.Type} after four deterministic attempts " +
