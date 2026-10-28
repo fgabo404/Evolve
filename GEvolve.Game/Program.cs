@@ -36,7 +36,7 @@ internal sealed class EvolveWindow : GameWindow
     private bool _seedFocused;
     private int _smokeScenario = -1;
     private bool _smokeZoomed;
-    private bool _grayscale;
+    private MapViewMode _viewMode;
     private int _smokeViewStep;
     private long _generationStarted;
     private double _rendererPreparationMilliseconds;
@@ -46,6 +46,8 @@ internal sealed class EvolveWindow : GameWindow
         (GridSize.Medium, LandmassType.Continents, 2026),
         (GridSize.Large, LandmassType.Continents, 2026),
         (GridSize.Large, LandmassType.Pangaea, 2026),
+        (GridSize.Small, LandmassType.Pangaea, 42),
+        (GridSize.Medium, LandmassType.Pangaea, -731),
         (GridSize.Large, LandmassType.SmallContinents, 2026),
         (GridSize.Large, LandmassType.Archipelagos, 2026)
     ];
@@ -156,22 +158,23 @@ internal sealed class EvolveWindow : GameWindow
         {
             int id = row * columns + ((column % columns) + columns) % columns;
             string biome = terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
-            if (_grayscale && terrain.ElevationByCellId is { } levels)
+            if (_viewMode == MapViewMode.Elevation && terrain.ElevationByCellId is { } levels)
                 biome = $"height {levels[id]}";
             if (terrain.IsImpassableSummit(id)) biome = "impassable summit";
+            if (_viewMode == MapViewMode.Infrared)
+                biome = $"thermal {terrain.Climate!.CurrentCelsius(id):F0}";
             if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
             // Evitar las tarjetas, los botones y el texto de la interfaz.
             if (screen.X < 310 || screen.X > ClientSize.X - 20 ||
-                screen.Y < 150 || screen.Y > ClientSize.Y - 100) continue;
+                screen.Y < 150 || screen.Y > ClientSize.Y - 120) continue;
             int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
             int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-            if (terrain.IsImpassableSummit(id) && (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
+            if (_viewMode != MapViewMode.Infrared && terrain.IsImpassableSummit(id) &&
+                (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
                 throw new InvalidOperationException($"Summit {id} is not pure white.");
-            Vector3 expected = BiomePalette.ForCell(terrain, id) * 255;
-            if (_grayscale && !terrain.IsImpassableSummit(id))
-                expected = new Vector3(terrain.ElevationByCellId![id] / 100f * 255);
+            Vector3 expected = MapViewColors.ForCell(terrain, id, _viewMode) * 255;
             if (Math.Abs(pixels[0] - expected.X) > 2 || Math.Abs(pixels[1] - expected.Y) > 2 ||
                 Math.Abs(pixels[2] - expected.Z) > 2)
                 throw new InvalidOperationException($"Rendered biome color mismatch: {biome}, cell {id}.");
@@ -179,7 +182,7 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (checkedBiomes.Count < 2)
             throw new InvalidOperationException("Insufficient visible biome colors in graphics smoke.");
-        Console.WriteLine($"OpenGL {(_grayscale ? "grayscale" : "color")} pixels verified: {string.Join(", ", checkedBiomes)}");
+        Console.WriteLine($"OpenGL {(_viewMode.ToString())} pixels verified: {string.Join(", ", checkedBiomes)}");
     }
 
     private void AdvanceGraphicsSmoke(long started)
@@ -211,16 +214,37 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
-        if (_smokeViewStep < 2)
+        UiAction[] viewActions = [UiAction.ToggleGrayscale, UiAction.ToggleInfrared,
+            UiAction.ToggleGrayscale, UiAction.ToggleGrayscale,
+            UiAction.ToggleInfrared, UiAction.ToggleInfrared];
+        if (_smokeViewStep < viewActions.Length)
         {
             var terrain = _session.State.Landmass;
+            if (_smokeViewStep == 0)
+                _session.SelectAt(_camera.ScreenToWorld(new Vector2(ClientSize.X * .6f, ClientSize.Y * .55f)));
+            var beforeClimate = terrain?.Climate?.BaseTemperatureTenthsByCellId.ToArray();
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
-            Activate(UiAction.ToggleGrayscale);
+            var action = viewActions[_smokeViewStep];
+            var expectedMode = action == UiAction.ToggleInfrared && terrain?.Climate is not null
+                ? _viewMode == MapViewMode.Infrared ? MapViewMode.Biomes : MapViewMode.Infrared
+                : action == UiAction.ToggleGrayscale && terrain?.ElevationByCellId is not null
+                    ? _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation
+                    : _viewMode;
+            var button = ScreenLayout.Buttons(GameScreen.World, ClientSize.X, ClientSize.Y)
+                .Single(item => item.Action == action);
+            if (Hit(button.Bounds.X + 5, button.Bounds.Y + 5) != action)
+                throw new InvalidOperationException("View button hit testing failed.");
+            Activate(action);
+            if (_viewMode != expectedMode)
+                throw new InvalidOperationException("View button did not select the expected mode.");
             if (!ReferenceEquals(terrain, _session.State.Landmass) ||
                 selected != _session.SelectedCell || cameraVersion != _camera.Version ||
                 _pendingGeneration is not null)
                 throw new InvalidOperationException("Changing map view altered the world or camera.");
+            if (beforeClimate is not null && !beforeClimate.SequenceEqual(
+                terrain!.Climate!.BaseTemperatureTenthsByCellId))
+                throw new InvalidOperationException("Changing map view altered climate.");
             _smokeViewStep++;
             return;
         }
@@ -300,7 +324,7 @@ internal sealed class EvolveWindow : GameWindow
                 (float)Math.Max(ClientSize.Y, 1)));
         GL.Enable(EnableCap.ScissorTest);
         GL.Scissor(0, 0, FramebufferSize.X, scissorHeight);
-        _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, _grayscale);
+        _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, _viewMode);
         GL.Disable(EnableCap.ScissorTest);
 
         if (_session.SelectedCell is { } selected)
@@ -350,7 +374,8 @@ internal sealed class EvolveWindow : GameWindow
                 if(position.Y < MapCamera2D.TopBarHeight+10 || position.Y > ClientSize.Y-10 ||
                     position.X<10 || position.X>ClientSize.X-10)continue;
                 _ui.Text(elevations[row*cols+wrapped].ToString(),position.X,position.Y-5,
-                    1.3f, _session.State.Landmass.IsImpassableSummit(row * cols + wrapped)
+                    1.3f, _viewMode != MapViewMode.Infrared &&
+                        _session.State.Landmass.IsImpassableSummit(row * cols + wrapped)
                         ? new Vector4(.08f, .08f, .08f, 1) : White);
             }
         }
@@ -380,6 +405,9 @@ internal sealed class EvolveWindow : GameWindow
             string details = $"ALT: {height}  LAT: {environment.Latitude:F1}";
             details += $"  PEND: {environment.Slope?.ToString() ?? "PENDIENTE"} NIV/HEX";
             if (environment.IsImpassableSummit) details += "  CUMBRE INFRANQUEABLE";
+            string temperature = landmass.Climate is { } climate
+                ? FormattableString.Invariant($"TEMPERATURA: {climate.CurrentCelsius(cell.Id):F1} °C")
+                : "TEMPERATURA: PENDIENTE";
             string biome = environment.Biome.Status switch
             {
                 BiomeClassificationStatus.Assigned =>
@@ -389,13 +417,14 @@ internal sealed class EvolveWindow : GameWindow
                 _ => "BIOMA: SIN COINCIDENCIA EN CATÁLOGO"
             };
             float pixel = MathF.Min(1.6f, (ClientSize.X - 48) /
-                (6f * Math.Max(label.Length, Math.Max(details.Length, biome.Length))));
-            float labelWidth = Math.Max(label.Length, Math.Max(details.Length, biome.Length)) * 6 * pixel;
-            _ui.Rect(12, ClientSize.Y - 83, labelWidth + 20, 71,
+                (6f * Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length)))));
+            float labelWidth = Math.Max(temperature.Length, Math.Max(label.Length, Math.Max(details.Length, biome.Length))) * 6 * pixel;
+            _ui.Rect(12, ClientSize.Y - 103, labelWidth + 20, 91,
                 new Vector4(.07f, .16f, .23f, .9f));
-            _ui.Text(label, 22, ClientSize.Y - 74, pixel, White, centered: false);
-            _ui.Text(details, 22, ClientSize.Y - 54, pixel, White, centered: false);
-            _ui.Text(biome, 22, ClientSize.Y - 34, pixel, White, centered: false);
+            _ui.Text(label, 22, ClientSize.Y - 94, pixel, White, centered: false);
+            _ui.Text(details, 22, ClientSize.Y - 74, pixel, White, centered: false);
+            _ui.Text(biome, 22, ClientSize.Y - 54, pixel, White, centered: false);
+            _ui.Text(temperature, 22, ClientSize.Y - 34, pixel, White, centered: false);
         }
     }
 
@@ -412,7 +441,8 @@ internal sealed class EvolveWindow : GameWindow
             bool selected = sizeAction && ScreenLayout.SizeFor(button.Action) == _session.SelectedSize ||
                 typeAction && ScreenLayout.TypeFor(button.Action) == _session.SelectedType ||
                 button.Action == UiAction.SeedField && _seedFocused ||
-                button.Action == UiAction.ToggleGrayscale && _grayscale;
+                button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
+                button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -447,8 +477,11 @@ internal sealed class EvolveWindow : GameWindow
                         MathF.Min(2.1f, (r.Width - 16) / (button.Text.Length * 6f)) : 2.5f;
                 string text = button.Action == UiAction.ToggleGrayscale
                     ? _session.State.Landmass?.ElevationByCellId is null ? "Alturas pendientes"
-                        : _grayscale ? "Ver colores" : button.Text
-                    : button.Text;
+                        : _viewMode == MapViewMode.Elevation ? "Ver colores" : button.Text
+                    : button.Action == UiAction.ToggleInfrared
+                        ? _session.State.Landmass?.Climate is null ? "CLIMA PENDIENTE"
+                            : _viewMode == MapViewMode.Infrared ? "VER BIOMAS" : button.Text
+                        : button.Text;
                 _ui.Text(text, r.X + r.Width / 2,
                     r.Y + (r.Height - 7 * pixel) / 2, pixel, White);
             }
@@ -554,7 +587,11 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.ToggleGrayscale:
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.ElevationByCellId is not null)
-                    _grayscale = !_grayscale;
+                    _viewMode = _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation;
+                break;
+            case UiAction.ToggleInfrared:
+                if (_session.Screen == GameScreen.World && _session.State.Landmass?.Climate is not null)
+                    _viewMode = _viewMode == MapViewMode.Infrared ? MapViewMode.Biomes : MapViewMode.Infrared;
                 break;
             case UiAction.Small or UiAction.Medium or UiAction.Large:
                 if (_session.Screen == GameScreen.World)
@@ -606,7 +643,7 @@ internal sealed class EvolveWindow : GameWindow
         _gridRenderer?.Dispose();
         _gridRenderer = null;
         _session.ReturnToMenu();
-        _grayscale = false;
+        _viewMode = MapViewMode.Biomes;
         _seedFocused = false;
         _hover.Clear();
     }

@@ -26,5 +26,6 @@ GridTests.Run();
 LandmassTests.Run();
 BiomeTests.Run();
 SlopeTests.Run();
+TemperatureTests.Run();
 GameTests.Run();
 return 0;

@@ -43,6 +43,13 @@ public static class GameSaveStore
             (landmass.ElevationByCellId is null || slopes.Length != landmass.SurfaceByCellId.Length ||
              slopes.Where((value, id) => value > 100 || !landmass.IsLand(id) && value != 0).Any()))
             throw new InvalidDataException("Invalid terrain slope data.");
+        if (landmass.Climate is { } climate &&
+            (string.IsNullOrWhiteSpace(climate.ModelVersion) ||
+             climate.BaseTemperatureTenthsByCellId is null ||
+             climate.BaseTemperatureTenthsByCellId.Length != landmass.SurfaceByCellId.Length ||
+             climate.RegionalOffsetsTenthsByCellId?.Keys.Any(id =>
+                 (uint)id >= (uint)landmass.SurfaceByCellId.Length) == true))
+            throw new InvalidDataException("Invalid climate save data.");
         if (landmass.Biomes is { } biomes)
         {
             if (string.IsNullOrWhiteSpace(biomes.ClassifierVersion) ||

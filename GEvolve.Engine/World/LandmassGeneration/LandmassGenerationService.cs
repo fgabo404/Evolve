@@ -3,6 +3,7 @@ using GEvolve.Engine.Grid;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.State.Game;
 using GEvolve.Engine.World.BiomeGeneration;
+using GEvolve.Engine.World.Climate;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
@@ -43,8 +44,9 @@ public sealed class LandmassGenerationService
             last = statistics;
             if (MeetsProfile(configuration.Type, statistics))
                 return new GeneratedWorld(grid,
-                    new BiomeClassifier().Apply(new LandmassState(configuration, surface, attempt)
-                    { ElevationByCellId = elevation, PlateByCellId = plates }, topology), statistics);
+                    new TemperatureGenerator().Apply(topology,
+                        new BiomeClassifier().Apply(new LandmassState(configuration, surface, attempt)
+                        { ElevationByCellId = elevation, PlateByCellId = plates }, topology)), statistics);
         }
         throw new InvalidOperationException(
             $"Landmass generator could not satisfy {configuration.Type} after four deterministic attempts " +

@@ -38,6 +38,7 @@ public sealed class HexGridRenderer : IDisposable
         in float vSummit;
         uniform int uOutline;
         uniform int uGrayscale;
+        uniform int uInfrared;
         uniform vec3 uSummitColor;
         out vec4 color;
         void main() {
@@ -47,7 +48,7 @@ public sealed class HexGridRenderer : IDisposable
                 color = uOutline != 0 ? vec4(vec3(0.4), 0.55)
                     : vec4(vec3(vHeight), 1.0);
             }
-            if (uOutline == 0 && vSummit > 0.5) color = vec4(uSummitColor, 1.0);
+            if (uOutline == 0 && vSummit > 0.5 && uInfrared == 0) color = vec4(uSummitColor, 1.0);
         }
         """;
 
@@ -60,6 +61,7 @@ public sealed class HexGridRenderer : IDisposable
     private float[] _instances = [];
     private int _instanceCount;
     private int _cameraVersion = -1;
+    private MapViewMode _viewMode;
 
     public int VisibleInstanceCount => _instanceCount;
 
@@ -101,17 +103,19 @@ public sealed class HexGridRenderer : IDisposable
         GL.BindVertexArray(0);
     }
 
-    public void Draw(MapCamera2D camera, int width, int height, bool grayscale = false)
+    public void Draw(MapCamera2D camera, int width, int height, MapViewMode viewMode = MapViewMode.Biomes)
     {
         if (camera.Columns != _grid.Definition.Columns || camera.Rows != _grid.Definition.Rows)
             throw new InvalidOperationException("Camera and grid dimensions differ.");
-        if (_cameraVersion != camera.Version)
+        if (_cameraVersion != camera.Version || _viewMode != viewMode)
         {
+            _viewMode = viewMode;
             UpdateVisible(camera);
             _cameraVersion = camera.Version;
         }
         _shader.Use();
-        GL.Uniform1(_shader.Uniform("uGrayscale"), grayscale ? 1 : 0);
+        GL.Uniform1(_shader.Uniform("uGrayscale"), viewMode == MapViewMode.Elevation ? 1 : 0);
+        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode == MapViewMode.Infrared ? 1 : 0);
         var summitColor = BiomePalette.ImpassableSummitColor;
         GL.Uniform3(_shader.Uniform("uSummitColor"), summitColor.X, summitColor.Y, summitColor.Z);
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);
@@ -140,7 +144,7 @@ public sealed class HexGridRenderer : IDisposable
             int wrapped = ((column % columns) + columns) % columns;
             _instances[index++] = center.X;
             _instances[index++] = center.Y;
-            var color = BiomePalette.ForCell(_landmass, row * columns + wrapped);
+            var color = MapViewColors.ForCell(_landmass, row * columns + wrapped, _viewMode);
             _instances[index++] = color.X;
             _instances[index++] = color.Y;
             _instances[index++] = color.Z;

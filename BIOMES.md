@@ -1,6 +1,6 @@
 ﻿# Biomas, pendientes y representación del terreno
 
-La clasificación `biomes-3` se ejecuta en Engine después de aceptar el terreno. Pangea conserva `landmass-4`, semillas, intentos, superficie, placas y elevaciones 0–100. No se suaviza el relieve ni se introduce aleatoriedad. Temperatura y humedad siguen pendientes: esta distribución es provisional.
+La clasificación `biomes-3` se ejecuta en Engine después de aceptar el terreno. Pangea conserva `landmass-4`, semillas, intentos, superficie, placas y elevaciones 0–100. No se suaviza el relieve ni se introduce aleatoriedad. La clasificación todavía no utiliza temperatura ni humedad: esta distribución es provisional. La temperatura se calcula después, como etapa independiente documentada en [TEMPERATURE.md](TEMPERATURE.md), sin cambiar estas reglas.
 
 ## Catálogo y latitud
 
