@@ -1,10 +1,10 @@
 "use strict";
 
 const CATALOGS = [
-  { type: "world", title: { es: "Mundo (Biomas)", en: "World (Biomes)" }, file: "../World/world.catalog.guide.json" },
-  { type: "animals", title: { es: "Animales", en: "Animals" }, file: "../Animals/animals.catalog.guide.json" },
-  { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Plants/plants.catalog.guide.json" },
-  { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Minerals/minerals.catalog.guide.json" },
+  { type: "world", title: { es: "Mundo (Biomas)", en: "World (Biomes)" }, file: "../World/biomes.json" },
+  { type: "animals", title: { es: "Animales", en: "Animals" }, file: "../Animals/animals.json" },
+  { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Plants/plants.json" },
+  { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Minerals/minerals.json" },
   { type: "resources", title: { es: "Recursos", en: "Resources" }, file: "../Resources/resources.catalog.guide.json" },
   { type: "technologies", title: { es: "Tecnologías", en: "Technologies" }, file: "../Technologies/agriculture.tech.json" }
 ];
@@ -96,13 +96,14 @@ function entityCard(parent, node, detail, tone = "documented") {
 }
 function edgeEvidence(edge, predicate) { return edge.evidence.find(predicate) || null; }
 function bindingDetails(edge) {
-  const product = edgeEvidence(edge, value => value.acquisitionMethodTags || value.availabilityConstraints || value.yield !== undefined);
+  const product = edgeEvidence(edge, value => value.acquisitionMethod !== undefined || value.acquisitionMethodTags || value.availabilityConstraints || value.yield !== undefined);
   const binding = edgeEvidence(edge, value => value.acquisitionTag || value.quantityPerAction !== undefined);
   const bits = [];
-  if (product?.acquisitionMethodTags?.length) bits.push(`${tr("Métodos", "Methods")}: ${product.acquisitionMethodTags.join(", ")}`);
+  if (product?.acquisitionMethod) bits.push("Método: " + product.acquisitionMethod);
+  else if (product?.acquisitionMethodTags?.length) bits.push(`${tr("Métodos", "Methods")}: ${product.acquisitionMethodTags.join(", ")}`);
   else if (binding?.acquisitionTag && binding.acquisitionTag !== "animal_material_methods_in_entity_catalog") bits.push(`${tr("Método", "Method")}: ${binding.acquisitionTag}`);
   if (product?.availabilityConstraints?.length) bits.push(`${tr("Restricciones", "Constraints")}: ${product.availabilityConstraints.join(", ")}`);
-  const amount = product?.yield ?? binding?.quantityPerAction;
+  const amount = product?.quantity ?? product?.yield ?? binding?.quantityPerAction;
   bits.push(`${tr("Cantidad", "Quantity")}: ${amount == null ? tr("pendiente de definir", "pending definition") : amount}`);
   if (binding?.reviewStatus || product?.status) bits.push(`${tr("Estado", "Status")}: ${binding?.reviewStatus || product.status}`);
   return bits.join(" · ");
@@ -194,26 +195,31 @@ function groupedEntities(parent, edges, heading, relationTone = "documented") {
   }
 }
 function renderWorld(area, node) {
-  fieldGrid(section(area, tr("Bioma", "Biome")), [
-    [tr("ID", "ID"), node.id],
-    [tr("Categoría de interfaz", "Interface category"), node.value.interfaceCategoryOnly]
-  ]);
-  const found = occurrences(node);
-  groupedEntities(area, found.filter(edge => edge.to.type === "animals"), tr("Animales con aparición documentada", "Animals with documented occurrence"));
-  groupedEntities(area, found.filter(edge => edge.to.type === "plants"), tr("Plantas con aparición documentada", "Plants with documented occurrence"));
-  groupedEntities(area, found.filter(edge => edge.to.type === "minerals"), tr("Candidatos geológicos documentados", "Documented geological candidates"));
-  const compatible = state.index.between(node, "habitat");
-  const unique = [...new Map(compatible.map(edge => [`${edge.to.type}:${edge.to.id}`, edge])).values()];
-  if (unique.length) {
-    const s = section(area, tr("Compatibilidad ambiental indicada", "Indicated environmental compatibility"));
-    note(s, tr("Estas referencias de hábitat no garantizan presencia ni generación.", "These habitat references do not guarantee presence or spawning."));
-    const grid = append(s, element("div", "relation-grid"));
-    for (const edge of unique) entityCard(grid, edge.to, "", "potential");
+  const value = node.value;
+  if (Array.isArray(value.subbiomes)) {
+    const group = section(area, tr("Subbiomas", "Subbiomes"));
+    const grid = append(group, element("div", "relation-grid"));
+    for (const sub of value.subbiomes) {
+      const target = state.index.resolve("world", sub.id);
+      if (target) entityCard(grid, target, "", "documented");
+    }
+    return;
   }
-  note(area, tr("Los rangos ambientales y la probabilidad de aparición no están definidos para este bioma.", "Environmental ranges and spawn probabilities are not defined for this biome."));
+  fieldGrid(section(area, tr("Hábitat", "Habitat")), [
+    [tr("Altura", "Elevation"), value.elevationLevel ? value.elevationLevel.min + "–" + value.elevationLevel.max : null],
+    [tr("Latitud", "Latitude"), value.latitudeDegrees ? value.latitudeDegrees.min + "°–" + value.latitudeDegrees.max + "° (" + value.latitudeDegrees.hemisphere + ")" : null]
+  ]);
+  if (value.biomeId) link(area, "world", value.biomeId, tr("Bioma principal", "Parent biome"));
+  for (const [type, label] of [["animals","Fauna"],["plants","Flora"],["minerals","Minerales"],["resources","Recursos"]]) {
+    const linked = [...new Map(state.index.outgoing(node).filter(edge => edge.to.type === type).map(edge => [edge.to.id,edge.to])).values()];
+    const group = section(area, label + " (" + linked.length + ")");
+    const grid = append(group, element("div","relation-grid"));
+    for (const target of linked) entityCard(grid,target,"","potential");
+  }
+  note(area, tr("Compatibilidad documentada; no garantiza aparición.", "Documented compatibility does not guarantee spawning."));
 }
 function renderEntityHabitats(area, node) {
-  const refs = [...state.index.incoming(node).filter(edge => edge.kind === "occurrence" || edge.kind === "habitat")];
+  const refs = [...state.index.incoming(node).filter(edge => edge.kind === "habitat")];
   if (!refs.length) return;
   const s = section(area, tr("Mundo y hábitat", "World and habitat"));
   const grid = append(s, element("div", "relation-grid"));
@@ -264,13 +270,8 @@ function renderCreature(area, node) {
 }
 function renderMineral(area, node) {
   const value = node.value;
-  fieldGrid(section(area, tr("Condiciones geológicas", "Geological conditions")), [
-    [tr("Condiciones", "Conditions"), value.geologyConstraints, true],
-    [tr("Estado", "Status"), value.definitionStatus],
-    [tr("Distinción superficie / mena", "Surface / ore distinction"), value.surfaceAndOreDistinction]
-  ]);
   renderEntityHabitats(area, node);
-  const extracted = sourceEdges(node).filter(edge => edge.evidence.some(value => value.extractedResourceId || value.sourceCollection));
+  const extracted = sourceEdges(node);
   const refined = state.index.between(node, "refined");
   for (const [edges, title] of [[extracted, tr("Recursos extraíbles", "Extractable resources")], [refined, tr("Productos refinados relacionados", "Related refined products")]]) {
     const s = section(area, `${title} (${edges.length})`);
