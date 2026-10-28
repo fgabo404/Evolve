@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text.Json;
 using GEvolve.Definitions.Catalogs.World;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.World.BiomeGeneration;
@@ -19,6 +20,12 @@ public static class BiomeTests
     };
     public static void Run()
     {
+        // Captured from 7ebfe5b before adding slope or changing catalog ranges.
+        using var distributionStream = typeof(BiomeTests).Assembly.GetManifestResourceStream("BiomeDistributionBaseline.json")!;
+        var distributionBaseline = JsonSerializer.Deserialize<DistributionBaseline[]>(distributionStream)!;
+        var previousTotals = new Dictionary<string, int>();
+        var currentTotals = new Dictionary<string, int>();
+        int totalLand = 0, totalCells = 0;
         var classifier = new BiomeClassifier();
         var catalog = BiomeCatalog.Default;
         Check(catalog.Rules.Select(rule => rule.BiomeId).Distinct().Count() == 8,
@@ -92,6 +99,20 @@ public static class BiomeTests
                 Check(mountains < before, $"Mountain coverage decreases for {size}/{seed}");
                 Console.WriteLine($"PASS: mountain cells {size}/{seed}: {before} -> {mountains} " +
                     $"({100.0 * (before - mountains) / before:F1}% reduction)");
+                var baseline = distributionBaseline.Single(item => item.Size == size.ToString() && item.Seed == seed);
+                int landCount = terrain.SurfaceByCellId.Count(value => value == 1);
+                Check(landCount == baseline.LandCells, "Distribution comparison uses identical land area");
+                var currentCounts = Enumerable.Range(0, terrain.SurfaceByCellId.Length)
+                    .GroupBy(id => terrain.Biomes!.Get(id).BiomeId!)
+                    .ToDictionary(group => group.Key, group => group.Count());
+                foreach (string biome in catalog.Rules.Select(rule => rule.BiomeId).Distinct())
+                {
+                    previousTotals[biome] = previousTotals.GetValueOrDefault(biome) + baseline.Counts.GetValueOrDefault(biome);
+                    currentTotals[biome] = currentTotals.GetValueOrDefault(biome) + currentCounts.GetValueOrDefault(biome);
+                }
+                totalLand += landCount;
+                totalCells += terrain.SurfaceByCellId.Length;
+                Console.WriteLine(FormattableString.Invariant($"DISTRIBUTION {size}/{seed}: mountain {100.0 * baseline.Counts.GetValueOrDefault("mountain") / landCount:F2}% -> {100.0 * mountains / landCount:F2}% of land ({baseline.Counts.GetValueOrDefault("mountain")} -> {mountains})"));
             }
             Check(terrain.DeterministicAttempt == int.Parse(parts[3]) &&
                 Hash(terrain.SurfaceByCellId) == parts[4] &&
@@ -106,6 +127,8 @@ public static class BiomeTests
                 ReferenceEquals(terrain.PlateByCellId, repeated.PlateByCellId),
                 "Classifier neither changes nor duplicates terrain arrays");
             var biomes = terrain.Biomes!;
+            Check(terrain.SlopeByCellId is null ? repeated.SlopeByCellId is null :
+                terrain.SlopeByCellId.SequenceEqual(repeated.SlopeByCellId!), "Deterministic slope array");
             Check(biomes.ClassifierVersion == BiomeClassifier.Version &&
                 biomes.CatalogHash == catalog.ContentHash &&
                 biomes.Assignments.SequenceEqual(repeated.Biomes!.Assignments) &&
@@ -114,6 +137,9 @@ public static class BiomeTests
             for (int id = 0; id < terrain.SurfaceByCellId.Length; id++)
             {
                 var cell = BiomeClassifier.GetCell(terrain, id);
+                Check(cell.Slope == terrain.SlopeByCellId?[id] &&
+                    (cell.Elevation is null ? cell.Slope is null : cell.Slope is >= 0 and <= 100),
+                    "Slope query is aligned by ID and absent without elevation");
                 bool summit = terrain.IsLand(id) && cell.Elevation is >= 85 and <= 100;
                 Check(terrain.IsImpassableSummit(id) == summit && cell.IsImpassableSummit == summit,
                     "Only land at elevation 85..100 is impassable");
@@ -132,7 +158,7 @@ public static class BiomeTests
                         "Summits are pure white; other cells retain biome colors");
                     if (!terrain.IsLand(id))
                         Check(cell.Biome.BiomeId == "marine" && !summit &&
-                            BiomePalette.ForCell(terrain, id) == new System.Numerics.Vector3(40, 125, 181) / 255f,
+                            BiomePalette.ForCell(terrain, id) == BiomePalette.ForBiome("marine"),
                             "All classified oceans, including poles, stay blue and passable");
                     if (cell.Biome.BiomeId is "polar_north" or "polar_south")
                         Check(terrain.IsLand(id), "Polar biomes are land-only");
@@ -158,6 +184,11 @@ public static class BiomeTests
             worlds++;
         }
         VerifyCatalogDrivenRules();
+        foreach (string biome in previousTotals.Keys.Order())
+        {
+            int denominator = biome == "marine" ? totalCells : totalLand;
+            Console.WriteLine(FormattableString.Invariant($"DISTRIBUTION TOTAL {biome}: {100.0 * previousTotals[biome] / denominator:F2}% -> {100.0 * currentTotals[biome] / denominator:F2}% ({previousTotals[biome]} -> {currentTotals[biome]}; denominator {denominator})"));
+        }
         Check(gaps == 0, "All Pangaea cells have compatible catalog IDs");
         Console.WriteLine($"PASS: biome ranges, hemispheres, persistence and {worlds} original terrain regressions; " +
             $"{assigned} classified, {gaps} explicit catalog gaps");
@@ -199,6 +230,8 @@ public static class BiomeTests
             var state = new GameState { HexGrid = new(generated.Grid.Definition), Landmass = generated.Landmass };
             GameSaveStore.Save(path, state);
             var loaded = GameSaveStore.Load(path).Landmass!;
+            Check(loaded.SlopeByCellId!.SequenceEqual(generated.Landmass.SlopeByCellId!),
+                "Slope survives save/load without recalculation");
             Check(Enumerable.Range(0, loaded.SurfaceByCellId.Length).All(id =>
                 loaded.IsImpassableSummit(id) == generated.Landmass.IsImpassableSummit(id)),
                 "Impassable condition survives save/load without regeneration");
@@ -206,9 +239,10 @@ public static class BiomeTests
                 loaded.Biomes.AssignmentByCellId.SequenceEqual(state.Landmass.Biomes.AssignmentByCellId) &&
                 loaded.ElevationByCellId!.SequenceEqual(state.Landmass.ElevationByCellId!) &&
                 loaded.PlateByCellId!.SequenceEqual(state.Landmass.PlateByCellId!), "Biome save/load");
-            state.Landmass = state.Landmass with { Biomes = null };
+            state.Landmass = state.Landmass with { Biomes = null, SlopeByCellId = null };
             GameSaveStore.Save(path, state);
             Check(GameSaveStore.Load(path).Landmass!.Biomes is null, "Existing saves without biomes remain readable");
+            Check(GameSaveStore.Load(path).Landmass!.SlopeByCellId is null, "Old saves without slope remain readable");
             state.Landmass = generated.Landmass with
             {
                 Biomes = generated.Landmass.Biomes! with { AssignmentByCellId = [255] }
@@ -220,6 +254,7 @@ public static class BiomeTests
     }
 
     private static string Hash(byte[]? data) => data is null ? "-" : Convert.ToHexString(SHA256.HashData(data));
+    private sealed record DistributionBaseline(string Size, int Seed, int LandCells, Dictionary<string, int> Counts);
     private static void Check(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);

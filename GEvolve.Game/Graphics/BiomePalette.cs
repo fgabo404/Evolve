@@ -10,14 +10,14 @@ public static class BiomePalette
     private static readonly IReadOnlyDictionary<string, Vector3> Colors =
         new Dictionary<string, Vector3>(StringComparer.Ordinal)
         {
-            ["desert"] = Rgb(0xE8C77A),
-            ["forest"] = Rgb(0x287D46),
-            ["plains"] = Rgb(0xA4C96B),
-            ["marine"] = Rgb(0x287DB5),
-            ["tundra"] = Rgb(0x91A89A),
-            ["mountain"] = Rgb(0x887C72),
-            ["polar_north"] = Rgb(0xD5EDF5),
-            ["polar_south"] = Rgb(0xF0F7FA)
+            ["desert"] = Rgb(0xD8BC82),
+            ["forest"] = Rgb(0x43845A),
+            ["plains"] = Rgb(0xA7C47C),
+            ["marine"] = Rgb(0x347FA8),
+            ["tundra"] = Rgb(0x91A99A),
+            ["mountain"] = Rgb(0x918B80),
+            ["polar_north"] = Rgb(0xDCEEF1),
+            ["polar_south"] = Rgb(0xEDF4F5)
         };
 
     public static Vector3 ForBiome(string id) => Colors.TryGetValue(id, out var color)

@@ -208,7 +208,7 @@
           },
           "elevationLevel": {
             "min": 0,
-            "max": 30
+            "max": 74
           },
           "latitudeDegrees": {
             "min": 0,
@@ -291,7 +291,7 @@
           },
           "elevationLevel": {
             "min": 10,
-            "max": 50
+            "max": 74
           },
           "latitudeDegrees": {
             "min": 15,
@@ -360,7 +360,7 @@
           },
           "elevationLevel": {
             "min": 5,
-            "max": 60
+            "max": 74
           },
           "latitudeDegrees": {
             "min": 30,
@@ -429,7 +429,7 @@
           },
           "elevationLevel": {
             "min": 0,
-            "max": 35
+            "max": 74
           },
           "latitudeDegrees": {
             "min": 50,
@@ -532,7 +532,7 @@
           },
           "elevationLevel": {
             "min": 0,
-            "max": 40
+            "max": 84
           },
           "latitudeDegrees": {
             "min": 5,
@@ -606,7 +606,7 @@
           },
           "elevationLevel": {
             "min": 10,
-            "max": 45
+            "max": 84
           },
           "latitudeDegrees": {
             "min": 25,
@@ -671,7 +671,7 @@
           },
           "elevationLevel": {
             "min": 10,
-            "max": 50
+            "max": 84
           },
           "latitudeDegrees": {
             "min": 30,
@@ -927,7 +927,7 @@
           },
           "elevationLevel": {
             "min": 0,
-            "max": 60
+            "max": 84
           },
           "latitudeDegrees": {
             "min": 55,

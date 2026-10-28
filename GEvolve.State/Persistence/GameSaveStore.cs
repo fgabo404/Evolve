@@ -39,6 +39,10 @@ public static class GameSaveStore
                 (heights.Length != landmass.SurfaceByCellId.Length || heights.Any(level => level > 100))) ||
             (landmass.PlateByCellId is { } plates && plates.Length != landmass.SurfaceByCellId.Length))
             throw new InvalidDataException("Invalid landmass save data.");
+        if (landmass.SlopeByCellId is { } slopes &&
+            (landmass.ElevationByCellId is null || slopes.Length != landmass.SurfaceByCellId.Length ||
+             slopes.Where((value, id) => value > 100 || !landmass.IsLand(id) && value != 0).Any()))
+            throw new InvalidDataException("Invalid terrain slope data.");
         if (landmass.Biomes is { } biomes)
         {
             if (string.IsNullOrWhiteSpace(biomes.ClassifierVersion) ||

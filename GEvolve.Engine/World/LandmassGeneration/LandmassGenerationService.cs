@@ -44,7 +44,7 @@ public sealed class LandmassGenerationService
             if (MeetsProfile(configuration.Type, statistics))
                 return new GeneratedWorld(grid,
                     new BiomeClassifier().Apply(new LandmassState(configuration, surface, attempt)
-                    { ElevationByCellId = elevation, PlateByCellId = plates }), statistics);
+                    { ElevationByCellId = elevation, PlateByCellId = plates }, topology), statistics);
         }
         throw new InvalidOperationException(
             $"Landmass generator could not satisfy {configuration.Type} after four deterministic attempts " +

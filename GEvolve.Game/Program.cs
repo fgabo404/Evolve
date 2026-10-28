@@ -378,6 +378,7 @@ internal sealed class EvolveWindow : GameWindow
             var environment = BiomeClassifier.GetCell(landmass, cell.Id);
             string height = environment.Elevation?.ToString() ?? "PENDIENTE";
             string details = $"ALT: {height}  LAT: {environment.Latitude:F1}";
+            details += $"  PEND: {environment.Slope?.ToString() ?? "PENDIENTE"} NIV/HEX";
             if (environment.IsImpassableSummit) details += "  CUMBRE INFRANQUEABLE";
             string biome = environment.Biome.Status switch
             {

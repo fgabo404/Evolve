@@ -25,5 +25,6 @@ if (WorldTests.Run() != 0) return 1;
 GridTests.Run();
 LandmassTests.Run();
 BiomeTests.Run();
+SlopeTests.Run();
 GameTests.Run();
 return 0;
