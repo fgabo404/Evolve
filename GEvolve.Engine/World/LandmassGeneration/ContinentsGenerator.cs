@@ -28,6 +28,7 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
             unchecked((uint)(0xC011 + attempt)));
 
         int count = topology.Count;
+        int width = topology.Columns, height = topology.Rows;
         int[] cores = ChooseDistantCores();
         int islandCells = (int)(count * profile.IslandFraction);
         int[] budgets = UnequalBudgets(
@@ -37,7 +38,6 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
         // Warp the spatial coordinates before sampling three coast scales.
         // The periodic fields also work at the horizontal wrap of the world.
         var coastResistance = new float[count];
-        int width = topology.Columns, height = topology.Rows;
         int noiseSeed = unchecked(configuration.Seed + attempt * 1543);
         for (int cell = 0; cell < count; cell++)
         {

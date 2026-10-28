@@ -66,7 +66,8 @@ public sealed class WorldGenerationService
                 PlateByCellId = plates,
                 ElevationByCellId = elevation
             };
-            return new GeneratedWorld(grid, terrain, last);
+            return new GeneratedWorld(grid, terrain, last
+                ?? throw new InvalidOperationException("Landmass statistics were not calculated."));
         }
 
         throw new InvalidOperationException(
