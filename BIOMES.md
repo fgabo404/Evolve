@@ -1,6 +1,6 @@
 ﻿# Biomas, pendientes y representación del terreno
 
-La clasificación `biomes-3` se ejecuta en Engine después de aceptar el terreno. Pangea utiliza `landmass-5` desde el cambio autorizado de tamaños y número de placas (16 por mundo); la elevación sigue en 0–100. No se suaviza el relieve ni se introduce aleatoriedad. La clasificación todavía no utiliza temperatura ni humedad: esta distribución es provisional. La temperatura se calcula después, como etapa independiente documentada en [TEMPERATURE.md](TEMPERATURE.md), sin cambiar estas reglas.
+La clasificación `biomes-3` se ejecuta en Engine después de aceptar el terreno. La arquitectura nueva utiliza `landmass-6` desde la activación de Pangea basada en `tectonic-plates-2`, pero **los biomas todavía no se ejecutan en esta nueva ruta**. La documentación y las pruebas históricas del clasificador anterior se conservan. La elevación terrestre sigue en 0–100. No se suaviza el relieve ni se introduce aleatoriedad. La clasificación todavía no utiliza temperatura ni humedad: esta distribución es provisional. La temperatura se calcula después, como etapa independiente documentada en [TEMPERATURE.md](TEMPERATURE.md), sin cambiar estas reglas.
 
 ## Catálogo y latitud
 

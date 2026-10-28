@@ -14,7 +14,7 @@ public static class TectonicPlateTests
         foreach (GridSize size in Enum.GetValues<GridSize>())
         {
             var configuration = LandmassProfiles.Create(size, LandmassType.Pangaea, 2026);
-            var result = service.Generate(configuration);
+            var result = service.GeneratePlatePreview(configuration);
             var terrain = result.Landmass;
             byte[] plates = terrain.PlateByCellId
                 ?? throw new InvalidOperationException("Every world needs tectonic plates");
@@ -65,7 +65,7 @@ public static class TectonicPlateTests
             Check(TectonicPlateGenerator.Version == "tectonic-plates-2" &&
                 TectonicPlateGenerator.BorderIrregularity > 1,
                 "Plate-specific multiscale roughness is enabled");
-            var alternate = service.Generate(
+            var alternate = service.GeneratePlatePreview(
                 LandmassProfiles.Create(size, LandmassType.Archipelagos, 2026));
             Check(plates.SequenceEqual(alternate.Landmass.PlateByCellId!) &&
                 alternate.Landmass.TectonicPreviewOnly,
@@ -73,7 +73,7 @@ public static class TectonicPlateTests
 
             if (size == GridSize.Small)
             {
-                byte[] otherSeed = service.Generate(
+                byte[] otherSeed = service.GeneratePlatePreview(
                     LandmassProfiles.Create(size, LandmassType.Pangaea, 42))
                     .Landmass.PlateByCellId!;
                 Check(!plates.SequenceEqual(otherSeed),

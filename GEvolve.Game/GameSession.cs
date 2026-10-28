@@ -16,7 +16,7 @@ public sealed class GameSession
 {
     public GameScreen Screen { get; private set; } = GameScreen.MainMenu;
     public GridSize SelectedSize { get; private set; } = GridSize.Small;
-    public LandmassType SelectedType { get; private set; } = LandmassType.Continents;
+    public LandmassType SelectedType { get; private set; } = LandmassType.Pangaea;
     public string SeedText { get; private set; } = "2026";
     public HexGrid? Grid { get; private set; }
     public GridCell? SelectedCell { get; private set; }
@@ -27,7 +27,7 @@ public sealed class GameSession
     {
         if (Screen != GameScreen.MainMenu) return;
         SelectedSize = GridSize.Small;
-        SelectedType = LandmassType.Continents;
+        SelectedType = LandmassType.Pangaea;
         SeedText = "2026";
         Error = null;
         Screen = GameScreen.CreateWorld;

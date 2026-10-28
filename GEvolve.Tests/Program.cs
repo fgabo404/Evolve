@@ -30,5 +30,6 @@ TemperatureTests.Run();
 PrecipitationTests.Run();
 PlateBoundaryTests.Run();
 TectonicPlateTests.Run();
+StagedLandmassTests.Run();
 GameTests.Run();
 return 0;

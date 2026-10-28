@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.5 · **Fecha:** 2026-10-28  
+**Versión:** 2.6 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar visualmente las placas con bordes más irregulares, versión tectonic-plates-2 (etapa 01)**. Generación jugable pausada antes de continentes.  
+**Siguiente trabajo:** **validar la integración de Pangea con placas `tectonic-plates-2` en la capa 02 de generación mundial**. Generación jugable pausada antes de continentes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -223,3 +223,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.4:** acuerdo de nuevas capas: etapa 01 placas para todos los mundos; 02 tipo de mapa/superficie/altura; 03 temperatura; 04 precipitación; 05 pendiente/bioma. Se incorpora generador de placas irregulares e independiente; en el juego solo se activa la primera capa. Se mantienen sin borrar los generadores y capas anteriores. Etapa 01 pendiente de validación de compilación y mapa.
 
 - **2026-10-28 · v2.5:** mayor irregularidad visual en las 16 placas de todos los mapas, sin activar continentes ni otras capas: `tectonic-plates-2` añade **domain warp**, ruido multiescala y resistencia específica por placa sobre crecimiento Dijkstra. Conserva topología, cantidad de placas y determinismo. Documentación en [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md). Pendiente prueba local y aceptación visual.
+
+- **2026-10-28 · v2.6:** activada **capa 02: Pangea**, integrada con las 16 placas inmutables. `PangaeaFromPlatesGenerator` recupera selección tectónica de regiones, crecimiento continental, costas y elevaciones del sistema anterior; `WorldGenerationService` ahora produce superficie y alturas sin generar clima ni biomas. Se añadieron modos visuales **superficie / alturas / placas** y pruebas. **Otros tipos de mapa pendientes.** Generador de nuevos mundos: `landmass-6`. Mantener las fases de accidentes geográficos sin marcar hasta validar. Ver [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md).

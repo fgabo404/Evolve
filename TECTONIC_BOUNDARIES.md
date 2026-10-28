@@ -44,3 +44,7 @@ Pangea ahora usa 16 semillas de placa para todos los tamaños (Pequeño 200×133
 ## Geometría irregular (tectonic-plates-2)
 
 La forma de la placa ya no procede de una resistencia espacial compartida: cada placa combina seis campos de ruido periódicos con orientación diferente y coordenadas deformadas. El mapa de aristas `PlateBoundaryMap` no cambia: continúa calculando bordes únicos y distancias desde `PlateByCellId`. Por tanto, la capa visual se adapta automáticamente a las nuevas formas. Las placas permanecen conectadas y sus contornos incluyen más curvas, salientes y entrantes. Ver [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md) para detalles y parámetro `BorderIrregularity`.
+
+## Integración con la capa 02
+
+La versión `landmass-6` produce Pangea a partir de `PlateByCellId` de `tectonic-plates-2`. El mapa de fronteras usa los mismos IDs; el generador continental no los sustituye ni modifica. Las líneas siguen visibles en la vista `CAPA 01: PLACAS`, mientras que `CAPA 02: SUPERFICIE` y `VER ALTURAS` presentan los datos de tierra, océano y relieve. La ruta de vista previa aislada de placas se mantiene disponible mediante `WorldGenerationService.GeneratePlatePreview`.

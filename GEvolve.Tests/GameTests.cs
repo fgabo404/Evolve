@@ -23,15 +23,16 @@ public static class GameTests
         session.OpenCreateWorld();
         Check(session.Screen == GameScreen.CreateWorld && session.SelectedSize == GridSize.Small,
             "Create screen defaults to Small");
-        Check(session.SelectedType == LandmassType.Continents && session.SeedText == "2026" &&
+        Check(session.SelectedType == LandmassType.Pangaea && session.SeedText == "2026" &&
             session.State.Landmass is null, "Default world type and visible seed");
         var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
         Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous)
             .Select(button => ScreenLayout.SizeFor(button.Action))
             .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large, GridSize.Enormous]), "Four official sizes");
-        Check(!createButtons.Any(button => button.Action is UiAction.Continents or UiAction.Pangaea or
-            UiAction.SmallContinents or UiAction.Archipelagos),
-            "Stage 02 world-type controls stay hidden until land generation resumes");
+        Check(createButtons.Count(button => button.Action == UiAction.Pangaea) == 1 &&
+            !createButtons.Any(button => button.Action is UiAction.Continents or
+                UiAction.SmallContinents or UiAction.Archipelagos),
+            "Pangaea stage 02 is selectable while other map types remain deferred");
         Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
             createButtons.Any(button => button.Action == UiAction.RandomSeed),
             "Editable and random seed controls");
@@ -68,15 +69,22 @@ public static class GameTests
                 grid.Cells.Count == definition.Columns * definition.Rows &&
                 definition.Orientation == GridOrientation.FlatTop, "Effective state and cell count");
 
-            var preview = session.State.Landmass!;
-            Check(preview.TectonicPreviewOnly &&
-                preview.PlateByCellId is { } plates &&
+            var terrain = session.State.Landmass!;
+            Check(!terrain.TectonicPreviewOnly &&
+                terrain.PlateByCellId is { } plates &&
                 plates.Length == grid.Cells.Count &&
                 plates.Distinct().Count() == 16 &&
-                preview.SurfaceByCellId.All(value => value == 0) &&
-                preview.ElevationByCellId is null &&
-                preview.Climate is null && preview.Biomes is null,
-                "Stage 01 generates only 16 tectonic plates, no continents or climate");
+                terrain.SurfaceByCellId.Any(value => value == 1) &&
+                terrain.SurfaceByCellId.Any(value => value == 0) &&
+                terrain.ElevationByCellId is { } elevations &&
+                elevations.Length == grid.Cells.Count &&
+                terrain.Climate is null && terrain.Biomes is null,
+                "Stage 02 generates land and elevation from universal tectonic plates");
+            int landId = Array.IndexOf(terrain.SurfaceByCellId, (byte)1);
+            int oceanId = Array.IndexOf(terrain.SurfaceByCellId, (byte)0);
+            Check(session.SelectAt(grid.Cells[landId].Center)?.Id == landId &&
+                session.SelectAt(grid.Cells[oceanId].Center)?.Id == oceanId,
+                "Land and ocean remain individually selectable");
 
             var cell = grid.Cells[definition.Columns * (definition.Rows / 2) + 2];
             Check(session.SelectAt(cell.Center)?.Id == cell.Id, "Cell selection");
@@ -133,8 +141,10 @@ public static class GameTests
         var worldButtons = ScreenLayout.Buttons(GameScreen.World, 1280, 720);
         Check(worldButtons.Count(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous) == 4,
             "Four size controls are available in world view");
-        Check(worldButtons.Any(button => button.Action == UiAction.ToggleTectonic),
-            "Tectonic plate view is available in world screen");
+        Check(worldButtons.Any(button => button.Action == UiAction.ToggleTectonic) &&
+            worldButtons.Any(button => button.Action == UiAction.ToggleSurface) &&
+            worldButtons.Any(button => button.Action == UiAction.ToggleGrayscale),
+            "Stage 01 plates, stage 02 land and elevation are independently viewable");
 
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })

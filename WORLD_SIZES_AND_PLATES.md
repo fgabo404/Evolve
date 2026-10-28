@@ -33,3 +33,7 @@ dotnet run --project GEvolve.Game
 ```
 
 Los snapshots `TerrainBaseline.txt` y `BiomeDistributionBaseline.json` permanecen como registros históricos. Se sustituyen sus comparaciones por pruebas actuales de determinismo, perfiles, topología, persistencia y distribución. La ejecución de .NET y el control visual quedan pendientes en el equipo del usuario.
+
+## Nota posterior: landmass-6
+
+La versión `landmass-5` de este documento queda como referencia histórica de tamaños y 16 placas. La nueva integración de Pangea con las placas independientes `tectonic-plates-2` usa `landmass-6`: produce nuevas superficies y elevaciones, sin cambiar los tamaños enumerados aquí. Véase [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md).

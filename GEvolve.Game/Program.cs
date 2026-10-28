@@ -37,7 +37,7 @@ internal sealed class EvolveWindow : GameWindow
     private bool _seedFocused;
     private int _smokeScenario = -1;
     private bool _smokeZoomed;
-    private MapViewMode _viewMode = MapViewMode.Tectonic;
+    private MapViewMode _viewMode = MapViewMode.Biomes;
     private int _smokeViewStep;
     private long _generationStarted;
     private double _rendererPreparationMilliseconds;
@@ -224,7 +224,12 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
-        UiAction[] viewActions = [UiAction.ToggleTectonic, UiAction.ToggleTectonic];
+        UiAction[] viewActions =
+        [
+            UiAction.ToggleTectonic, UiAction.ToggleSurface,
+            UiAction.ToggleGrayscale, UiAction.ToggleSurface,
+            UiAction.ToggleTectonic, UiAction.ToggleSurface
+        ];
         if (_smokeViewStep < viewActions.Length)
         {
             var terrain = _session.State.Landmass;
@@ -234,7 +239,9 @@ internal sealed class EvolveWindow : GameWindow
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
             var action = viewActions[_smokeViewStep];
-            var expectedMode = action == UiAction.ToggleTectonic &&
+            var expectedMode = action == UiAction.ToggleSurface
+                ? MapViewMode.Biomes
+                : action == UiAction.ToggleTectonic &&
                 terrain?.PlateByCellId is not null
                 ? MapViewMode.Tectonic
                 : action == UiAction.ToggleRainfall &&
@@ -308,13 +315,14 @@ internal sealed class EvolveWindow : GameWindow
                 1.8f, Muted);
             var buttons = ScreenLayout.Buttons(GameScreen.CreateWorld, ClientSize.X, ClientSize.Y);
             var size = buttons.First(button => button.Action == UiAction.Small).Bounds;
-            // The map-type choices will return with the next generation phase.
+            var type = buttons.First(button => button.Action == UiAction.Pangaea).Bounds;
             var seed = buttons.First(button => button.Action == UiAction.SeedField).Bounds;
             _ui.Text("Tamaño", size.X, size.Y - 24, 1.8f, Muted, centered: false);
-            _ui.Text("CAPA 01: PLACAS TECTÓNICAS", size.X + size.Width + 36,
-                size.Y + 6, 1.8f, Accent, centered: false);
-            _ui.Text("Continentes y océanos: siguiente fase", size.X + size.Width + 36,
-                size.Y + 42, 1.3f, Muted, centered: false);
+            _ui.Text("Tipo de mundo", type.X, type.Y - 24, 1.8f, Muted, centered: false);
+            _ui.Text("CAPA 01: PLACAS + CAPA 02: PANGEA",
+                type.X, type.Y + 59, 1.4f, Accent, centered: false);
+            _ui.Text("Otros tipos de mundo: pendientes",
+                type.X, type.Y + 93, 1.3f, Muted, centered: false);
             _ui.Text("Semilla", seed.X, seed.Y - 24, 1.8f, Muted, centered: false);
             _ui.Text(EvolveVersion.Display, 16, h - 27, 1.7f, Muted, centered: false);
         }
@@ -490,6 +498,7 @@ internal sealed class EvolveWindow : GameWindow
             bool selected = sizeAction && ScreenLayout.SizeFor(button.Action) == _session.SelectedSize ||
                 typeAction && ScreenLayout.TypeFor(button.Action) == _session.SelectedType ||
                 button.Action == UiAction.SeedField && _seedFocused ||
+                button.Action == UiAction.ToggleSurface && _viewMode == MapViewMode.Biomes ||
                 button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
                 button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared ||
                 button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall ||
@@ -635,6 +644,11 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.Options: _session.OpenOptions(); break;
             case UiAction.Exit: Close(); break;
             case UiAction.Back: ReturnToMenu(); break;
+            case UiAction.ToggleSurface:
+                if (_session.Screen == GameScreen.World &&
+                    _session.State.Landmass?.TectonicPreviewOnly == false)
+                    _viewMode = MapViewMode.Biomes;
+                break;
             case UiAction.ToggleGrayscale:
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.ElevationByCellId is not null)
@@ -706,7 +720,7 @@ internal sealed class EvolveWindow : GameWindow
         _gridRenderer?.Dispose();
         _gridRenderer = null;
         _session.ReturnToMenu();
-        _viewMode = MapViewMode.Tectonic;
+        _viewMode = MapViewMode.Biomes;
         _seedFocused = false;
         _hover.Clear();
     }

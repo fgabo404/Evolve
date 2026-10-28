@@ -7,7 +7,7 @@ public enum UiAction
     Create, Options, Exit, Back, Generate,
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
-    SeedField, RandomSeed, Regenerate, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic
+    SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -60,8 +60,10 @@ public static class ScreenLayout
                     columnWidth, optionHeight)),
                 new(UiAction.Enormous, "Enorme", new(left, top + 3 * (optionHeight + optionGap),
                     columnWidth, optionHeight)),
-                // Map-type controls are preserved in UiAction/TypeFor but deferred
-                // until stage 02 (continent and ocean generation).
+                // Pangaea is the first adapted stage 02 map type. The other
+                // type actions remain defined for later integration.
+                new(UiAction.Pangaea, "Pangea (capa 02)",
+                    new(right, top, columnWidth, optionHeight)),
                 new(UiAction.SeedField, "Semilla", new(left, seedY,
                     fieldWidth, seedHeight)),
                 new(UiAction.RandomSeed, "Aleatoria", new(left + fieldWidth + gapX, seedY,
@@ -80,8 +82,9 @@ public static class ScreenLayout
                 new(UiAction.Medium, "Mediano", new(101, 146, 83, 32)),
                 new(UiAction.Large, "Grande", new(190, 146, 83, 32)),
                 new(UiAction.Enormous, "Enorme", new(279, 146, 83, 32)),
-                // Later map modes remain implemented, but are hidden in stage 01.
-                new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, 196, 261, 36)),
+                new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, 188, 261, 36)),
+                new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, 230, 261, 36)),
+                new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, 272, 261, 36)),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",
