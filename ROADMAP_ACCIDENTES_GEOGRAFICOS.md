@@ -1,9 +1,9 @@
 # Evolve — Roadmap maestro de accidentes geográficos
 
-**Versión:** 2.4 · **Fecha:** 2026-10-28  
+**Versión:** 2.5 · **Fecha:** 2026-10-28  
 **Repositorio:** `fgabo404/Evolve` · **Rama:** `master`  
 **Estado:** nueva etapa 01 (formas de placas para todo tipo de mapa) implementada en código, pendiente de compilación/pruebas/revisión; **0/18 etapas aprobadas**  
-**Siguiente trabajo:** **validar el generador independiente de placas irregulares (etapa 01)**. Generación jugable pausada antes de continentes.  
+**Siguiente trabajo:** **validar visualmente las placas con bordes más irregulares, versión tectonic-plates-2 (etapa 01)**. Generación jugable pausada antes de continentes.  
 **Prioridad:** **accidentes tectónicos → lagos → ríos → accidentes derivados → integración**.
 
 > Implementaremos **una etapa a la vez**, con revisión y aprobación antes de avanzar. Este archivo es el documento único de seguimiento del proyecto; `ROADMAP_HIDROGRAFIA.md` únicamente enlaza aquí.
@@ -45,7 +45,7 @@ La **cuadrícula hexagonal es infraestructura**, no una capa numerada. Cada nuev
 
 **Pausa intencional:** en la interfaz actual solo corre la etapa 1: placas irregulares, coloreadas, con fronteras visibles. Las etapas 2–6 permanecen implementadas en el código histórico de `LandmassGenerationService` y sus generadores, pero **no se ejecutan desde el juego** mientras reestructuramos su integración.
 
-Se añadió `WorldGenerationService` para la secuencia nueva y `TectonicPlateGenerator` como capa independiente. Las placas se forman por crecimiento simultáneo de regiones hexagonales con resistencias espaciales periódicas, diferencias de tamaño y conectividad garantizada; esto evita los bordes rectos del Voronoi anterior. **Modelo geomorfológico estilizado**, aún no simula límites cinemáticos, subducción ni desplazamientos reales.
+Se añadió `WorldGenerationService` para la secuencia nueva y `TectonicPlateGenerator` como capa independiente. Las placas se forman por crecimiento simultáneo de regiones hexagonales con resistencias espaciales periódicas **distintas por placa**, deformación de dominio y tres escalas de ruido; esto genera entrantes, lóbulos y bordes más curvados sin romper su conectividad. **Modelo geomorfológico estilizado**, aún no simula límites cinemáticos, subducción ni desplazamientos reales.
 
 **Estado provisional:** el preview utiliza `LandmassState.TectonicPreviewOnly=true` y `SurfaceByCellId` relleno de ceros solo como compatibilidad. **No son océanos generados**, ni existe relieve/clima/biomas todavía. La selección de tipo de mapa se ha ocultado temporalmente en la UI, pero su lógica se conserva para la etapa 2.
 
@@ -221,3 +221,5 @@ No es aún un contrato de persistencia: se definirán los campos mínimos fase a
 - **2026-10-28 · v2.3:** nuevo conjunto de tamaños **200×133, 250×167, 300×200 y 400×267**, y **16 placas** independientemente de la resolución de Pangea. El cambio solicitado altera la línea base tectónica del generador **landmass-5**. Los volcanes siguen pendientes. Véase [WORLD_SIZES_AND_PLATES.md](WORLD_SIZES_AND_PLATES.md).
 
 - **2026-10-28 · v2.4:** acuerdo de nuevas capas: etapa 01 placas para todos los mundos; 02 tipo de mapa/superficie/altura; 03 temperatura; 04 precipitación; 05 pendiente/bioma. Se incorpora generador de placas irregulares e independiente; en el juego solo se activa la primera capa. Se mantienen sin borrar los generadores y capas anteriores. Etapa 01 pendiente de validación de compilación y mapa.
+
+- **2026-10-28 · v2.5:** mayor irregularidad visual en las 16 placas de todos los mapas, sin activar continentes ni otras capas: `tectonic-plates-2` añade **domain warp**, ruido multiescala y resistencia específica por placa sobre crecimiento Dijkstra. Conserva topología, cantidad de placas y determinismo. Documentación en [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md). Pendiente prueba local y aceptación visual.

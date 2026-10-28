@@ -55,7 +55,16 @@ public static class TectonicPlateTests
                     "Each irregular plate must remain one contiguous region");
             }
             Check(plates.SequenceEqual(TectonicPlateGenerator.Generate(topology, 2026)),
-                "Plate generation is deterministic and independent of map type");
+                "Domain-warped plate generation is deterministic");
+            var boundaryMap = PlateBoundaryMap.Analyze(topology, terrain)!;
+            Check(boundaryMap.Edges.Count > 0 &&
+                boundaryMap.Edges.All(edge =>
+                    plates[edge.FirstCellId] != plates[edge.SecondCellId] &&
+                    topology.Neighbors(edge.FirstCellId).Contains(edge.SecondCellId)),
+                "Warped boundaries are exact shared hex edges, including the seam");
+            Check(TectonicPlateGenerator.Version == "tectonic-plates-2" &&
+                TectonicPlateGenerator.BorderIrregularity > 1,
+                "Plate-specific multiscale roughness is enabled");
             var alternate = service.Generate(
                 LandmassProfiles.Create(size, LandmassType.Archipelagos, 2026));
             Check(plates.SequenceEqual(alternate.Landmass.PlateByCellId!) &&
@@ -68,7 +77,15 @@ public static class TectonicPlateTests
                     LandmassProfiles.Create(size, LandmassType.Pangaea, 42))
                     .Landmass.PlateByCellId!;
                 Check(!plates.SequenceEqual(otherSeed),
-                    "The same grid with a different seed changes plates");
+                    "The same grid with a different seed changes plate shapes");
+                foreach (int variation in new[] { -731, 7, 12345 })
+                {
+                    var variant = TectonicPlateGenerator.Generate(topology, variation);
+                    Check(variant.Distinct().Count() == TectonicPlateGenerator.NumberOfPlates,
+                        "All seed variants preserve 16 plates");
+                    Check(!variant.SequenceEqual(plates),
+                        "Additional seeds alter the irregular tectonic mosaic");
+                }
 
                 string path = Path.Combine(Path.GetTempPath(),
                     $"evolve-tectonic-{Guid.NewGuid():N}.json");

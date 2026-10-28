@@ -8,9 +8,19 @@ namespace GEvolve.Engine.World.Tectonics;
 /// </summary>
 public static class TectonicPlateGenerator
 {
-    public const string Version = "tectonic-plates-1";
+    public const string Version = "tectonic-plates-2";
+    // Controls border complexity without changing the number or connectedness of plates.
+    public const double BorderIrregularity = 1.90;
+    private const double MinimumResistance = .27;
+    private const double MaximumResistance = 3.10;
     public const int NumberOfPlates = 16;
     private const byte Unassigned = byte.MaxValue;
+
+    private readonly record struct PlateGrowthProfile(
+        double Cost,
+        double BroadX, double BroadY,
+        double MediumX, double MediumY,
+        double FineX, double FineY);
 
     public static byte[] Generate(HexTopology topology, int seed)
     {
@@ -56,17 +66,45 @@ public static class TectonicPlateGenerator
             (costs[i], costs[swap]) = (costs[swap], costs[i]);
         }
 
-        // Periodic, spatially correlated terrain resistance bends whole boundaries.
-        // No independent cell-by-cell randomness and no square Voronoi partitions.
-        var resistance = new float[count];
+        // Domain-warped, multi-scale fields: large lobes, medium bays and
+        // small bends. All noise is periodic across the east/west seam.
+        // Instead of giving every plate the same resistance field, each plate
+        // combines these fields differently. The competition between plates
+        // creates curved, asymmetric boundaries without pixel-by-pixel noise.
+        var fields = new float[6][];
+        for (int band = 0; band < fields.Length; band++)
+            fields[band] = new float[count];
+
         for (int cell = 0; cell < count; cell++)
         {
             int x = cell % columns, y = cell / columns;
-            double broad = PeriodicNoise.Sample(x, y, columns, rows, 3, seed ^ 0x231A45);
-            double medium = PeriodicNoise.Sample(x, y, columns, rows, 9, seed ^ 0x5E12AB);
-            double fine = PeriodicNoise.Sample(x, y, columns, rows, 19, seed ^ 0x7B3741);
-            resistance[cell] = (float)Math.Clamp(
-                1 + .54 * broad + .28 * medium + .10 * fine, .35, 1.75);
+            double warpX = PeriodicNoise.Sample(x, y, columns, rows, 3,
+                seed ^ 0x231A45) * columns * .055;
+            double warpY = PeriodicNoise.Sample(x, y, columns, rows, 3,
+                seed ^ 0x5E12AB) * rows * .055;
+            double wx = x + warpX, wy = y + warpY;
+
+            fields[0][cell] = (float)PeriodicNoise.Sample(wx, wy, columns, rows, 3, seed ^ 0x7B3741);
+            fields[1][cell] = (float)PeriodicNoise.Sample(wx, wy, columns, rows, 5, seed ^ 0x31CC2F);
+            fields[2][cell] = (float)PeriodicNoise.Sample(wx, wy, columns, rows, 9, seed ^ 0x47DA1E);
+            fields[3][cell] = (float)PeriodicNoise.Sample(wx, wy, columns, rows, 13, seed ^ 0x178CAB);
+            fields[4][cell] = (float)PeriodicNoise.Sample(wx, wy, columns, rows, 21, seed ^ 0x70A145);
+            fields[5][cell] = (float)PeriodicNoise.Sample(wx, wy, columns, rows, 29, seed ^ 0x2E91F4);
+        }
+
+        // Each plate has its own rotation of the noise pairs, rather than
+        // sharing the same valleys with all its neighbors.
+        var profiles = new PlateGrowthProfile[NumberOfPlates];
+        for (int plate = 0; plate < NumberOfPlates; plate++)
+        {
+            double broadAngle = random.NextDouble() * 2 * Math.PI;
+            double mediumAngle = random.NextDouble() * 2 * Math.PI;
+            double fineAngle = random.NextDouble() * 2 * Math.PI;
+            profiles[plate] = new PlateGrowthProfile(
+                costs[plate],
+                Math.Cos(broadAngle), Math.Sin(broadAngle),
+                Math.Cos(mediumAngle), Math.Sin(mediumAngle),
+                Math.Cos(fineAngle), Math.Sin(fineAngle));
         }
 
         var owner = new byte[count];
@@ -84,8 +122,23 @@ public static class TectonicPlateGenerator
             foreach (int neighbor in topology.Neighbors(step.Cell))
             {
                 if (owner[neighbor] != Unassigned) continue;
-                double next = priority + costs[step.Plate] *
-                    (.5 * (resistance[step.Cell] + resistance[neighbor]));
+                var profile = profiles[step.Plate];
+                double broad = 1.65 * (
+                    profile.BroadX * fields[0][neighbor] +
+                    profile.BroadY * fields[1][neighbor]);
+                double medium = 1.10 * (
+                    profile.MediumX * fields[2][neighbor] +
+                    profile.MediumY * fields[3][neighbor]);
+                double fine = .44 * (
+                    profile.FineX * fields[4][neighbor] +
+                    profile.FineY * fields[5][neighbor]);
+
+                // Always positive: Dijkstra's increasing priorities mean
+                // no detached islands, even at very sinuous boundaries.
+                double resistance = Math.Clamp(
+                    1 - BorderIrregularity * (broad + medium + fine),
+                    MinimumResistance, MaximumResistance);
+                double next = priority + profile.Cost * resistance;
                 frontier.Enqueue((neighbor, step.Plate), next);
             }
         }

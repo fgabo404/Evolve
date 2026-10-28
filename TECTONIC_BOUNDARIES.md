@@ -40,3 +40,7 @@ Se añadieron pruebas para aristas únicas, vecinos válidos, costura horizontal
 ## Cambio de línea base en landmass-5
 
 Pangea ahora usa 16 semillas de placa para todos los tamaños (Pequeño 200×133, Mediano 250×167, Grande 300×200, Enorme 400×267). La modificación de la cantidad de placas fue solicitada expresamente; el análisis derivado de fronteras no cambia. Las antiguas huellas de tectónica no son comparables entre versiones.
+
+## Geometría irregular (tectonic-plates-2)
+
+La forma de la placa ya no procede de una resistencia espacial compartida: cada placa combina seis campos de ruido periódicos con orientación diferente y coordenadas deformadas. El mapa de aristas `PlateBoundaryMap` no cambia: continúa calculando bordes únicos y distancias desde `PlateByCellId`. Por tanto, la capa visual se adapta automáticamente a las nuevas formas. Las placas permanecen conectadas y sus contornos incluyen más curvas, salientes y entrantes. Ver [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md) para detalles y parámetro `BorderIrregularity`.

@@ -23,7 +23,7 @@
 ## Qué cambia ahora
 
 1. **Las 16 placas se generan antes de elegir la forma continental.** Con igual semilla y tamaño, los cuatro tipos de mundo comparten el mismo `PlateByCellId`.
-2. **Nueva geometría:** `TectonicPlateGenerator` utiliza 16 orígenes separados por muestreo de candidatos, crecimiento simultáneo sobre vecinos hexagonales, velocidades relativas de expansión diferentes y un coste de crecimiento suavemente variable (ruido periódico). Todas las placas son regiones conectadas y las fronteras son irregulares. Es una aproximación procedural a las grandes formas tectónicas de la Tierra, **no una simulación científica de cinemática tectónica**.
+2. **Nueva geometría:** `TectonicPlateGenerator` utiliza 16 orígenes separados por muestreo de candidatos, crecimiento simultáneo sobre vecinos hexagonales, velocidades relativas de expansión diferentes y un coste de crecimiento suavemente variable (ruido periódico) **específico para cada placa**. Todas las placas son regiones conectadas y las fronteras son irregulares. Es una aproximación procedural a las grandes formas tectónicas de la Tierra, **no una simulación científica de cinemática tectónica**.
 3. **Solo capa 01 activa en el juego:** `WorldGenerationService.Generate` crea la cuadrícula y los IDs de placa, pero **no** genera tierra, océanos, altura, temperatura, lluvia ni biomas. El mapa se abre mostrando las placas y sus límites. El selector de tipo de mapa y los modos de terreno/clima se ocultan temporalmente.
 4. **Código conservado:** `LandmassGenerationService.Generate`, `PangaeaGenerator`, los tres otros generadores, `TemperatureGenerator`, `PrecipitationGenerator`, `BiomeClassifier` y sus pruebas siguen en el repositorio. Son la implementación histórica que adaptaremos progresivamente a estas capas. **No deben mezclarse aún sus antiguas placas Voronoi con la nueva capa independiente.**
 5. **Estado provisional del preview:** `LandmassState.TectonicPreviewOnly` indica que `SurfaceByCellId` es solo una matriz vacía para compatibilidad. Un valor 0 aquí **no indica océano verdadero**. El arreglo de placas contiene los únicos datos geográficos definitivos de esta etapa.
@@ -42,3 +42,19 @@ dotnet run --project GEvolve.Game
 ```
 
 La ejecución de .NET/OpenGL debe verificarse en un entorno compatible; no se ha ejecutado dentro de esta sesión.
+
+## Placas más irregulares: `tectonic-plates-2`
+
+La primera versión `tectonic-plates-1` utilizaba un **Dijkstra multiorigen**: cada placa crecía a través de hexágonos vecinos pagando su propio factor de velocidad y una resistencia espacial común a todas las placas. Aunque las fronteras variaban, la competencia todavía se parecía a un Voronoi suavizado.
+
+La segunda versión mantiene el crecimiento conectado, pero añade tres cambios:
+
+1. **Deformación de dominio (domain warp):** dos campos de ruido continuo de baja frecuencia desplazan virtualmente las coordenadas antes de evaluar los demás ruidos. No desplazan las celdas reales ni alteran el grid.
+2. **Ruido fractal multiescala:** seis campos periódicos se agrupan en tres pares: grandes lóbulos (frecuencias 3/5), entrantes de escala mediana (9/13) y detalles menores (21/29), todos con 3 octavas. No se usa ruido blanco independiente por celda.
+3. **Resistencia diferente por placa:** cada una mezcla los tres pares de ruidos con ángulos propios derivados de la semilla. El costo de conquistar un vecino se calcula como `costoBaseDePlaca × clamp(1 - BorderIrregularity × (1.65×ruidoGrande + 1.10×ruidoMediano + 0.44×ruidoFino), 0.27, 3.10)`. Los campos y sus ángulos varían por semilla.
+
+`BorderIrregularity = 1.90` es el parámetro principal para calibrar la irregularidad en futuras revisiones. El costo siempre es **positivo**, de modo que el algoritmo nunca ocupa una celda desconectada del territorio de su placa. Se mantiene el cierre horizontal periódico y el número fijo de **16 placas**, independiente del tipo de continente.
+
+Esta técnica **simula fronteras naturales de manera procedural**: no modela todavía la dinámica real de placas (convergencia, subducción, dorsales ni fallas activas). El número de placas, el nuevo aspecto de los bordes y la versión del algoritmo son decisiones de diseño del juego.
+
+**Estado:** implementación y pruebas de invariantes codificadas, pendiente de ejecución de .NET 10, examen visual y aprobación.
