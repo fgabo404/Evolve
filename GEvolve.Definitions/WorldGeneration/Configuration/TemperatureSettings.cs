@@ -3,10 +3,11 @@ namespace GEvolve.Definitions.WorldGeneration.Configuration;
 /// <summary>Annual mean climate calibration. Distances are hex steps, not kilometres.</summary>
 public sealed record TemperatureSettings
 {
-    public double EquatorCelsius { get; init; } = 27;
-    public double PoleCelsius { get; init; } = -23;
-    public double OceanEquatorCelsius { get; init; } = 24;
-    public double OceanPoleCelsius { get; init; } = -18;
+    public double EquatorCelsius { get; init; } = 32;
+    public double PoleCelsius { get; init; } = -12;
+    public double OceanEquatorCelsius { get; init; } = 29;
+    public double OceanPoleCelsius { get; init; } = -6;
+    public double MaximumBaseCelsius { get; init; } = 40;
     public double MetresPerElevationLevel { get; init; } = 40;
     public double LapseCelsiusPerKilometre { get; init; } = 6.5;
     public double CoastalStrength { get; init; } = .65;
@@ -16,10 +17,10 @@ public sealed record TemperatureSettings
 
     public void Validate()
     {
-        double[] values = [EquatorCelsius, PoleCelsius, OceanEquatorCelsius, OceanPoleCelsius,
+        double[] values = [EquatorCelsius, PoleCelsius, OceanEquatorCelsius, OceanPoleCelsius, MaximumBaseCelsius,
             MetresPerElevationLevel, LapseCelsiusPerKilometre, CoastalStrength,
             OceanDecayHexSteps, RegionalAmplitudeCelsius];
-        if (values.Any(value => !double.IsFinite(value)) || MetresPerElevationLevel < 0 ||
+        if (values.Any(value => !double.IsFinite(value)) || MaximumBaseCelsius <= 0 || MetresPerElevationLevel < 0 ||
             LapseCelsiusPerKilometre < 0 || CoastalStrength is < 0 or > 1 ||
             OceanDecayHexSteps <= 0 || RegionalAmplitudeCelsius < 0 ||
             RegionalFrequency is < 1 or > 1024)

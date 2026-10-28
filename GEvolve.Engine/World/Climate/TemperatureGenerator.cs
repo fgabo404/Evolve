@@ -7,7 +7,7 @@ namespace GEvolve.Engine.World.Climate;
 
 public sealed class TemperatureGenerator
 {
-    public const string Version = "temperature-1";
+    public const string Version = "temperature-2";
     private readonly TemperatureSettings _settings;
 
     public TemperatureGenerator(TemperatureSettings? settings = null)
@@ -50,9 +50,10 @@ public sealed class TemperatureGenerator
             (_settings.OceanPoleCelsius - _settings.OceanEquatorCelsius) * polarWeight;
         double influence = !land ? 1 : oceanDistance < 0 ? 0 :
             _settings.CoastalStrength * Math.Exp(-oceanDistance / _settings.OceanDecayHexSteps);
-        return continental + influence * (maritime - continental) -
+        double annualMean = continental + influence * (maritime - continental) -
             elevation * _settings.MetresPerElevationLevel / 1000 * _settings.LapseCelsiusPerKilometre +
             _settings.RegionalAmplitudeCelsius * regionalNoise;
+        return Math.Min(annualMean, _settings.MaximumBaseCelsius);
     }
 
     public LandmassState Apply(HexTopology topology, LandmassState terrain)

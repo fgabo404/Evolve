@@ -104,3 +104,11 @@ git diff --check
 ```
 
 No se implementan humedad, precipitaciones, viento, estaciones, cambio climático real, cambio de biomas ni distribución de recursos. La clasificación ecológica todavía no consume temperatura; la siguiente etapa podrá consultarla desde State.
+
+## Calibración térmica 2 — referencia cálida del Holoceno tardío
+
+El perfil inicial sube las referencias térmicas a **32 °C ecuatorial continental**, **−12 °C polar continental**, **29 °C ecuatorial oceánico** y **−6 °C polar oceánico**, con un máximo explícito de **40 °C para la temperatura base media anual**. Se mantienen gradiente altitudinal de 6,5 °C/km, influencia de costa y ruido periódico. El modelo se identifica como `temperature-2`; no se cambia la superficie, ni placas, ni elevaciones de Pangea.
+
+El máximo de 40 °C es un **tope**, no una temperatura obligatoria de los desiertos ni un límite de la temperatura actual con modificadores climáticos futuros. La paleta infrarroja conserva sus anclas. Los valores numéricos son una calibración provisional de juego inspirada en un mundo templado tipo Holoceno tardío, **no** una reconstrucción científica exacta del año 2000 a. C. La media mundial debe verificarse con ponderación de área por latitud; no se valida con el promedio rectangular simple por celda. Las mediciones de `temperature-1` recogidas arriba son históricas, no resultados de esta nueva calibración.
+
+Los biomas todavía no consumen temperatura: asignar desierto solo por calor sería incorrecto sin humedad. La integración completa de temperatura y humedad en la selección ecológica queda pendiente. Los guardados anteriores conservan su clima base y versión; los nuevos mundos reciben `temperature-2`.
