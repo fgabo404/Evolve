@@ -114,9 +114,9 @@ public static class BiomeTests
             for (int id = 0; id < terrain.SurfaceByCellId.Length; id++)
             {
                 var cell = BiomeClassifier.GetCell(terrain, id);
-                bool summit = terrain.IsLand(id) && cell.Elevation is >= 90 and <= 100;
+                bool summit = terrain.IsLand(id) && cell.Elevation is >= 85 and <= 100;
                 Check(terrain.IsImpassableSummit(id) == summit && cell.IsImpassableSummit == summit,
-                    "Only land at elevation 90..100 is impassable");
+                    "Only land at elevation 85..100 is impassable");
                 Check(cell.Latitude is >= -90 and <= 90 && cell.Elevation is null or <= 100,
                     "Cell query returns original elevation and valid latitude");
                 byte? catalogElevation = cell.Elevation ?? (terrain.IsLand(id) ? null : (byte?)0);
@@ -167,9 +167,9 @@ public static class BiomeTests
     {
         var terrain = new LandmassState(LandmassProfiles.Create(GridSize.Small, LandmassType.Pangaea, 1),
             [1, 1, 1, 1, 0, 0, 0, 0], 0)
-            { ElevationByCellId = [0, 89, 90, 100, 0, 89, 90, 100] };
+            { ElevationByCellId = [0, 84, 85, 100, 0, 84, 85, 100] };
         for (int id = 0; id < 8; id++)
-            Check(terrain.IsImpassableSummit(id) == (id is 2 or 3), "Exact 89/90 threshold and ocean exclusion");
+            Check(terrain.IsImpassableSummit(id) == (id is 2 or 3), "Exact 84/85 threshold and ocean exclusion");
         Check(!(terrain with { ElevationByCellId = null }).IsImpassableSummit(2),
             "Unknown heights cannot create summits");
         Check(BiomePalette.ForCell(terrain, 2) == System.Numerics.Vector3.One &&
