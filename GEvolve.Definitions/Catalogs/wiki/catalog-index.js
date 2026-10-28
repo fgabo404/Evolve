@@ -28,9 +28,10 @@ globalThis.EvolveCatalogIndex = function createCatalogIndex(data) {
   }
 
   register("world", data.world.biomes);
-  register("animals", data.animals.speciesCandidates);
-  register("plants", [...list(data.plants.speciesCandidates), ...list(data.plants.agriculturalCropCandidates)]);
-  register("minerals", data.minerals.geologicalResourceCandidates);
+  register("world", list(data.world.biomes).flatMap(b => list(b.subbiomes).map(sub => ({ ...sub, biomeId: b.id }))));
+  register("animals", data.animals.animals);
+  register("plants", data.plants.plants);
+  register("minerals", data.minerals.minerals);
   register("resources", data.resources.resources);
   register("technologies", data.technologies.technologies);
   register("processes", data.resources.processingLinks.map(link => ({ id: link.processTag, ...link })));
@@ -88,33 +89,24 @@ globalThis.EvolveCatalogIndex = function createCatalogIndex(data) {
       .map(node => [node.id, node])).values()];
   }
 
-  const biomeForVariant = new Map(list(data.world.regionalVariants).map(value => [value.id, value.biomeId]));
-  for (const occurrence of list(data.world.resourceOccurrences)) {
-    const type = ({ animal: "animals", plant: "plants", geological: "minerals" })[occurrence.kind];
-    if (!type) continue;
-    connect("world", occurrence.biomeId, type, occurrence.definitionId, "occurrence", occurrence, occurrence.id);
-  }
-  for (const type of ["animals", "plants"]) {
-    for (const entity of [...nodes.values()].filter(node => node.type === type)) {
-      const value = entity.value;
-      for (const variantId of list(value.biomeVariantIds)) {
-        const biomeId = biomeForVariant.get(variantId) || variantId;
-        if (resolve("world", biomeId)) connect("world", biomeId, type, entity.id, "habitat", value, "biomeVariantIds");
-        else missing("world", biomeId, `${entity.id}.biomeVariantIds`);
-      }
-      for (const product of [...list(value.potentialProducts), ...list(value.products)]) {
-        const resourceIds = product.resourceId ? [product.resourceId] : tagMappings.get(product.resourceTag) || [];
-        for (const resourceId of resourceIds) connect(type, entity.id, "resources", resourceId, "source", product, `${entity.id}.products`);
-      }
-      if (value.cultivationResearch?.technologyId) {
-        connect(type, entity.id, "technologies", value.cultivationResearch.technologyId,
-          "cultivation", value.cultivationResearch, `${entity.id}.cultivationResearch`);
-      }
+  for (const biome of list(data.world.biomes)) {
+    for (const sub of list(biome.subbiomes)) {
+      connect("world", biome.id, "world", sub.id, "subbiome", sub, "biomes.subbiomes");
+      for (const [field, type] of [["fauna", "animals"], ["flora", "plants"], ["minerals", "minerals"]])
+        for (const id of list(sub[field]))
+          connect("world", sub.id, type, id, "habitat", sub, sub.id + "." + field);
+      for (const id of list(sub.resources))
+        connect("world", sub.id, "resources", id, "habitat_resource", sub, sub.id + ".resources");
     }
   }
-  for (const mineral of list(data.minerals.geologicalResourceCandidates)) {
-    if (mineral.extractedResourceId) connect("minerals", mineral.id, "resources", mineral.extractedResourceId, "source", mineral, "extractedResourceId");
-    if (mineral.refinedOutputResourceId) connect("minerals", mineral.id, "resources", mineral.refinedOutputResourceId, "refined", mineral, "refinedOutputResourceId");
+  for (const type of ["animals", "plants", "minerals"]) {
+    for (const item of list(data[type][type])) {
+      for (const biomeId of list(item.spawn))
+        connect("world", biomeId, type, item.id, "habitat", item, item.id + ".spawn");
+      for (const product of list(item.resources))
+        if (product.resourceId) connect(type, item.id, "resources", product.resourceId,
+          "source", product, item.id + ".resources");
+    }
   }
   for (const binding of list(data.resources.sourceBindings)) {
     const type = sourceType(binding.sourceCollection);
