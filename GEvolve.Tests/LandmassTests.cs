@@ -94,9 +94,14 @@ public static class LandmassTests
         VerifyPersistence(service);
         var tectonic = service.Generate(LandmassProfiles.Create(GridSize.Small,LandmassType.Pangaea,2026));
         Check(tectonic.Landmass.ElevationByCellId is { Length: 7000 } heights &&
-            heights.All(value=>value<=3) &&
+            heights.All(value=>value<=100) &&
+            heights.Max()==100 &&
+            heights.Where((value,id)=>tectonic.Landmass.SurfaceByCellId[id]==1)
+                .Distinct().Count()>20 &&
+            heights.Where((value,id)=>tectonic.Landmass.SurfaceByCellId[id]==0)
+                .All(value=>value==0) &&
             tectonic.Landmass.PlateByCellId is { Length: 7000 },
-            "Tectonic elevation and plate IDs align with hex cells");
+            "Pangaea tectonic elevation uses 0..100 without changing ocean cells");
     }
 
     private static void VerifyPeriodicSeam()

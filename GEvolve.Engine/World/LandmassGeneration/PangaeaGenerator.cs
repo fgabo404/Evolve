@@ -174,15 +174,29 @@ public sealed class PangaeaGenerator : ILandmassGenerator
             if(surface[id]==1)sorted.Add(potential[id]);
         }
         sorted.Sort();
-        double low=sorted[(int)(.34*(sorted.Count-1))];
-        double high=sorted[(int)(.78*(sorted.Count-1))];
-        double summit=sorted[(int)(.955*(sorted.Count-1))];
+        // Escala continua 0..100: la tectónica conserva sus presiones y la
+        // silueta continental; solo se transforma el potencial en elevación.
+        // Los percentiles reducen la influencia de valores extremos y los
+        // puntos de control reservan las elevaciones más altas para las cumbres.
+        double[] quantile = [0, .34, .78, .955, 1];
+        double[] level = [0, 15, 50, 80, 100];
+        var anchors=new double[quantile.Length];
+        for(int i=0;i<anchors.Length;i++)
+            anchors[i]=sorted[(int)Math.Round(quantile[i]*(sorted.Count-1))];
         var elevation=new byte[count];
         for(int id=0;id<count;id++)
         {
-            if(surface[id]==0)continue;
-            elevation[id]=(byte)(potential[id]<low?0:potential[id]<high?1:
-                potential[id]<summit?2:3);
+            if(surface[id]==0)continue; // Océano: referencia de nivel 0.
+            double value=potential[id];
+            int section=0;
+            while(section<anchors.Length-2 && value>anchors[section+1])
+                section++;
+            double span=anchors[section+1]-anchors[section];
+            double fraction=span>1e-12
+                ?Math.Clamp((value-anchors[section])/span,0,1):0;
+            elevation[id]=(byte)Math.Clamp(
+                (int)Math.Round(level[section]+fraction*
+                    (level[section+1]-level[section])),0,100);
         }
         return(surface,elevation,plates);
     }
