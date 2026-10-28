@@ -163,6 +163,8 @@ internal sealed class EvolveWindow : GameWindow
             if (terrain.IsImpassableSummit(id)) biome = "impassable summit";
             if (_viewMode == MapViewMode.Infrared)
                 biome = $"thermal {terrain.Climate!.CurrentCelsius(id):F0}";
+            if (_viewMode == MapViewMode.Rainfall)
+                biome = $"rainfall {terrain.Climate!.BasePrecipitationMmByCellId![id]}";
             if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
             // Evitar las tarjetas, los botones y el texto de la interfaz.
@@ -171,7 +173,8 @@ internal sealed class EvolveWindow : GameWindow
             int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
             int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-            if (_viewMode != MapViewMode.Infrared && terrain.IsImpassableSummit(id) &&
+            if (_viewMode is not (MapViewMode.Infrared or MapViewMode.Rainfall) &&
+                terrain.IsImpassableSummit(id) &&
                 (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
                 throw new InvalidOperationException($"Summit {id} is not pure white.");
             Vector3 expected = MapViewColors.ForCell(terrain, id, _viewMode) * 255;
@@ -216,7 +219,8 @@ internal sealed class EvolveWindow : GameWindow
         if (_session.Screen != GameScreen.World) return;
         UiAction[] viewActions = [UiAction.ToggleGrayscale, UiAction.ToggleInfrared,
             UiAction.ToggleGrayscale, UiAction.ToggleGrayscale,
-            UiAction.ToggleInfrared, UiAction.ToggleInfrared];
+            UiAction.ToggleInfrared, UiAction.ToggleInfrared,
+            UiAction.ToggleRainfall, UiAction.ToggleRainfall];
         if (_smokeViewStep < viewActions.Length)
         {
             var terrain = _session.State.Landmass;
@@ -226,7 +230,10 @@ internal sealed class EvolveWindow : GameWindow
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
             var action = viewActions[_smokeViewStep];
-            var expectedMode = action == UiAction.ToggleInfrared && terrain?.Climate is not null
+            var expectedMode = action == UiAction.ToggleRainfall &&
+                terrain?.Climate?.BasePrecipitationMmByCellId is not null
+                ? _viewMode == MapViewMode.Rainfall ? MapViewMode.Biomes : MapViewMode.Rainfall
+                : action == UiAction.ToggleInfrared && terrain?.Climate is not null
                 ? _viewMode == MapViewMode.Infrared ? MapViewMode.Biomes : MapViewMode.Infrared
                 : action == UiAction.ToggleGrayscale && terrain?.ElevationByCellId is not null
                     ? _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation

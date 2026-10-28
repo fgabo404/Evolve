@@ -134,3 +134,9 @@ Los núcleos polares terrestres comienzan ahora en **80°** en cada hemisferio, 
 Las montañas son compatibles de 0° a 90°; las cumbres terrestres siguen siendo infranqueables desde elevación 85. Los océanos siguen siendo marinos a todas las latitudes. Temperatura y humedad aún no condicionan la selección: en particular, ampliar los desiertos no garantiza que aparezcan mientras las llanuras y bosques tengan mayor prioridad.
 
 La cobertura del catálogo fue comprobada para todas las latitudes enteras −90°..90° y elevaciones 0..100 sobre tierra, sin huecos de compatibilidad. Los cambios de rangos solo se aplican a mundos nuevos o reclasificados expresamente.
+
+## biomes-4: selección climática
+
+El clasificador ahora se ejecuta después del cálculo térmico y de precipitación. Mantiene los rangos de `biomes.json` y la prioridad de las montañas abruptas, los polos y el océano. Para el resto, utiliza temperatura base, lluvia anual y humedad disponible para distinguir desierto, estepa, sabana, pradera y bosque. El caso de 81 mm/año y humedad 7/100 se clasifica como desierto arenoso donde el catálogo lo permite.
+
+El cálculo de lluvia pasó de filas independientes a transporte de vapor entre hexágonos vecinos, con vientos zonales/meridionales y lluvia orográfica. No altera placas ni elevación. Los salares requieren geología adicional y los humedales requieren hidrología; no se asignan automáticamente por sequedad o lluvia. Los guardados antiguos sin datos climáticos mantienen el criterio provisional previo. Ver `PRECIPITATION.md` para modelo, umbrales y pruebas.

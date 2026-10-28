@@ -48,6 +48,7 @@ public static class BiomeTests
             classifier.Classify(true, 0, -90).BiomeId == "polar_south",
             "Polar oceans stay marine, polar land respects hemispheres");
         VerifySummitBoundary();
+        VerifyClimateDecisions(classifier);
         Check(classifier.Classify(true, null, 0).Status == BiomeClassificationStatus.MissingElevation,
             "Missing elevation is never fabricated");
         Check(classifier.Classify(false, 1, 0).Status == BiomeClassificationStatus.NoCatalogMatch,
@@ -192,6 +193,23 @@ public static class BiomeTests
         Check(gaps == 0, "All Pangaea cells have compatible catalog IDs");
         Console.WriteLine($"PASS: biome ranges, hemispheres, persistence and {worlds} original terrain regressions; " +
             $"{assigned} classified, {gaps} explicit catalog gaps");
+    }
+
+    private static void VerifyClimateDecisions(BiomeClassifier classifier)
+    {
+        // A real screenshot case: 26.7 C, 81 mm/year, moisture 7, slope 1.
+        var dry = classifier.Classify(true, 12, -13.1, 1, 26.7, 81, 7);
+        var wet = classifier.Classify(true, 12, -13.1, 1, 26.7, 2200, 72);
+        Check(dry.SubbiomeId == "desert_sandy" &&
+            wet.SubbiomeId == "forest_tropical",
+            "Dry tropical land becomes desert, humid tropical land becomes forest");
+        Check(classifier.Classify(true, 12, -13.1, 1).BiomeId == "plains",
+            "Terrain-only fallback remains compatible with older saves");
+        Check(classifier.Classify(false, 0, -13.1, 0, 26.7, 81, 7).BiomeId == "marine" &&
+            classifier.Classify(true, 0, 85, 0, -12, 0, 0).BiomeId == "polar_north",
+            "Climate preserves ocean and polar priority");
+        Check(classifier.Classify(true, 70, 35, 12, 20, 81, 7).BiomeId == "mountain",
+            "High steep mountain still overrides aridity");
     }
 
     private static void VerifySummitBoundary()

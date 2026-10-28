@@ -43,11 +43,14 @@ public sealed class LandmassGenerationService
             LandmassStatistics statistics = LandmassAnalysis.Analyze(topology, surface);
             last = statistics;
             if (MeetsProfile(configuration.Type, statistics))
-                return new GeneratedWorld(grid,
-                    new PrecipitationGenerator().Apply(topology,
-                    new TemperatureGenerator().Apply(topology,
-                        new BiomeClassifier().Apply(new LandmassState(configuration, surface, attempt)
-                        { ElevationByCellId = elevation, PlateByCellId = plates }, topology))), statistics);
+                {
+                    var terrain = new LandmassState(configuration, surface, attempt)
+                        { ElevationByCellId = elevation, PlateByCellId = plates };
+                    terrain = new TemperatureGenerator().Apply(topology, terrain);
+                    terrain = new PrecipitationGenerator().Apply(topology, terrain);
+                    terrain = new BiomeClassifier().Apply(terrain, topology);
+                    return new GeneratedWorld(grid, terrain, statistics);
+                }
         }
         throw new InvalidOperationException(
             $"Landmass generator could not satisfy {configuration.Type} after four deterministic attempts " +

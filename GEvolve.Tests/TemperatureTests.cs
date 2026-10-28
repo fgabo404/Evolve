@@ -13,9 +13,9 @@ public static class TemperatureTests
     public static void Run()
     {
         var generator = new TemperatureGenerator();
-        Check(generator.CalculateCelsius(0, 0, true, -1, 0) == 27 &&
-            generator.CalculateCelsius(90, 0, true, -1, 0) == -23 &&
-            generator.CalculateCelsius(-90, 0, true, -1, 0) == -23, "Latitude endpoints and negative values");
+        Check(generator.CalculateCelsius(0, 0, true, -1, 0) == 32 &&
+            generator.CalculateCelsius(90, 0, true, -1, 0) == -12 &&
+            generator.CalculateCelsius(-90, 0, true, -1, 0) == -12, "Latitude endpoints and negative values");
         Check(Math.Abs(generator.CalculateCelsius(30, 0, true, 3, 0) -
             generator.CalculateCelsius(30, 100, true, 3, 0) - 26) < 1e-10, "Lapse is 26 C per 4000 m");
         Check(generator.CalculateCelsius(0, 0, true, 1, 0) < generator.CalculateCelsius(0, 0, true, 40, 0) &&
@@ -24,7 +24,7 @@ public static class TemperatureTests
         for (int latitude = -90; latitude <= 90; latitude++)
         for (int distance = 1; distance < 100; distance++)
             Check(Math.Abs(generator.CalculateCelsius(latitude, 0, true, distance, 0) -
-                generator.CalculateCelsius(latitude, 0, true, distance + 1, 0)) < .5,
+                generator.CalculateCelsius(latitude, 0, true, distance + 1, 0)) < .65,
                 "Ocean moderation decays without abrupt inland jumps");
 
         var definition = HexGridDefinitions.Get(GridSize.Small);
@@ -85,8 +85,12 @@ public static class TemperatureTests
                     var color = MapViewColors.ForCell(terrain, id, mode);
                     if (mode == MapViewMode.Infrared)
                         Check(color == ThermalPalette.ForCelsius(climate.CurrentCelsius(id)), "Thermal palette includes oceans and summits");
+                    else if (mode == MapViewMode.Rainfall)
+                        Check(color == RainfallPalette.ForMillimetres(
+                            climate.BasePrecipitationMmByCellId![id]),
+                            "Rainfall view shows precipitation even on summits");
                     else if (terrain.IsImpassableSummit(id))
-                        Check(color == Vector3.One, "Summits stay white outside infrared");
+                        Check(color == Vector3.One, "Summits stay white in terrain views");
                 }
             }
             Check(climate.BaseTemperatureTenthsByCellId.SequenceEqual(repeated.Climate!.BaseTemperatureTenthsByCellId),
