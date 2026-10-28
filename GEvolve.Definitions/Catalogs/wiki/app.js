@@ -229,11 +229,8 @@ function renderEntityHabitats(area, node) {
     const signature = `${source.type}:${source.id}:${edge.kind}`;
     if (seen.has(signature)) continue;
     seen.add(signature);
-    const originNotes = [...new Set(edge.evidence.map(item => item.sourceText).filter(Boolean))];
-    entityCard(grid, source, edge.kind === "occurrence"
-      ? `${tr("Aparición documentada; presencia no garantizada", "Documented occurrence; presence not guaranteed")}${originNotes.length ? ` · ${tr("Fuentes", "Sources")}: ${originNotes.join("; ")}` : ""}`
-      : tr("Compatibilidad indicada; presencia no garantizada", "Indicated compatibility; presence not guaranteed"),
-      edge.kind === "occurrence" ? "documented" : "potential");
+    entityCard(grid, source,
+      tr("Subbioma compatible; aparición no garantizada", "Compatible subbiome; spawning not guaranteed"), "potential");
   }
 }
 function renderSourceLinks(area, node) {
@@ -248,9 +245,10 @@ function renderSourceLinks(area, node) {
 function renderCreature(area, node) {
   const value = node.value;
   fieldGrid(section(area, tr("Identidad", "Identity")), [
-    ["Tag", value.tag ?? value.cropUseTag],
-    [tr("Tipo", "Type"), value.cropUseTag ? tr("Cultivo", "Crop") : node.type === "animals" ? tr("Animal", "Animal") : tr("Planta", "Plant")],
-    [tr("Estado", "Status"), value.definitionStatus]
+    [tr("Tipo", "Type"), node.type === "animals" ? tr("Animal", "Animal") : tr("Planta", "Plant")],
+    [node.type === "animals" ? tr("Domesticación", "Domestication") : tr("Cultivo", "Cultivation"),
+      node.type === "animals" ? value.domestication : value.cultivation, true],
+    [tr("Usos", "Uses"), list(value.uses).join(", ") || null, true]
   ]);
   renderEntityHabitats(area, node);
   const sources = renderSourceLinks(area, node);
