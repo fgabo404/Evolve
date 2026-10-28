@@ -140,3 +140,7 @@ La cobertura del catálogo fue comprobada para todas las latitudes enteras −90
 El clasificador ahora se ejecuta después del cálculo térmico y de precipitación. Mantiene los rangos de `biomes.json` y la prioridad de las montañas abruptas, los polos y el océano. Para el resto, utiliza temperatura base, lluvia anual y humedad disponible para distinguir desierto, estepa, sabana, pradera y bosque. El caso de 81 mm/año y humedad 7/100 se clasifica como desierto arenoso donde el catálogo lo permite.
 
 El cálculo de lluvia pasó de filas independientes a transporte de vapor entre hexágonos vecinos, con vientos zonales/meridionales y lluvia orográfica. No altera placas ni elevación. Los salares requieren geología adicional y los humedales requieren hidrología; no se asignan automáticamente por sequedad o lluvia. Los guardados antiguos sin datos climáticos mantienen el criterio provisional previo. Ver `PRECIPITATION.md` para modelo, umbrales y pruebas.
+
+## Contrato compartido tras la capa 02 (landmass-7)
+
+Pangea, Continentes, Continentes pequeños y Archipiélagos producen ahora `SurfaceByCellId`, `ElevationByCellId` y `PlateByCellId`. **El clasificador de biomas todavía no está conectado a `WorldGenerationService`**; se reutilizará como una etapa única para los cuatro tipos después de temperatura y precipitaciones. Las pruebas del pipeline histórico siguen existiendo, pero no deben confundirse con la ruta activa.

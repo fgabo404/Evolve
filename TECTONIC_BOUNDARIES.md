@@ -48,3 +48,7 @@ La forma de la placa ya no procede de una resistencia espacial compartida: cada 
 ## Integración con la capa 02
 
 La versión `landmass-6` produce Pangea a partir de `PlateByCellId` de `tectonic-plates-2`. El mapa de fronteras usa los mismos IDs; el generador continental no los sustituye ni modifica. Las líneas siguen visibles en la vista `CAPA 01: PLACAS`, mientras que `CAPA 02: SUPERFICIE` y `VER ALTURAS` presentan los datos de tierra, océano y relieve. La ruta de vista previa aislada de placas se mantiene disponible mediante `WorldGenerationService.GeneratePlatePreview`.
+
+## Todos los tipos comparten tectónica (landmass-7)
+
+La capa de placas se genera una sola vez por mundo, independientemente de la estrategia de superficie. Pangea utiliza sus placas en la elección y forma continental; Continentes, Continentes pequeños y Archipiélagos conservan sus distintas estrategias de costa y las usan para calcular el relieve mediante `PlateAwareElevationGenerator`. La vista de placas sigue usando los IDs originales en los cuatro casos.

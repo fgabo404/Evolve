@@ -37,3 +37,7 @@ Los snapshots `TerrainBaseline.txt` y `BiomeDistributionBaseline.json` permanece
 ## Nota posterior: landmass-6
 
 La versión `landmass-5` de este documento queda como referencia histórica de tamaños y 16 placas. La nueva integración de Pangea con las placas independientes `tectonic-plates-2` usa `landmass-6`: produce nuevas superficies y elevaciones, sin cambiar los tamaños enumerados aquí. Véase [WORLD_GENERATION_PIPELINE.md](WORLD_GENERATION_PIPELINE.md).
+
+## Actualización landmass-7
+
+Los cuatro tipos de mundo comparten tamaños y placas `tectonic-plates-2`; ahora cada uno genera sus propias superficies y alturas en el pipeline activo. Los tamaños de la tabla anterior no cambian. `landmass-7` sustituye a `landmass-6` como versión de nuevos mundos.

@@ -7,7 +7,7 @@
    ↓
 01. Placas tectónicas (universales, independientes del tipo de mundo)  ✓
    ↓
-02. Tipo de mapa: Pangea ← ACTIVA; otros tipos pendientes
+02. Tipo de mapa: Pangea / Continentes / Pequeños / Archipiélagos  ← ACTIVOS
     ├─ Tierra y océanos
     └─ Elevaciones
    ↓
@@ -24,13 +24,13 @@
 
 1. **Las 16 placas se generan antes de elegir la forma continental.** Con igual semilla y tamaño, los cuatro tipos de mundo comparten el mismo `PlateByCellId`.
 2. **Nueva geometría:** `TectonicPlateGenerator` utiliza 16 orígenes separados por muestreo de candidatos, crecimiento simultáneo sobre vecinos hexagonales, velocidades relativas de expansión diferentes y un coste de crecimiento suavemente variable (ruido periódico) **específico para cada placa**. Todas las placas son regiones conectadas y las fronteras son irregulares. Es una aproximación procedural a las grandes formas tectónicas de la Tierra, **no una simulación científica de cinemática tectónica**.
-3. **Capas 01 y 02 activas para Pangea:** `WorldGenerationService.Generate` crea primero las placas, después genera una única masa continental con agua y elevaciones 0–100 reutilizando el algoritmo de expansión anterior. El juego muestra por defecto tierra y océanos, y permite cambiar entre **SUPERFICIE**, **VER ALTURAS** y **PLACAS**. No ejecuta temperatura, precipitación, pendientes ni biomas. Solo Pangea está habilitada en el selector.
-4. **Código conservado:** `LandmassGenerationService.Generate`, `PangaeaGenerator`, los tres otros generadores, `TemperatureGenerator`, `PrecipitationGenerator`, `BiomeClassifier` y sus pruebas siguen en el repositorio. El nuevo `PangaeaFromPlatesGenerator` adapta el algoritmo de superficie/relieve de Pangea a los IDs `tectonic-plates-2`, sin regenerarlos. **Los viejos generadores no deben reemplazar los IDs de placas de la capa 01.**
+3. **Capas 01 y 02 activas para los cuatro mundos:** `WorldGenerationService.Generate` crea primero las placas, después genera tierra, océanos y elevaciones 0–100 siguiendo el tipo seleccionado. El juego muestra por defecto tierra y océanos y permite cambiar entre **SUPERFICIE**, **VER ALTURAS** y **PLACAS**. No ejecuta todavía temperatura, precipitación, pendientes ni biomas. Los cuatro tipos están disponibles en el selector.
+4. **Código conservado:** `LandmassGenerationService.Generate`, `PangaeaGenerator`, `TemperatureGenerator`, `PrecipitationGenerator`, `BiomeClassifier` y sus pruebas siguen en el repositorio. `PangaeaFromPlatesGenerator` recibe placas para formar su supercontinente. `ContinentsGenerator`, `SmallContinentsGenerator` y `ArchipelagosGenerator` conservan sus algoritmos diferentes de superficie; `PlateAwareElevationGenerator` calcula alturas por tipo con influencia tectónica y devuelve el mismo formato para las etapas posteriores. Ningún generador de superficie sustituye las placas de la capa 01.
 5. **Vista de placas aislada conservada:** `WorldGenerationService.GeneratePlatePreview` sigue produciendo solo la capa 01, señalada con `LandmassState.TectonicPreviewOnly=true` y superficie provisional sin océanos reales. La ruta de juego normal `Generate` ya produce superficie y elevación de Pangea y mantiene `TectonicPreviewOnly=false`.
 
 ## Siguiente paso
 
-Revisar visualmente cómo se asientan costas y relieves de Pangea sobre las 16 placas, que no se modifican. Después adaptar **Continentes**, **Continentes pequeños** y **Archipiélagos** al mismo contrato de placas sin alterar su distribución; más adelante se integrarán clima, lluvia y biomas.
+Revisar visualmente las **cuatro siluetas terrestres** y su relieve sobre las 16 placas inmutables. Después podremos reactivar en una única ruta común el clima (temperatura, precipitaciones y humedad), las pendientes y la clasificación de biomas.
 
 ## Comprobación
 
@@ -69,3 +69,22 @@ Esta técnica **simula fronteras naturales de manera procedural**: no modela tod
 - **Pruebas:** `StagedLandmassTests` y los tests de sesión comprueban superficie, relieve, placas inmutadas, mismos resultados por semilla, selección, persistencia y capas posteriores desactivadas. `TectonicPlateTests` usa `GeneratePlatePreview` para verificar universalidad sin invocar la capa 02.
 
 **Pendiente:** ejecutar `dotnet build`, `dotnet run --project GEvolve.Tests`, revisar visualmente en el juego y aprobar la fase. No afirmar resultados de pruebas antes de ejecutarlas.
+
+## Integración de los cuatro tipos: landmass-7
+
+`WorldGenerationService` coordina dos capas y publica el mismo contrato (`SurfaceByCellId`, `ElevationByCellId`, `PlateByCellId`) para **todos** los tipos:
+
+| Tipo | Algoritmo de superficie | Relieve | Tierra objetivo |
+|---|---|---|---|
+| Pangea | `PangaeaFromPlatesGenerator`: selección de regiones tectónicas vecinas, crecimiento de una masa única y costas con ruido | Modelo propio: compresión/extensión sobre fronteras y cuantiles de altura | ~40 % |
+| Continentes | `ContinentsGenerator`: varios núcleos distantes que crecen con cuotas distintas; islas secundarias | `PlateAwareElevationGenerator`: énfasis en interior continental y orogenia | ~35 % |
+| Continentes pequeños | `SmallContinentsGenerator`: radios y cuotas locales, corredores de mar | `PlateAwareElevationGenerator`: pendientes y alturas distribuidas en territorios menores | ~30 % |
+| Archipiélagos | `ArchipelagosGenerator`: cadenas curvas y estampado de islas, conservando canales oceánicos | `PlateAwareElevationGenerator`: relieves más localizados, con potencial de islas volcánicas | ~20 % |
+
+**Contrato tectónico:** todos reciben `TectonicPlateGenerator.Generate` con la misma semilla y tamaño; `PlateByCellId` no se vuelve a calcular al crear un continente. La distribución base de tierra de los tres tipos no-Pangea conserva los métodos anteriores (con nucleación y costas independientes de placas); en ellos la **influencia tectónica ya está presente en las elevaciones**, y la integración más fuerte de la costa con los límites tectónicos puede calibrarse en otra revisión. Esto evita afirmar que todas las costas obedecen las fronteras tectónicas.
+
+**Relieve reutilizable:** `PlateAwareElevationGenerator` calcula un indicador aproximado de convergencia mediante velocidades por placa obtenidas determinísticamente, lo difunde dentro de tierra, combina distancia al mar y ruido periódico en tres escalas y normaliza a alturas 1–100 en tierra y 0 en océanos. No constituye aún una simulación geológica exacta de movimientos, volcanes o subducción. Los pesos de interior/compresión/ruido son distintos por tipo.
+
+**Etapas compartidas aún desconectadas:** cuando se activen, `TemperatureGenerator`, `PrecipitationGenerator`, `BiomeClassifier` y el cálculo de pendientes consumirán el mismo `LandmassState` independientemente del tipo de mapa, sin generar tectónica propia.
+
+**Versión:** `landmass-7`; se conservan los generadores y pruebas de `landmass-6` como referencia histórica. La UI permite seleccionar los cuatro tipos y ver superficie, elevación o placas. Las pruebas `StagedLandmassTests` verifican las cuatro morfologías, los cuatro tamaños, la conservación de IDs de placa, las elevaciones, el determinismo, la persistencia y la ausencia de capas climáticas/biomas. **Build y pruebas .NET pendientes de ejecución local.**

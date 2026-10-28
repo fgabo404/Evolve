@@ -8,35 +8,59 @@ using GEvolve.State.Game;
 namespace GEvolve.Engine.World;
 
 /// <summary>
-/// Staged pipeline: universal plates, then Pangaea land and elevation.
-/// Other landmass generators and the climate/biome stages remain preserved,
-/// but are not yet wired into this new pipeline.
+/// Stage 01 universal tectonics, then stage 02 type-specific surface and relief.
+/// Temperature, precipitation and biome classification remain shared future stages.
 /// </summary>
 public sealed class WorldGenerationService
 {
+    private readonly PangaeaFromPlatesGenerator _pangaea = new();
+    private readonly PlateAwareElevationGenerator _relief = new();
+
     public GeneratedWorld Generate(LandmassConfiguration configuration)
     {
         Validate(configuration);
-        if (configuration.Type != LandmassType.Pangaea)
-            throw new NotSupportedException(
-                "Stage 02 currently supports Pangaea. Other map types are not yet integrated.");
-
         HexGrid grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
         var topology = new HexTopology(grid);
 
-        // Stage 01: exactly the same plate layer for every map type.
+        // The same 16 plate IDs exist for every world type at the same size/seed.
         byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
 
-        // Stage 02: produce geography from those plate IDs, without replacing
-        // or changing them. The old legacy generators remain available unchanged.
-        var generator = new PangaeaFromPlatesGenerator();
+        ILandmassGenerator? landmassGenerator = configuration.Type switch
+        {
+            LandmassType.Pangaea => null,
+            LandmassType.Continents => new ContinentsGenerator(),
+            LandmassType.SmallContinents => new SmallContinentsGenerator(),
+            LandmassType.Archipelagos => new ArchipelagosGenerator(),
+            _ => throw new ArgumentOutOfRangeException(nameof(configuration))
+        };
+
         LandmassStatistics? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
-            var (surface, elevation) = generator.Generate(topology, configuration, plates, attempt);
-            last = LandmassAnalysis.Analyze(topology, surface);
-            if (!LandmassGenerationService.MeetsProfile(LandmassType.Pangaea, last))
-                continue;
+            byte[] surface;
+            byte[] elevation;
+            if (configuration.Type == LandmassType.Pangaea)
+                (surface, elevation) = _pangaea.Generate(topology, configuration, plates, attempt);
+            else
+            {
+                // Each existing land generator preserves its distinct distribution:
+                // large separated landmasses, smaller landmasses or island chains.
+                // The same plate IDs drive topography and are never overwritten.
+                surface = landmassGenerator!.Generate(topology, configuration, attempt);
+                last = LandmassAnalysis.Analyze(topology, surface);
+                if (!LandmassGenerationService.MeetsProfile(configuration.Type, last))
+                    continue;
+                elevation = _relief.Generate(
+                    topology, surface, plates, configuration.Type, configuration.Seed, attempt);
+            }
+
+            if (configuration.Type == LandmassType.Pangaea)
+            {
+                last = LandmassAnalysis.Analyze(topology, surface);
+                if (!LandmassGenerationService.MeetsProfile(configuration.Type, last))
+                    continue;
+            }
+
             var terrain = new LandmassState(configuration, surface, attempt)
             {
                 PlateByCellId = plates,
@@ -46,18 +70,20 @@ public sealed class WorldGenerationService
         }
 
         throw new InvalidOperationException(
-            $"Pangaea from tectonic plates did not meet landmass profile after four attempts " +
-            $"(land={last?.LandFraction:P1}, components={last?.ComponentCount}).");
+            $"Stage 02 {configuration.Type} did not meet the profile after four attempts " +
+            $"(land={last?.LandFraction:P1}, components={last?.ComponentCount}, " +
+            $"dominant={last?.DominantLandShare:P1}).");
     }
 
-    /// <summary>Diagnostic stage 01 only, independent of the chosen map type.</summary>
+    /// <summary>Stage 01 alone, independent of the selected map type.</summary>
     public GeneratedWorld GeneratePlatePreview(LandmassConfiguration configuration)
     {
         Validate(configuration);
         HexGrid grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
         var topology = new HexTopology(grid);
         byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
-        // Surface is intentionally unclassified: zeros do NOT represent oceans.
+
+        // Placeholder only: zero is not an actual ocean until stage 02 is run.
         var preview = new LandmassState(configuration, new byte[topology.Count], 0)
         {
             PlateByCellId = plates,

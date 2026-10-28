@@ -60,10 +60,14 @@ public static class ScreenLayout
                     columnWidth, optionHeight)),
                 new(UiAction.Enormous, "Enorme", new(left, top + 3 * (optionHeight + optionGap),
                     columnWidth, optionHeight)),
-                // Pangaea is the first adapted stage 02 map type. The other
-                // type actions remain defined for later integration.
-                new(UiAction.Pangaea, "Pangea (capa 02)",
+                new(UiAction.Continents, "Continentes",
                     new(right, top, columnWidth, optionHeight)),
+                new(UiAction.Pangaea, "Pangea",
+                    new(right, top + optionHeight + optionGap, columnWidth, optionHeight)),
+                new(UiAction.SmallContinents, "Continentes pequeños",
+                    new(right, top + 2 * (optionHeight + optionGap), columnWidth, optionHeight)),
+                new(UiAction.Archipelagos, "Archipiélagos",
+                    new(right, top + 3 * (optionHeight + optionGap), columnWidth, optionHeight)),
                 new(UiAction.SeedField, "Semilla", new(left, seedY,
                     fieldWidth, seedHeight)),
                 new(UiAction.RandomSeed, "Aleatoria", new(left + fieldWidth + gapX, seedY,

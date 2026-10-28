@@ -319,10 +319,8 @@ internal sealed class EvolveWindow : GameWindow
             var seed = buttons.First(button => button.Action == UiAction.SeedField).Bounds;
             _ui.Text("Tamaño", size.X, size.Y - 24, 1.8f, Muted, centered: false);
             _ui.Text("Tipo de mundo", type.X, type.Y - 24, 1.8f, Muted, centered: false);
-            _ui.Text("CAPA 01: PLACAS + CAPA 02: PANGEA",
-                type.X, type.Y + 59, 1.4f, Accent, centered: false);
-            _ui.Text("Otros tipos de mundo: pendientes",
-                type.X, type.Y + 93, 1.3f, Muted, centered: false);
+            // Both columns are now occupied by four real choices.
+            // The landmass choice controls only stage 02, not the plate mosaic.
             _ui.Text("Semilla", seed.X, seed.Y - 24, 1.8f, Muted, centered: false);
             _ui.Text(EvolveVersion.Display, 16, h - 27, 1.7f, Muted, centered: false);
         }

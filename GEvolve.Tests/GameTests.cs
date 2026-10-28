@@ -29,10 +29,11 @@ public static class GameTests
         Check(createButtons.Where(button => button.Action is UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous)
             .Select(button => ScreenLayout.SizeFor(button.Action))
             .SequenceEqual([GridSize.Small, GridSize.Medium, GridSize.Large, GridSize.Enormous]), "Four official sizes");
-        Check(createButtons.Count(button => button.Action == UiAction.Pangaea) == 1 &&
-            !createButtons.Any(button => button.Action is UiAction.Continents or
-                UiAction.SmallContinents or UiAction.Archipelagos),
-            "Pangaea stage 02 is selectable while other map types remain deferred");
+        Check(createButtons.Where(button => button.Action is UiAction.Continents or UiAction.Pangaea or
+            UiAction.SmallContinents or UiAction.Archipelagos)
+            .Select(button => ScreenLayout.TypeFor(button.Action))
+            .SequenceEqual(Enum.GetValues<LandmassType>()),
+            "All four world types are selectable for stage 02");
         Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
             createButtons.Any(button => button.Action == UiAction.RandomSeed),
             "Editable and random seed controls");
