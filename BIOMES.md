@@ -124,3 +124,13 @@ dotnet run --project GEvolve.Tests -c Debug --no-restore
 dotnet run --project GEvolve.Game -c Debug --no-restore -- --graphics-smoke
 git diff --check
 ```
+
+## Revisión de latitudes ecológicas (compatibilidad flexible)
+
+Los 22 subbiomas conservan sus IDs, rangos de elevación y hemisferios. Sus límites latitudinales son aproximaciones de compatibilidad inspiradas en distribuciones terrestres, no fronteras climáticas ni zonas garantizadas. Se ampliaron bosques templados, boreales, praderas, estepas y otros paisajes para permitir mayor diversidad; no se asignan cuotas por bioma ni se introduce clima artificial.
+
+Los núcleos polares terrestres comienzan ahora en **80°** en cada hemisferio, en lugar de 65°. El resto de la franja queda disponible para biomas compatibles (especialmente tundra, bosque boreal, estepa y montaña), sin imponer tundra. La tundra es compatible de 60° a 85°, pero conserva la prioridad provisional existente; el hielo se asigna por latitud en el núcleo 80°–90°, todavía no según un balance térmico de hielo. Esto es una decisión de diseño y no representa exactamente el hielo antártico real.
+
+Las montañas son compatibles de 0° a 90°; las cumbres terrestres siguen siendo infranqueables desde elevación 85. Los océanos siguen siendo marinos a todas las latitudes. Temperatura y humedad aún no condicionan la selección: en particular, ampliar los desiertos no garantiza que aparezcan mientras las llanuras y bosques tengan mayor prioridad.
+
+La cobertura del catálogo fue comprobada para todas las latitudes enteras −90°..90° y elevaciones 0..100 sobre tierra, sin huecos de compatibilidad. Los cambios de rangos solo se aplican a mundos nuevos o reclasificados expresamente.

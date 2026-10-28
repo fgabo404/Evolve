@@ -18,7 +18,7 @@
           },
           "latitudeDegrees": {
             "min": 10,
-            "max": 50,
+            "max": 55,
             "hemisphere": "either"
           },
           "flora": [
@@ -78,7 +78,7 @@
           },
           "latitudeDegrees": {
             "min": 15,
-            "max": 55,
+            "max": 60,
             "hemisphere": "either"
           },
           "flora": [
@@ -156,7 +156,7 @@
           },
           "latitudeDegrees": {
             "min": 10,
-            "max": 50,
+            "max": 60,
             "hemisphere": "either"
           },
           "flora": [
@@ -212,7 +212,7 @@
           },
           "latitudeDegrees": {
             "min": 0,
-            "max": 23,
+            "max": 25,
             "hemisphere": "either"
           },
           "flora": [
@@ -295,7 +295,7 @@
           },
           "latitudeDegrees": {
             "min": 15,
-            "max": 35,
+            "max": 40,
             "hemisphere": "either"
           },
           "flora": [
@@ -363,8 +363,8 @@
             "max": 74
           },
           "latitudeDegrees": {
-            "min": 30,
-            "max": 60,
+            "min": 25,
+            "max": 65,
             "hemisphere": "either"
           },
           "flora": [
@@ -432,8 +432,8 @@
             "max": 74
           },
           "latitudeDegrees": {
-            "min": 50,
-            "max": 70,
+            "min": 45,
+            "max": 75,
             "hemisphere": "either"
           },
           "flora": [
@@ -493,7 +493,7 @@
           },
           "latitudeDegrees": {
             "min": 15,
-            "max": 35,
+            "max": 40,
             "hemisphere": "either"
           },
           "flora": [
@@ -535,7 +535,7 @@
             "max": 84
           },
           "latitudeDegrees": {
-            "min": 5,
+            "min": 0,
             "max": 30,
             "hemisphere": "either"
           },
@@ -609,8 +609,8 @@
             "max": 84
           },
           "latitudeDegrees": {
-            "min": 25,
-            "max": 55,
+            "min": 20,
+            "max": 60,
             "hemisphere": "either"
           },
           "flora": [
@@ -674,8 +674,8 @@
             "max": 84
           },
           "latitudeDegrees": {
-            "min": 30,
-            "max": 60,
+            "min": 25,
+            "max": 75,
             "hemisphere": "either"
           },
           "flora": [
@@ -744,7 +744,7 @@
           },
           "latitudeDegrees": {
             "min": 5,
-            "max": 35,
+            "max": 40,
             "hemisphere": "either"
           },
           "flora": [
@@ -930,8 +930,8 @@
             "max": 84
           },
           "latitudeDegrees": {
-            "min": 55,
-            "max": 80,
+            "min": 60,
+            "max": 85,
             "hemisphere": "either"
           },
           "flora": [
@@ -1000,7 +1000,7 @@
           },
           "latitudeDegrees": {
             "min": 0,
-            "max": 75,
+            "max": 90,
             "hemisphere": "either"
           },
           "flora": [
@@ -1071,7 +1071,7 @@
           },
           "latitudeDegrees": {
             "min": 0,
-            "max": 75,
+            "max": 90,
             "hemisphere": "either"
           },
           "flora": [
@@ -1139,7 +1139,7 @@
           },
           "latitudeDegrees": {
             "min": 0,
-            "max": 75,
+            "max": 90,
             "hemisphere": "either"
           },
           "flora": [],
@@ -1204,7 +1204,7 @@
             "max": 100
           },
           "latitudeDegrees": {
-            "min": 65,
+            "min": 80,
             "max": 90,
             "hemisphere": "north"
           },
@@ -1260,7 +1260,7 @@
             "max": 100
           },
           "latitudeDegrees": {
-            "min": 65,
+            "min": 80,
             "max": 90,
             "hemisphere": "south"
           },
