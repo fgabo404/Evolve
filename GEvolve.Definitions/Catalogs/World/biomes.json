@@ -40,7 +40,33 @@
             "animal_regional_jerboas_and_gerbils",
             "animal_wild_bactrian_camel"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_sand",
+            "geological_calcareous_sand",
+            "geological_silica_sand",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_surface_opal"
+          ],
           "resources": []
         },
         {
@@ -85,7 +111,41 @@
             "animal_rock_hyraxes",
             "animal_wild_bactrian_camel"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_sand",
+            "geological_sandstone",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_granite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_volcanic_obsidian",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_pumice",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_basalt",
+            "geological_volcanic_rock",
+            "geological_rock_salt",
+            "geological_flint",
+            "geological_gypsum_in_evaporite_deposits",
+            "geological_surface_opal"
+          ],
           "resources": []
         },
         {
@@ -110,7 +170,31 @@
             "animal_andean_condor",
             "animal_vicuna"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_rock_salt",
+            "geological_gypsum_in_evaporite_deposits"
+          ],
           "resources": []
         }
       ]
@@ -178,7 +262,32 @@
             "animal_tiger",
             "animal_western_gorilla"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_iron_rich_laterite",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_nickeliferous_laterite",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
           "resources": []
         },
         {
@@ -223,7 +332,31 @@
             "animal_short_beaked_echidna",
             "animal_tiger"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_iron_rich_laterite",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_nickeliferous_laterite",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
           "resources": []
         },
         {
@@ -268,7 +401,31 @@
             "animal_tiger",
             "animal_woodland_caribou"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_flint"
+          ],
           "resources": []
         },
         {
@@ -306,7 +463,30 @@
             "animal_subarctic_wolverine",
             "animal_woodland_caribou"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_peat"
+          ],
           "resources": []
         },
         {
@@ -338,7 +518,10 @@
             "animal_jaguar",
             "animal_shorebirds_and_waterbirds"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_clay",
+            "geological_peat"
+          ],
           "resources": []
         }
       ]
@@ -398,7 +581,31 @@
             "animal_regional_wallabies",
             "animal_wildebeest"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_iron_rich_laterite",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_nickeliferous_laterite",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
           "resources": []
         },
         {
@@ -435,7 +642,36 @@
             "animal_prairie_dog",
             "animal_puma"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_clay",
+            "geological_sand",
+            "geological_silica_sand",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_gravel",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_flint"
+          ],
           "resources": []
         },
         {
@@ -477,7 +713,34 @@
             "animal_vicuna",
             "animal_wild_bactrian_camel"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_sandstone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_gravel",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_rock_salt",
+            "geological_gypsum_in_evaporite_deposits",
+            "geological_surface_opal"
+          ],
           "resources": []
         },
         {
@@ -508,7 +771,11 @@
             "animal_regional_mussels_and_oysters",
             "animal_shorebirds_and_waterbirds"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_clay",
+            "geological_alluvial_gold",
+            "geological_peat"
+          ],
           "resources": []
         }
       ]
@@ -543,7 +810,11 @@
             "animal_sea_turtles",
             "animal_tropical_mollusks_and_bivalves"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_calcareous_sand",
+            "geological_limestone",
+            "geological_seashells"
+          ],
           "resources": []
         },
         {
@@ -580,7 +851,15 @@
             "animal_sea_turtles",
             "animal_shorebirds_and_waterbirds"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_clay",
+            "geological_sand",
+            "geological_calcareous_sand",
+            "geological_silica_sand",
+            "geological_seashells",
+            "geological_gravel",
+            "geological_sea_salt"
+          ],
           "resources": []
         },
         {
@@ -606,7 +885,10 @@
             "animal_shorebirds_and_waterbirds",
             "animal_tropical_mollusks_and_bivalves"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_seashells",
+            "geological_sea_salt"
+          ],
           "resources": []
         },
         {
@@ -640,7 +922,9 @@
             "animal_regional_sardines",
             "animal_sea_turtles"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_polymetallic_nodules"
+          ],
           "resources": []
         }
       ]
@@ -688,7 +972,30 @@
             "animal_subarctic_wolverine",
             "animal_tundra_caribou"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_peat"
+          ],
           "resources": []
         }
       ]
@@ -748,7 +1055,29 @@
             "animal_vicuna",
             "animal_wild_yak"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
           "resources": []
         },
         {
@@ -784,7 +1113,40 @@
             "animal_snow_leopard",
             "animal_wild_yak"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_sandstone",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_granite",
+            "geological_gravel",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_volcanic_obsidian",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_pumice",
+            "geological_slate",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_basalt",
+            "geological_volcanic_rock",
+            "geological_flint"
+          ],
           "resources": []
         },
         {
@@ -812,7 +1174,37 @@
             "animal_rock_dwelling_viscachas",
             "animal_rock_hyraxes"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_sandstone",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_granite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_volcanic_obsidian",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_pumice",
+            "geological_slate",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_basalt",
+            "geological_volcanic_rock"
+          ],
           "resources": []
         }
       ]
@@ -846,7 +1238,29 @@
             "animal_regional_seals",
             "animal_snowy_owl"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
           "resources": []
         }
       ]
@@ -881,7 +1295,29 @@
             "animal_regional_polar_fish",
             "animal_regional_seals"
           ],
-          "minerals": [],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
           "resources": []
         }
       ]

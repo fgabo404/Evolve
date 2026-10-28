@@ -1,0 +1,1183 @@
+{
+  "minerals": [
+    {
+      "id": "geological_clay",
+      "name": {
+        "en": "Clay",
+        "es": "Arcilla"
+      },
+      "spawn": [
+        "plains_open_wetland",
+        "forest_wooded_swamp",
+        "plains_prairie",
+        "marine_estuary_littoral"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000047",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_sand",
+      "name": {
+        "en": "Sand",
+        "es": "Arena"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "plains_prairie",
+        "marine_estuary_littoral"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000048",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_calcareous_sand",
+      "name": {
+        "en": "Calcareous Sand",
+        "es": "Arena calcárea"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral",
+        "desert_sandy"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000049",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_silica_sand",
+      "name": {
+        "en": "Silica Sand",
+        "es": "Arena silícea"
+      },
+      "spawn": [
+        "desert_sandy",
+        "marine_estuary_littoral",
+        "plains_prairie"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000050",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_sandstone",
+      "name": {
+        "en": "Sandstone",
+        "es": "Arenisca"
+      },
+      "spawn": [
+        "desert_rocky",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "plains_steppe"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000051",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_limestone",
+      "name": {
+        "en": "Limestone",
+        "es": "Caliza"
+      },
+      "spawn": [
+        "desert_rocky",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "plains_prairie",
+        "marine_reef"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000052",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_bituminous_coal",
+      "name": {
+        "en": "Bituminous Coal",
+        "es": "Carbón mineral (hulla)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000053",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_copper_bearing_deposit",
+      "name": {
+        "en": "Copper-Bearing Deposit",
+        "es": "Cobre"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000054",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_chalcopyrite_copper_ore",
+      "name": {
+        "en": "Chalcopyrite Copper Ore",
+        "es": "Cobre (calcopirita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000055",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_sulfide_copper_ore",
+      "name": {
+        "en": "Sulfide Copper Ore",
+        "es": "Cobre (sulfuros)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000055",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_seashells",
+      "name": {
+        "en": "Seashells",
+        "es": "Conchas marinas"
+      },
+      "spawn": [
+        "marine_reef",
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000044",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_tin_bearing_deposit",
+      "name": {
+        "en": "Tin-Bearing Deposit",
+        "es": "Estaño"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000056",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_vein_cassiterite_tin_ore",
+      "name": {
+        "en": "Cassiterite tin ore",
+        "es": "Mena de estaño (casiterita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000057",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_phosphorite",
+      "name": {
+        "en": "Phosphorite",
+        "es": "Fosforita"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000058",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_apatite_phosphorite",
+      "name": {
+        "en": "Apatite Phosphorite",
+        "es": "Fosforita (apatita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000058",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_granite",
+      "name": {
+        "en": "Granite",
+        "es": "Granito"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs",
+        "desert_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000059",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_gravel",
+      "name": {
+        "en": "Gravel",
+        "es": "Grava"
+      },
+      "spawn": [
+        "plains_prairie",
+        "plains_steppe",
+        "mountain_rocky",
+        "marine_estuary_littoral"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000060",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_iron_bearing_deposit",
+      "name": {
+        "en": "Iron-Bearing Deposit",
+        "es": "Hierro"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000061",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_hematite_iron_ore",
+      "name": {
+        "en": "Hematite Iron Ore",
+        "es": "Hierro (hematita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000062",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_magnetite_iron_ore",
+      "name": {
+        "en": "Magnetite Iron Ore",
+        "es": "Hierro (magnetita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000062",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_iron_rich_laterite",
+      "name": {
+        "en": "Iron-Rich Laterite",
+        "es": "Laterita ferruginosa"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "plains_savanna"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000063",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_manganese_bearing_deposit",
+      "name": {
+        "en": "Manganese-Bearing Deposit",
+        "es": "Manganeso"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000064",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_pyrolusite_manganese_ore",
+      "name": {
+        "en": "Pyrolusite Manganese Ore",
+        "es": "Manganeso (pirolusita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000065",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_nickel_bearing_deposit",
+      "name": {
+        "en": "Nickel-Bearing Deposit",
+        "es": "Níquel"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000066",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_nickeliferous_laterite",
+      "name": {
+        "en": "Nickeliferous Laterite",
+        "es": "Níquel (laterita niquelífera)"
+      },
+      "spawn": [
+        "forest_tropical",
+        "forest_subtropical",
+        "plains_savanna"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000067",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_sulfide_nickel_ore",
+      "name": {
+        "en": "Sulfide Nickel Ore",
+        "es": "Níquel (sulfuros)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000068",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_polymetallic_nodules",
+      "name": {
+        "en": "Polymetallic Nodules",
+        "es": "Nódulos polimetálicos (manganeso, níquel y cobre)"
+      },
+      "spawn": [
+        "marine_open_ocean"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000069",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_volcanic_obsidian",
+      "name": {
+        "en": "Volcanic Obsidian",
+        "es": "Obsidiana en zonas volcánicas"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs",
+        "desert_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000070",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_gold_bearing_quartz",
+      "name": {
+        "en": "Gold-Bearing Quartz",
+        "es": "Oro (cuarzo aurífero)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000071",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_alluvial_gold",
+      "name": {
+        "en": "Alluvial Gold",
+        "es": "Oro aluvial"
+      },
+      "spawn": [
+        "plains_prairie",
+        "plains_open_wetland",
+        "forest_temperate",
+        "forest_tropical",
+        "mountain_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000072",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_vein_gold",
+      "name": {
+        "en": "Vein Gold",
+        "es": "Oro en veta"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000073",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_pumice",
+      "name": {
+        "en": "Pumice",
+        "es": "Piedra pómez"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs",
+        "desert_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000074",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_slate",
+      "name": {
+        "en": "Slate",
+        "es": "Pizarra"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000075",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_silver_bearing_deposit",
+      "name": {
+        "en": "Silver-Bearing Deposit",
+        "es": "Plata"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000076",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_argentite_silver_ore",
+      "name": {
+        "en": "Argentite Silver Ore",
+        "es": "Plata (argentita)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000077",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_lead_bearing_deposit",
+      "name": {
+        "en": "Lead-Bearing Deposit",
+        "es": "Plomo"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000078",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_galena_lead_ore",
+      "name": {
+        "en": "Galena Lead Ore",
+        "es": "Plomo (galena)"
+      },
+      "spawn": [
+        "desert_sandy",
+        "desert_rocky",
+        "desert_salt_flat",
+        "forest_tropical",
+        "forest_subtropical",
+        "forest_temperate",
+        "forest_boreal",
+        "plains_savanna",
+        "plains_prairie",
+        "plains_steppe",
+        "tundra_tundra",
+        "mountain_alpine",
+        "mountain_rocky",
+        "mountain_cliffs",
+        "polar_north_ice",
+        "polar_south_ice"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000079",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_basalt",
+      "name": {
+        "en": "Basalt",
+        "es": "Roca basáltica"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs",
+        "desert_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000080",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_volcanic_rock",
+      "name": {
+        "en": "Volcanic Rock",
+        "es": "Roca volcánica"
+      },
+      "spawn": [
+        "mountain_rocky",
+        "mountain_cliffs",
+        "desert_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000081",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_rock_salt",
+      "name": {
+        "en": "Rock Salt",
+        "es": "Sal gema"
+      },
+      "spawn": [
+        "desert_salt_flat",
+        "desert_rocky",
+        "plains_steppe"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000082",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_sea_salt",
+      "name": {
+        "en": "Sea Salt",
+        "es": "Sal marina"
+      },
+      "spawn": [
+        "marine_estuary_littoral",
+        "marine_mangrove"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000083",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_flint",
+      "name": {
+        "en": "Flint",
+        "es": "Sílex"
+      },
+      "spawn": [
+        "desert_rocky",
+        "plains_prairie",
+        "forest_temperate",
+        "mountain_rocky"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000084",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_peat",
+      "name": {
+        "en": "Peat",
+        "es": "Turba"
+      },
+      "spawn": [
+        "plains_open_wetland",
+        "forest_wooded_swamp",
+        "tundra_tundra",
+        "forest_boreal"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000085",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_gypsum_in_evaporite_deposits",
+      "name": {
+        "en": "Gypsum",
+        "es": "Yeso mineral"
+      },
+      "spawn": [
+        "desert_salt_flat",
+        "desert_rocky",
+        "plains_steppe"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000086",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    },
+    {
+      "id": "geological_surface_opal",
+      "name": {
+        "en": "Surface Opal",
+        "es": "Ópalo superficial"
+      },
+      "spawn": [
+        "desert_rocky",
+        "desert_sandy",
+        "plains_steppe"
+      ],
+      "resources": [
+        {
+          "resourceId": "RES#000087",
+          "acquisitionMethod": null,
+          "quantity": null
+        }
+      ],
+      "uses": []
+    }
+  ]
+}
