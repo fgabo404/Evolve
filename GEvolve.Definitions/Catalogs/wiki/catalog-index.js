@@ -75,7 +75,7 @@ globalThis.EvolveCatalogIndex = function createCatalogIndex(data) {
 
   function sourceType(collection) {
     return ({ animalSpeciesCandidates: "animals", plantSpeciesCandidates: "plants",
-      agriculturalCropCandidates: "plants", geologicalResourceCandidates: "minerals" })[collection];
+      geologicalResourceCandidates: "minerals" })[collection];
   }
 
   const tagMappings = new Map();
@@ -110,7 +110,10 @@ globalThis.EvolveCatalogIndex = function createCatalogIndex(data) {
   }
   for (const binding of list(data.resources.sourceBindings)) {
     const type = sourceType(binding.sourceCollection);
-    if (type) connect(type, binding.sourceId, "resources", binding.resourceId, "source", binding, "sourceBindings");
+    // Legacy agricultural candidates are preserved in the resource guide, but do not
+    // exist in the new gameplay plant catalog. Do not create broken wiki links.
+    if (type && resolve(type, binding.sourceId))
+      connect(type, binding.sourceId, "resources", binding.resourceId, "source", binding, "sourceBindings");
   }
   for (const process of list(data.resources.processingLinks)) {
     for (const id of list(process.inputResourceIds)) connect("resources", id, "processes", process.processTag, "process_input", process, "processingLinks.inputResourceIds");
