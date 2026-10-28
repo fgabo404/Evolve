@@ -1,3 +1,9 @@
+## Limpieza del diseño de alturas y biomas
+
+- Retiradas las alturas provisionales 0–3, la etiqueta numérica del mapa y su validación.
+- Se conserva la generación tectónica y los IDs de placas. Elevaciones y reglas de biomas pendientes de redefinir.
+- Generador `landmass-5`.
+
 ## Experimento reversible — Pangea tectónica + niveles 0–3
 
 - Placas Voronoi con velocidad y contactos convergentes/divergentes, generadas por semilla.
