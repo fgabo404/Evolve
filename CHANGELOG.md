@@ -1,3 +1,10 @@
+## Experimento reversible — Pangea tectónica + niveles 0–3
+
+- Placas Voronoi con velocidad y contactos convergentes/divergentes, generadas por semilla.
+- Pangea conectada, océano exterior y capas de altura 0–3 por ID de hexágono.
+- Números de altura visibles al acercar la cámara; persistencia opcional compatible con guardados anteriores.
+- Identificador del generador `landmass-4`. Se conserva el commit anterior para reversión.
+
 ## En desarrollo — Selector de tamaño dentro del mapa
 
 - Controles Pequeño, Mediano y Grande en la vista estratégica, debajo del panel con tipo de mundo y semilla.

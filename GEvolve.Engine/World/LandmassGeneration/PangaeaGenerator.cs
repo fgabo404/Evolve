@@ -3,156 +3,187 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
-/// <summary>Pangea 2.x: esqueleto continental ancho, costa accidentada multiescala y corrección hexagonal.</summary>
+/// <summary>Modelo experimental determinista: placas Voronoi, velocidades y relieve.</summary>
 public sealed class PangaeaGenerator : ILandmassGenerator
 {
     public LandmassType Type => LandmassType.Pangaea;
-    private readonly record struct Node(double X, double Y, double Radius);
-
-    // Proporciones relativas al mapa; la semilla desplaza núcleos, radios y costas.
-    private static readonly Node[] Backbone =
-    [
-        new(.17,.61,.185), new(.26,.40,.23), new(.43,.27,.245),
-        new(.59,.34,.20), new(.73,.53,.20), new(.67,.73,.175),
-        new(.49,.71,.215), new(.33,.77,.175)
-    ];
-    private static readonly (Node Node, int Parent)[] Branches =
-    [
-        (new(.25,.36,.16),1),(new(.19,.17,.10),1),
-        (new(.44,.19,.14),2),(new(.58,.14,.10),2),
-        (new(.80,.36,.13),4),(new(.91,.26,.09),4),
-        (new(.77,.73,.14),5),(new(.89,.87,.10),5),
-        (new(.51,.89,.13),6),(new(.38,.50,.15),1),
-        (new(.09,.66,.115),0)
-    ];
-
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
+        => GenerateTectonic(topology, configuration, attempt).Surface;
+
+    public (byte[] Surface, byte[] Elevation, byte[] Plates) GenerateTectonic(
+        HexTopology topology, LandmassConfiguration configuration, int attempt)
     {
         var profile = configuration.Pangaea
-            ?? throw new ArgumentException("Pangaea parameters missing.");
-        int columns = topology.Columns, rows = topology.Rows, count = topology.Count;
-        var rng = new DeterministicRandom(configuration.Seed, (uint)(0xA9EA + attempt));
-        double offset = (rng.NextDouble() - .5) * columns * .18;
-        Node Perturb(Node n, double movement) => new(
-            Mod(n.X * columns + offset + (rng.NextDouble() - .5) * movement * columns, columns),
-            Math.Clamp(n.Y * rows + (rng.NextDouble() - .5) * movement * rows, 3, rows - 4),
-            n.Radius * Math.Min(columns, rows) * (.90 + rng.NextDouble() * .20));
-        var main = Backbone.Select(n => Perturb(n, .12)).ToArray();
-        var arms = Branches.Select(b => Perturb(b.Node, .17)).ToArray();
-        var influence = new double[count];
-        Array.Fill(influence, -1000);
-        double deltaX(double x, double center)
+            ?? throw new ArgumentException("Missing Pangaea parameters.");
+        int width=topology.Columns, height=topology.Rows, count=topology.Count;
+        var random = new DeterministicRandom(configuration.Seed, (uint)(0x7100 + attempt));
+        int numberOfPlates = Math.Clamp(count / 310, 18, 70);
+        var centerX = new double[numberOfPlates];
+        var centerY = new double[numberOfPlates];
+        var speedX = new double[numberOfPlates];
+        var speedY = new double[numberOfPlates];
+        for(int p=0;p<numberOfPlates;p++)
         {
-            double delta = x - center;
-            if (delta > columns / 2.0) delta -= columns;
-            if (delta < -columns / 2.0) delta += columns;
-            return delta;
+            centerX[p]=random.NextDouble()*width;
+            centerY[p]=3+random.NextDouble()*(height-6);
+            speedX[p]=random.NextDouble()*2-1;
+            speedY[p]=random.NextDouble()*2-1;
         }
-        void Stamp(Node node)
+        double Wrapped(double dx) => dx-width*Math.Round(dx/width);
+        var plates=new byte[count];
+        for(int id=0;id<count;id++)
         {
-            for (int row = 0; row < rows; row++)
-            for (int col = 0; col < columns; col++)
+            int x=id%width,y=id/width,best=0;
+            double minimum=double.MaxValue;
+            for(int p=0;p<numberOfPlates;p++)
             {
-                double distance = Math.Sqrt(Math.Pow(deltaX(col,node.X),2) +
-                    Math.Pow((row-node.Y)*1.12,2));
-                int id = row*columns+col;
-                influence[id] = Math.Max(influence[id], node.Radius-distance);
+                double dx=Wrapped(x-centerX[p]),dy=y-centerY[p];
+                double distance=dx*dx+dy*dy;
+                if(distance<minimum){minimum=distance;best=p;}
+            }
+            plates[id]=(byte)best;
+        }
+        var adjacent=new HashSet<int>[numberOfPlates];
+        for(int i=0;i<numberOfPlates;i++)adjacent[i]=[];
+        var compression=new double[count];
+        var extension=new double[count];
+        for(int id=0;id<count;id++)
+        {
+            int a=plates[id];
+            foreach(int other in topology.Neighbors(id))
+            {
+                int b=plates[other];
+                if(a==b)continue;
+                adjacent[a].Add(b);
+                double dx=Wrapped(centerX[b]-centerX[a]),dy=centerY[b]-centerY[a];
+                double rate=((speedX[a]-speedX[b])*dx+
+                    (speedY[a]-speedY[b])*dy)/Math.Sqrt(dx*dx+dy*dy+1e-6);
+                compression[id]=Math.Max(compression[id],rate);
+                extension[id]=Math.Max(extension[id],-rate);
             }
         }
-        void Join(Node a, Node b)
+        int root=random.NextInt(numberOfPlates);
+        var chosen=new HashSet<int>{root};
+        var front=new HashSet<int>(adjacent[root]);
+        int targetPlates=Math.Max(5,numberOfPlates*2/5);
+        double heading=random.NextDouble()*Math.PI*2;
+        while(chosen.Count<targetPlates && front.Count>0)
         {
-            double dx = deltaX(b.X,a.X);
-            int steps = Math.Max(6,(int)(Math.Sqrt(dx*dx+Math.Pow(b.Y-a.Y,2))*2));
-            for(int i=0;i<=steps;i++)
+            int next=-1;double best=double.NegativeInfinity;
+            foreach(int p in front.Order())
             {
-                double t = (double)i/steps;
-                Stamp(new Node(Mod(a.X+t*dx,columns),a.Y+t*(b.Y-a.Y),
-                    a.Radius+(b.Radius-a.Radius)*t));
+                double dx=Wrapped(centerX[p]-centerX[root]);
+                double direction=Math.Atan2(centerY[p]-centerY[root],dx);
+                double priority=Math.Cos(direction-heading)+
+                    2*(random.NextDouble()-.5);
+                if(priority>best){best=priority;next=p;}
             }
+            front.Remove(next);
+            if(!chosen.Add(next))continue;
+            foreach(int p in adjacent[next])
+                if(!chosen.Contains(p))front.Add(p);
+            heading+=(random.NextDouble()-.5)*1.3;
         }
-        foreach(var node in main) Stamp(node);
-        for(int i=1;i<main.Length;i++) Join(main[i-1],main[i]);
-        for(int i=0;i<arms.Length;i++)
-        {
-            Stamp(arms[i]);
-            Join(main[Branches[i].Parent],arms[i]);
-        }
-        // Entrantes marinos anchos, deformados por el mismo desplazamiento horizontal.
-        foreach(var bay in new [] { (56d,36d,15d,15d,12d),(14d,22d,12d,16d,13d),(85d,46d,11d,12d,11d) })
-        {
-            double cx=Mod(bay.Item1/100*columns+offset+(rng.NextDouble()-.5)*columns*.10,columns);
-            double cy=Math.Clamp(bay.Item2/70*rows+(rng.NextDouble()-.5)*rows*.10,2,rows-3);
-            double sx=bay.Item3/100*columns, sy=bay.Item4/70*rows;
-            for(int row=0;row<rows;row++)
-            for(int col=0;col<columns;col++)
-            {
-                double dist=Math.Pow(deltaX(col,cx)/sx,2)+Math.Pow((row-cy)/sy,2);
-                influence[row*columns+col]-=bay.Item5*Math.Min(columns,rows)/70.0*Math.Exp(-2*dist);
-            }
-        }
-        var ranking = new double[count];
-        for(int row=0;row<rows;row++)
-        for(int col=0;col<columns;col++)
-        {
-            int id=row*columns+col;
-            // Cuatro bandas: accidentes grandes, bahías, puntas y detalles costeros.
-            // El mapa sigue siendo periódico en X. No alteramos su conectividad aquí.
-            double broad = PeriodicNoise.Sample(col,row,columns,rows,
-                Math.Max(2,profile.NoiseFrequency/2),configuration.Seed+311+attempt*1877);
-            double medium = PeriodicNoise.Sample(col,row,columns,rows,
-                profile.NoiseFrequency,configuration.Seed+1013+attempt*1877);
-            double fine = PeriodicNoise.Sample(col,row,columns,rows,
-                profile.NoiseFrequency*2,configuration.Seed+1999+attempt*1877);
-            double detail = PeriodicNoise.Sample(col,row,columns,rows,
-                profile.NoiseFrequency*4,configuration.Seed+2999+attempt*1877);
-            ranking[id]=influence[id]+profile.CoastRoughness*
-                (6.0*broad+8.0*medium+4.5*fine+2.0*detail);
-        }
-        var sorted=(double[])ranking.Clone();
-        Array.Sort(sorted);
-        int target=(int)(count*profile.TargetLandFraction);
-        double threshold=sorted[Math.Clamp(count-target,0,count-1)];
-        var land=new byte[count];
-        for(int i=0;i<count;i++) if(ranking[i]>=threshold) land[i]=1;
-
-        // Un mar está abierto solo si alcanza norte/sur; el borde este-oeste envuelve.
-        var visited=new bool[count];
+        var continent=new bool[count];
+        for(int i=0;i<count;i++)continent[i]=chosen.Contains(plates[i]);
+        // Distancia firmada aproximada por propagación hexagonal desde costas.
+        var distance=new int[count];
+        Array.Fill(distance,int.MaxValue);
         var queue=new Queue<int>();
-        for(int col=0;col<columns;col++)
+        for(int id=0;id<count;id++)
         {
-            int north=col, south=(rows-1)*columns+col;
-            if(land[north]==0 && !visited[north]) { visited[north]=true; queue.Enqueue(north); }
-            if(land[south]==0 && !visited[south]) { visited[south]=true; queue.Enqueue(south); }
+            foreach(int nb in topology.Neighbors(id))
+                if(continent[id]!=continent[nb])
+                {distance[id]=0;queue.Enqueue(id);break;}
         }
         while(queue.Count>0)
         {
             int id=queue.Dequeue();
-            foreach(int other in topology.Neighbors(id))
-                if(land[other]==0 && !visited[other])
-                { visited[other]=true;queue.Enqueue(other); }
+            foreach(int nb in topology.Neighbors(id))
+                if(distance[nb]>distance[id]+1)
+                {distance[nb]=distance[id]+1;queue.Enqueue(nb);}
         }
-        for(int i=0;i<count;i++) if(land[i]==0 && !visited[i]) land[i]=1;
-
-        // Conservar exclusivamente la masa mayor, con conectividad odd-q real.
-        Array.Fill(visited,false);
-        int[] largest=[];
+        var score=new double[count];
+        var uplift=new double[count];
         for(int id=0;id<count;id++)
         {
-            if(land[id]==0 || visited[id]) continue;
-            var component=new List<int>();
-            visited[id]=true;queue.Enqueue(id);
-            while(queue.Count>0)
-            {
-                int current=queue.Dequeue();component.Add(current);
-                foreach(int other in topology.Neighbors(current))
-                    if(land[other]==1 && !visited[other])
-                    { visited[other]=true;queue.Enqueue(other); }
-            }
-            if(component.Count>largest.Length) largest=component.ToArray();
+            int x=id%width,y=id/width;
+            double large=PeriodicNoise.Sample(x,y,width,height,4,configuration.Seed+attempt*2011+131);
+            double medium=PeriodicNoise.Sample(x,y,width,height,10,configuration.Seed+attempt*2011+337);
+            double fine=PeriodicNoise.Sample(x,y,width,height,21,configuration.Seed+attempt*2011+719);
+            // La posición de placa define la silueta; el ruido deforma sus bordes.
+            score[id]=(continent[id]?1:-1)*Math.Min(distance[id],20)+
+                5.3*large+2.5*medium+.8*fine+
+                1.2*(compression[id]-extension[id]);
+            uplift[id]=Math.Max(0,compression[id]-extension[id]);
         }
-        Array.Fill(land,(byte)0);
-        foreach(int id in largest)land[id]=1;
-        return land;
+        // Expandir una sola masa por vecinos hexagonales hasta el 40% objetivo.
+        var surface=new byte[count];
+        var frontier=new PriorityQueue<int,double>();
+        var queued=new bool[count];
+        int start=Array.FindIndex(plates,p=>p==root);
+        if(start<0)start=count/2;
+        frontier.Enqueue(start,-score[start]);queued[start]=true;
+        int wanted=(int)Math.Round(profile.TargetLandFraction*count);
+        int total=0;
+        while(frontier.TryDequeue(out int id,out _) && total<wanted)
+        {
+            if(surface[id]!=0)continue;
+            surface[id]=1;total++;
+            foreach(int nb in topology.Neighbors(id))
+                if(surface[nb]==0 && !queued[nb])
+                {queued[nb]=true;frontier.Enqueue(nb,-score[nb]+nb*1e-10);}
+        }
+        // Agua cerrada: la conectada a norte/sur es el océano exterior.
+        var ocean=new bool[count];
+        queue.Clear();
+        for(int x=0;x<width;x++)
+        {
+            foreach(int id in new[]{x,(height-1)*width+x})
+                if(surface[id]==0 && !ocean[id]){ocean[id]=true;queue.Enqueue(id);}
+        }
+        while(queue.Count>0)
+        {
+            int id=queue.Dequeue();
+            foreach(int nb in topology.Neighbors(id))
+                if(surface[nb]==0 && !ocean[nb])
+                {ocean[nb]=true;queue.Enqueue(nb);}
+        }
+        for(int id=0;id<count;id++)if(surface[id]==0 && !ocean[id])surface[id]=1;
+
+        // Suavizar la presión tectónica a través de los vecinos reales.
+        for(int pass=0;pass<4;pass++)
+        {
+            var next=new double[count];
+            for(int id=0;id<count;id++)
+            {
+                double sum=uplift[id]*2;int weight=2;
+                foreach(int nb in topology.Neighbors(id)){sum+=uplift[nb];weight++;}
+                next[id]=sum/weight;
+            }
+            uplift=next;
+        }
+        var potential=new double[count];
+        var sorted=new List<double>();
+        for(int id=0;id<count;id++)
+        {
+            int x=id%width,y=id/width;
+            potential[id]=2.5*uplift[id]+
+                1.3*PeriodicNoise.Sample(x,y,width,height,5,configuration.Seed+attempt*2011+1009)+
+                .45*PeriodicNoise.Sample(x,y,width,height,15,configuration.Seed+attempt*2011+2053);
+            if(surface[id]==1)sorted.Add(potential[id]);
+        }
+        sorted.Sort();
+        double low=sorted[(int)(.34*(sorted.Count-1))];
+        double high=sorted[(int)(.78*(sorted.Count-1))];
+        double summit=sorted[(int)(.955*(sorted.Count-1))];
+        var elevation=new byte[count];
+        for(int id=0;id<count;id++)
+        {
+            if(surface[id]==0)continue;
+            elevation[id]=(byte)(potential[id]<low?0:potential[id]<high?1:
+                potential[id]<summit?2:3);
+        }
+        return(surface,elevation,plates);
     }
-    private static double Mod(double value,int width) => (value%width+width)%width;
 }

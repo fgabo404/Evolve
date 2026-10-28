@@ -277,6 +277,24 @@ internal sealed class EvolveWindow : GameWindow
             _ui.Text($"{size}  {grid.Definition.Columns} X {grid.Definition.Rows}",
                 ClientSize.X / 2f, 22, 1.8f, Muted);
         DrawButtons();
+        // Etiquetas de altura solo en zoom: evita miles de textos a escala global.
+        if (_session.State.Landmass?.ElevationByCellId is { } elevations &&
+            _camera.Scale >= 13f)
+        {
+            var visible = _camera.VisibleRange();
+            int cols = grid.Definition.Columns;
+            for(int row=visible.FirstRow;row<=visible.LastRow;row++)
+            for(int col=visible.FirstColumn;col<=visible.LastColumn;col++)
+            {
+                int wrapped=((col%cols)+cols)%cols;
+                var center=FlatHexGeometry.Center(new GridAddress(col,row));
+                Vector2 position=_camera.WorldToScreen(center);
+                if(position.Y < MapCamera2D.TopBarHeight+10 || position.Y > ClientSize.Y-10 ||
+                    position.X<10 || position.X>ClientSize.X-10)continue;
+                _ui.Text(elevations[row*cols+wrapped].ToString(),position.X,position.Y-5,
+                    1.3f,White);
+            }
+        }
         if (_session.State.Landmass is { } worldInfo)
         {
             string kind = worldInfo.Configuration.Type switch
