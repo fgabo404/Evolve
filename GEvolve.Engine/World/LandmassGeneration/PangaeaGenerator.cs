@@ -3,14 +3,14 @@ using GEvolve.Engine.World.LandmassGeneration.Shared;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
-/// <summary>Modelo experimental determinista: placas Voronoi y velocidades, sin alturas.</summary>
+/// <summary>Modelo experimental determinista: placas Voronoi, velocidades y relieve.</summary>
 public sealed class PangaeaGenerator : ILandmassGenerator
 {
     public LandmassType Type => LandmassType.Pangaea;
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
         => GenerateTectonic(topology, configuration, attempt).Surface;
 
-    public (byte[] Surface, byte[] Plates) GenerateTectonic(
+    public (byte[] Surface, byte[] Elevation, byte[] Plates) GenerateTectonic(
         HexTopology topology, LandmassConfiguration configuration, int attempt)
     {
         var profile = configuration.Pangaea
@@ -104,6 +104,7 @@ public sealed class PangaeaGenerator : ILandmassGenerator
                 {distance[nb]=distance[id]+1;queue.Enqueue(nb);}
         }
         var score=new double[count];
+        var uplift=new double[count];
         for(int id=0;id<count;id++)
         {
             int x=id%width,y=id/width;
@@ -114,6 +115,7 @@ public sealed class PangaeaGenerator : ILandmassGenerator
             score[id]=(continent[id]?1:-1)*Math.Min(distance[id],20)+
                 5.3*large+2.5*medium+.8*fine+
                 1.2*(compression[id]-extension[id]);
+            uplift[id]=Math.Max(0,compression[id]-extension[id]);
         }
         // Expandir una sola masa por vecinos hexagonales hasta el 40% objetivo.
         var surface=new byte[count];
@@ -149,6 +151,39 @@ public sealed class PangaeaGenerator : ILandmassGenerator
         }
         for(int id=0;id<count;id++)if(surface[id]==0 && !ocean[id])surface[id]=1;
 
-        return(surface,plates);
+        // Suavizar la presión tectónica a través de los vecinos reales.
+        for(int pass=0;pass<4;pass++)
+        {
+            var next=new double[count];
+            for(int id=0;id<count;id++)
+            {
+                double sum=uplift[id]*2;int weight=2;
+                foreach(int nb in topology.Neighbors(id)){sum+=uplift[nb];weight++;}
+                next[id]=sum/weight;
+            }
+            uplift=next;
+        }
+        var potential=new double[count];
+        var sorted=new List<double>();
+        for(int id=0;id<count;id++)
+        {
+            int x=id%width,y=id/width;
+            potential[id]=2.5*uplift[id]+
+                1.3*PeriodicNoise.Sample(x,y,width,height,5,configuration.Seed+attempt*2011+1009)+
+                .45*PeriodicNoise.Sample(x,y,width,height,15,configuration.Seed+attempt*2011+2053);
+            if(surface[id]==1)sorted.Add(potential[id]);
+        }
+        sorted.Sort();
+        double low=sorted[(int)(.34*(sorted.Count-1))];
+        double high=sorted[(int)(.78*(sorted.Count-1))];
+        double summit=sorted[(int)(.955*(sorted.Count-1))];
+        var elevation=new byte[count];
+        for(int id=0;id<count;id++)
+        {
+            if(surface[id]==0)continue;
+            elevation[id]=(byte)(potential[id]<low?0:potential[id]<high?1:
+                potential[id]<summit?2:3);
+        }
+        return(surface,elevation,plates);
     }
 }
