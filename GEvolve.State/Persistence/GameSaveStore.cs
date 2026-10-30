@@ -40,6 +40,7 @@ public static class GameSaveStore
             (landmass.PlateByCellId is { } plates && plates.Length != landmass.SurfaceByCellId.Length))
             throw new InvalidDataException("Invalid landmass save data.");
         TectonicMotionValidation.Validate(landmass);
+        ValidateGeology(landmass);
         if (landmass.SlopeByCellId is { } slopes &&
             (landmass.ElevationByCellId is null || slopes.Length != landmass.SurfaceByCellId.Length ||
              slopes.Where((value, id) => value > 100 || !landmass.IsLand(id) && value != 0).Any()))
@@ -74,6 +75,31 @@ public static class GameSaveStore
                         ? string.IsNullOrWhiteSpace(entry.BiomeId) || string.IsNullOrWhiteSpace(entry.SubbiomeId)
                         : entry.BiomeId is not null || entry.SubbiomeId is not null)))
                 throw new InvalidDataException("Invalid biome save data.");
+        }
+    }
+
+    private static void ValidateGeology(LandmassState landmass)
+    {
+        var features = landmass.GeologicFeaturesByCellId;
+        var depths = landmass.OceanFloorDepthByCellId;
+        if (features is null && depths is null && landmass.GeologicModelVersion is null) return;
+        int count = landmass.SurfaceByCellId.Length;
+        if (features is null || depths is null || landmass.TectonicMotion is null ||
+            landmass.ElevationByCellId is null ||
+            string.IsNullOrWhiteSpace(landmass.GeologicModelVersion) ||
+            features.Length != count || depths.Length != count)
+            throw new InvalidDataException("Invalid geological relief arrays.");
+        for (int id = 0; id < count; id++)
+        {
+            GeologicFeature feature = (GeologicFeature)features[id];
+            if (!Enum.IsDefined(feature) ||
+                (landmass.IsLand(id)
+                    ? depths[id] != 0 || feature is GeologicFeature.OceanTrench or
+                        GeologicFeature.MidOceanRidge or GeologicFeature.OceanTransformFault
+                    : depths[id] is < 1 or > 100 ||
+                        feature is GeologicFeature.MountainRange or GeologicFeature.RiftValley or
+                            GeologicFeature.FaultValley))
+                throw new InvalidDataException("Invalid geological feature or ocean depth.");
         }
     }
 }

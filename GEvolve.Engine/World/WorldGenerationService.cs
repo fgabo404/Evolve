@@ -15,6 +15,7 @@ public sealed class WorldGenerationService
 {
     private readonly PangaeaFromPlatesGenerator _pangaea = new();
     private readonly PlateAwareElevationGenerator _relief = new();
+    private readonly TectonicReliefGenerator _tectonicRelief = new();
 
     public GeneratedWorld Generate(LandmassConfiguration configuration)
     {
@@ -63,11 +64,17 @@ public sealed class WorldGenerationService
                     continue;
             }
 
+            // One shared post-process: collision mountains, extension rifts, transform faults
+            // and ocean-floor relief use the SAME persisted kinetic fields as the UI.
+            var geology = _tectonicRelief.Generate(topology, surface, elevation, tectonicMotion);
             var terrain = new LandmassState(configuration, surface, attempt)
             {
                 PlateByCellId = plates,
                 TectonicMotion = tectonicMotion,
-                ElevationByCellId = elevation
+                ElevationByCellId = geology.ElevationByCellId,
+                OceanFloorDepthByCellId = geology.OceanFloorDepthByCellId,
+                GeologicFeaturesByCellId = geology.GeologicFeaturesByCellId,
+                GeologicModelVersion = TectonicReliefGenerator.Version
             };
             return new GeneratedWorld(grid, terrain, last
                 ?? throw new InvalidOperationException("Landmass statistics were not calculated."));

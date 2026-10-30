@@ -4,6 +4,7 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
+using GEvolve.Engine.World.Tectonics;
 using GEvolve.Game;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
@@ -85,8 +86,11 @@ public static class GameTests
                 terrain.SurfaceByCellId.Any(value => value == 0) &&
                 terrain.ElevationByCellId is { } elevations &&
                 elevations.Length == grid.Cells.Count &&
-                terrain.Climate is null && terrain.Biomes is null,
-                "Stage 02 generates land and elevation from universal tectonic plates");
+                terrain.Climate is null && terrain.Biomes is null &&
+                terrain.GeologicFeaturesByCellId?.Length == grid.Cells.Count &&
+                terrain.OceanFloorDepthByCellId?.Length == grid.Cells.Count &&
+                terrain.GeologicModelVersion == TectonicReliefGenerator.Version,
+                "Stage 02 generates land and geologic relief from universal tectonic plates");
             int landId = Array.IndexOf(terrain.SurfaceByCellId, (byte)1);
             int oceanId = Array.IndexOf(terrain.SurfaceByCellId, (byte)0);
             Check(session.SelectAt(grid.Cells[landId].Center)?.Id == landId &&

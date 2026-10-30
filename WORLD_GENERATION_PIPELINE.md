@@ -172,3 +172,8 @@ El rango de tierra global sigue siendo aproximadamente 35% como criterio de vali
 ## Movimiento e interacciones: actualización actual
 
 La capa `tectonic-motion-1` se inserta después de las placas `tectonic-plates-2` y antes de las masas terrestres. Orden: **placas → movimientos → interacciones/esfuerzos → tipo de mundo y elevaciones → temperatura → precipitación/humedad → pendientes/biomas**. Las últimas tres etapas siguen desconectadas del pipeline activo. Los generadores terrestres `landmass-12` conservan sus cálculos y no consumen aún los campos nuevos. Véanse fórmulas, persistencia y límites en [TECTONIC_MOTION.md](TECTONIC_MOTION.md). Las secciones anteriores conservan la historia de versiones.
+
+
+## Nueva etapa: deformación por movimiento tectónico (`tectonic-relief-1`)
+
+Tras producir tierra y elevación base, `WorldGenerationService` ejecuta `TectonicReliefGenerator` para los cuatro tipos de mundo. Consume los canales cinemáticos reales de `TectonicMotionState` y crea cordilleras, rifts, fallas, fosas y dorsales; deja costa/placas inmutadas y conserva el océano en elevación 0. La profundidad del fondo marino se almacena separadamente. **Las antiguas huellas de elevación ya no deben permanecer iguales.** Consulte [TECTONIC_RELIEF.md](TECTONIC_RELIEF.md) para fórmulas, clases, límites y pruebas.

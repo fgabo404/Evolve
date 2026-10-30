@@ -10,6 +10,13 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public byte[]? SlopeByCellId { get; init; }
     public byte[]? PlateByCellId { get; init; }
     public TectonicMotionState? TectonicMotion { get; init; }
+    /// <summary>Relative ocean-floor depth: 0 on land; 1..100 under water.</summary>
+    public byte[]? OceanFloorDepthByCellId { get; init; }
+    /// <summary>Geological features, stored as GeologicFeature bytes; optional in older saves.</summary>
+    public byte[]? GeologicFeaturesByCellId { get; init; }
+    public string? GeologicModelVersion { get; init; }
+    public GeologicFeature FeatureAt(int cellId) => GeologicFeaturesByCellId is { } features
+        ? (GeologicFeature)features[cellId] : GeologicFeature.None;
     /// <summary>
     /// Stage 01 only: no land/ocean, relief, climate or biomes have been classified.
     /// SurfaceByCellId is an unclassified compatibility placeholder in this mode.
