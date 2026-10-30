@@ -168,3 +168,7 @@ El modo **Continentes** reemplaza íntegramente su ruta activa de `landmass-11` 
 El rango de tierra global sigue siendo aproximadamente 35% como criterio de validación, **no se asignan cuotas de superficie por continente**. Se comprueba que los continentes principales corresponden a los 2–6 cratones y que se mantiene la continuidad por hexágonos, incluidos los límites de mapa este-oeste. La firma anterior sin placas de `ContinentsGenerator` reconstruye la **misma** matriz tectónica con la semilla, ya no usa el algoritmo anterior de Dijkstra, y sus resultados deben coincidir con la nueva ruta.
 
 **Versiones:** `landmass-12`; `continental-assembly-1`. Pangea, Continentes pequeños, Archipiélagos, tectónica y clima quedan sin cambios. Hay pruebas nuevas, pero **la compilación y validación visual todavía están pendientes de ejecución local**.
+
+## Movimiento e interacciones: actualización actual
+
+La capa `tectonic-motion-1` se inserta después de las placas `tectonic-plates-2` y antes de las masas terrestres. Orden: **placas → movimientos → interacciones/esfuerzos → tipo de mundo y elevaciones → temperatura → precipitación/humedad → pendientes/biomas**. Las últimas tres etapas siguen desconectadas del pipeline activo. Los generadores terrestres `landmass-12` conservan sus cálculos y no consumen aún los campos nuevos. Véanse fórmulas, persistencia y límites en [TECTONIC_MOTION.md](TECTONIC_MOTION.md). Las secciones anteriores conservan la historia de versiones.

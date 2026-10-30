@@ -24,6 +24,8 @@ public sealed class WorldGenerationService
 
         // The same 16 plate IDs exist for every world type at the same size/seed.
         byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
+        var tectonicMotion = new TectonicMotionGenerator().Generate(topology,
+            new LandmassState(configuration, new byte[topology.Count], 0) { PlateByCellId = plates });
 
         IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch
         {
@@ -64,6 +66,7 @@ public sealed class WorldGenerationService
             var terrain = new LandmassState(configuration, surface, attempt)
             {
                 PlateByCellId = plates,
+                TectonicMotion = tectonicMotion,
                 ElevationByCellId = elevation
             };
             return new GeneratedWorld(grid, terrain, last
@@ -90,6 +93,7 @@ public sealed class WorldGenerationService
             PlateByCellId = plates,
             TectonicPreviewOnly = true
         };
+        preview = preview with { TectonicMotion = new TectonicMotionGenerator().Generate(topology, preview) };
         return new GeneratedWorld(grid, preview,
             new LandmassStatistics(0, topology.Count, [], 0));
     }

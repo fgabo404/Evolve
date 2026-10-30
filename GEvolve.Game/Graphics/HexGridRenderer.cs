@@ -125,7 +125,7 @@ public sealed class HexGridRenderer : IDisposable
         }
         _shader.Use();
         GL.Uniform1(_shader.Uniform("uGrayscale"), viewMode == MapViewMode.Elevation ? 1 : 0);
-        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode is MapViewMode.Infrared or MapViewMode.Rainfall or MapViewMode.Tectonic ? 1 : 0);
+        GL.Uniform1(_shader.Uniform("uInfrared"), viewMode is not (MapViewMode.Biomes or MapViewMode.Elevation) ? 1 : 0);
         var summitColor = BiomePalette.ImpassableSummitColor;
         GL.Uniform3(_shader.Uniform("uSummitColor"), summitColor.X, summitColor.Y, summitColor.Z);
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);
@@ -176,6 +176,37 @@ public sealed class HexGridRenderer : IDisposable
                     MathF.Min(a.Y, b.Y) > camera.ViewHeight + MapCamera2D.TopBarHeight)
                     continue;
                 ui.Line(a, b, thickness, tint);
+            }
+        }
+    }
+
+    public void DrawPlateMotions(UiRenderer ui, MapCamera2D camera)
+    {
+        if (_landmass.TectonicMotion is not { } motion) return;
+        int columns = _grid.Definition.Columns;
+        var range = camera.VisibleRange();
+        foreach (var plate in motion.Motions)
+        {
+            int id = motion.ArrowCellByPlateId[plate.PlateId];
+            int canonical = id % columns, row = id / columns;
+            int firstCopy = (int)Math.Ceiling((range.FirstColumn - canonical) / (double)columns);
+            int lastCopy = (int)Math.Floor((range.LastColumn - canonical) / (double)columns);
+            for (int copy = firstCopy; copy <= lastCopy; copy++)
+            {
+                var center = camera.WorldToScreen(FlatHexGeometry.Center(new(canonical + copy * columns, row)));
+                if (center.Y < MapCamera2D.TopBarHeight + 20 || center.Y > camera.ViewHeight - 20) continue;
+                var unit = plate.UnitVector;
+                Vector2 direction = new((float)unit.X, (float)unit.Y);
+                Vector2 tangent = new(-direction.Y, direction.X);
+                float length = 22 + (float)plate.SpeedCmPerYear * 3;
+                Vector2 start = center - direction * length * .5f, end = center + direction * length * .5f;
+                // Dark outline keeps the arrow readable over every plate color.
+                foreach (var (width, color) in new[] { (6f, new Vector4(.03f,.04f,.07f,1)), (2.5f, Vector4.One) })
+                {
+                    ui.Line(start, end, width, color);
+                    ui.Line(end, end - direction * 10 + tangent * 6, width, color);
+                    ui.Line(end, end - direction * 10 - tangent * 6, width, color);
+                }
             }
         }
     }

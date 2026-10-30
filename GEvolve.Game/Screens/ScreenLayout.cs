@@ -8,7 +8,8 @@ public enum UiAction
     SizeSelect, TypeSelect,
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
-    SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic
+    SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
+    StressCompression, StressExtension, StressShear
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -78,6 +79,9 @@ public static class ScreenLayout
                 new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, 248, 261, 36)),
                 new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, 290, 261, 36)),
                 new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, 332, 261, 36)),
+                new(UiAction.StressCompression, "ESFUERZO: COMPRESIÓN", new(12, 374, 261, 32)),
+                new(UiAction.StressExtension, "ESFUERZO: EXTENSIÓN", new(12, 412, 261, 32)),
+                new(UiAction.StressShear, "ESFUERZO: CIZALLA", new(12, 448, 261, 30)),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",

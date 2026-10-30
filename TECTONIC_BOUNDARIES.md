@@ -1,5 +1,7 @@
 # Evolve — Fronteras de placas tectónicas (fase 01)
 
+La fase posterior de movimientos, interacciones y campos persistidos se describe en [TECTONIC_MOTION.md](TECTONIC_MOTION.md). Conserva íntegramente la detección de fronteras documentada aquí; la ausencia de movimiento mencionada abajo corresponde a esta fase inicial.
+
 **Modelo:** `plate-boundaries-1` · **Estado:** implementación pendiente de validación local.
 
 ## Alcance

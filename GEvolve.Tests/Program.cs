@@ -3,6 +3,25 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
+if (args.Contains("--tectonic-motion")) { TectonicMotionTests.Run(); return 0; }
+if (args.Contains("--all-suites"))
+{
+    (string Name, Action Run)[] suites = [
+        ("World", () => { if (WorldTests.Run() != 0) throw new Exception("World tests failed"); }),
+        ("Grid", GridTests.Run), ("Landmass", LandmassTests.Run), ("Biomes", BiomeTests.Run),
+        ("Slope", SlopeTests.Run), ("Temperature", TemperatureTests.Run),
+        ("Precipitation", PrecipitationTests.Run), ("PlateBoundary", PlateBoundaryTests.Run),
+        ("TectonicPlate", TectonicPlateTests.Run), ("StagedLandmass", StagedLandmassTests.Run),
+        ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run)];
+    int failures = 0;
+    foreach (var suite in suites)
+    {
+        try { suite.Run(); Console.WriteLine($"SUITE PASS: {suite.Name}"); }
+        catch (Exception error) { failures++; Console.WriteLine($"SUITE FAIL: {suite.Name}: {error}"); }
+    }
+    return failures == 0 ? 0 : 1;
+}
+
 var state = new GameState { WorldSettings = new WorldSettings(Ancho: 20, Alto: 20, Semilla: 42) };
 var simulation = new SimulationEngine(state);
 simulation.AdvanceTurns(3);
@@ -32,4 +51,5 @@ PlateBoundaryTests.Run();
 TectonicPlateTests.Run();
 StagedLandmassTests.Run();
 GameTests.Run();
+TectonicMotionTests.Run();
 return 0;

@@ -176,13 +176,25 @@ internal sealed class EvolveWindow : GameWindow
                 biome = $"plate {plates[id]}";
             if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
+            if (_viewMode == MapViewMode.Tectonic && terrain.TectonicMotion is { } tectonic)
+            {
+                float period = FlatHexGeometry.PeriodWidth(columns) * _camera.Scale;
+                bool underArrow = tectonic.ArrowCellByPlateId.Any(anchor =>
+                {
+                    Vector2 point = _camera.WorldToScreen(FlatHexGeometry.Center(new(anchor % columns, anchor / columns)));
+                    float dx = screen.X - point.X;
+                    dx -= MathF.Round(dx / period) * period;
+                    return dx * dx + MathF.Pow(screen.Y - point.Y, 2) < 45 * 45;
+                });
+                if (underArrow) continue; // arrow overlay is intentionally not the plate fill
+            }
             // Evitar las tarjetas, los botones y el texto de la interfaz.
             if (screen.X < 310 || screen.X > ClientSize.X - 20 ||
-                screen.Y < 150 || screen.Y > ClientSize.Y - 120) continue;
+                screen.Y < 150 || screen.Y > ClientSize.Y - 170) continue;
             int x = (int)(screen.X * FramebufferSize.X / ClientSize.X);
             int y = FramebufferSize.Y - 1 - (int)(screen.Y * FramebufferSize.Y / ClientSize.Y);
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-            if (_viewMode is not (MapViewMode.Infrared or MapViewMode.Rainfall or MapViewMode.Tectonic) &&
+            if (_viewMode is MapViewMode.Biomes or MapViewMode.Elevation &&
                 terrain.IsImpassableSummit(id) &&
                 (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
                 throw new InvalidOperationException($"Summit {id} is not pure white.");
@@ -230,7 +242,8 @@ internal sealed class EvolveWindow : GameWindow
         [
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
             UiAction.ToggleGrayscale, UiAction.ToggleSurface,
-            UiAction.ToggleTectonic, UiAction.ToggleSurface
+            UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
+            UiAction.StressShear, UiAction.ToggleSurface
         ];
         if (_smokeViewStep < viewActions.Length)
         {
@@ -241,7 +254,10 @@ internal sealed class EvolveWindow : GameWindow
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
             var action = viewActions[_smokeViewStep];
-            var expectedMode = action == UiAction.ToggleSurface
+            var expectedMode = action == UiAction.StressCompression ? MapViewMode.Compression
+                : action == UiAction.StressExtension ? MapViewMode.Extension
+                : action == UiAction.StressShear ? MapViewMode.Shear
+                : action == UiAction.ToggleSurface
                 ? MapViewMode.Biomes
                 : action == UiAction.ToggleTectonic &&
                 terrain?.PlateByCellId is not null
@@ -352,7 +368,10 @@ internal sealed class EvolveWindow : GameWindow
         _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, _viewMode);
         GL.Disable(EnableCap.ScissorTest);
         if (_viewMode == MapViewMode.Tectonic)
+        {
             _gridRenderer.DrawPlateBoundaries(_ui, _camera);
+            _gridRenderer.DrawPlateMotions(_ui, _camera);
+        }
 
         if (_session.SelectedCell is { } selected)
         {
@@ -434,6 +453,7 @@ internal sealed class EvolveWindow : GameWindow
                 string line2 = $"PLACA: {landmass.PlateByCellId![cell.Id]}  LÍMITE: " +
                     (boundaries.BoundaryByCellId[cell.Id] ? "SÍ" : "NO") +
                     $"  DIST: {boundaries.DistanceToBoundaryByCellId[cell.Id]} HEX";
+                line2 += MotionLabel(landmass, cell.Id);
                 float pixel = MathF.Min(1.6f, (ClientSize.X - 48) /
                     (6f * Math.Max(line1.Length, line2.Length)));
                 float panelWidth = Math.Max(line1.Length, line2.Length) * 6 * pixel + 20;
@@ -469,6 +489,7 @@ internal sealed class EvolveWindow : GameWindow
                 _gridRenderer.PlateBoundaries is { } boundaries
                 ? $"PLACA: {plateIds[cell.Id]}  LÍMITE: {(boundaries.BoundaryByCellId[cell.Id] ? "SÍ" : "NO")}  DIST: {boundaries.DistanceToBoundaryByCellId[cell.Id]} HEX"
                 : null;
+            if (plateInfo is not null) plateInfo += MotionLabel(landmass, cell.Id);
             string[] lines = plateInfo is null
                 ? [label, details, biome, temperature, rainfall]
                 : [label, details, biome, temperature, rainfall, plateInfo];
@@ -484,6 +505,13 @@ internal sealed class EvolveWindow : GameWindow
             }
         }
         DrawDropdown(); // Last overlay: above height labels, selected cells and buttons.
+    }
+
+    private static string MotionLabel(LandmassState terrain, int id)
+    {
+        if (terrain.TectonicMotion is not { } motion || terrain.PlateByCellId is not { } plates) return "";
+        var plate = motion.Motions[plates[id]];
+        return FormattableString.Invariant($"  DIR: {plate.DirectionDegrees:F1}°  V: {plate.SpeedCmPerYear:F2} CM/AÑO");
     }
 
     private void DrawButtons()
@@ -504,7 +532,10 @@ internal sealed class EvolveWindow : GameWindow
                 button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
                 button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared ||
                 button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall ||
-                button.Action == UiAction.ToggleTectonic && _viewMode == MapViewMode.Tectonic;
+                button.Action == UiAction.ToggleTectonic && _viewMode == MapViewMode.Tectonic ||
+                button.Action == UiAction.StressCompression && _viewMode == MapViewMode.Compression ||
+                button.Action == UiAction.StressExtension && _viewMode == MapViewMode.Extension ||
+                button.Action == UiAction.StressShear && _viewMode == MapViewMode.Shear;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -728,6 +759,15 @@ internal sealed class EvolveWindow : GameWindow
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.TectonicPreviewOnly == false)
                     _viewMode = MapViewMode.Biomes;
+                break;
+            case UiAction.StressCompression or UiAction.StressExtension or UiAction.StressShear:
+                if (_session.Screen == GameScreen.World && _session.State.Landmass?.TectonicMotion is not null)
+                    _viewMode = action switch
+                    {
+                        UiAction.StressCompression => MapViewMode.Compression,
+                        UiAction.StressExtension => MapViewMode.Extension,
+                        _ => MapViewMode.Shear
+                    };
                 break;
             case UiAction.ToggleGrayscale:
                 if (_session.Screen == GameScreen.World &&
