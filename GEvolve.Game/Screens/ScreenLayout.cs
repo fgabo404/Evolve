@@ -9,7 +9,7 @@ public enum UiAction
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
-    StressCompression, StressExtension, StressShear
+    StressCompression, StressExtension, StressShear, ToggleGeology
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -82,6 +82,8 @@ public static class ScreenLayout
                 new(UiAction.StressCompression, "ESFUERZO: COMPRESIÓN", new(12, 374, 261, 32)),
                 new(UiAction.StressExtension, "ESFUERZO: EXTENSIÓN", new(12, 412, 261, 32)),
                 new(UiAction.StressShear, "ESFUERZO: CIZALLA", new(12, 448, 261, 30)),
+                new(UiAction.ToggleGeology, "RELIEVE: GEOLOGÍA",
+                    new(MathF.Max(8, width - 270), 64, MathF.Min(250, width - 16), 32)),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",

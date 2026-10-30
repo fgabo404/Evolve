@@ -243,7 +243,7 @@ internal sealed class EvolveWindow : GameWindow
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
             UiAction.ToggleGrayscale, UiAction.ToggleSurface,
             UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
-            UiAction.StressShear, UiAction.ToggleSurface
+            UiAction.StressShear, UiAction.ToggleGeology, UiAction.ToggleSurface
         ];
         if (_smokeViewStep < viewActions.Length)
         {
@@ -257,6 +257,7 @@ internal sealed class EvolveWindow : GameWindow
             var expectedMode = action == UiAction.StressCompression ? MapViewMode.Compression
                 : action == UiAction.StressExtension ? MapViewMode.Extension
                 : action == UiAction.StressShear ? MapViewMode.Shear
+                : action == UiAction.ToggleGeology ? MapViewMode.Geology
                 : action == UiAction.ToggleSurface
                 ? MapViewMode.Biomes
                 : action == UiAction.ToggleTectonic &&
@@ -471,6 +472,22 @@ internal sealed class EvolveWindow : GameWindow
             string details = $"ALT: {height}  LAT: {environment.Latitude:F1}";
             details += $"  PEND: {environment.Slope?.ToString() ?? "PENDIENTE"} NIV/HEX";
             if (environment.IsImpassableSummit) details += "  CUMBRE INFRANQUEABLE";
+            if (landmass.GeologicFeaturesByCellId is not null)
+            {
+                string featureLabel = landmass.FeatureAt(cell.Id) switch
+                {
+                    GeologicFeature.MountainRange => "CORDILLERA",
+                    GeologicFeature.RiftValley => "VALLE RIFT",
+                    GeologicFeature.FaultValley => "FALLA TRANSFORMANTE",
+                    GeologicFeature.OceanTrench => "FOSA OCEÁNICA",
+                    GeologicFeature.MidOceanRidge => "DORSAL OCEÁNICA",
+                    GeologicFeature.OceanTransformFault => "FALLA OCEÁNICA",
+                    _ => "SIN ACCIDENTE"
+                };
+                details += $"  GEO: {featureLabel}";
+                if (!landmass.IsLand(cell.Id) && landmass.OceanFloorDepthByCellId is { } depths)
+                    details += $"  PROF. RELATIVA: {depths[cell.Id]}/100";
+            }
             string temperature = landmass.Climate is { } climate
                 ? FormattableString.Invariant($"TEMPERATURA: {climate.CurrentCelsius(cell.Id):F1} °C")
                 : "TEMPERATURA: PENDIENTE";
@@ -535,7 +552,8 @@ internal sealed class EvolveWindow : GameWindow
                 button.Action == UiAction.ToggleTectonic && _viewMode == MapViewMode.Tectonic ||
                 button.Action == UiAction.StressCompression && _viewMode == MapViewMode.Compression ||
                 button.Action == UiAction.StressExtension && _viewMode == MapViewMode.Extension ||
-                button.Action == UiAction.StressShear && _viewMode == MapViewMode.Shear;
+                button.Action == UiAction.StressShear && _viewMode == MapViewMode.Shear ||
+                button.Action == UiAction.ToggleGeology && _viewMode == MapViewMode.Geology;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -768,6 +786,11 @@ internal sealed class EvolveWindow : GameWindow
                         UiAction.StressExtension => MapViewMode.Extension,
                         _ => MapViewMode.Shear
                     };
+                break;
+            case UiAction.ToggleGeology:
+                if (_session.Screen == GameScreen.World &&
+                    _session.State.Landmass?.GeologicFeaturesByCellId is not null)
+                    _viewMode = _viewMode == MapViewMode.Geology ? MapViewMode.Biomes : MapViewMode.Geology;
                 break;
             case UiAction.ToggleGrayscale:
                 if (_session.Screen == GameScreen.World &&
