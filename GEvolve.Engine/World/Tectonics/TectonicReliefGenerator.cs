@@ -38,7 +38,7 @@ public sealed class TectonicReliefGenerator
             byte land = surface[id], original = baseElevation[id];
             float c = motion.CompressionByCellId[id], d = motion.ExtensionByCellId[id],
                 s = motion.ShearByCellId[id];
-            if (land is not 0 and not 1 || (land == 0 ? original != 0 : original is < 1 or > 100) ||
+            if (land is not 0 and not 1 || (land == 0 ? original != 0 : original > 100) ||
                 !float.IsFinite(c) || !float.IsFinite(d) || !float.IsFinite(s) ||
                 c < 0 || d < 0 || s < 0)
                 throw new ArgumentException("Invalid surface, elevation or motion intensity.");
@@ -46,12 +46,15 @@ public sealed class TectonicReliefGenerator
             // All three signed interactions came from actual relative plate velocities.
             // Unlike the old random pressure proxies this deformation cannot
             // occur far from a plate edge or in the absence of motion.
-            double compression = Math.Sqrt(Math.Clamp(c / ReferenceSpeedCmPerYear, 0, 1));
-            double extension = Math.Sqrt(Math.Clamp(d / ReferenceSpeedCmPerYear, 0, 1));
-            double shear = Math.Sqrt(Math.Clamp(s / ReferenceSpeedCmPerYear, 0, 1));
+            bool nearBoundary = motion.DistanceToBoundaryByCellId[id] <= reach;
+            double compression = nearBoundary
+                ? Math.Sqrt(Math.Clamp(c / ReferenceSpeedCmPerYear, 0, 1)) : 0;
+            double extension = nearBoundary
+                ? Math.Sqrt(Math.Clamp(d / ReferenceSpeedCmPerYear, 0, 1)) : 0;
+            double shear = nearBoundary
+                ? Math.Sqrt(Math.Clamp(s / ReferenceSpeedCmPerYear, 0, 1)) : 0;
             float dominant = Math.Max(c, Math.Max(d, s));
-            bool active = dominant >= FeatureThresholdCmPerYear &&
-                motion.DistanceToBoundaryByCellId[id] <= reach;
+            bool active = dominant >= FeatureThresholdCmPerYear && nearBoundary;
 
             if (land == 1)
             {

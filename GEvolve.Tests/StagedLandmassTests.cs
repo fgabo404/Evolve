@@ -12,6 +12,7 @@ public static class StagedLandmassTests
     {
         var service = new WorldGenerationService();
         var relief = new PlateAwareElevationGenerator();
+        var tectonicRelief = new TectonicReliefGenerator();
         var allTypes = Enum.GetValues<LandmassType>();
 
         // Every value between two and six must be reachable, but a given seed
@@ -46,6 +47,16 @@ public static class StagedLandmassTests
                     ?? throw new InvalidOperationException("Missing stage 01 plates");
                 var heights = landmass.ElevationByCellId
                     ?? throw new InvalidOperationException("Missing stage 02 elevations");
+                var oceanFloor = landmass.OceanFloorDepthByCellId
+                    ?? throw new InvalidOperationException("Missing ocean-floor relief");
+                var features = landmass.GeologicFeaturesByCellId
+                    ?? throw new InvalidOperationException("Missing geological features");
+                Check(landmass.GeologicModelVersion == TectonicReliefGenerator.Version &&
+                    landmass.TectonicMotion is not null && oceanFloor.Length == topology.Count &&
+                    features.Length == topology.Count &&
+                    Enumerable.Range(0, topology.Count).All(id =>
+                        landmass.IsLand(id) ? oceanFloor[id] == 0 : oceanFloor[id] is >= 1 and <= 100),
+                    "All four world types get motion-driven landforms and relative bathymetry");
 
                 Check(!landmass.TectonicPreviewOnly &&
                     ids.Distinct().Count() == TectonicPlateGenerator.NumberOfPlates &&
@@ -185,9 +196,13 @@ public static class StagedLandmassTests
                     var recalculated = relief.Generate(
                         topology, landmass.SurfaceByCellId, platesCopy,
                         type, config.Seed, landmass.DeterministicAttempt);
-                    Check(recalculated.SequenceEqual(heights) &&
+                    var transformed = tectonicRelief.Generate(topology, landmass.SurfaceByCellId,
+                        recalculated, landmass.TectonicMotion!);
+                    Check(transformed.ElevationByCellId.SequenceEqual(heights) &&
+                        transformed.OceanFloorDepthByCellId.SequenceEqual(oceanFloor) &&
+                        transformed.GeologicFeaturesByCellId.SequenceEqual(features) &&
                         platesCopy.SequenceEqual(ids),
-                        "Shared elevation routine is deterministic and cannot modify plates");
+                        "Shared base elevation and real plate motion deterministically form final relief");
                 }
                 if (size == GridSize.Small)
                 {
@@ -211,8 +226,11 @@ public static class StagedLandmassTests
                         Check(restored.Configuration.Type == type &&
                             restored.SurfaceByCellId.SequenceEqual(landmass.SurfaceByCellId) &&
                             restored.PlateByCellId!.SequenceEqual(ids) &&
-                            restored.ElevationByCellId!.SequenceEqual(heights),
-                            "Every landmass type survives save and load");
+                            restored.ElevationByCellId!.SequenceEqual(heights) &&
+                            restored.OceanFloorDepthByCellId!.SequenceEqual(oceanFloor) &&
+                            restored.GeologicFeaturesByCellId!.SequenceEqual(features) &&
+                            restored.GeologicModelVersion == TectonicReliefGenerator.Version,
+                            "Every landmass type and its geology survive save and load");
                     }
                     finally { if (File.Exists(path)) File.Delete(path); }
                 }

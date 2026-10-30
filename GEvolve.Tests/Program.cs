@@ -4,6 +4,7 @@ using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
 if (args.Contains("--tectonic-motion")) { TectonicMotionTests.Run(); return 0; }
+if (args.Contains("--tectonic-relief")) { TectonicReliefTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [
@@ -12,7 +13,8 @@ if (args.Contains("--all-suites"))
         ("Slope", SlopeTests.Run), ("Temperature", TemperatureTests.Run),
         ("Precipitation", PrecipitationTests.Run), ("PlateBoundary", PlateBoundaryTests.Run),
         ("TectonicPlate", TectonicPlateTests.Run), ("StagedLandmass", StagedLandmassTests.Run),
-        ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run)];
+        ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run),
+        ("TectonicRelief", TectonicReliefTests.Run)];
     int failures = 0;
     foreach (var suite in suites)
     {
@@ -52,4 +54,5 @@ TectonicPlateTests.Run();
 StagedLandmassTests.Run();
 GameTests.Run();
 TectonicMotionTests.Run();
+TectonicReliefTests.Run();
 return 0;

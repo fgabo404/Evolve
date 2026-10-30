@@ -107,7 +107,7 @@ public static class TectonicMotionTests
         // Captured on 11e784c BEFORE integrating motion. Historical generation failure retained explicitly.
         using var stream = typeof(TectonicMotionTests).Assembly.GetManifestResourceStream("TectonicMotionTerrainBaseline.txt")!;
         using var reader = new StreamReader(stream);
-        int unchanged = 0, failures = 0;
+        int unchanged = 0, changedElevations = 0, failures = 0;
         while (reader.ReadLine() is { } line)
         {
             var parts = line.Split('|');
@@ -121,12 +121,18 @@ public static class TectonicMotionTests
             var terrain = service.Generate(config).Landmass;
             string Hash(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
             Check(terrain.DeterministicAttempt == int.Parse(parts[3]) && Hash(terrain.SurfaceByCellId) == parts[4] &&
-                Hash(terrain.ElevationByCellId) == parts[5] && Hash(terrain.PlateByCellId) == parts[6], "Pre-motion terrain hash unchanged");
+                Hash(terrain.PlateByCellId) == parts[6], "Historical surface and plate geometry unchanged");
+            if (Hash(terrain.ElevationByCellId) != parts[5]) changedElevations++;
+            Check(terrain.GeologicModelVersion == TectonicReliefGenerator.Version &&
+                terrain.OceanFloorDepthByCellId?.Length == terrain.SurfaceByCellId.Length &&
+                terrain.GeologicFeaturesByCellId?.Length == terrain.SurfaceByCellId.Length,
+                "New geological relief is persisted for generated worlds");
             Check(terrain.Climate is null && terrain.Biomes is null && terrain.SlopeByCellId is null,
                 "Disconnected downstream stages remain disconnected");
             unchanged++;
         }
-        Console.WriteLine($"PASS: {unchanged} pre-motion terrain hashes unchanged; {failures} documented pre-existing generation failure unchanged");
+        Check(changedElevations > 0, "Tectonic movements must change terrain elevations");
+        Console.WriteLine($"PASS: {unchanged} historical surface/plate hashes unchanged, {changedElevations} updated elevation maps; {failures} documented pre-existing generation failure unchanged");
     }
 
     private static void Persistence(GEvolve.Engine.World.LandmassGeneration.GeneratedWorld world)

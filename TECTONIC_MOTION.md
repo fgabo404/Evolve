@@ -1,6 +1,6 @@
 # Movimiento e interacciones tectónicas
 
-Modelo `tectonic-motion-1`, posterior a `tectonic-plates-2`. El resultado es diagnóstico: no modifica las formas ni IDs de las 16 placas, superficie, elevaciones, clima o biomas. No anima placas ni genera montañas, volcanes, terremotos o rifts visibles.
+Modelo `tectonic-motion-1`, posterior a `tectonic-plates-2`. En la versión original el resultado era diagnóstico y no modificaba las elevaciones. La fase posterior `tectonic-relief-1` sí consume estos campos y deforma el relieve; véase [TECTONIC_RELIEF.md](TECTONIC_RELIEF.md). No anima placas ni genera montañas, volcanes, terremotos o rifts visibles.
 
 ## Arquitectura y orden
 
