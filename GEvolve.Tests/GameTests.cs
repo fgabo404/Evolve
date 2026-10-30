@@ -4,6 +4,7 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
+using GEvolve.Engine.World.Tectonics;
 using GEvolve.Game;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;

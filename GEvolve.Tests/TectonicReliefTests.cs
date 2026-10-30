@@ -1,5 +1,7 @@
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
+using System.Text.Json.Nodes;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.Tectonics;
 using GEvolve.State.Game;
@@ -87,7 +89,50 @@ public static class TectonicReliefTests
             new float[count], 2);
         Check(spread.Compression[seam] > 0, "Deformation crosses the periodic hex seam");
 
-        Console.WriteLine("PASS: motion-driven mountains, rifts, fault valleys, trenches, ridges and quiet terrain");
+        // The generated world persists the new arrays without regenerating terrain.
+        var generated = new WorldGenerationService().Generate(
+            LandmassProfiles.Create(GridSize.Small, LandmassType.Pangaea, 2026));
+        var terrain = generated.Landmass;
+        string path = Path.Combine(Path.GetTempPath(), $"evolve-geology-{Guid.NewGuid():N}.json");
+        try
+        {
+            var state = new GameState
+            {
+                HexGrid = new HexGridState(generated.Grid.Definition),
+                Landmass = terrain
+            };
+            GameSaveStore.Save(path, state);
+            var restored = GameSaveStore.Load(path).Landmass!;
+            Check(restored.GeologicModelVersion == TectonicReliefGenerator.Version &&
+                restored.ElevationByCellId!.SequenceEqual(terrain.ElevationByCellId!) &&
+                restored.OceanFloorDepthByCellId!.SequenceEqual(terrain.OceanFloorDepthByCellId!) &&
+                restored.GeologicFeaturesByCellId!.SequenceEqual(terrain.GeologicFeaturesByCellId!),
+                "Geological relief survives JSON save and load");
+
+            state.Landmass = terrain with
+            {
+                GeologicFeaturesByCellId = [255]
+            };
+            bool rejected = false;
+            try { GameSaveStore.Save(path, state); }
+            catch (InvalidDataException) { rejected = true; }
+            Check(rejected, "Invalid geological arrays cannot be persisted");
+
+            // Historical snapshots without these optional properties still load.
+            var json = JsonNode.Parse(File.ReadAllText(path))!;
+            var land = json["Landmass"]!.AsObject();
+            land.Remove("OceanFloorDepthByCellId");
+            land.Remove("GeologicFeaturesByCellId");
+            land.Remove("GeologicModelVersion");
+            File.WriteAllText(path, json.ToJsonString());
+            var older = GameSaveStore.Load(path).Landmass!;
+            Check(older.GeologicModelVersion is null &&
+                older.GeologicFeaturesByCellId is null &&
+                older.OceanFloorDepthByCellId is null,
+                "Old saves without geological relief still load");
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+        Console.WriteLine("PASS: motion-driven mountains, rifts, faults, trenches, ridges, persistence and legacy saves");
     }
 
     private static void Check(bool condition, string message)
