@@ -12,7 +12,8 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public byte[]? PlateByCellId { get; init; }
     public TectonicMotionState? TectonicMotion { get; init; }
     public ContinentalGeologyState? ContinentalGeology { get; init; }
-    /// <summary>Continentes conserva sus placas y movimiento; la superficie aún no existe.</summary>
+    public ContinentalSurfaceState? ContinentalSurface { get; init; }
+    /// <summary>Compatibilidad con guardados creados mientras la superficie continental estaba pendiente.</summary>
     public bool SurfaceGenerationPending { get; init; }
     /// <summary>
     /// Stage 01 only: no land/ocean, relief, climate or biomes have been classified.

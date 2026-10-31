@@ -255,19 +255,19 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
-        if (_session.State.Landmass?.SurfaceGenerationPending == true && WorldButtons().Any(button =>
-            button.Action is UiAction.ToggleSurface or UiAction.ToggleGrayscale or UiAction.ToggleInfrared or
+        if (_session.State.Landmass?.ContinentalSurface is not null && WorldButtons().Any(button =>
+            button.Action is UiAction.ToggleGrayscale or UiAction.ToggleInfrared or
                 UiAction.ToggleRainfall or UiAction.ToggleGeology))
-            throw new InvalidOperationException("Unavailable surface layers are visible while Continents is pending.");
+            throw new InvalidOperationException("Unavailable derived layers are visible before continental geology.");
         UiAction[] viewActions =
-        _session.State.Landmass?.SurfaceGenerationPending == true
-        ? [UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
-            UiAction.StressShear, UiAction.ToggleTectonic]
+        _session.State.Landmass?.ContinentalSurface is not null
+        ? [UiAction.ToggleTectonic, UiAction.ToggleSurface, UiAction.StressCompression,
+            UiAction.StressExtension, UiAction.StressShear, UiAction.ToggleSurface]
         : [
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
             UiAction.ToggleGrayscale, UiAction.ToggleSurface,
             UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
-            UiAction.StressShear, UiAction.ToggleGeology, UiAction.ToggleSurface
+            UiAction.StressShear, UiAction.ToggleSurface
         ];
         if (_smokeViewStep < viewActions.Length)
         {
@@ -457,7 +457,8 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (_session.State.Landmass is { } worldInfo)
         {
-            string kind = worldInfo.SurfaceGenerationPending ? "CONTINENTES: PENDIENTE" :
+            string kind = worldInfo.ContinentalSurface is not null ? "CONTINENTES: SUPERFICIE" :
+                worldInfo.SurfaceGenerationPending ? "CONTINENTES: PENDIENTE" :
                 worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
                 worldInfo.Configuration.Type switch
                 {
@@ -692,11 +693,13 @@ internal sealed class EvolveWindow : GameWindow
 
     private IEnumerable<UiButton> WorldButtons()
     {
-        bool pending = _session.Screen == GameScreen.World &&
-            _session.State.Landmass?.SurfaceGenerationPending == true;
+        var terrain = _session.State.Landmass;
         foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
-            if (!pending || button.Action is not (UiAction.ToggleSurface or UiAction.ToggleGrayscale or
-                UiAction.ToggleInfrared or UiAction.ToggleRainfall or UiAction.ToggleGeology))
+            if (button.Action != UiAction.ToggleSurface || terrain?.HasSurface == true)
+            if (button.Action != UiAction.ToggleGrayscale || terrain?.ElevationByCellId is not null)
+            if (button.Action != UiAction.ToggleInfrared || terrain?.Climate is not null)
+            if (button.Action != UiAction.ToggleRainfall || terrain?.Climate?.BasePrecipitationMmByCellId is not null)
+            if (button.Action != UiAction.ToggleGeology || terrain?.ContinentalGeology is not null)
                 yield return button;
     }
 

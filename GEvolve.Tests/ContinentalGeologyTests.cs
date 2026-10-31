@@ -15,43 +15,17 @@ public static class ContinentalGeologyTests
     {
         VerifyContactClassifier();
         var service = new WorldGenerationService();
-        foreach (var size in Enum.GetValues<GridSize>())
-        foreach (int seed in new[] { 2026, 42, -731 })
-        {
-            var config = LandmassProfiles.Create(size, LandmassType.Continents, seed);
-            var world = service.Generate(config);
-            var terrain = world.Landmass;
-            var preview = service.GeneratePlatePreview(config).Landmass;
-            var topology = new HexTopology(world.Grid);
-            Check(world.Statistics is null && terrain.SurfaceGenerationPending && terrain.TectonicPreviewOnly &&
-                !terrain.HasSurface && terrain.SurfaceByCellId.Length == 0 &&
-                terrain.ElevationByCellId is null && terrain.ContinentalGeology is null &&
-                terrain.Biomes is null && terrain.Climate is null && terrain.SlopeByCellId is null,
-                "Continents have no classified surface or surface-derived data");
-            Check(terrain.PlateByCellId!.Length == topology.Count &&
-                terrain.PlateByCellId.Distinct().Count() == 16 &&
-                terrain.PlateByCellId.SequenceEqual(preview.PlateByCellId!) &&
-                terrain.PlateByCellId.SequenceEqual(TectonicPlateGenerator.Generate(topology, seed)) &&
-                JsonSerializer.Serialize(terrain.TectonicMotion) == JsonSerializer.Serialize(preview.TectonicMotion),
-                "Pending Continents preserve the exact official 16 plates, motion and stress fields");
-            try { _ = terrain.IsLand(0); throw new Exception("Pending land was classified"); }
-            catch (InvalidOperationException) { }
-            _ = MapViewColors.ForCell(terrain, 0, MapViewMode.Tectonic);
-            _ = MapViewColors.ForCell(terrain, 0, MapViewMode.Compression);
-            try { _ = MapViewColors.ForCell(terrain, 0, MapViewMode.Biomes); throw new Exception("Unavailable surface layer was colored"); }
-            catch (InvalidOperationException) { }
-            if (size == GridSize.Small)
-            {
-                var repeated = service.Generate(config).Landmass;
-                Check(repeated.SurfaceByCellId.Length == 0 &&
-                    repeated.PlateByCellId!.SequenceEqual(terrain.PlateByCellId) &&
-                    JsonSerializer.Serialize(repeated.TectonicMotion) == JsonSerializer.Serialize(terrain.TectonicMotion),
-                    "Pending world is deterministic");
-                VerifyPendingPersistence(world);
-                if (seed == 2026) VerifyPreservedGeology(world);
-            }
-            Console.WriteLine($"PENDING CONTINENTS {size}/{seed}: 16 plates, {terrain.TectonicMotion!.Interactions.Length} interactions, no surface");
-        }
+        var world = service.Generate(LandmassProfiles.Create(GridSize.Small, LandmassType.Continents, 2026));
+        var preview = service.GeneratePlatePreview(world.Landmass.Configuration).Landmass;
+        var topology = new HexTopology(world.Grid);
+        Check(world.Landmass.PlateByCellId!.SequenceEqual(preview.PlateByCellId!) &&
+            world.Landmass.PlateByCellId.SequenceEqual(TectonicPlateGenerator.Generate(topology, 2026)) &&
+            JsonSerializer.Serialize(world.Landmass.TectonicMotion) == JsonSerializer.Serialize(preview.TectonicMotion),
+            "Continental surface does not change the official plates or motion");
+        _ = MapViewColors.ForCell(world.Landmass, 0, MapViewMode.Tectonic);
+        _ = MapViewColors.ForCell(world.Landmass, 0, MapViewMode.Compression);
+        _ = MapViewColors.ForCell(world.Landmass, 0, MapViewMode.Biomes);
+        VerifyPreservedGeology(world);
         VerifyApprovedNonContinentalWorlds(service);
     }
 
@@ -75,51 +49,26 @@ public static class ContinentalGeologyTests
             "Rifts, ridges and transforms retain their classification");
     }
 
-    private static void VerifyPendingPersistence(GeneratedWorld world)
+    private static void VerifyPreservedGeology(GeneratedWorld continental)
     {
-        string path = Path.Combine(Path.GetTempPath(), $"pending-continents-{Guid.NewGuid():N}.json");
-        try
-        {
-            var state = new GameState { HexGrid = new(world.Grid.Definition), Landmass = world.Landmass };
-            GameSaveStore.Save(path, state);
-            var loaded = GameSaveStore.Load(path).Landmass!;
-            Check(loaded.SurfaceGenerationPending && loaded.SurfaceByCellId.Length == 0 &&
-                loaded.PlateByCellId!.SequenceEqual(world.Landmass.PlateByCellId!) &&
-                JsonSerializer.Serialize(loaded.TectonicMotion) == JsonSerializer.Serialize(world.Landmass.TectonicMotion),
-                "Pending surface, plates and motion survive save/load");
-            foreach (var invalid in new[]
-            {
-                world.Landmass with { SurfaceByCellId = new byte[world.Grid.Cells.Count] },
-                world.Landmass with { ElevationByCellId = new byte[world.Grid.Cells.Count] },
-                world.Landmass with { TectonicMotion = null }
-            })
-            {
-                state.Landmass = invalid;
-                try { GameSaveStore.Save(path, state); throw new Exception("Malformed pending surface was saved"); }
-                catch (InvalidDataException) { }
-            }
-        }
-        finally { if (File.Exists(path)) File.Delete(path); }
-    }
-
-    private static void VerifyPreservedGeology(GeneratedWorld pending)
-    {
-        var topology = new HexTopology(pending.Grid);
+        var topology = new HexTopology(continental.Grid);
         int count = topology.Count;
-        var motion = pending.Landmass.TectonicMotion!;
+        var motion = continental.Landmass.TectonicMotion!;
         var crust = Enumerable.Repeat((byte)CrustKind.Continental, count).ToArray();
         var input = new ContinentalCrustMap(crust, new float[count],
             motion.ArrowCellByPlateId.Take(2).ToArray(), new byte[count]);
+        var noSurface = continental.Landmass with { SurfaceByCellId = [], ContinentalSurface = null,
+            SurfaceGenerationPending = true, TectonicPreviewOnly = true };
         try
         {
-            new ContinentalReliefGenerator().Generate(topology, pending.Landmass, input, 0);
+            new ContinentalReliefGenerator().Generate(topology, noSurface, input, 0);
             throw new Exception("Relief ran without a surface");
         }
         catch (InvalidOperationException) { }
-        var terrain = pending.Landmass with
+        var terrain = continental.Landmass with
         {
             SurfaceByCellId = Enumerable.Repeat((byte)1, count).ToArray(),
-            SurfaceGenerationPending = false, TectonicPreviewOnly = false
+            SurfaceGenerationPending = false, TectonicPreviewOnly = false, ContinentalSurface = null
         };
         var relief = new ContinentalReliefGenerator();
         var full = relief.Generate(topology, terrain, input, 0);
@@ -143,7 +92,7 @@ public static class ContinentalGeologyTests
         {
             var legacyConfig = full.Configuration with
             { Continents = new ContinentsParameters(.35, 2, 34, .58, 9, .002) };
-            var state = new GameState { HexGrid = new(pending.Grid.Definition),
+            var state = new GameState { HexGrid = new(continental.Grid.Definition),
                 Landmass = full with { Configuration = legacyConfig } };
             GameSaveStore.Save(path, state);
             Check(JsonSerializer.Serialize(GameSaveStore.Load(path).Landmass!.ContinentalGeology) ==

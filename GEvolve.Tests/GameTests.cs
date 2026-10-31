@@ -182,10 +182,10 @@ public static class GameTests
         Check(resizing.State.Landmass!.Configuration.Size == GridSize.Small &&
             resizing.State.Landmass.Configuration.Type == LandmassType.Continents &&
             resizing.State.Landmass.Configuration.Seed == selectedSeed &&
-            resizing.State.Landmass.SurfaceGenerationPending &&
-            resizing.State.Landmass.SurfaceByCellId.Length == 0 &&
+            resizing.State.Landmass.ContinentalSurface is not null &&
+            resizing.State.Landmass.HasSurface && resizing.State.Landmass.ElevationByCellId is null &&
             resizing.State.Landmass.TectonicMotion is not null,
-            "Reconfiguration selects pending Continents with real tectonics and no surface");
+            "Reconfiguration selects plate-derived Continents with real tectonics");
 
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })

@@ -9,7 +9,7 @@ namespace GEvolve.Engine.World;
 
 /// <summary>
 /// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
-/// Continents currently stops after stage 01 with no surface.
+/// Continents derives surface from plate groups, with geology and climate left pending.
 /// Temperature, precipitation and biome classification remain shared future stages.
 /// </summary>
 public sealed class WorldGenerationService
@@ -30,15 +30,15 @@ public sealed class WorldGenerationService
 
         if (configuration.Type == LandmassType.Continents)
         {
-            // No continental surface exists yet. Keep the actual plates and motion only.
-            var pending = new LandmassState(configuration, [], 0)
+            var generated = new PlateGroupSurfaceGenerator().Generate(topology, plates, tectonicMotion,
+                configuration.Seed);
+            var terrain = new LandmassState(configuration, generated.Surface, 0)
             {
                 PlateByCellId = plates,
                 TectonicMotion = tectonicMotion,
-                TectonicPreviewOnly = true,
-                SurfaceGenerationPending = true
+                ContinentalSurface = generated.State
             };
-            return new(grid, pending, null);
+            return new(grid, terrain, LandmassAnalysis.Analyze(topology, generated.Surface));
         }
 
         IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch

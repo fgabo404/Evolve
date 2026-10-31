@@ -23,7 +23,7 @@ public static class LandmassTests
         Check(service.Generators.Count == 3 &&
             service.Generators.Select(item => item.Type).Distinct().Count() == 3 &&
             service.Generators.Select(item => item.GetType()).Distinct().Count() == 3,
-            "Three finished generation strategies; Continents surface is pending");
+            "Three legacy generation strategies; Continents use plate-group surface generation");
 
         var baselineHashes = new Dictionary<(GridSize, LandmassType), string>();
         foreach (var size in Enum.GetValues<GridSize>())
@@ -76,10 +76,10 @@ public static class LandmassTests
                 small.ComponentCount > 8 && islands.ComponentCount > small.ComponentCount &&
                 islands.IslandComponents * 2 > islands.ComponentCount,
                 $"Distinct finished structures {size}/{seed}: S={small.ComponentCount}, A={islands.ComponentCount}");
-            var pending = service.Generate(LandmassProfiles.Create(size, LandmassType.Continents, seed));
-            Check(pending.Statistics is null && pending.Landmass.SurfaceGenerationPending &&
-                pending.Landmass.SurfaceByCellId.Length == 0,
-                "Legacy service cannot regenerate old Continents surface");
+            var continental = service.Generate(LandmassProfiles.Create(size, LandmassType.Continents, seed));
+            Check(continental.Statistics?.LandFraction is >= .33 and <= .37 &&
+                continental.Landmass.ContinentalSurface is not null && continental.Landmass.ElevationByCellId is null,
+                "Continents have a new tectonic surface with relief pending");
         }
 
         VerifyPeriodicSeam();

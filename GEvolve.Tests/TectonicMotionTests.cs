@@ -115,10 +115,10 @@ public static class TectonicMotionTests
             if (config.Type == LandmassType.Continents)
             {
                 var rebuilt = service.Generate(config);
-                Check(rebuilt.Statistics is null && rebuilt.Landmass.SurfaceGenerationPending &&
-                    rebuilt.Landmass.SurfaceByCellId.Length == 0 &&
+                Check(rebuilt.Statistics is not null && rebuilt.Landmass.ContinentalSurface is not null &&
+                    rebuilt.Landmass.ElevationByCellId is null &&
                     rebuilt.Landmass.PlateByCellId is not null && rebuilt.Landmass.TectonicMotion is not null,
-                    "Continents retain official tectonics while surface is pending");
+                    "Continents retain official tectonics with a plate-derived surface");
                 continue;
             }
             if (parts[3] == "ERROR")

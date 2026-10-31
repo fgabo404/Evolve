@@ -16,13 +16,12 @@ public static class StagedLandmassTests
         foreach (var size in Enum.GetValues<GridSize>())
         {
             var generated = new Dictionary<LandmassType, GeneratedWorld>();
-            var pendingConfig = LandmassProfiles.Create(size, LandmassType.Continents, 2026);
-            var pending = service.Generate(pendingConfig);
-            generated[LandmassType.Continents] = pending;
-            Check(pending.Statistics is null && pending.Landmass.SurfaceGenerationPending &&
-                pending.Landmass.SurfaceByCellId.Length == 0 && pending.Landmass.ElevationByCellId is null &&
-                pending.Landmass.TectonicMotion is not null,
-                "Continents stop after universal tectonics without a surface");
+            var continentalConfig = LandmassProfiles.Create(size, LandmassType.Continents, 2026);
+            var continental = service.Generate(continentalConfig);
+            generated[LandmassType.Continents] = continental;
+            Check(continental.Landmass.HasSurface && continental.Landmass.ContinentalSurface is not null &&
+                continental.Landmass.ElevationByCellId is null && continental.Landmass.TectonicMotion is not null,
+                "Continents derive surface from plates, leaving relief pending");
 
             foreach (var type in finishedTypes)
             {
@@ -116,7 +115,7 @@ public static class StagedLandmassTests
                 LandmassGenerationService.MeetsProfile(type, world.Statistics!),
                 "Alternate seed retains finished type and universal tectonics");
         }
-        Console.WriteLine("PASS: pending Continents and unchanged finished staged generators");
+        Console.WriteLine("PASS: plate-derived Continents and unchanged finished staged generators");
     }
 
     private static void Check(bool condition, string message)

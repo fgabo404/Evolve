@@ -1,5 +1,7 @@
 # Evolve — Pipeline de generación por capas
 
+> Los apartados anteriores a **Estado vigente de Continentes** conservan decisiones históricas. La ruta actual de superficie continental se describe al final y en [CONTINENTS_SURFACE.md](CONTINENTS_SURFACE.md); elevaciones y geología continúan pendientes para Continentes.
+
 **Reestructuración acordada: 2026-10-28**
 
 ```text
@@ -176,6 +178,6 @@ La capa `tectonic-motion-1` se inserta después de las placas `tectonic-plates-2
 
 La ruta continental se sustituye por **placas originales → movimientos originales → corteza y cratones → ensamblaje y nivel del mar global → contactos/subducción → relieve → volcanes → publicación**. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y huellas; clima y biomas continúan desactivados. Se retiran las velocidades sintéticas de Continentes y su uso de `PlateAwareElevationGenerator`. Véanse detalles, compatibilidad y validación en [CONTINENTAL_GEOLOGY.md](CONTINENTAL_GEOLOGY.md). Las versiones anteriores se conservan arriba como historia del desarrollo.
 
-## Estado vigente de Continentes: superficie pendiente
+## Estado vigente de Continentes: superficie tectónica, relieve pendiente
 
-`WorldGenerationService` ejecuta únicamente la cuadrícula, las 16 placas, sus movimientos y los campos de compresión, extensión y cizalla. `LandmassState.SurfaceGenerationPending` indica que `SurfaceByCellId` está vacío; no significa océano. Las estadísticas de superficie, elevaciones y `ContinentalGeology` son nulas. El juego muestra la vista de placas y esfuerzos, sin ofrecer capas de tierra, alturas, biomas ni geología aún no calculadas. La clasificación de contactos y el generador de relieve permanecen para consumir una futura superficie y corteza reales. Los apartados anteriores son historia de implementaciones retiradas; Pangea, Continentes pequeños y Archipiélagos conservan sus rutas activas.
+`WorldGenerationService` ejecuta la cuadrícula, las 16 placas, sus movimientos y los campos de esfuerzo originales. `PlateGroupSurfaceGenerator` agrupa placas vecinas, distribuye corteza en ellas y aplica un nivel del mar global para obtener tierra y océanos. `ContinentalSurface` conserva corteza e identidad continental. Las elevaciones y `ContinentalGeology` siguen siendo nulas; el juego no ofrece sus vistas ni las de clima o biomas. La clasificación de contactos y el generador de relieve se conservan para una etapa posterior. Véase [CONTINENTS_SURFACE.md](CONTINENTS_SURFACE.md). Los apartados anteriores son historia de implementaciones retiradas; Pangea, Continentes pequeños y Archipiélagos conservan sus rutas activas.
