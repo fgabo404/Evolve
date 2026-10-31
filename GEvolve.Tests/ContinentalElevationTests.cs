@@ -28,6 +28,19 @@ internal static class ContinentalElevationTests
             var relief = terrain.ContinentalElevation ?? throw new Exception("Missing tectonic relief state");
             var surface = terrain.SurfaceByCellId;
             var motion = terrain.TectonicMotion!;
+            int principal = relief.Systems.Count(system =>
+                system.MountainTier == TectonicMountainTier.Principal);
+            int secondary = relief.Systems.Count(system =>
+                system.MountainTier == TectonicMountainTier.Secondary);
+            Console.WriteLine($"MOUNTAIN SYSTEMS {size}/{seed}: principal {principal}, secondary {secondary}");
+            Check(principal <= 3 && relief.MountainTierByCellId.Length == topology.Count &&
+                relief.Systems.Where(system => system.MountainTier == TectonicMountainTier.Principal)
+                    .All(system => system.Kind is GeologicalContactKind.ContinentalCollision or
+                        GeologicalContactKind.OceanContinentSubduction or
+                        GeologicalContactKind.OceanOceanSubduction) &&
+                Enumerable.Range(0, topology.Count).All(id =>
+                    surface[id] == 1 || relief.MountainTierByCellId[id] == 0),
+                "Principal systems are classified from tectonic land uplift only");
             foreach (var system in VerifySystems(topology, terrain))
             {
                 systemCounts[(int)system.Kind]++;
@@ -162,6 +175,9 @@ internal static class ContinentalElevationTests
                 var quietHeights = quietTerrain.ElevationByCellId!;
                 Check(heights.Max() >= quietHeights.Max() + 20,
                     "Removing tectonic interactions must remove the principal mountain uplift");
+                Check(quietTerrain.ContinentalElevation!.Systems.Length == 0 &&
+                    quietTerrain.ContinentalElevation.MountainTierByCellId.All(value => value == 0),
+                    "No active contact means no principal or secondary mountain system");
                 var riftInteractions = relief.Contacts.Where(c =>
                     c.Kind == GeologicalContactKind.ContinentalRift)
                     .Select(c => c.InteractionIndex).ToHashSet();
@@ -178,10 +194,10 @@ internal static class ContinentalElevationTests
                 Check(depressedRift >= riftLand * .6,
                     "Continental extension must lower the majority of classified rift cells");
             }
-            if (export && (size, seed) is (GridSize.Small, 2026) or (GridSize.Medium, 42) or
-                (GridSize.Large, 2026) or (GridSize.Large, -731))
+            if (export && (size, seed) is (GridSize.Small, 2026) or (GridSize.Small, 42) or
+                (GridSize.Medium, 42) or (GridSize.Medium, -731) or (GridSize.Large, 42))
             {
-                string name = $"continental-orogeny-{size.ToString().ToLowerInvariant()}-{seed}";
+                string name = $"continental-calibration-{size.ToString().ToLowerInvariant()}-{seed}";
                 ContinentalElevationDiagnostics.Export(name + ".svg", world);
                 ContinentalElevationDiagnostics.ExportBitmap(name + ".bmp", world);
                 Console.WriteLine($"CAPTURE: {name}.svg");
@@ -201,6 +217,28 @@ internal static class ContinentalElevationTests
         Check(extendedCollisions > 0 && elevatedCollisionAxes > 0 && longMountainBelts > 0 && coastalArcs > 0 &&
             oceanTrenches > 0 && existingIslandArcChecked && riftAxes > 0 && ridgeAxes > 0,
             "Connected collisions, subduction, rifts and ocean ridges must leave geological evidence");
+        int sampledWorlds = 0, worldsWithPrincipal = 0, largeWithMultiple = 0;
+        foreach (var size in Enum.GetValues<GridSize>())
+        foreach (int seed in new[] { 7, 99, 12345, 314159, -2026, 8675309 })
+        {
+            var terrain = service.Generate(LandmassProfiles.Create(size, LandmassType.Continents, seed)).Landmass;
+            int principal = terrain.ContinentalElevation!.Systems.Count(system =>
+                system.MountainTier == TectonicMountainTier.Principal);
+            int mountainCells = terrain.ContinentalElevation.LandformByCellId.Count(kind =>
+                kind is (byte)ContinentalReliefKind.Mountain or (byte)ContinentalReliefKind.HighRange);
+            int landCells = terrain.SurfaceByCellId.Count(kind => kind == 1);
+            Check(principal <= 3 && mountainCells <= landCells * .35,
+                "Tectonic opportunities must not make every continent mountainous");
+            sampledWorlds++;
+            if (principal > 0) worldsWithPrincipal++;
+            if (size is GridSize.Large or GridSize.Enormous && principal >= 2) largeWithMultiple++;
+            Console.WriteLine($"CALIBRATION {size}/{seed}: principal {principal}, " +
+                $"mountain land {mountainCells * 100.0 / landCells:F1}%");
+        }
+        Check(worldsWithPrincipal >= sampledWorlds * .7 && largeWithMultiple >= 4,
+            "Most seeds need a tectonically justified principal range, including multiple large-world systems");
+        Console.WriteLine($"PASS: calibration {worldsWithPrincipal}/{sampledWorlds} worlds with principal systems; " +
+            $"{largeWithMultiple}/12 large worlds with multiple systems");
         Console.WriteLine($"PASS: continental tectonic relief; {highTotal} impassable summits across 12 worlds");
     }
 
@@ -294,6 +332,16 @@ internal static class ContinentalElevationTests
             GameSaveStore.Save(path, state);
             Check(GameSaveStore.Load(path).Landmass!.ContinentalSurface is not null,
                 "Surface-only continental saves remain compatible");
+            state.Landmass = world.Landmass with
+            {
+                ContinentalElevation = world.Landmass.ContinentalElevation! with
+                {
+                    Version = "continental-elevation-2", MountainTierByCellId = []
+                }
+            };
+            GameSaveStore.Save(path, state);
+            Check(GameSaveStore.Load(path).Landmass!.ContinentalElevation!.Version ==
+                "continental-elevation-2", "Previous regional elevation saves remain readable");
             // Previous elevation-stage saves used the local contact model and had no systems.
             state.Landmass = world.Landmass with
             {

@@ -70,13 +70,28 @@ public static class TectonicReliefSystemAnalyzer
                 {
                     axis.Add(cell);
                     Enqueue(cell);
-                    foreach (int neighbor in topology.Neighbors(cell)) Enqueue(neighbor);
+                    foreach (int neighbor in topology.Neighbors(cell))
+                    {
+                        Enqueue(neighbor);
+                        // A single quiet or differently classified hex edge must not
+                        // split an otherwise continuous margin of the same plate pair.
+                        if (key.Item1 is GeologicalContactKind.ContinentalCollision or
+                            GeologicalContactKind.OceanContinentSubduction)
+                            foreach (int acrossGap in topology.Neighbors(neighbor))
+                                if (Enqueue(acrossGap)) axis.Add(neighbor);
+                    }
                 }
-                void Enqueue(int cell)
+                bool Enqueue(int cell)
                 {
-                    if (!byCell.TryGetValue(cell, out var candidates)) return;
+                    if (!byCell.TryGetValue(cell, out var candidates)) return false;
+                    bool connected = false;
                     foreach (int candidate in candidates)
-                        if (remaining.Remove(candidate)) queue.Enqueue(candidate);
+                        if (remaining.Remove(candidate))
+                        {
+                            queue.Enqueue(candidate);
+                            connected = true;
+                        }
+                    return connected;
                 }
             }
 

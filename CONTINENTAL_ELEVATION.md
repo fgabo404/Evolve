@@ -12,13 +12,30 @@
 
 La intensidad usa la velocidad relativa de cada sistema. La anchura usa la longitud conectada, con límites globales iguales para todas las semillas. Una variación periódica pequeña modula únicamente el relieve secundario; no puede formar cordilleras lejos de los sistemas activos. El interior estable conserva llanuras, colinas y mesetas bajas. No hay cuantiles ni ajuste forzado de porcentajes de montaña.
 
-`ElevationByCellId` mantiene tierra 1–100 y océano 0. La profundidad oceánica relativa sigue separada. Las cumbres desde 85 conservan la regla global de terreno infranqueable. `ContinentalElevationState` versión 2 guarda sistemas, contactos, tipos de relieve y campos regionales de levantamiento y subsidencia. Los guardados de la versión 1 y los guardados solo de superficie siguen siendo legibles.
+`ElevationByCellId` mantiene tierra 1–100 y océano 0. La profundidad oceánica relativa sigue separada. Las cumbres desde 85 conservan la regla global de terreno infranqueable. `ContinentalElevationState` versión 3 guarda sistemas, contactos, tipos de relieve, campos regionales y clasificación de cordilleras. Los guardados de las versiones 1 y 2 y los guardados solo de superficie siguen siendo legibles.
+
+## Calibración de cordilleras
+
+La superficie y su selección de grupos de placas **no se modificaron**. Una colisión o subducción puede comenzar sobre corteza continental sumergida: el campo orogénico ahora avanza por esa misma corteza hasta la tierra ya existente. El océano conserva elevación terrestre cero. El analizador une tramos convergentes del mismo par de placas separados por una sola discontinuidad local; incluye el hexágono intermedio en el eje conectado, sin cambiar la clasificación original de sus contactos.
+
+Los sistemas con suficiente intensidad y tierra alcanzada se ordenan por el área de levantamiento fuerte, velocidad y longitud. Hasta los tres sistemas dominantes reciben la etiqueta **principal** si cumplen el umbral geológico; los siguientes son **secundarios** o **menores**. Esta jerarquía solo describe el relieve que ya se calculó: no aumenta alturas ni inventa una cordillera por cuota. Una semilla sin contactos útiles puede seguir sin sistema principal.
+
+Comparación de semillas que antes tenían poca montaña, con la misma superficie y el mismo número de hexágonos terrestres:
+
+| Tamaño / semilla | Montaña antes | Montaña ahora | Altura máxima antes → ahora |
+| --- | ---: | ---: | ---: |
+| Pequeño / 42 | 0 | 456 | 23 → 100 |
+| Mediano / 42 | 64 | 241 | 60 → 78 |
+| Mediano / -731 | 263 | 304 | 63 → 63 |
+| Grande / 42 | 246 | 547 | 59 → 100 |
+
+En seis semillas adicionales por tamaño, 23 de 24 mundos tienen al menos un sistema principal; 4 de los 12 mundos grandes o enormes tienen varios. La proporción de montaña varía entre semillas y permanece por debajo del 35 % de tierra de cada mundo probado.
 
 ## Comprobación
 
 Las 12 huellas de `ApprovedContinentalSurfaceBaseline.txt` se registraron antes de la primera integración de elevaciones. Comparan superficie, placas, agrupación, corteza e identidad continental para cuatro tamaños y tres semillas. Las pruebas nuevas verifican la partición de todos los contactos activos en ejes conectados, determinismo, alturas, continuidad horizontal, persistencia y señales de colisiones, subducción, rifts y dorsales. Las 36 huellas de Pangea, Continentes pequeños y Archipiélagos siguen bajo sus pruebas históricas.
 
-Para exportar comparaciones de **placas y movimiento**, **sistemas clasificados**, **levantamiento/subsidencia** y **altura final** de la misma semilla:
+Para exportar comparaciones de **superficie**, **placas y movimiento**, **sistemas clasificados**, **cordilleras principales y secundarias**, **levantamiento/subsidencia** y **altura final** de la misma semilla:
 
 ```powershell
 dotnet run --project GEvolve.Tests --no-build --no-restore -- --continental-elevation-captures

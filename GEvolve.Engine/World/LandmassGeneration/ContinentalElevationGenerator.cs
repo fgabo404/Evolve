@@ -7,7 +7,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>Regional tectonic systems over the unchanged approved continental surface.</summary>
 public sealed class ContinentalElevationGenerator
 {
-    public const string Version = "continental-elevation-2";
+    public const string Version = "continental-elevation-3";
 
     public LandmassState Generate(HexTopology topology, LandmassState terrain)
     {
@@ -32,39 +32,53 @@ public sealed class ContinentalElevationGenerator
         var fault = new float[count];
         var ridge = new float[count];
         var trench = new float[count];
+        var mountainTiers = new byte[count];
+        var systemFootprints = new List<int>[systems.Length];
+        var mountainScores = new double[systems.Length];
         var seen = new int[count];
         var distances = new ushort[count];
         var queue = new int[count];
         int stamp = 0;
 
-        foreach (var system in systems)
+        for (int systemIndex = 0; systemIndex < systems.Length; systemIndex++)
         {
+            var system = systems[systemIndex];
             double strength = Math.Sqrt(Math.Clamp(system.Intensity /
                 ContinentalGeologySettings.ReferenceSpeedCmPerYear, 0, 1));
             if (strength <= 0) continue;
+            var footprint = new List<int>();
+            int strongLand = 0, moderateLand = 0;
             switch (system.Kind)
             {
                 case GeologicalContactKind.ContinentalCollision:
                     SpreadSystem(system, false, (id, distance) =>
                     {
                         double fold = Bell(distance, system.WidthHexes * .52);
-                        collision[id] = Math.Max(collision[id], (float)(strength * fold));
+                        double signal = strength * fold;
+                        collision[id] = Math.Max(collision[id], (float)signal);
+                        Track(id, signal);
                         collisionPlateau[id] = Math.Max(collisionPlateau[id],
                             (float)(strength * Bell(distance, system.WidthHexes * 1.3)));
                     });
                     break;
                 case GeologicalContactKind.OceanContinentSubduction:
                     SpreadSystem(system, false, (id, distance) =>
-                        coastalArc[id] = Math.Max(coastalArc[id],
-                            (float)(strength * Bell(distance - 2, system.WidthHexes * .53))));
+                    {
+                        double signal = strength * Bell(distance - 2, system.WidthHexes * .53);
+                        coastalArc[id] = Math.Max(coastalArc[id], (float)signal);
+                        Track(id, signal);
+                    });
                     SpreadSystem(system, true, (id, distance) =>
                         trench[id] = Math.Max(trench[id],
                             (float)(strength * Bell(distance, system.WidthHexes * .42))));
                     break;
                 case GeologicalContactKind.OceanOceanSubduction:
                     SpreadSystem(system, false, (id, distance) =>
-                        islandArc[id] = Math.Max(islandArc[id],
-                            (float)(strength * Bell(distance - 2, system.WidthHexes * .48))));
+                    {
+                        double signal = strength * Bell(distance - 2, system.WidthHexes * .48);
+                        islandArc[id] = Math.Max(islandArc[id], (float)signal);
+                        Track(id, signal);
+                    });
                     SpreadSystem(system, true, (id, distance) =>
                         trench[id] = Math.Max(trench[id],
                             (float)(strength * Bell(distance, system.WidthHexes * .42))));
@@ -89,7 +103,37 @@ public sealed class ContinentalElevationGenerator
                             Bell(distance, system.WidthHexes * .30))));
                     break;
             }
+            TectonicMountainTier tier = system.Kind is GeologicalContactKind.ContinentalCollision or
+                GeologicalContactKind.OceanContinentSubduction or GeologicalContactKind.OceanOceanSubduction
+                ? system.LengthHexEdges >= 3 && moderateLand >= 8
+                        ? TectonicMountainTier.Secondary
+                        : footprint.Count > 0 ? TectonicMountainTier.Minor : TectonicMountainTier.None
+                : TectonicMountainTier.None;
+            systems[systemIndex] = system with { MountainTier = tier };
+            systemFootprints[systemIndex] = footprint;
+            if (system.LengthHexEdges >= 8 && strongLand >= 24)
+                mountainScores[systemIndex] = strongLand * (0.5 + strength) *
+                    Math.Sqrt(system.LengthHexEdges);
+
+            void Track(int id, double signal)
+            {
+                if (terrain.SurfaceByCellId[id] == 0 || signal < .20) return;
+                footprint.Add(id);
+                if (signal >= .25) moderateLand++;
+                if (signal >= .45) strongLand++;
+            }
         }
+        double leadingScore = mountainScores.DefaultIfEmpty(0).Max();
+        foreach (int index in Enumerable.Range(0, systems.Length)
+            .Where(index => mountainScores[index] > 0 &&
+                mountainScores[index] >= leadingScore * .35)
+            .OrderByDescending(index => mountainScores[index])
+            .ThenBy(index => index).Take(3))
+            systems[index] = systems[index] with { MountainTier = TectonicMountainTier.Principal };
+        for (int index = 0; index < systems.Length; index++)
+            if (systemFootprints[index] is { } footprint)
+                foreach (int id in footprint)
+                    mountainTiers[id] = Math.Max(mountainTiers[id], (byte)systems[index].MountainTier);
 
         byte[] coastDistance = DistanceToCoast(topology, terrain.SurfaceByCellId);
         var height = new byte[count];
@@ -144,7 +188,8 @@ public sealed class ContinentalElevationGenerator
             ElevationByCellId = height,
             ContinentalElevation = new ContinentalElevationState(Version, contacts, landform, depth)
             {
-                Systems = systems, UpliftByCellId = uplift, SubsidenceByCellId = subsidence
+                Systems = systems, UpliftByCellId = uplift, SubsidenceByCellId = subsidence,
+                MountainTierByCellId = mountainTiers
             }
         };
 
@@ -188,13 +233,13 @@ public sealed class ContinentalElevationGenerator
             bool Eligible(int id) => system.Kind switch
             {
                 GeologicalContactKind.ContinentalCollision or GeologicalContactKind.ContinentalRift =>
-                    terrain.SurfaceByCellId[id] == 1 &&
                     surface.CrustByCellId[id] == (byte)CrustKind.Continental,
                 GeologicalContactKind.OceanContinentSubduction => trenchSide
                     ? terrain.SurfaceByCellId[id] == 0 &&
                         plates[id] == (system.FirstPlateId == system.OverridingPlateId
                             ? system.SecondPlateId : system.FirstPlateId)
-                    : terrain.SurfaceByCellId[id] == 1 && plates[id] == system.OverridingPlateId,
+                    : surface.CrustByCellId[id] == (byte)CrustKind.Continental &&
+                        plates[id] == system.OverridingPlateId,
                 GeologicalContactKind.OceanOceanSubduction => trenchSide
                     ? terrain.SurfaceByCellId[id] == 0 &&
                         plates[id] == (system.FirstPlateId == system.OverridingPlateId

@@ -11,7 +11,7 @@ internal static class ContinentalElevationDiagnostics
         0x9BA663, 0xA476A7, 0x618B82, 0x9A8064
     ];
 
-    /// <summary>Four comparable diagnostic fields for the same generated world.</summary>
+    /// <summary>Six comparable diagnostic fields for the same generated world.</summary>
     public static void Export(string path, GeneratedWorld world)
     {
         var terrain = world.Landmass;
@@ -19,7 +19,7 @@ internal static class ContinentalElevationDiagnostics
         int columns = world.Grid.Definition.Columns, rows = world.Grid.Definition.Rows;
         int scale = 3, gap = 24, margin = 18, top = 58;
         int panelWidth = columns * scale;
-        int width = panelWidth * 4 + gap * 3 + margin * 2;
+        int width = panelWidth * 6 + gap * 5 + margin * 2;
         int height = rows * scale + top + margin;
         var axis = new byte[terrain.SurfaceByCellId.Length];
         foreach (var system in relief.Systems)
@@ -29,8 +29,9 @@ internal static class ContinentalElevationDiagnostics
         var svg = new StringBuilder($"<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>");
         svg.Append("<rect width='100%' height='100%' fill='#edf2f6'/>");
         svg.Append($"<text x='{margin}' y='26' font-family='Arial' font-size='18' fill='#19324a'>Continentes: {terrain.Configuration.Size} / semilla {terrain.Configuration.Seed}</text>");
-        string[] labels = ["PLACAS Y MOVIMIENTO", "SISTEMAS TECTONICOS", "LEVANTAMIENTO / SUBSIDENCIA", "ELEVACION FINAL"];
-        for (int panel = 0; panel < 4; panel++)
+        string[] labels = ["SUPERFICIE", "PLACAS Y MOVIMIENTO", "SISTEMAS TECTONICOS",
+            "CORDILLERAS PRINCIPALES / SECUNDARIAS", "LEVANTAMIENTO / SUBSIDENCIA", "ELEVACION FINAL"];
+        for (int panel = 0; panel < 6; panel++)
         {
             int left = margin + panel * (panelWidth + gap);
             svg.Append($"<text x='{left}' y='{top - 8}' font-family='Arial' font-size='12' fill='#23425c'>{labels[panel]}</text>");
@@ -46,7 +47,7 @@ internal static class ContinentalElevationDiagnostics
                     start = end;
                 }
             }
-            if (panel == 0)
+            if (panel == 1)
                 foreach (var motion in terrain.TectonicMotion!.Motions)
                 {
                     int id = terrain.TectonicMotion.ArrowCellByPlateId[motion.PlateId];
@@ -66,7 +67,7 @@ internal static class ContinentalElevationDiagnostics
     {
         int columns = world.Grid.Definition.Columns, rows = world.Grid.Definition.Rows;
         int scale = 2, gap = 12, panelWidth = columns * scale;
-        int width = panelWidth * 4 + gap * 3, height = rows * scale;
+        int width = panelWidth * 6 + gap * 5, height = rows * scale;
         int stride = (width * 3 + 3) & ~3;
         var axis = new byte[world.Landmass.SurfaceByCellId.Length];
         foreach (var system in world.Landmass.ContinentalElevation!.Systems)
@@ -81,7 +82,7 @@ internal static class ContinentalElevationDiagnostics
         for (int row = height - 1; row >= 0; row--)
         {
             Array.Fill(line, (byte)238);
-            for (int panel = 0; panel < 4; panel++)
+            for (int panel = 0; panel < 6; panel++)
             for (int x = 0; x < panelWidth; x++)
             {
                 int rgb = Color(panel, (row / scale) * columns + x / scale,
@@ -98,8 +99,9 @@ internal static class ContinentalElevationDiagnostics
     private static int Color(int panel, int id, LandmassState terrain, byte[] axis)
     {
         var relief = terrain.ContinentalElevation!;
-        if (panel == 0) return PlateColors[terrain.PlateByCellId![id] % PlateColors.Length];
-        if (panel == 1) return (GeologicalContactKind)axis[id] switch
+        if (panel == 0) return terrain.SurfaceByCellId[id] == 1 ? 0x5D9A68 : 0x287DB5;
+        if (panel == 1) return PlateColors[terrain.PlateByCellId![id] % PlateColors.Length];
+        if (panel == 2) return (GeologicalContactKind)axis[id] switch
         {
             GeologicalContactKind.ContinentalCollision => 0xB52B32,
             GeologicalContactKind.OceanContinentSubduction => 0xC66D22,
@@ -109,7 +111,14 @@ internal static class ContinentalElevationDiagnostics
             GeologicalContactKind.Transform => 0xB74795,
             _ => terrain.SurfaceByCellId[id] == 1 ? 0xD2D7D1 : 0xB8CED9
         };
-        if (panel == 2)
+        if (panel == 3) return (TectonicMountainTier)relief.MountainTierByCellId[id] switch
+        {
+            TectonicMountainTier.Principal => 0x9F263D,
+            TectonicMountainTier.Secondary => 0xDA7A35,
+            TectonicMountainTier.Minor => 0xDFC986,
+            _ => terrain.SurfaceByCellId[id] == 1 ? 0xD2D7D1 : 0xB8CED9
+        };
+        if (panel == 4)
         {
             int up = relief.UpliftByCellId[id];
             int down = relief.SubsidenceByCellId[id];
