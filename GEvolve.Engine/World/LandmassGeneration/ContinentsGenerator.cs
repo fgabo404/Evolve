@@ -8,7 +8,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>The sole active Continents route: official motion, crust, global sea level and geology.</summary>
 public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
 {
-    public const string Version = "continents-tectonic-1";
+    public const string Version = "continents-tectonic-2";
     public LandmassType Type => LandmassType.Continents;
     public byte[] Generate(HexTopology topology, LandmassConfiguration config, int attempt)
         => Generate(topology, config, attempt, TectonicPlateGenerator.Generate(topology, config.Seed));
@@ -25,10 +25,31 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
     {
         var profile = config.Continents ?? throw new ArgumentException("Continental settings required.");
         if (config.Type != Type) throw new ArgumentException("Only Continents use this route.");
-        var crust = new ContinentalCrustGenerator().Generate(topology, plates, profile.CoreCount, config.Seed, motion);
-        var (surface, seaLevel) = SelectSurface(topology, crust, profile);
+        string? lastFailure = null;
+        ContinentalCrustMap? bestCrust = null;
+        byte[]? bestSurface = null;
+        float bestSeaLevel = 0;
+        int bestAssembly = 0;
+        double bestError = double.PositiveInfinity;
+        for (int assembly = 0; assembly < 32; assembly++)
+        {
+            var crust = new ContinentalCrustGenerator().Generate(topology, plates, profile.CoreCount,
+                config.Seed, motion, attempt * 32 + assembly);
+            try
+            {
+                var (surface, seaLevel) = SelectSurface(topology, crust, profile);
+                double error = Math.Abs(LandmassAnalysis.Analyze(topology, surface).LandFraction - profile.TargetLandFraction);
+                if (error < bestError)
+                { bestError = error; bestCrust = crust; bestSurface = surface; bestSeaLevel = seaLevel; bestAssembly = assembly; }
+                if (bestError <= .005) break;
+            }
+            catch (InvalidOperationException error) { lastFailure = error.Message; }
+        }
+        if (bestCrust is null || bestSurface is null)
+            throw new InvalidOperationException($"No connected continental assembly met the geographic profile in 32 deterministic layouts. Last: {lastFailure}");
         return new ContinentalReliefGenerator().Generate(topology,
-            new(config, surface, attempt) { PlateByCellId = plates, TectonicMotion = motion }, crust, seaLevel);
+            new(config, bestSurface, attempt * 32 + bestAssembly) { PlateByCellId = plates, TectonicMotion = motion },
+            bestCrust, bestSeaLevel);
     }
 
     private static (byte[] Surface, float SeaLevel) SelectSurface(HexTopology topology,
@@ -36,6 +57,7 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
     {
         var sorted = crust.EmergenceAffinityByCellId.Order().ToArray();
         byte[]? best = null; float bestLevel = 0; double bestError = double.PositiveInfinity;
+        var diagnostics = new List<string>();
         // One sea datum for the entire world. No land budget per craton.
         for (double fraction = .30; fraction <= .551; fraction += .01)
         {
@@ -43,25 +65,36 @@ public sealed class ContinentsGenerator : IPlateAwareLandmassGenerator
             var emerged = new byte[topology.Count];
             for (int id = 0; id < emerged.Length; id++)
                 if (crust.CrustByCellId[id] == 1 && crust.EmergenceAffinityByCellId[id] >= level) emerged[id] = 1;
-            var connected = new byte[topology.Count]; var visited = new bool[topology.Count]; var queue = new Queue<int>();
-            foreach (int root in crust.MainContinentCoreCells)
-            {
-                emerged[root] = 1; visited[root] = true; queue.Enqueue(root);
-                while (queue.TryDequeue(out int id))
-                {
-                    connected[id] = 1;
-                    foreach (int next in topology.Neighbors(id))
-                        if (!visited[next] && emerged[next] == 1 && crust.ProvinceByCellId[next] == crust.ProvinceByCellId[id])
-                        { visited[next] = true; queue.Enqueue(next); }
-                }
-            }
-            var stats = LandmassAnalysis.Analyze(topology, connected);
+            var stats = LandmassAnalysis.Analyze(topology, emerged);
+            diagnostics.Add($"{fraction:F2}:{stats.LandFraction:F2}/{stats.ComponentSizes.Count(size => size >= 100)}");
             if (stats.ComponentSizes.Count(size => size >= 100) != profile.CoreCount ||
+                !CratonsAnchorSeparateMainlands(topology, emerged, crust.MainContinentCoreCells) ||
                 !LandmassGenerationService.MeetsProfile(LandmassType.Continents, stats)) continue;
             double error = Math.Abs(stats.LandFraction - profile.TargetLandFraction);
-            if (error < bestError) { bestError = error; best = connected; bestLevel = level; }
+            if (error < bestError) { bestError = error; best = emerged; bestLevel = level; }
         }
-        return best is null ? throw new InvalidOperationException("Continental crust did not emerge as the configured mainlands.")
+        return best is null ? throw new InvalidOperationException($"Continental crust did not emerge as {profile.CoreCount} mainlands. " + string.Join(",", diagnostics))
             : (best, bestLevel);
+    }
+
+    private static bool CratonsAnchorSeparateMainlands(HexTopology topology, byte[] surface, int[] cratons)
+    {
+        var seen = new bool[topology.Count];
+        var queue = new Queue<int>();
+        foreach (int root in cratons)
+        {
+            if (surface[root] != 1 || seen[root]) return false;
+            int cells = 0;
+            seen[root] = true; queue.Enqueue(root);
+            while (queue.TryDequeue(out int id))
+            {
+                cells++;
+                foreach (int next in topology.Neighbors(id))
+                    if (surface[next] == 1 && !seen[next])
+                    { seen[next] = true; queue.Enqueue(next); }
+            }
+            if (cells < 100) return false;
+        }
+        return true;
     }
 }

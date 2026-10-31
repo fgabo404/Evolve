@@ -57,6 +57,7 @@ public static class ContinentalGeologyTests
             Check(heights.All(h => h <= 100) && Enumerable.Range(0, terrain.SurfaceByCellId.Length).All(id =>
                 terrain.IsLand(id) ? heights[id] > 0 && geology.OceanDepthByCellId[id] == 0 :
                     heights[id] == 0 && geology.OceanDepthByCellId[id] > 0), "Land height and ocean depth contract");
+            ConnectedCratons(world);
             foreach (var volcano in geology.Volcanoes)
             {
                 var contact = geology.Contacts[volcano.InteractionIndex]; var interaction = motion.Interactions[volcano.InteractionIndex];
@@ -72,7 +73,7 @@ public static class ContinentalGeologyTests
                     terrain.SurfaceByCellId.SequenceEqual(repeated.SurfaceByCellId) &&
                     heights.SequenceEqual(repeated.ElevationByCellId!), "Deterministic full geology");
                 Persistence(world);
-                if (seed == 2026) ControlledRelief(world);
+                if (seed == 2026) { ControlledRelief(world); TectonicGrowth(world); }
             }
             Console.WriteLine($"CONTINENTS {size}/{seed}: {config.Continents!.CoreCount} mainlands, {world.Statistics.LandFraction:P2} land, " +
                 $"{geology.Volcanoes.Length} volcanoes, {geology.Contacts.Count(c => c.Kind is GeologicalContactKind.OceanContinentSubduction or GeologicalContactKind.OceanOceanSubduction)} subduction edges, max height {heights.Max()}");
@@ -92,6 +93,83 @@ public static class ContinentalGeologyTests
             unchanged++;
         }
         Console.WriteLine($"PASS: {unchanged} approved Pangea/small-continents/archipelago worlds unchanged");
+    }
+    private static void ConnectedCratons(GeneratedWorld world)
+    {
+        var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(world.Grid);
+        var land = world.Landmass.SurfaceByCellId;
+        var components = Enumerable.Repeat(-1, topology.Count).ToArray();
+        int component = 0;
+        var queue = new Queue<int>();
+        for (int id = 0; id < topology.Count; id++)
+        {
+            if (land[id] == 0 || components[id] >= 0) continue;
+            components[id] = component; queue.Enqueue(id);
+            while (queue.TryDequeue(out int current))
+                foreach (int next in topology.Neighbors(current))
+                    if (land[next] == 1 && components[next] < 0)
+                    { components[next] = component; queue.Enqueue(next); }
+            component++;
+        }
+        var roots = world.Landmass.ContinentalGeology!.CratonCellIds;
+        Check(roots.All(id => land[id] == 1) && roots.Select(id => components[id]).Distinct().Count() == roots.Length,
+            "Every craton anchors a distinct connected mainland");
+        // A land bridge through the east-west seam must belong to one component.
+        int wrappedLandEdges = 0;
+        for (int row = 0; row < topology.Rows; row++)
+        {
+            int first = row * topology.Columns;
+            foreach (int next in topology.Neighbors(first))
+                if (next % topology.Columns == topology.Columns - 1 && land[first] == 1 && land[next] == 1)
+                {
+                    wrappedLandEdges++;
+                    Check(components[first] == components[next], "Wrapped mainland remains connected");
+                }
+        }
+        if (world.Grid.Definition.Size == GridSize.Medium && world.Landmass.Configuration.Seed == 42)
+            Check(wrappedLandEdges > 0, "A mainland actually crosses the east-west seam");
+    }
+
+    private static void TectonicGrowth(GeneratedWorld world)
+    {
+        var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(world.Grid);
+        var terrain = world.Landmass;
+        var motion = terrain.TectonicMotion!;
+        int length = topology.Count;
+        var convergent = motion with
+        {
+            Interactions = motion.Interactions.Select(edge => edge with
+                { Convergence = 8, Divergence = 0, Shear = 0, Kind = PlateInteractionKind.Convergent }).ToArray(),
+            CompressionByCellId = Enumerable.Repeat(8f, length).ToArray(), ExtensionByCellId = new float[length]
+        };
+        var divergent = motion with
+        {
+            Interactions = motion.Interactions.Select(edge => edge with
+                { Convergence = 0, Divergence = 8, Shear = 0, Kind = PlateInteractionKind.Divergent }).ToArray(),
+            CompressionByCellId = new float[length], ExtensionByCellId = Enumerable.Repeat(8f, length).ToArray()
+        };
+        var generator = new ContinentalCrustGenerator();
+        var a = generator.Generate(topology, terrain.PlateByCellId!, terrain.Configuration.Continents!.CoreCount,
+            terrain.Configuration.Seed, convergent, terrain.DeterministicAttempt);
+        var b = generator.Generate(topology, terrain.PlateByCellId!, terrain.Configuration.Continents.CoreCount,
+            terrain.Configuration.Seed, divergent, terrain.DeterministicAttempt);
+        Check(a.MainContinentCoreCells.SequenceEqual(b.MainContinentCoreCells),
+            "Controlled motion comparison keeps the same plate geometry and cratons");
+        int changed = Enumerable.Range(0, length).Count(id =>
+            Math.Abs(a.EmergenceAffinityByCellId[id] - b.EmergenceAffinityByCellId[id]) > .1);
+        Check(changed > length / 5 && a.EmergenceAffinityByCellId.Average() > b.EmergenceAffinityByCellId.Average() &&
+            !a.CrustByCellId.SequenceEqual(b.CrustByCellId),
+            "Convergence/accretion and divergence/rifting alter the connected growth and crust map");
+        static byte[] Emerged(ContinentalCrustMap map)
+        {
+            var sorted = map.EmergenceAffinityByCellId.Order().ToArray();
+            float sea = sorted[(int)(.65 * (sorted.Length - 1))];
+            return Enumerable.Range(0, map.CrustByCellId.Length).Select(id =>
+                map.CrustByCellId[id] == 1 && map.EmergenceAffinityByCellId[id] >= sea ? (byte)1 : (byte)0).ToArray();
+        }
+        var convergentLand = Emerged(a); var divergentLand = Emerged(b);
+        Check(Enumerable.Range(0, length).Count(id => convergentLand[id] != divergentLand[id]) > length / 100,
+            "Changing only tectonic interactions changes the emerged land at a global sea datum");
     }
     private static void ControlledRelief(GeneratedWorld world)
     {

@@ -175,3 +175,7 @@ La capa `tectonic-motion-1` se inserta después de las placas `tectonic-plates-2
 ## Ruta actual de Continentes: `continents-tectonic-1`
 
 La ruta continental se sustituye por **placas originales → movimientos originales → corteza y cratones → ensamblaje y nivel del mar global → contactos/subducción → relieve → volcanes → publicación**. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y huellas; clima y biomas continúan desactivados. Se retiran las velocidades sintéticas de Continentes y su uso de `PlateAwareElevationGenerator`. Véanse detalles, compatibilidad y validación en [CONTINENTAL_GEOLOGY.md](CONTINENTAL_GEOLOGY.md). Las versiones anteriores se conservan arriba como historia del desarrollo.
+
+## Crecimiento continental vigente: `continents-tectonic-2`
+
+El crecimiento conectado desde cratones sustituye los ejes de terrenos acrecionados y retira los canales artificiales entre provincias. Los costos de expansión consumen las interacciones reales de las placas, y una afinidad continua recibe un solo nivel del mar. Cada masa principal debe contener un cratón distinto. La clasificación de subducción y el relieve conservan su etapa posterior. Procedimiento, pruebas y cinco capturas comparables: [CONTINENTAL_GROWTH.md](CONTINENTAL_GROWTH.md).

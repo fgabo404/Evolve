@@ -81,7 +81,8 @@ public static class StagedLandmassTests
                     // nuclei and crust go, not merely tweak coast noise.
                     var crustGenerator = new ContinentalCrustGenerator();
                     var crust = crustGenerator.Generate(
-                        topology, ids, expectedContinents, config.Seed);
+                        topology, ids, expectedContinents, config.Seed,
+                        landmass.TectonicMotion, landmass.DeterministicAttempt);
                     Check(crust.MainContinentCoreCells.Length == expectedContinents &&
                         crust.MainContinentCorePlates.Distinct().Count() == expectedContinents &&
                         crust.CrustByCellId.Length == topology.Count &&
@@ -113,7 +114,8 @@ public static class StagedLandmassTests
                             landmass.SurfaceByCellId[cell] == 0),
                         "Most emergent land follows continental crust, but shelves can be submerged");
                     var repeatedCrust = crustGenerator.Generate(
-                        topology, ids, expectedContinents, config.Seed);
+                        topology, ids, expectedContinents, config.Seed,
+                        landmass.TectonicMotion, landmass.DeterministicAttempt);
                     Check(repeatedCrust.CrustByCellId.SequenceEqual(crust.CrustByCellId) &&
                         repeatedCrust.ProvinceByCellId.SequenceEqual(
                             crust.ProvinceByCellId) &&
@@ -169,10 +171,11 @@ public static class StagedLandmassTests
                             LandmassType.Archipelagos => new ArchipelagosGenerator(),
                             _ => throw new InvalidOperationException("Unexpected world type")
                         };
+                        int generatorAttempt = type == LandmassType.Continents ? 0 : landmass.DeterministicAttempt;
                         var landWithPlates = surfaceGenerator.Generate(
-                            topology, config, landmass.DeterministicAttempt, ids);
+                            topology, config, generatorAttempt, ids);
                         var legacyLand = surfaceGenerator.Generate(
-                            topology, config, landmass.DeterministicAttempt);
+                            topology, config, generatorAttempt);
                         Check(landWithPlates.SequenceEqual(landmass.SurfaceByCellId) &&
                             (type == LandmassType.Continents
                                 ? legacyLand.SequenceEqual(landWithPlates)

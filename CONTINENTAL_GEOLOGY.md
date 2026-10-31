@@ -1,6 +1,8 @@
 # Continentes: corteza, subducción y relieve
 
-`continents-tectonic-1` sustituye la ruta activa de **Continentes** en `master`. Es una reconstrucción procedural estática inspirada en procesos geológicos, sin simulación temporal. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y resultados. `tectonic-plates-2` y `tectonic-motion-1` tampoco cambian.
+> Actualización: `ContinentsGenerator.Version` es ahora `continents-tectonic-2`. El ensamblaje cortical y la selección de superficie descritos abajo pertenecen a la versión anterior; consulta [CONTINENTAL_GROWTH.md](CONTINENTAL_GROWTH.md) para el método vigente. La subducción, el relieve y los volcanes de este documento siguen vigentes.
+
+`continents-tectonic-1` fue la ruta activa de **Continentes** en el commit inicial de geología. Es una reconstrucción procedural estática inspirada en procesos geológicos, sin simulación temporal. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y resultados. `tectonic-plates-2` y `tectonic-motion-1` tampoco cambian.
 
 ## Orden y responsabilidades
 
