@@ -3,10 +3,15 @@ using GEvolve.State.Game;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
-/// <summary>Groups adjacent contacts of the same process and plate pair into continuous margins.</summary>
+/// <summary>Connects classified margins while preserving their original contacts and plate motion.</summary>
 public static class TectonicReliefSystemAnalyzer
 {
     public static TectonicReliefSystem[] Analyze(HexTopology topology,
+        TectonicMotionState motion, GeologicalContact[] contacts)
+        => MergeContinentalCollisions(topology, AnalyzeLegacy(topology, motion, contacts));
+
+    // The selection stage uses this original partition so approved continental groups stay fixed.
+    public static TectonicReliefSystem[] AnalyzeLegacy(HexTopology topology,
         TectonicMotionState motion, GeologicalContact[] contacts)
     {
         var groups = new Dictionary<(GeologicalContactKind, byte, byte, byte), List<int>>();
@@ -63,8 +68,9 @@ public static class TectonicReliefSystemAnalyzer
                 });
                 // Width responds to the continuous margin length, with one global scale for all seeds.
                 double width = Math.Clamp(2.5 + Math.Sqrt(component.Count) * .55, 3, 13);
-                systems.Add(new(systems.Count, key.Item1, key.Item2, key.Item3, key.Item4,
-                    component.ToArray(), axisCells, intensity, width));
+                systems.Add(new TectonicReliefSystem(systems.Count, key.Item1, key.Item2,
+                    key.Item3, key.Item4, component.ToArray(), axisCells, intensity, width)
+                { ParticipatingPlateIds = [key.Item2, key.Item3] });
 
                 void Visit(int cell)
                 {
@@ -102,5 +108,91 @@ public static class TectonicReliefSystemAnalyzer
             }
         }
         return systems.ToArray();
+    }
+
+    private static TectonicReliefSystem[] MergeContinentalCollisions(HexTopology topology,
+        TectonicReliefSystem[] original)
+    {
+        int[] parent = Enumerable.Range(0, original.Length).ToArray();
+        var bridges = new List<(int First, int Second, int Cell)>();
+        for (int first = 0; first < original.Length; first++)
+        {
+            var a = original[first];
+            if (a.Kind != GeologicalContactKind.ContinentalCollision) continue;
+            for (int second = first + 1; second < original.Length; second++)
+            {
+                var b = original[second];
+                if (b.Kind != GeologicalContactKind.ContinentalCollision ||
+                    !a.ParticipatingPlateIds.Intersect(b.ParticipatingPlateIds).Any() ||
+                    Math.Min(a.Intensity, b.Intensity) < Math.Max(a.Intensity, b.Intensity) * .30)
+                    continue;
+                int bridge = NearbyAxisBridge(topology, a.AxisCellIds, b.AxisCellIds);
+                if (bridge == int.MinValue) continue;
+                Union(first, second);
+                bridges.Add((first, second, bridge));
+            }
+        }
+
+        var merged = new List<TectonicReliefSystem>();
+        foreach (var group in Enumerable.Range(0, original.Length).GroupBy(Find)
+            .OrderBy(group => group.Min(index => original[index].InteractionIndices[0])))
+        {
+            int[] members = group.ToArray();
+            var primary = original[members.OrderBy(index => original[index].InteractionIndices[0]).First()];
+            if (members.Length == 1)
+            {
+                merged.Add(primary with { Id = merged.Count });
+                continue;
+            }
+            var memberSet = members.ToHashSet();
+            int[] interactions = members.SelectMany(index => original[index].InteractionIndices)
+                .Order().ToArray();
+            var axis = members.SelectMany(index => original[index].AxisCellIds).ToHashSet();
+            foreach (var bridge in bridges)
+                if (memberSet.Contains(bridge.First) && memberSet.Contains(bridge.Second) &&
+                    bridge.Cell >= 0) axis.Add(bridge.Cell);
+            byte[] participating = members.SelectMany(index => original[index].ParticipatingPlateIds)
+                .Distinct().Order().ToArray();
+            double intensity = members.Sum(index => original[index].Intensity *
+                original[index].InteractionIndices.Length) / interactions.Length;
+            double width = Math.Clamp(2.5 + Math.Sqrt(interactions.Length) * .55, 3, 13);
+            merged.Add(new TectonicReliefSystem(merged.Count,
+                GeologicalContactKind.ContinentalCollision, primary.FirstPlateId,
+                primary.SecondPlateId, byte.MaxValue, interactions,
+                axis.Order().ToArray(), intensity, width)
+            { ParticipatingPlateIds = participating });
+        }
+        return merged.ToArray();
+
+        int Find(int index)
+        {
+            while (parent[index] != index)
+            {
+                parent[index] = parent[parent[index]];
+                index = parent[index];
+            }
+            return index;
+        }
+        void Union(int first, int second)
+        {
+            first = Find(first); second = Find(second);
+            if (first != second) parent[second] = first;
+        }
+    }
+
+    private static int NearbyAxisBridge(HexTopology topology, int[] first, int[] second)
+    {
+        var target = second.ToHashSet();
+        foreach (int cell in first)
+        {
+            if (target.Contains(cell)) return -1;
+            foreach (int neighbor in topology.Neighbors(cell))
+            {
+                if (target.Contains(neighbor)) return -1;
+                foreach (int acrossGap in topology.Neighbors(neighbor))
+                    if (target.Contains(acrossGap)) return neighbor;
+            }
+        }
+        return int.MinValue;
     }
 }

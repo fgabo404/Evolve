@@ -17,6 +17,10 @@ internal static class ContinentalElevationTests
         var systemCounts = new int[Enum.GetValues<GeologicalContactKind>().Length];
         int extendedCollisions = 0, elevatedCollisionAxes = 0, longMountainBelts = 0, coastalArcs = 0,
             oceanTrenches = 0, islandArcs = 0, riftAxes = 0, ridgeAxes = 0;
+        int multiPlateCollisions = 0, collisionSutureCells = 0,
+            variedCollisionBelts = 0, plateauCells = 0, plainCells = 0;
+        int legacyCollisionSystems = 0, longestGain = 0;
+        var longestCollisionBySize = new Dictionary<GridSize, int>();
         bool existingIslandArcChecked = false;
         foreach (var size in Enum.GetValues<GridSize>())
         foreach (int seed in new[] { 2026, 42, -731 })
@@ -28,6 +32,22 @@ internal static class ContinentalElevationTests
             var relief = terrain.ContinentalElevation ?? throw new Exception("Missing tectonic relief state");
             var surface = terrain.SurfaceByCellId;
             var motion = terrain.TectonicMotion!;
+            var legacySystems = TectonicReliefSystemAnalyzer.AnalyzeLegacy(topology,
+                motion, relief.Contacts);
+            int priorCollisions = legacySystems.Count(system =>
+                system.Kind == GeologicalContactKind.ContinentalCollision);
+            int mergedCollisions = relief.Systems.Count(system =>
+                system.Kind == GeologicalContactKind.ContinentalCollision);
+            int previousLongest = legacySystems.Where(system =>
+                system.Kind == GeologicalContactKind.ContinentalCollision)
+                .Select(system => system.LengthHexEdges).DefaultIfEmpty().Max();
+            int currentLongest = relief.Systems.Where(system =>
+                system.Kind == GeologicalContactKind.ContinentalCollision)
+                .Select(system => system.LengthHexEdges).DefaultIfEmpty().Max();
+            Check(mergedCollisions <= priorCollisions && currentLongest >= previousLongest,
+                "Joining compatible sutures must not fragment or shorten collision belts");
+            legacyCollisionSystems += priorCollisions;
+            longestGain = Math.Max(longestGain, currentLongest - previousLongest);
             int principal = relief.Systems.Count(system =>
                 system.MountainTier == TectonicMountainTier.Principal);
             int secondary = relief.Systems.Count(system =>
@@ -45,6 +65,23 @@ internal static class ContinentalElevationTests
             {
                 systemCounts[(int)system.Kind]++;
                 var edges = system.InteractionIndices.Select(index => motion.Interactions[index]).ToArray();
+                if (system.Kind == GeologicalContactKind.ContinentalCollision)
+                {
+                    if (system.ParticipatingPlateIds.Length > 2) multiPlateCollisions++;
+                    collisionSutureCells += system.AxisCellIds.Length;
+                    longestCollisionBySize[size] = Math.Max(
+                        longestCollisionBySize.GetValueOrDefault(size), system.LengthHexEdges);
+                    Check(edges.All(edge => terrain.ContinentalSurface!.CrustByCellId[edge.FirstCellId] ==
+                        (byte)CrustKind.Continental &&
+                        terrain.ContinentalSurface.CrustByCellId[edge.SecondCellId] ==
+                        (byte)CrustKind.Continental),
+                        "Continental collision sutures must join two actual continental crust blocks");
+                    var axialHeights = system.AxisCellIds.Where(id => surface[id] == 1)
+                        .Select(id => (int)heights[id]).ToArray();
+                    if (axialHeights.Length >= 20 &&
+                        axialHeights.Max() - axialHeights.Min() >= 15)
+                        variedCollisionBelts++;
+                }
                 if (system.Kind == GeologicalContactKind.ContinentalCollision &&
                     system.InteractionIndices.Length >= 8 && system.Intensity >= 1)
                 {
@@ -95,6 +132,11 @@ internal static class ContinentalElevationTests
                         relief.OceanDepthByCellId[id] < 56)) ridgeAxes++;
             }
             int land = world.Statistics!.LandCells, high = 0, mountain = 0;
+            plateauCells += relief.LandformByCellId.Count(kind =>
+                kind == (byte)ContinentalReliefKind.Plateau);
+            plainCells += relief.LandformByCellId.Count(kind =>
+                kind is (byte)ContinentalReliefKind.CoastalPlain or
+                    (byte)ContinentalReliefKind.InlandPlain);
             for (int id = 0; id < topology.Count; id++)
             {
                 Check(surface[id] == 0 ? heights[id] == 0 && relief.OceanDepthByCellId[id] > 0 :
@@ -196,9 +238,9 @@ internal static class ContinentalElevationTests
             }
             if (export && (size, seed) is (GridSize.Small, 2026) or (GridSize.Small, 42) or
                 (GridSize.Medium, 42) or (GridSize.Medium, -731) or (GridSize.Large, 42) or
-                (GridSize.Large, -731))
+                (GridSize.Large, -731) or (GridSize.Enormous, 2026))
             {
-                string name = $"continental-selection-{size.ToString().ToLowerInvariant()}-{seed}";
+                string name = $"continental-belts-{size.ToString().ToLowerInvariant()}-{seed}";
                 ContinentalElevationDiagnostics.Export(name + ".svg", world);
                 ContinentalElevationDiagnostics.ExportBitmap(name + ".bmp", world);
                 Console.WriteLine($"CAPTURE: {name}.svg");
@@ -212,6 +254,18 @@ internal static class ContinentalElevationTests
             "Convergence and extension contribute without making every land boundary mountainous");
         Console.WriteLine("TECTONIC SYSTEMS: " + string.Join(", ",
             Enum.GetValues<GeologicalContactKind>().Select(kind => $"{kind}={systemCounts[(int)kind]}")));
+        Console.WriteLine($"COLLISION BELTS: {legacyCollisionSystems} old segments -> " +
+            $"{systemCounts[(int)GeologicalContactKind.ContinentalCollision]} regional systems; " +
+            $"{multiPlateCollisions} span 3+ plates, longest gain {longestGain} edges, " +
+            $"{collisionSutureCells} suture hexes; longest by size " +
+            string.Join(", ", longestCollisionBySize.Select(item => $"{item.Key}={item.Value}")));
+        Check(multiPlateCollisions > 0 && collisionSutureCells > 0 &&
+            variedCollisionBelts > 0 && plateauCells > 0 && plainCells > plateauCells &&
+            longestCollisionBySize[GridSize.Enormous] >
+                longestCollisionBySize[GridSize.Small] * 1.3,
+            "Connected multi-plate collision belts should lengthen with world scale");
+        Console.WriteLine($"RELIEF REGIONS: {variedCollisionBelts} collision belts vary by 15+ height, " +
+            $"{plateauCells} plateau and {plainCells} plain land hexes");
         Console.WriteLine($"PROCESS EVIDENCE: extended collisions {elevatedCollisionAxes}/{extendedCollisions}, long mountain belts {longMountainBelts}, " +
             $"coastal arc cells {coastalArcs}, trench cells {oceanTrenches}, island arc cells {islandArcs}, " +
             $"rift axes {riftAxes}, ridge axes {ridgeAxes}");
@@ -266,8 +320,12 @@ internal static class ContinentalElevationTests
                 var contact = relief.Contacts[index];
                 var edge = motion.Interactions[index];
                 Check(contact.Kind == system.Kind &&
-                    Math.Min(edge.FirstPlateId, edge.SecondPlateId) == system.FirstPlateId &&
-                    Math.Max(edge.FirstPlateId, edge.SecondPlateId) == system.SecondPlateId &&
+                    system.ParticipatingPlateIds.Contains(edge.FirstPlateId) &&
+                    system.ParticipatingPlateIds.Contains(edge.SecondPlateId) &&
+                    (system.Kind == GeologicalContactKind.ContinentalCollision &&
+                        system.ParticipatingPlateIds.Length > 2 ||
+                     Math.Min(edge.FirstPlateId, edge.SecondPlateId) == system.FirstPlateId &&
+                     Math.Max(edge.FirstPlateId, edge.SecondPlateId) == system.SecondPlateId) &&
                     contact.OverridingPlateId == system.OverridingPlateId &&
                     axis.Contains(edge.FirstCellId) && axis.Contains(edge.SecondCellId),
                     "System contains only its classified contiguous plate margin");
@@ -328,6 +386,25 @@ internal static class ContinentalElevationTests
                 JsonSerializer.Serialize(loaded.ContinentalElevation) ==
                     JsonSerializer.Serialize(world.Landmass.ContinentalElevation),
                 "Tectonic heights and contact classification survive save/load");
+            var previousTerrain = new ContinentalElevationGenerator().Generate(
+                new HexTopology(world.Grid), world.Landmass, useRegionalBelts: false);
+            state.Landmass = previousTerrain with
+            {
+                ContinentalSurface = previousTerrain.ContinentalSurface! with
+                {
+                    Selection = previousTerrain.ContinentalSurface.Selection! with
+                        { FinalPrincipalSystems = 0, FinalSecondarySystems = 0 }
+                },
+                ContinentalElevation = previousTerrain.ContinentalElevation! with
+                {
+                    Version = "continental-elevation-4",
+                    Systems = previousTerrain.ContinentalElevation.Systems.Select(system =>
+                        system with { ParticipatingPlateIds = [] }).ToArray()
+                }
+            };
+            GameSaveStore.Save(path, state);
+            Check(GameSaveStore.Load(path).Landmass!.ContinentalElevation!.Version ==
+                "continental-elevation-4", "Prior orogenic saves remain readable");
             // Saves made after the surface stage but before elevations remain readable.
             state.Landmass = world.Landmass with
             {

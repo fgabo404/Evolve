@@ -35,9 +35,15 @@ internal static class ContinentalSurfaceValidation
                  entry.Outcome is null).Any() ||
              selection.Attempts[selection.SelectedAttempt].PrincipalSystems < 1 ||
              terrain.ContinentalElevation is null ||
-             terrain.ContinentalElevation.Systems.Count(system =>
-                 system.MountainTier == TectonicMountainTier.Principal) !=
-                 selection.Attempts[selection.SelectedAttempt].PrincipalSystems))
+             (terrain.ContinentalElevation.Version == "continental-elevation-5"
+                 ? selection.FinalPrincipalSystems < 1 ||
+                   selection.FinalPrincipalSystems != terrain.ContinentalElevation.Systems.Count(system =>
+                       system.MountainTier == TectonicMountainTier.Principal) ||
+                   selection.FinalSecondarySystems != terrain.ContinentalElevation.Systems.Count(system =>
+                       system.MountainTier == TectonicMountainTier.Secondary)
+                 : terrain.ContinentalElevation.Systems.Count(system =>
+                       system.MountainTier == TectonicMountainTier.Principal) !=
+                       selection.Attempts[selection.SelectedAttempt].PrincipalSystems)))
             throw new InvalidDataException("Invalid continental selection diagnostics.");
         for (int id = 0; id < count; id++)
         {

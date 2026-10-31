@@ -7,9 +7,10 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>Regional tectonic systems over the unchanged approved continental surface.</summary>
 public sealed class ContinentalElevationGenerator
 {
-    public const string Version = "continental-elevation-4";
+    public const string Version = "continental-elevation-5";
 
-    public LandmassState Generate(HexTopology topology, LandmassState terrain)
+    public LandmassState Generate(HexTopology topology, LandmassState terrain,
+        bool useRegionalBelts = true)
     {
         if (terrain.Configuration.Type != LandmassType.Continents || !terrain.HasSurface ||
             terrain.ContinentalSurface is not { } surface || terrain.PlateByCellId is not { } plates ||
@@ -21,7 +22,9 @@ public sealed class ContinentalElevationGenerator
         var ages = Enumerable.Range(0, 16).Select(_ => (ushort)(20 + ageRandom.NextInt(161))).ToArray();
         GeologicalContact[] contacts = ContinentalReliefGenerator.ClassifyContacts(
             motion, surface.CrustByCellId, ages);
-        TectonicReliefSystem[] systems = TectonicReliefSystemAnalyzer.Analyze(topology, motion, contacts);
+        TectonicReliefSystem[] systems = useRegionalBelts
+            ? TectonicReliefSystemAnalyzer.Analyze(topology, motion, contacts)
+            : TectonicReliefSystemAnalyzer.AnalyzeLegacy(topology, motion, contacts);
 
         var collision = new float[count];
         var collisionPlateau = new float[count];
@@ -54,7 +57,11 @@ public sealed class ContinentalElevationGenerator
                     SpreadSystem(system, false, (id, distance) =>
                     {
                         double fold = Bell(distance, system.WidthHexes * .52);
-                        double signal = strength * fold;
+                        double localCompression = Math.Sqrt(Math.Clamp(
+                            motion.CompressionByCellId[id] / Math.Max(system.Intensity, .01), 0, 4));
+                        double alongBelt = useRegionalBelts
+                            ? Math.Clamp(.75 + .25 * localCompression, .75, 1.25) : 1;
+                        double signal = strength * fold * alongBelt;
                         collision[id] = Math.Max(collision[id], (float)signal);
                         Track(id, signal);
                         collisionPlateau[id] = Math.Max(collisionPlateau[id],

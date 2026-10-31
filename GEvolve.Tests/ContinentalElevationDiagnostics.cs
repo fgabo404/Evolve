@@ -22,16 +22,24 @@ internal static class ContinentalElevationDiagnostics
         int width = panelWidth * 6 + gap * 5 + margin * 2;
         int height = rows * scale + top + margin;
         var axis = new byte[terrain.SurfaceByCellId.Length];
+        var multiPlateAxis = new bool[axis.Length];
         foreach (var system in relief.Systems)
             foreach (int id in system.AxisCellIds)
+            {
                 axis[id] = (byte)system.Kind;
+                if (system.Kind == GeologicalContactKind.ContinentalCollision &&
+                    system.ParticipatingPlateIds.Length > 2) multiPlateAxis[id] = true;
+            }
 
         var svg = new StringBuilder($"<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>");
         svg.Append("<rect width='100%' height='100%' fill='#edf2f6'/>");
         var selection = terrain.ContinentalSurface!.Selection;
         int principal = relief.Systems.Count(system =>
             system.MountainTier == TectonicMountainTier.Principal);
-        svg.Append($"<text x='{margin}' y='26' font-family='Arial' font-size='18' fill='#19324a'>Continentes: {terrain.Configuration.Size} / semilla {terrain.Configuration.Seed} | intento {selection?.SelectedAttempt} de {selection?.EvaluatedGroupings} | cordilleras principales {principal}</text>");
+        int multiPlate = relief.Systems.Count(system =>
+            system.Kind == GeologicalContactKind.ContinentalCollision &&
+            system.ParticipatingPlateIds.Length > 2);
+        svg.Append($"<text x='{margin}' y='26' font-family='Arial' font-size='18' fill='#19324a'>Continentes: {terrain.Configuration.Size} / semilla {terrain.Configuration.Seed} | intento {selection?.SelectedAttempt} de {selection?.EvaluatedGroupings} | principales {principal} | colisiones multiplaca {multiPlate}</text>");
         string[] labels = ["SUPERFICIE", "PLACAS Y MOVIMIENTO", "SISTEMAS TECTONICOS",
             "CORDILLERAS PRINCIPALES / SECUNDARIAS", "LEVANTAMIENTO / SUBSIDENCIA", "ELEVACION FINAL"];
         for (int panel = 0; panel < 6; panel++)
@@ -43,9 +51,10 @@ internal static class ContinentalElevationDiagnostics
                 int start = 0;
                 while (start < columns)
                 {
-                    int rgb = Color(panel, row * columns + start, terrain, axis);
+                    int rgb = Color(panel, row * columns + start, terrain, axis, multiPlateAxis);
                     int end = start + 1;
-                    while (end < columns && Color(panel, row * columns + end, terrain, axis) == rgb) end++;
+                    while (end < columns && Color(panel, row * columns + end, terrain, axis,
+                        multiPlateAxis) == rgb) end++;
                     svg.Append($"<rect x='{left + start * scale}' y='{top + row * scale}' width='{(end - start) * scale}' height='{scale}' fill='#{rgb:X6}'/>");
                     start = end;
                 }
@@ -73,8 +82,14 @@ internal static class ContinentalElevationDiagnostics
         int width = panelWidth * 6 + gap * 5, height = rows * scale;
         int stride = (width * 3 + 3) & ~3;
         var axis = new byte[world.Landmass.SurfaceByCellId.Length];
+        var multiPlateAxis = new bool[axis.Length];
         foreach (var system in world.Landmass.ContinentalElevation!.Systems)
-            foreach (int id in system.AxisCellIds) axis[id] = (byte)system.Kind;
+            foreach (int id in system.AxisCellIds)
+            {
+                axis[id] = (byte)system.Kind;
+                if (system.Kind == GeologicalContactKind.ContinentalCollision &&
+                    system.ParticipatingPlateIds.Length > 2) multiPlateAxis[id] = true;
+            }
         using var writer = new BinaryWriter(File.Create(path));
         writer.Write((byte)'B'); writer.Write((byte)'M'); writer.Write(54 + stride * height);
         writer.Write(0); writer.Write(54); writer.Write(40);
@@ -89,7 +104,7 @@ internal static class ContinentalElevationDiagnostics
             for (int x = 0; x < panelWidth; x++)
             {
                 int rgb = Color(panel, (row / scale) * columns + x / scale,
-                    world.Landmass, axis);
+                    world.Landmass, axis, multiPlateAxis);
                 int offset = (panel * (panelWidth + gap) + x) * 3;
                 line[offset] = (byte)rgb;
                 line[offset + 1] = (byte)(rgb >> 8);
@@ -99,14 +114,15 @@ internal static class ContinentalElevationDiagnostics
         }
     }
 
-    private static int Color(int panel, int id, LandmassState terrain, byte[] axis)
+    private static int Color(int panel, int id, LandmassState terrain, byte[] axis,
+        bool[] multiPlateAxis)
     {
         var relief = terrain.ContinentalElevation!;
         if (panel == 0) return terrain.SurfaceByCellId[id] == 1 ? 0x5D9A68 : 0x287DB5;
         if (panel == 1) return PlateColors[terrain.PlateByCellId![id] % PlateColors.Length];
         if (panel == 2) return (GeologicalContactKind)axis[id] switch
         {
-            GeologicalContactKind.ContinentalCollision => 0xB52B32,
+            GeologicalContactKind.ContinentalCollision => multiPlateAxis[id] ? 0x8127A0 : 0xB52B32,
             GeologicalContactKind.OceanContinentSubduction => 0xC66D22,
             GeologicalContactKind.OceanOceanSubduction => 0xD3A52C,
             GeologicalContactKind.ContinentalRift => 0x6B39B7,

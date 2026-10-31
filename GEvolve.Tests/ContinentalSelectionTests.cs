@@ -32,8 +32,9 @@ internal static class ContinentalSelectionTests
             int secondary = relief.Systems.Count(system =>
                 system.MountainTier == TectonicMountainTier.Secondary);
             Check(principal >= 1 && principal <= 3 &&
-                selection.Attempts[selection.SelectedAttempt].PrincipalSystems == principal &&
-                selection.Attempts[selection.SelectedAttempt].SecondarySystems == secondary &&
+                selection.Attempts[selection.SelectedAttempt].PrincipalSystems >= 1 &&
+                selection.FinalPrincipalSystems == principal &&
+                selection.FinalSecondarySystems == secondary &&
                 selection.EvaluatedGroupings is >= 1 and <= WorldGenerationService.MaxContinentalSelectionAttempts &&
                 selection.Attempts.Length == selection.EvaluatedGroupings &&
                 selection.Attempts.Select((entry, index) => entry.Attempt == index).All(value => value),

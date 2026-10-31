@@ -10,4 +10,8 @@ public sealed record ContinentalSurfaceState(string Version, byte[] GroupByPlate
 public sealed record ContinentalSelectionAttempt(int Attempt, int PrincipalSystems,
     int SecondarySystems, string Outcome);
 public sealed record ContinentalSelectionState(int EvaluatedGroupings, int SelectedAttempt,
-    int AvailableConvergentMargins, ContinentalSelectionAttempt[] Attempts);
+    int AvailableConvergentMargins, ContinentalSelectionAttempt[] Attempts)
+{
+    public int FinalPrincipalSystems { get; init; }
+    public int FinalSecondarySystems { get; init; }
+}

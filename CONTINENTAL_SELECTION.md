@@ -8,6 +8,8 @@ La cuadrícula, las 16 placas, sus vectores y sus campos de esfuerzo se calculan
 
 `ContinentalSurfaceState.Selection` conserva número de candidatos evaluados, intento elegido, márgenes disponibles, cantidad de sistemas principales y secundarios y motivo de cada rechazo. Cada `TectonicReliefSystem` guarda la extensión terrestre afectada, cantidad de hexágonos montañosos, longitud del eje montañoso sobre tierra y elevación máxima y promedio. Los guardados anteriores sin estos diagnósticos siguen siendo legibles.
 
+La agrupación candidata sigue evaluándose con los segmentos orogénicos originales. Tras elegirla, el relieve final une suturas de colisión continental próximas incluso si atraviesan varios pares de placas, según [CONTINENTAL_ELEVATION.md](CONTINENTAL_ELEVATION.md). `FinalPrincipalSystems` y `FinalSecondarySystems` registran la clasificación del relieve final; los conteos de cada intento conservan su significado original. Esta pasada final no vuelve a seleccionar continentes ni altera sus huellas aprobadas.
+
 ## Validación de 48 mundos
 
 La tabla indica **intento elegido / agrupaciones evaluadas / cordilleras principales**. El intento inicial es 0.
