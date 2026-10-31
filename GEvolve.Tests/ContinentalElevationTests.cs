@@ -195,9 +195,10 @@ internal static class ContinentalElevationTests
                     "Continental extension must lower the majority of classified rift cells");
             }
             if (export && (size, seed) is (GridSize.Small, 2026) or (GridSize.Small, 42) or
-                (GridSize.Medium, 42) or (GridSize.Medium, -731) or (GridSize.Large, 42))
+                (GridSize.Medium, 42) or (GridSize.Medium, -731) or (GridSize.Large, 42) or
+                (GridSize.Large, -731))
             {
-                string name = $"continental-calibration-{size.ToString().ToLowerInvariant()}-{seed}";
+                string name = $"continental-selection-{size.ToString().ToLowerInvariant()}-{seed}";
                 ContinentalElevationDiagnostics.Export(name + ".svg", world);
                 ContinentalElevationDiagnostics.ExportBitmap(name + ".bmp", world);
                 Console.WriteLine($"CAPTURE: {name}.svg");
@@ -328,12 +329,17 @@ internal static class ContinentalElevationTests
                     JsonSerializer.Serialize(world.Landmass.ContinentalElevation),
                 "Tectonic heights and contact classification survive save/load");
             // Saves made after the surface stage but before elevations remain readable.
-            state.Landmass = world.Landmass with { ElevationByCellId = null, ContinentalElevation = null };
+            state.Landmass = world.Landmass with
+            {
+                ElevationByCellId = null, ContinentalElevation = null,
+                ContinentalSurface = world.Landmass.ContinentalSurface! with { Selection = null }
+            };
             GameSaveStore.Save(path, state);
             Check(GameSaveStore.Load(path).Landmass!.ContinentalSurface is not null,
                 "Surface-only continental saves remain compatible");
             state.Landmass = world.Landmass with
             {
+                ContinentalSurface = world.Landmass.ContinentalSurface! with { Selection = null },
                 ContinentalElevation = world.Landmass.ContinentalElevation! with
                 {
                     Version = "continental-elevation-2", MountainTierByCellId = []
@@ -345,6 +351,7 @@ internal static class ContinentalElevationTests
             // Previous elevation-stage saves used the local contact model and had no systems.
             state.Landmass = world.Landmass with
             {
+                ContinentalSurface = world.Landmass.ContinentalSurface! with { Selection = null },
                 ContinentalElevation = world.Landmass.ContinentalElevation! with
                 {
                     Version = "continental-elevation-1", Systems = [],

@@ -7,20 +7,23 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>Derives continental crust from connected sets of the existing tectonic plates.</summary>
 public sealed class PlateGroupSurfaceGenerator
 {
-    public const string Version = "plate-groups-surface-1";
+    public const string Version = "plate-groups-surface-2";
     public const byte NoContinent = byte.MaxValue;
 
     public sealed record Result(byte[] Surface, ContinentalSurfaceState State,
         float[] EmergenceAffinityByCellId, byte[] PlateGroupsByCellId);
 
-    public Result Generate(HexTopology topology, byte[] plates, TectonicMotionState motion, int seed)
+    public Result Generate(HexTopology topology, byte[] plates, TectonicMotionState motion, int seed,
+        int attempt = 0, OrogenicOpportunityAnalyzer.Result? opportunities = null)
     {
         if (plates.Length != topology.Count || plates.Any(plate => plate >= 16) ||
             motion.ArrowCellByPlateId.Length != 16 || motion.CompressionByCellId.Length != topology.Count ||
             motion.ExtensionByCellId.Length != topology.Count)
             throw new ArgumentException("The original 16 plates and motion fields are required.");
 
-        var random = new DeterministicRandom(seed, 0x434F4E54);
+        if (attempt < 0) throw new ArgumentOutOfRangeException(nameof(attempt));
+        opportunities ??= OrogenicOpportunityAnalyzer.Analyze(topology, motion);
+        var random = new DeterministicRandom(unchecked(seed ^ (attempt * 0x6D2B79F5)), 0x434F4E54);
         int groupCount = 2 + random.NextInt(5);
         var groupByPlate = Enumerable.Repeat(NoContinent, 16).ToArray();
         var plateArea = new int[16];
@@ -55,8 +58,9 @@ public sealed class PlateGroupSurfaceGenerator
                 if (groupByPlate[plate] != NoContinent || plateArea[plate] < minimumSeedArea) continue;
                 int separation = group == 0 ? 1 : seeds.Take(group).Min(previous =>
                     topology.Distance(motion.ArrowCellByPlateId[plate], motion.ArrowCellByPlateId[previous]));
-                double score = separation * (1 + .15 * plateArea[plate] / (double)topology.Count) +
-                    .18 * random.NextDouble();
+                double score = 1.4 * separation / Math.Max(topology.Columns, topology.Rows) +
+                    .7 * opportunities.PlateScore[plate] +
+                    .12 * plateArea[plate] / topology.Count + .22 * random.NextDouble();
                 if (score > best) { best = score; chosen = plate; }
             }
             seeds[group] = chosen;
@@ -78,18 +82,21 @@ public sealed class PlateGroupSurfaceGenerator
                 for (int group = 0; group < groupCount; group++)
                 {
                     int shared = 0;
-                    double tectonicLink = 0;
+                    double tectonicLink = 0, orogenicLink = 0;
                     for (int other = 0; other < 16; other++)
                         if (groupByPlate[other] == group)
                         {
                             shared += adjacency[plate, other];
                             tectonicLink += convergence[plate, other] - divergence[plate, other];
+                            orogenicLink = Math.Max(orogenicLink,
+                                opportunities.PairScore[plate, other]);
                         }
                     if (shared == 0) continue;
                     double desired = topology.Count * .57 * weights[group] / weights.Sum();
                     double score = Math.Log(1 + shared) * .35 +
                         2.0 * (desired - groupArea[group]) / desired +
                         .18 * Math.Clamp(tectonicLink / shared, -4, 4) +
+                        .55 * orogenicLink +
                         .25 * random.NextDouble();
                     if (score > best) { best = score; chosenPlate = plate; chosenGroup = group; }
                 }

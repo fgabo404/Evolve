@@ -28,7 +28,10 @@ internal static class ContinentalElevationDiagnostics
 
         var svg = new StringBuilder($"<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>");
         svg.Append("<rect width='100%' height='100%' fill='#edf2f6'/>");
-        svg.Append($"<text x='{margin}' y='26' font-family='Arial' font-size='18' fill='#19324a'>Continentes: {terrain.Configuration.Size} / semilla {terrain.Configuration.Seed}</text>");
+        var selection = terrain.ContinentalSurface!.Selection;
+        int principal = relief.Systems.Count(system =>
+            system.MountainTier == TectonicMountainTier.Principal);
+        svg.Append($"<text x='{margin}' y='26' font-family='Arial' font-size='18' fill='#19324a'>Continentes: {terrain.Configuration.Size} / semilla {terrain.Configuration.Seed} | intento {selection?.SelectedAttempt} de {selection?.EvaluatedGroupings} | cordilleras principales {principal}</text>");
         string[] labels = ["SUPERFICIE", "PLACAS Y MOVIMIENTO", "SISTEMAS TECTONICOS",
             "CORDILLERAS PRINCIPALES / SECUNDARIAS", "LEVANTAMIENTO / SUBSIDENCIA", "ELEVACION FINAL"];
         for (int panel = 0; panel < 6; panel++)

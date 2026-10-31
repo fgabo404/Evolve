@@ -4,6 +4,12 @@ using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
 if (args.Contains("--continental-elevation-captures")) { ContinentalElevationTests.Run(export: true); return 0; }
+if (args.Contains("--continental-selection")) { ContinentalSelectionTests.Run(); return 0; }
+if (args.Contains("--continental-selection-rows"))
+{
+    foreach (string row in ContinentalSurfaceBaseline.CurrentRows()) Console.WriteLine("BASELINE|" + row);
+    return 0;
+}
 if (args.Contains("--continental-elevation")) { ContinentalElevationTests.Run(); return 0; }
 if (args.Contains("--continental-captures")) { ContinentalSurfaceTests.Run(export: true); return 0; }
 if (args.Contains("--continental-geology")) { ContinentalGeologyTests.Run(); return 0; }
@@ -19,6 +25,7 @@ if (args.Contains("--all-suites"))
         ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run),
         ("ContinentalSurface", () => ContinentalSurfaceTests.Run()),
         ("ContinentalElevation", () => ContinentalElevationTests.Run()),
+        ("ContinentalSelection", ContinentalSelectionTests.Run),
         ("ContinentalGeology", ContinentalGeologyTests.Run)];
     int failures = 0;
     string? requestedSuite = args.FirstOrDefault(arg => arg.StartsWith("--suite=", StringComparison.Ordinal))?[8..];

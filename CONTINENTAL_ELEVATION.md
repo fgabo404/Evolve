@@ -1,6 +1,6 @@
 # Continentes: relieve de sistemas tectónicos
 
-`PlateGroupSurfaceGenerator` sigue fijando la superficie, corteza y continentes aprobados. La etapa de elevación clasifica las interacciones de las 16 placas con las reglas deterministas de `ContinentalReliefGenerator.ClassifyContacts`. `TectonicReliefSystemAnalyzer` agrupa contactos vecinos **del mismo par de placas y del mismo proceso**; una frontera puede cambiar de proceso a lo largo de su recorrido. Cada sistema recibe un ID estable, sus interacciones, el eje de hexágonos conectado, intensidad media, número de tramos y anchura derivada de esa longitud. Se usa la vecindad real de `HexTopology`, incluida la unión este-oeste.
+`PlateGroupSurfaceGenerator` fija superficie, corteza y continentes para cada agrupación candidata. La nueva selección puede cambiar esos resultados; véase [CONTINENTAL_SELECTION.md](CONTINENTAL_SELECTION.md). La etapa de elevación clasifica las interacciones de las 16 placas con las reglas deterministas de `ContinentalReliefGenerator.ClassifyContacts`. `TectonicReliefSystemAnalyzer` agrupa contactos vecinos **del mismo par de placas y del mismo proceso**; una frontera puede cambiar de proceso a lo largo de su recorrido. Cada sistema recibe un ID estable, sus interacciones, el eje de hexágonos conectado, intensidad media, número de tramos y anchura derivada de esa longitud. Se usa la vecindad real de `HexTopology`, incluida la unión este-oeste.
 
 `ContinentalElevationGenerator` calcula campos regionales a partir de esos ejes, sin propagar impulsos independientes desde cada hexágono fronterizo:
 
@@ -12,11 +12,11 @@
 
 La intensidad usa la velocidad relativa de cada sistema. La anchura usa la longitud conectada, con límites globales iguales para todas las semillas. Una variación periódica pequeña modula únicamente el relieve secundario; no puede formar cordilleras lejos de los sistemas activos. El interior estable conserva llanuras, colinas y mesetas bajas. No hay cuantiles ni ajuste forzado de porcentajes de montaña.
 
-`ElevationByCellId` mantiene tierra 1–100 y océano 0. La profundidad oceánica relativa sigue separada. Las cumbres desde 85 conservan la regla global de terreno infranqueable. `ContinentalElevationState` versión 3 guarda sistemas, contactos, tipos de relieve, campos regionales y clasificación de cordilleras. Los guardados de las versiones 1 y 2 y los guardados solo de superficie siguen siendo legibles.
+`ElevationByCellId` mantiene tierra 1–100 y océano 0. La profundidad oceánica relativa sigue separada. Las cumbres desde 85 conservan la regla global de terreno infranqueable. `ContinentalElevationState` versión 4 guarda sistemas, contactos, tipos de relieve, campos regionales, clasificación de cordilleras y estadísticas de su extensión terrestre y elevación efectiva. El algoritmo numérico de elevación no cambió en la etapa de selección. Los guardados de las versiones 1 a 3 y los guardados solo de superficie siguen siendo legibles.
 
 ## Calibración de cordilleras
 
-La superficie y su selección de grupos de placas **no se modificaron**. Una colisión o subducción puede comenzar sobre corteza continental sumergida: el campo orogénico ahora avanza por esa misma corteza hasta la tierra ya existente. El océano conserva elevación terrestre cero. El analizador une tramos convergentes del mismo par de placas separados por una sola discontinuidad local; incluye el hexágono intermedio en el eje conectado, sin cambiar la clasificación original de sus contactos.
+En la calibración anterior, la superficie y su selección de grupos de placas no se modificaron. Una colisión o subducción puede comenzar sobre corteza continental sumergida: el campo orogénico avanza por esa misma corteza hasta la tierra ya existente. El océano conserva elevación terrestre cero. El analizador une tramos convergentes del mismo par de placas separados por una sola discontinuidad local; incluye el hexágono intermedio en el eje conectado, sin cambiar la clasificación original de sus contactos. La etapa actual sí puede seleccionar otra agrupación continental para garantizar una cordillera efectiva.
 
 Los sistemas con suficiente intensidad y tierra alcanzada se ordenan por el área de levantamiento fuerte, velocidad y longitud. Hasta los tres sistemas dominantes reciben la etiqueta **principal** si cumplen el umbral geológico; los siguientes son **secundarios** o **menores**. Esta jerarquía solo describe el relieve que ya se calculó: no aumenta alturas ni inventa una cordillera por cuota. Una semilla sin contactos útiles puede seguir sin sistema principal.
 
@@ -33,7 +33,7 @@ En seis semillas adicionales por tamaño, 23 de 24 mundos tienen al menos un sis
 
 ## Comprobación
 
-Las 12 huellas de `ApprovedContinentalSurfaceBaseline.txt` se registraron antes de la primera integración de elevaciones. Comparan superficie, placas, agrupación, corteza e identidad continental para cuatro tamaños y tres semillas. Las pruebas nuevas verifican la partición de todos los contactos activos en ejes conectados, determinismo, alturas, continuidad horizontal, persistencia y señales de colisiones, subducción, rifts y dorsales. Las 36 huellas de Pangea, Continentes pequeños y Archipiélagos siguen bajo sus pruebas históricas.
+Las 12 huellas históricas de `ApprovedContinentalSurfaceBaseline.txt` permanecen intactas y demuestran que los IDs de placas no cambiaron. `ApprovedContinentalSelectionBaseline.txt` fija las nuevas superficies, agrupaciones, cortezas e identidades de 12 configuraciones tras validar su calidad. Las pruebas verifican la partición de contactos en ejes conectados, determinismo, alturas, continuidad horizontal, persistencia y señales de colisiones, subducción, rifts y dorsales. Las 36 huellas de Pangea, Continentes pequeños y Archipiélagos siguen bajo sus pruebas históricas.
 
 Para exportar comparaciones de **superficie**, **placas y movimiento**, **sistemas clasificados**, **cordilleras principales y secundarias**, **levantamiento/subsidencia** y **altura final** de la misma semilla:
 

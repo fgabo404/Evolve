@@ -97,7 +97,9 @@ internal static class ContinentalSurfaceTests
             }
             Console.WriteLine($"CONTINENTS {size}/{seed}: {count} groups, {world.Statistics!.LandFraction:P1} land, " +
                 $"{world.Statistics.ComponentCount} land components, weakest main {weakestMainShare:P0}, " +
-                $"smallest group {smallestGroupLand} cells");
+                $"smallest group {smallestGroupLand} cells, selection {state.Selection?.SelectedAttempt}, " +
+                $"evaluated {state.Selection?.EvaluatedGroupings}, principal " +
+                $"{terrain.ContinentalElevation!.Systems.Count(system => system.MountainTier == TectonicMountainTier.Principal)}");
         }
         Check(multiPlate > 0 && mixedPlate > 0,
             "The map must include multi-plate continents and plates containing both land and ocean");
@@ -116,6 +118,14 @@ internal static class ContinentalSurfaceTests
                 JsonSerializer.Serialize(loaded.ContinentalSurface) ==
                     JsonSerializer.Serialize(world.Landmass.ContinentalSurface),
                 "Plate-derived crust and continent identity survive save/load");
+            state.Landmass = world.Landmass with
+            {
+                ContinentalSurface = world.Landmass.ContinentalSurface! with
+                    { Version = "plate-groups-surface-1", Selection = null }
+            };
+            GameSaveStore.Save(path, state);
+            Check(GameSaveStore.Load(path).Landmass!.ContinentalSurface!.Version ==
+                "plate-groups-surface-1", "Previous continental surface saves remain readable");
             state.Landmass = world.Landmass with
             {
                 ContinentalSurface = world.Landmass.ContinentalSurface! with

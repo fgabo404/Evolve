@@ -27,4 +27,9 @@ public sealed record TectonicReliefSystem(int Id, GeologicalContactKind Kind,
 {
     [JsonIgnore] public int LengthHexEdges => InteractionIndices.Length;
     public TectonicMountainTier MountainTier { get; init; }
+    public int AffectedLandCells { get; init; }
+    public int EffectiveMountainCells { get; init; }
+    public int LandMountainAxisHexes { get; init; }
+    public byte MaximumLandElevation { get; init; }
+    public double MeanLandElevation { get; init; }
 }

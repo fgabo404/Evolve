@@ -8,18 +8,26 @@ internal static class ContinentalSurfaceBaseline
 
     public static void Verify()
     {
-        using var stream = typeof(ContinentalSurfaceBaseline).Assembly
+        using var historicStream = typeof(ContinentalSurfaceBaseline).Assembly
             .GetManifestResourceStream("ApprovedContinentalSurfaceBaseline.txt")!;
+        using var historicReader = new StreamReader(historicStream);
+        var historic = new List<string>();
+        while (historicReader.ReadLine() is { } oldLine) historic.Add(oldLine);
+        var actual = CurrentRows().ToArray();
+        if (historic.Count != actual.Length ||
+            historic.Where((line, index) => line.Split('|')[3] != actual[index].Split('|')[3]).Any())
+            throw new InvalidOperationException("The original continental plate IDs changed.");
+        using var stream = typeof(ContinentalSurfaceBaseline).Assembly
+            .GetManifestResourceStream("ApprovedContinentalSelectionBaseline.txt")!;
         using var reader = new StreamReader(stream);
         var expected = new List<string>();
         while (reader.ReadLine() is { } line) expected.Add(line);
-        var actual = Rows().ToArray();
         if (!expected.SequenceEqual(actual))
-            throw new InvalidOperationException("Approved continental surface, crust, groups, identity or plates changed.");
-        Console.WriteLine($"PASS: {actual.Length} approved continental surfaces, crust maps and identities unchanged");
+            throw new InvalidOperationException("The selected continental surface, crust, groups or identity changed.");
+        Console.WriteLine($"PASS: {actual.Length} selected continental surfaces stable; original plates unchanged");
     }
 
-    private static IEnumerable<string> Rows()
+    public static IEnumerable<string> CurrentRows()
     {
         var service = new WorldGenerationService();
         foreach (var size in Enum.GetValues<GridSize>())

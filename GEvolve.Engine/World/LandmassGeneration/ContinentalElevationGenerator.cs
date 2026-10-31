@@ -7,7 +7,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>Regional tectonic systems over the unchanged approved continental surface.</summary>
 public sealed class ContinentalElevationGenerator
 {
-    public const string Version = "continental-elevation-3";
+    public const string Version = "continental-elevation-4";
 
     public LandmassState Generate(HexTopology topology, LandmassState terrain)
     {
@@ -123,18 +123,6 @@ public sealed class ContinentalElevationGenerator
                 if (signal >= .45) strongLand++;
             }
         }
-        double leadingScore = mountainScores.DefaultIfEmpty(0).Max();
-        foreach (int index in Enumerable.Range(0, systems.Length)
-            .Where(index => mountainScores[index] > 0 &&
-                mountainScores[index] >= leadingScore * .35)
-            .OrderByDescending(index => mountainScores[index])
-            .ThenBy(index => index).Take(3))
-            systems[index] = systems[index] with { MountainTier = TectonicMountainTier.Principal };
-        for (int index = 0; index < systems.Length; index++)
-            if (systemFootprints[index] is { } footprint)
-                foreach (int id in footprint)
-                    mountainTiers[id] = Math.Max(mountainTiers[id], (byte)systems[index].MountainTier);
-
         byte[] coastDistance = DistanceToCoast(topology, terrain.SurfaceByCellId);
         var height = new byte[count];
         var depth = new byte[count];
@@ -183,6 +171,33 @@ public sealed class ContinentalElevationGenerator
                 coastDistance[id] <= 3 ? ContinentalReliefKind.CoastalPlain :
                 ContinentalReliefKind.InlandPlain);
         }
+        for (int index = 0; index < systems.Length; index++)
+        {
+            if (systemFootprints[index] is not { } footprint || footprint.Count == 0) continue;
+            int effective = footprint.Count(id => height[id] >= 44);
+            int axisLand = systems[index].AxisCellIds.Count(id =>
+                terrain.SurfaceByCellId[id] == 1 && height[id] >= 44);
+            systems[index] = systems[index] with
+            {
+                AffectedLandCells = footprint.Count,
+                EffectiveMountainCells = effective,
+                LandMountainAxisHexes = axisLand,
+                MaximumLandElevation = footprint.Max(id => height[id]),
+                MeanLandElevation = footprint.Average(id => height[id])
+            };
+            if (effective < 24) mountainScores[index] = 0;
+        }
+        double leadingScore = mountainScores.DefaultIfEmpty(0).Max();
+        foreach (int index in Enumerable.Range(0, systems.Length)
+            .Where(index => mountainScores[index] > 0 &&
+                mountainScores[index] >= leadingScore * .35)
+            .OrderByDescending(index => mountainScores[index])
+            .ThenBy(index => index).Take(3))
+            systems[index] = systems[index] with { MountainTier = TectonicMountainTier.Principal };
+        for (int index = 0; index < systems.Length; index++)
+            if (systemFootprints[index] is { } footprint)
+                foreach (int id in footprint)
+                    mountainTiers[id] = Math.Max(mountainTiers[id], (byte)systems[index].MountainTier);
         return terrain with
         {
             ElevationByCellId = height,

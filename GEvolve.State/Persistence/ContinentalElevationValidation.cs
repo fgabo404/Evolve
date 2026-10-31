@@ -14,19 +14,20 @@ internal static class ContinentalElevationValidation
         if (terrain.Configuration.Type != LandmassType.Continents || terrain.ContinentalSurface is null ||
             !terrain.HasSurface || terrain.ContinentalGeology is not null ||
             relief.Version is not ("continental-elevation-1" or "continental-elevation-2" or
-                "continental-elevation-3") ||
+                "continental-elevation-3" or "continental-elevation-4") ||
             motion is null || heights is null ||
             relief.Contacts is null || relief.Contacts.Length != motion.Interactions.Length ||
             relief.LandformByCellId is null || relief.LandformByCellId.Length != count ||
             relief.OceanDepthByCellId is null || relief.OceanDepthByCellId.Length != count)
             throw new InvalidDataException("Invalid continental elevation stage.");
-        if (relief.Version is "continental-elevation-2" or "continental-elevation-3")
+        if (relief.Version is "continental-elevation-2" or "continental-elevation-3" or
+            "continental-elevation-4")
         {
             if (relief.Systems is null || relief.UpliftByCellId is null ||
                 relief.SubsidenceByCellId is null || relief.UpliftByCellId.Length != count ||
                 relief.SubsidenceByCellId.Length != count)
                 throw new InvalidDataException("Invalid regional tectonic fields.");
-            if (relief.Version == "continental-elevation-3" &&
+            if (relief.Version is "continental-elevation-3" or "continental-elevation-4" &&
                 (relief.MountainTierByCellId is null ||
                     relief.MountainTierByCellId.Length != count ||
                     relief.MountainTierByCellId.Any(value => !Enum.IsDefined((TectonicMountainTier)value))))
@@ -45,6 +46,18 @@ internal static class ContinentalElevationValidation
                     system.AxisCellIds.Any(id => id < 0 || id >= count) ||
                     !Enum.IsDefined(system.MountainTier))
                     throw new InvalidDataException("Invalid regional tectonic system.");
+                if (relief.Version == "continental-elevation-4" &&
+                    (system.AffectedLandCells < 0 || system.EffectiveMountainCells < 0 ||
+                     system.EffectiveMountainCells > system.AffectedLandCells ||
+                     system.LandMountainAxisHexes < 0 ||
+                     system.LandMountainAxisHexes > system.AxisCellIds.Length ||
+                     system.AffectedLandCells > count ||
+                     system.MaximumLandElevation > 100 ||
+                     !double.IsFinite(system.MeanLandElevation) ||
+                     system.MeanLandElevation is < 0 or > 100 ||
+                     system.MountainTier == TectonicMountainTier.Principal &&
+                         system.EffectiveMountainCells < 24))
+                    throw new InvalidDataException("Invalid effective mountain statistics.");
             }
         }
         for (int id = 0; id < count; id++)
