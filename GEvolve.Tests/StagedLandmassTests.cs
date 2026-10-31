@@ -12,28 +12,19 @@ public static class StagedLandmassTests
     {
         var service = new WorldGenerationService();
         var relief = new PlateAwareElevationGenerator();
-        var allTypes = Enum.GetValues<LandmassType>();
-
-        // Every value between two and six must be reachable, but a given seed
-        // must produce one count across the four map resolutions.
-        var possibleCounts = Enumerable.Range(-80, 161)
-            .Select(LandmassProfiles.ContinentCountForSeed).Distinct().Order().ToArray();
-        Check(possibleCounts.SequenceEqual([2, 3, 4, 5, 6]),
-            "Seeds can produce any number from two through six continents");
-        foreach (int continentSeed in new[] { -731, 0, 42, 2026, int.MaxValue })
-        {
-            int expected = LandmassProfiles.ContinentCountForSeed(continentSeed);
-            Check(expected is >= 2 and <= 6 &&
-                Enum.GetValues<GridSize>().All(size =>
-                    LandmassProfiles.Create(size, LandmassType.Continents, continentSeed)
-                        .Continents!.CoreCount == expected),
-                "Number of main continents depends on seed, never map size");
-        }
-
+        var finishedTypes = new[] { LandmassType.Pangaea, LandmassType.SmallContinents, LandmassType.Archipelagos };
         foreach (var size in Enum.GetValues<GridSize>())
         {
             var generated = new Dictionary<LandmassType, GeneratedWorld>();
-            foreach (var type in allTypes)
+            var pendingConfig = LandmassProfiles.Create(size, LandmassType.Continents, 2026);
+            var pending = service.Generate(pendingConfig);
+            generated[LandmassType.Continents] = pending;
+            Check(pending.Statistics is null && pending.Landmass.SurfaceGenerationPending &&
+                pending.Landmass.SurfaceByCellId.Length == 0 && pending.Landmass.ElevationByCellId is null &&
+                pending.Landmass.TectonicMotion is not null,
+                "Continents stop after universal tectonics without a surface");
+
+            foreach (var type in finishedTypes)
             {
                 var config = LandmassProfiles.Create(size, type, 2026);
                 var platesPreview = service.GeneratePlatePreview(config).Landmass.PlateByCellId!;
@@ -42,224 +33,90 @@ public static class StagedLandmassTests
                 generated[type] = world;
                 var landmass = world.Landmass;
                 var topology = new HexTopology(world.Grid);
-                var ids = landmass.PlateByCellId
-                    ?? throw new InvalidOperationException("Missing stage 01 plates");
-                var heights = landmass.ElevationByCellId
-                    ?? throw new InvalidOperationException("Missing stage 02 elevations");
+                var ids = landmass.PlateByCellId ?? throw new InvalidOperationException("Missing stage 01 plates");
+                var heights = landmass.ElevationByCellId ?? throw new InvalidOperationException("Missing stage 02 elevations");
+                var stats = world.Statistics ?? throw new InvalidOperationException("Finished world lacks surface statistics");
 
-                Check(!landmass.TectonicPreviewOnly &&
-                    ids.Distinct().Count() == TectonicPlateGenerator.NumberOfPlates &&
-                    ids.SequenceEqual(platesPreview) &&
-                    platesPreview.SequenceEqual(immutableSnapshot),
-                    "All four map types keep the exact same 16 tectonic plates");
-                Check(landmass.Configuration.Type == type &&
-                    landmass.SurfaceByCellId.Length == topology.Count &&
-                    heights.Length == topology.Count &&
-                    landmass.SurfaceByCellId.All(value => value is 0 or 1) &&
-                    (type == LandmassType.Continents ? heights.Max() <= 100 : heights.Max() == 100) &&
-                    heights.Where((value, id) => landmass.SurfaceByCellId[id] == 1)
-                        .Distinct().Count() > 20 &&
-                    Enumerable.Range(0, topology.Count).All(id =>
-                        landmass.SurfaceByCellId[id] == 0
-                            ? heights[id] == 0 : heights[id] > 0),
-                    $"Every world type has oceans, land and 0..100 elevation ({size}/{type}, max={heights.Max()})");
-                Check(LandmassGenerationService.MeetsProfile(type, world.Statistics) &&
-                    world.Statistics.LandCells > 0 &&
-                    world.Statistics.LandCells < topology.Count,
-                    "Each type retains its own original geographic landmass profile");
-                if (type == LandmassType.Continents)
-                {
-                    int expectedContinents = config.Continents!.CoreCount;
-                    int actualContinents = world.Statistics.ComponentSizes.Count(cells => cells >= 100);
-                    Check(expectedContinents is >= 2 and <= 6 &&
-                        actualContinents == expectedContinents &&
-                        world.Statistics.DominantLandShare < .75 &&
-                        world.Statistics.LandFraction is >= .27 and <= .43,
-                        "Seed-selected continent count, separated mainlands and ocean coverage");
-
-                    // The plate mosaic MUST decide where the continental
-                    // nuclei and crust go, not merely tweak coast noise.
-                    var crustGenerator = new ContinentalCrustGenerator();
-                    var crust = crustGenerator.Generate(
-                        topology, ids, expectedContinents, config.Seed,
-                        landmass.TectonicMotion, landmass.DeterministicAttempt);
-                    Check(crust.MainContinentCoreCells.Length == expectedContinents &&
-                        crust.MainContinentCorePlates.Distinct().Count() == expectedContinents &&
-                        crust.CrustByCellId.Length == topology.Count &&
-                        crust.EmergenceAffinityByCellId.Length == topology.Count &&
-                        crust.ProvinceByCellId.Length == topology.Count &&
-                        crust.CollisionByCellId.Length == topology.Count &&
-                        crust.RiftByCellId.Length == topology.Count &&
-                        crust.CollisionByCellId.Any(value => value > 0) &&
-                        crust.RiftByCellId.Any(value => value > 0) &&
-                        crust.MainContinentCoreCells.Select((cell, i) =>
-                            ids[cell] == crust.MainContinentCorePlates[i]).All(value => value) &&
-                        crust.MainContinentCoreCells.All(cell =>
-                            crust.CrustByCellId[cell] == 1) &&
-                        crust.MainContinentCoreCells.Select((cell, i) =>
-                            crust.ProvinceByCellId[cell] == i).All(ok => ok) &&
-                        crust.CrustByCellId.Contains((byte)0) &&
-                        crust.CrustByCellId.Contains((byte)1),
-                        "Plate interiors seed continents and both crust types exist");
-                    int continentalLand = Enumerable.Range(0, topology.Count)
-                        .Count(id => landmass.SurfaceByCellId[id] == 1 &&
-                            crust.CrustByCellId[id] == 1);
-                    int submergedContinentalCrust = Enumerable.Range(0, topology.Count)
-                        .Count(id => landmass.SurfaceByCellId[id] == 0 &&
-                            crust.CrustByCellId[id] == 1);
-                    Check(continentalLand > world.Statistics.LandCells / 2 &&
-                        submergedContinentalCrust > 0 &&
-                        Enumerable.Range(0, topology.Count).Any(cell =>
-                            crust.CrustByCellId[cell] == 0 &&
-                            landmass.SurfaceByCellId[cell] == 0),
-                        "Most emergent land follows continental crust, but shelves can be submerged");
-                    var repeatedCrust = crustGenerator.Generate(
-                        topology, ids, expectedContinents, config.Seed,
-                        landmass.TectonicMotion, landmass.DeterministicAttempt);
-                    Check(repeatedCrust.CrustByCellId.SequenceEqual(crust.CrustByCellId) &&
-                        repeatedCrust.ProvinceByCellId.SequenceEqual(
-                            crust.ProvinceByCellId) &&
-                        repeatedCrust.CollisionByCellId.SequenceEqual(
-                            crust.CollisionByCellId) &&
-                        repeatedCrust.RiftByCellId.SequenceEqual(
-                            crust.RiftByCellId) &&
-                        repeatedCrust.EmergenceAffinityByCellId.SequenceEqual(
-                            crust.EmergenceAffinityByCellId) &&
-                        repeatedCrust.MainContinentCoreCells.SequenceEqual(
-                            crust.MainContinentCoreCells),
-                        "Plate-based crust and continent roots are deterministic");
-                    int shorelineWithinPlate = 0, shorelineCrossingPlates = 0;
-                    int internalPlateBorderOnLand = 0;
-                    for (int cell = 0; cell < topology.Count; cell++)
-                    {
-                        if (landmass.SurfaceByCellId[cell] == 0) continue;
-                        foreach (int nb in topology.Neighbors(cell))
-                        {
-                            if (landmass.SurfaceByCellId[nb] == 0)
-                            {
-                                if (ids[cell] == ids[nb]) shorelineWithinPlate++;
-                                else shorelineCrossingPlates++;
-                            }
-                            else if (ids[cell] != ids[nb])
-                                internalPlateBorderOnLand++;
-                        }
-                    }
-                    Check(shorelineWithinPlate > shorelineCrossingPlates / 3 &&
-                        internalPlateBorderOnLand > 0,
-                        "Coasts need not trace plate boundaries and continental " +
-                        "land crosses some tectonic borders");
-                    Check(crust.MainContinentCoreCells.Distinct().Count() ==
-                            expectedContinents &&
-                        crust.MainContinentCorePlates.Distinct().Count() ==
-                            expectedContinents,
-                        "Independent ancient cratons survive the tectonic assembly");
-                }
-                Check(landmass.Climate is null && landmass.SlopeByCellId is null &&
-                    landmass.Biomes is null,
-                    "Temperature, precipitation, slopes and biomes are still separate stages");
-
+                Check(!landmass.TectonicPreviewOnly && ids.Distinct().Count() == TectonicPlateGenerator.NumberOfPlates &&
+                    ids.SequenceEqual(platesPreview) && platesPreview.SequenceEqual(immutableSnapshot),
+                    "Every finished map keeps the exact stage 01 plates");
+                // Keep the historical land-height expectation. Its known Pangaea failure remains visible.
+                Check(landmass.SurfaceByCellId.Length == topology.Count && heights.Length == topology.Count &&
+                    landmass.SurfaceByCellId.All(value => value is 0 or 1) && heights.Max() == 100 &&
+                    heights.Where((value, id) => landmass.SurfaceByCellId[id] == 1).Distinct().Count() > 20 &&
+                    Enumerable.Range(0, topology.Count).All(id => landmass.SurfaceByCellId[id] == 0
+                        ? heights[id] == 0 : heights[id] > 0),
+                    $"Every finished world has oceans, land and 0..100 elevation ({size}/{type}, max={heights.Max()})");
+                Check(LandmassGenerationService.MeetsProfile(type, stats) &&
+                    stats.LandCells > 0 && stats.LandCells < topology.Count,
+                    "Finished types retain their original geographic profiles");
+                Check(landmass.Climate is null && landmass.SlopeByCellId is null && landmass.Biomes is null,
+                    "Climate, slopes and biomes remain separate stages");
                 if (type != LandmassType.Pangaea)
                 {
-                    // The staged generator must consume tectonics while preserving
-                    // the legacy no-plates mode for older callers.
                     if (size == GridSize.Small)
                     {
-                        IPlateAwareLandmassGenerator surfaceGenerator = type switch
-                        {
-                            LandmassType.Continents => new ContinentsGenerator(),
-                            LandmassType.SmallContinents => new SmallContinentsGenerator(),
-                            LandmassType.Archipelagos => new ArchipelagosGenerator(),
-                            _ => throw new InvalidOperationException("Unexpected world type")
-                        };
-                        int generatorAttempt = type == LandmassType.Continents ? 0 : landmass.DeterministicAttempt;
-                        var landWithPlates = surfaceGenerator.Generate(
-                            topology, config, generatorAttempt, ids);
-                        var legacyLand = surfaceGenerator.Generate(
-                            topology, config, generatorAttempt);
+                        IPlateAwareLandmassGenerator surfaceGenerator = type == LandmassType.SmallContinents
+                            ? new SmallContinentsGenerator() : new ArchipelagosGenerator();
+                        var landWithPlates = surfaceGenerator.Generate(topology, config, landmass.DeterministicAttempt, ids);
+                        var legacyLand = surfaceGenerator.Generate(topology, config, landmass.DeterministicAttempt);
                         Check(landWithPlates.SequenceEqual(landmass.SurfaceByCellId) &&
-                            (type == LandmassType.Continents
-                                ? legacyLand.SequenceEqual(landWithPlates)
-                                : !legacyLand.SequenceEqual(landWithPlates)) &&
-                            ids.SequenceEqual(platesPreview),
-                            "Continents automatically reconstruct universal tectonics; " +
-                            "older non-continental generator entry points remain compatible");
+                            !legacyLand.SequenceEqual(landWithPlates) && ids.SequenceEqual(platesPreview),
+                            "Non-continental staged generators retain plate-aware and legacy entry points");
                     }
                     byte[] platesCopy = ids.ToArray();
-                    var recalculated = type == LandmassType.Continents
-                        ? new ContinentsGenerator().GenerateTerrain(topology, config, platesCopy, landmass.TectonicMotion!).ElevationByCellId!
-                        : relief.Generate(
-                        topology, landmass.SurfaceByCellId, platesCopy,
-                        type, config.Seed, landmass.DeterministicAttempt);
-                    Check(recalculated.SequenceEqual(heights) &&
-                        platesCopy.SequenceEqual(ids),
-                        "Shared elevation routine is deterministic and cannot modify plates");
+                    var recalculated = relief.Generate(topology, landmass.SurfaceByCellId,
+                        platesCopy, type, config.Seed, landmass.DeterministicAttempt);
+                    Check(recalculated.SequenceEqual(heights) && platesCopy.SequenceEqual(ids),
+                        "Shared elevation remains deterministic and cannot modify plates");
                 }
                 if (size == GridSize.Small)
                 {
-                    var repeated = service.Generate(config);
-                    Check(repeated.Landmass.PlateByCellId!.SequenceEqual(ids) &&
-                        repeated.Landmass.SurfaceByCellId.SequenceEqual(landmass.SurfaceByCellId) &&
-                        repeated.Landmass.ElevationByCellId!.SequenceEqual(heights) &&
-                        repeated.Landmass.DeterministicAttempt == landmass.DeterministicAttempt,
-                        "Same seed and type reproduce land, relief and tectonics");
-
-                    var path = Path.Combine(Path.GetTempPath(),
-                        $"evolve-stage02-{type}-{Guid.NewGuid():N}.json");
+                    var repeated = service.Generate(config).Landmass;
+                    Check(repeated.PlateByCellId!.SequenceEqual(ids) &&
+                        repeated.SurfaceByCellId.SequenceEqual(landmass.SurfaceByCellId) &&
+                        repeated.ElevationByCellId!.SequenceEqual(heights) &&
+                        repeated.DeterministicAttempt == landmass.DeterministicAttempt,
+                        "Finished worlds repeat land, relief and tectonics");
+                    string path = Path.Combine(Path.GetTempPath(), $"evolve-stage02-{type}-{Guid.NewGuid():N}.json");
                     try
                     {
-                        GameSaveStore.Save(path, new GameState
-                        {
-                            HexGrid = new HexGridState(world.Grid.Definition),
-                            Landmass = landmass
-                        });
+                        GameSaveStore.Save(path, new GameState { HexGrid = new(world.Grid.Definition), Landmass = landmass });
                         var restored = GameSaveStore.Load(path).Landmass!;
-                        Check(restored.Configuration.Type == type &&
-                            restored.SurfaceByCellId.SequenceEqual(landmass.SurfaceByCellId) &&
+                        Check(restored.SurfaceByCellId.SequenceEqual(landmass.SurfaceByCellId) &&
                             restored.PlateByCellId!.SequenceEqual(ids) &&
                             restored.ElevationByCellId!.SequenceEqual(heights),
-                            "Every landmass type survives save and load");
+                            "Finished landmass survives save and load");
                     }
                     finally { if (File.Exists(path)) File.Delete(path); }
                 }
-                Console.WriteLine($"STAGE 02 {size}/{type}: " +
-                    $"{world.Statistics.LandFraction:P1} land; " +
-                    $"{world.Statistics.ComponentCount} components; " +
-                    $"attempt {landmass.DeterministicAttempt}");
+                Console.WriteLine($"STAGE 02 {size}/{type}: {stats.LandFraction:P1} land; " +
+                    $"{stats.ComponentCount} components; attempt {landmass.DeterministicAttempt}");
             }
 
-            var pangaea = generated[LandmassType.Pangaea].Statistics;
-            var continents = generated[LandmassType.Continents].Statistics;
-            var small = generated[LandmassType.SmallContinents].Statistics;
-            var arch = generated[LandmassType.Archipelagos].Statistics;
+            var pangaea = generated[LandmassType.Pangaea].Statistics!;
+            var small = generated[LandmassType.SmallContinents].Statistics!;
+            var arch = generated[LandmassType.Archipelagos].Statistics!;
             Check(pangaea.ComponentCount == 1 && pangaea.DominantLandShare == 1 &&
-                continents.LargeComponents >= 2 &&
-                small.ComponentCount > continents.ComponentCount &&
-                small.DominantMassSize < continents.DominantMassSize &&
-                arch.ComponentCount > small.ComponentCount,
-                "Pangaea, continents, small continents and archipelagos have distinct structure");
-
+                small.ComponentCount > 8 && arch.ComponentCount > small.ComponentCount,
+                "The three finished world types keep distinct structures");
             byte[] firstPlates = generated[LandmassType.Pangaea].Landmass.PlateByCellId!;
-            Check(allTypes.All(type =>
-                generated[type].Landmass.PlateByCellId!.SequenceEqual(firstPlates)),
-                "Map types never regenerate or replace stage 01 tectonic plates");
-            Check(allTypes.Select(type =>
-                Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
-                    generated[type].Landmass.SurfaceByCellId))).Distinct().Count() == 4,
-                "All four map types produce visibly distinct land distributions");
+            Check(generated.Values.All(world => world.Landmass.PlateByCellId!.SequenceEqual(firstPlates)),
+                "Pending and finished map types share identical tectonic plates");
+            Check(finishedTypes.Select(type => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                generated[type].Landmass.SurfaceByCellId))).Distinct().Count() == finishedTypes.Length,
+                "The three finished types retain distinct land distributions");
         }
-
-        // Different seeds must alter all world types, but not break plate sharing.
-        foreach (var type in allTypes)
+        foreach (var type in finishedTypes)
         {
             var config = LandmassProfiles.Create(GridSize.Small, type, 42);
             var world = service.Generate(config);
             Check(world.Landmass.PlateByCellId!.SequenceEqual(
                     service.GeneratePlatePreview(config).Landmass.PlateByCellId!) &&
-                LandmassGenerationService.MeetsProfile(type, world.Statistics),
-                "Alternate seed preserves landmass identity and universal tectonics");
+                LandmassGenerationService.MeetsProfile(type, world.Statistics!),
+                "Alternate seed retains finished type and universal tectonics");
         }
-        Console.WriteLine("PASS: tectonic terrane assembly and seed-selected " +
-            "2..6 continents across sizes; relief, tectonics and persistence");
+        Console.WriteLine("PASS: pending Continents and unchanged finished staged generators");
     }
 
     private static void Check(bool condition, string message)

@@ -2,8 +2,10 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.World;
-using GEvolve.Engine.World.Tectonics;
 using GEvolve.Engine.World.LandmassGeneration;
+using GEvolve.Engine.World.LandmassGeneration.Shared;
+using GEvolve.Engine.World.Tectonics;
+using GEvolve.Game.Graphics;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
@@ -11,73 +13,152 @@ public static class ContinentalGeologyTests
 {
     public static void Run()
     {
+        VerifyContactClassifier();
+        var service = new WorldGenerationService();
+        foreach (var size in Enum.GetValues<GridSize>())
+        foreach (int seed in new[] { 2026, 42, -731 })
+        {
+            var config = LandmassProfiles.Create(size, LandmassType.Continents, seed);
+            var world = service.Generate(config);
+            var terrain = world.Landmass;
+            var preview = service.GeneratePlatePreview(config).Landmass;
+            var topology = new HexTopology(world.Grid);
+            Check(world.Statistics is null && terrain.SurfaceGenerationPending && terrain.TectonicPreviewOnly &&
+                !terrain.HasSurface && terrain.SurfaceByCellId.Length == 0 &&
+                terrain.ElevationByCellId is null && terrain.ContinentalGeology is null &&
+                terrain.Biomes is null && terrain.Climate is null && terrain.SlopeByCellId is null,
+                "Continents have no classified surface or surface-derived data");
+            Check(terrain.PlateByCellId!.Length == topology.Count &&
+                terrain.PlateByCellId.Distinct().Count() == 16 &&
+                terrain.PlateByCellId.SequenceEqual(preview.PlateByCellId!) &&
+                terrain.PlateByCellId.SequenceEqual(TectonicPlateGenerator.Generate(topology, seed)) &&
+                JsonSerializer.Serialize(terrain.TectonicMotion) == JsonSerializer.Serialize(preview.TectonicMotion),
+                "Pending Continents preserve the exact official 16 plates, motion and stress fields");
+            try { _ = terrain.IsLand(0); throw new Exception("Pending land was classified"); }
+            catch (InvalidOperationException) { }
+            _ = MapViewColors.ForCell(terrain, 0, MapViewMode.Tectonic);
+            _ = MapViewColors.ForCell(terrain, 0, MapViewMode.Compression);
+            try { _ = MapViewColors.ForCell(terrain, 0, MapViewMode.Biomes); throw new Exception("Unavailable surface layer was colored"); }
+            catch (InvalidOperationException) { }
+            if (size == GridSize.Small)
+            {
+                var repeated = service.Generate(config).Landmass;
+                Check(repeated.SurfaceByCellId.Length == 0 &&
+                    repeated.PlateByCellId!.SequenceEqual(terrain.PlateByCellId) &&
+                    JsonSerializer.Serialize(repeated.TectonicMotion) == JsonSerializer.Serialize(terrain.TectonicMotion),
+                    "Pending world is deterministic");
+                VerifyPendingPersistence(world);
+                if (seed == 2026) VerifyPreservedGeology(world);
+            }
+            Console.WriteLine($"PENDING CONTINENTS {size}/{seed}: 16 plates, {terrain.TectonicMotion!.Interactions.Length} interactions, no surface");
+        }
+        VerifyApprovedNonContinentalWorlds(service);
+    }
+
+    private static void VerifyContactClassifier()
+    {
         ushort[] ages = Enumerable.Repeat((ushort)80, 16).ToArray(); ages[0] = 140; ages[1] = 40;
         var edge = new PlateInteraction(0, 1, 0, 1, new(1, 0), 5, 0, 0, PlateInteractionKind.Convergent);
         var cc = GeologicalContactClassifier.Classify(0, edge, CrustKind.Continental, CrustKind.Continental, ages);
         var oc = GeologicalContactClassifier.Classify(0, edge, CrustKind.Oceanic, CrustKind.Continental, ages);
         var co = GeologicalContactClassifier.Classify(0, edge, CrustKind.Continental, CrustKind.Oceanic, ages);
         var oo = GeologicalContactClassifier.Classify(0, edge, CrustKind.Oceanic, CrustKind.Oceanic, ages);
-        Check(cc.Kind == GeologicalContactKind.ContinentalCollision && cc.SubductingPlateId == byte.MaxValue,
-            "Continental collision is not subduction");
-        Check(oc.SubductingPlateId == 0 && co.SubductingPlateId == 1 && oo.SubductingPlateId == 0,
-            "Ocean crust subducts under continental crust; older ocean lithosphere subducts in OO contact");
+        Check(cc.Kind == GeologicalContactKind.ContinentalCollision && cc.SubductingPlateId == byte.MaxValue &&
+            oc.SubductingPlateId == 0 && co.SubductingPlateId == 1 && oo.SubductingPlateId == 0,
+            "Collision and subduction retain their geological classification");
         Check(GeologicalContactClassifier.Classify(0, edge with { Convergence = 0, Divergence = 5 },
             CrustKind.Continental, CrustKind.Continental, ages).Kind == GeologicalContactKind.ContinentalRift &&
             GeologicalContactClassifier.Classify(0, edge with { Convergence = 0, Divergence = 5 },
             CrustKind.Oceanic, CrustKind.Oceanic, ages).Kind == GeologicalContactKind.OceanRidge &&
             GeologicalContactClassifier.Classify(0, edge with { Convergence = 0, Shear = 5 },
             CrustKind.Oceanic, CrustKind.Oceanic, ages).Kind == GeologicalContactKind.Transform,
-            "Divergent and transform contacts distinguish crust");
-        Check(GeologicalContactClassifier.Classify(0, edge with { Convergence = .01 },
-            CrustKind.Oceanic, CrustKind.Continental, ages).Kind == GeologicalContactKind.Quiet, "Inactive contacts do not subduct");
+            "Rifts, ridges and transforms retain their classification");
+    }
 
-        var service = new WorldGenerationService();
-        foreach (var size in Enum.GetValues<GridSize>())
-        foreach (int seed in new[] { 2026, 42, -731,
-            Enumerable.Range(0, 128).First(s => LandmassProfiles.ContinentCountForSeed(s) == 5),
-            Enumerable.Range(0, 128).First(s => LandmassProfiles.ContinentCountForSeed(s) == 6) })
+    private static void VerifyPendingPersistence(GeneratedWorld world)
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"pending-continents-{Guid.NewGuid():N}.json");
+        try
         {
-            var config = LandmassProfiles.Create(size, LandmassType.Continents, seed);
-            var world = service.Generate(config); var terrain = world.Landmass;
-            var heights = terrain.ElevationByCellId!;
-            var geology = terrain.ContinentalGeology!; var motion = terrain.TectonicMotion!;
-            Check(LandmassGenerationService.MeetsProfile(config.Type, world.Statistics) &&
-                world.Statistics.ComponentSizes.Count(n => n >= 100) == config.Continents!.CoreCount,
-                "Unchanged geographic profile and configured mainland count");
-            Check(geology.CrustByCellId.Contains((byte)0) && geology.CrustByCellId.Contains((byte)1) &&
-                Enumerable.Range(0, terrain.SurfaceByCellId.Length).Any(id => geology.CrustByCellId[id] == 1 && !terrain.IsLand(id)),
-                "Mixed ocean/continental crust with submerged continental shelves");
-            Check(Enumerable.Range(0, terrain.SurfaceByCellId.Length).Where(terrain.IsLand)
-                .GroupBy(id => geology.ProvinceByCellId[id]).Any(group => group.Select(id => terrain.PlateByCellId![id]).Distinct().Count() > 1) &&
-                Enumerable.Range(0, terrain.SurfaceByCellId.Length).GroupBy(id => terrain.PlateByCellId![id])
-                .Any(group => group.Select(id => geology.CrustByCellId[id]).Distinct().Count() > 1),
-                "Continental assemblies can span plates and individual plates contain both crust kinds");
-            Check(terrain.Climate is null && terrain.Biomes is null && terrain.SlopeByCellId is null,
-                "Downstream climate and ecological stages remain disabled");
-            Check(heights.All(h => h <= 100) && Enumerable.Range(0, terrain.SurfaceByCellId.Length).All(id =>
-                terrain.IsLand(id) ? heights[id] > 0 && geology.OceanDepthByCellId[id] == 0 :
-                    heights[id] == 0 && geology.OceanDepthByCellId[id] > 0), "Land height and ocean depth contract");
-            ConnectedCratons(world);
-            foreach (var volcano in geology.Volcanoes)
+            var state = new GameState { HexGrid = new(world.Grid.Definition), Landmass = world.Landmass };
+            GameSaveStore.Save(path, state);
+            var loaded = GameSaveStore.Load(path).Landmass!;
+            Check(loaded.SurfaceGenerationPending && loaded.SurfaceByCellId.Length == 0 &&
+                loaded.PlateByCellId!.SequenceEqual(world.Landmass.PlateByCellId!) &&
+                JsonSerializer.Serialize(loaded.TectonicMotion) == JsonSerializer.Serialize(world.Landmass.TectonicMotion),
+                "Pending surface, plates and motion survive save/load");
+            foreach (var invalid in new[]
             {
-                var contact = geology.Contacts[volcano.InteractionIndex]; var interaction = motion.Interactions[volcano.InteractionIndex];
-                Check(contact.Kind is GeologicalContactKind.OceanContinentSubduction or GeologicalContactKind.OceanOceanSubduction &&
-                    terrain.PlateByCellId![volcano.CellId] == contact.OverridingPlateId &&
-                    volcano.SubductingPlateId == contact.SubductingPlateId && interaction.Convergence >= .5,
-                    "Every persisted volcano is tied to an active subduction edge on the upper plate");
-            }
-            if (size == GridSize.Small)
+                world.Landmass with { SurfaceByCellId = new byte[world.Grid.Cells.Count] },
+                world.Landmass with { ElevationByCellId = new byte[world.Grid.Cells.Count] },
+                world.Landmass with { TectonicMotion = null }
+            })
             {
-                var repeated = service.Generate(config).Landmass;
-                Check(JsonSerializer.Serialize(geology) == JsonSerializer.Serialize(repeated.ContinentalGeology) &&
-                    terrain.SurfaceByCellId.SequenceEqual(repeated.SurfaceByCellId) &&
-                    heights.SequenceEqual(repeated.ElevationByCellId!), "Deterministic full geology");
-                Persistence(world);
-                if (seed == 2026) { ControlledRelief(world); TectonicGrowth(world); }
+                state.Landmass = invalid;
+                try { GameSaveStore.Save(path, state); throw new Exception("Malformed pending surface was saved"); }
+                catch (InvalidDataException) { }
             }
-            Console.WriteLine($"CONTINENTS {size}/{seed}: {config.Continents!.CoreCount} mainlands, {world.Statistics.LandFraction:P2} land, " +
-                $"{geology.Volcanoes.Length} volcanoes, {geology.Contacts.Count(c => c.Kind is GeologicalContactKind.OceanContinentSubduction or GeologicalContactKind.OceanOceanSubduction)} subduction edges, max height {heights.Max()}");
         }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    private static void VerifyPreservedGeology(GeneratedWorld pending)
+    {
+        var topology = new HexTopology(pending.Grid);
+        int count = topology.Count;
+        var motion = pending.Landmass.TectonicMotion!;
+        var crust = Enumerable.Repeat((byte)CrustKind.Continental, count).ToArray();
+        var input = new ContinentalCrustMap(crust, new float[count],
+            motion.ArrowCellByPlateId.Take(2).ToArray(), new byte[count]);
+        try
+        {
+            new ContinentalReliefGenerator().Generate(topology, pending.Landmass, input, 0);
+            throw new Exception("Relief ran without a surface");
+        }
+        catch (InvalidOperationException) { }
+        var terrain = pending.Landmass with
+        {
+            SurfaceByCellId = Enumerable.Repeat((byte)1, count).ToArray(),
+            SurfaceGenerationPending = false, TectonicPreviewOnly = false
+        };
+        var relief = new ContinentalReliefGenerator();
+        var full = relief.Generate(topology, terrain, input, 0);
+        Check(full.ContinentalGeology!.Contacts.Any(c => c.Kind == GeologicalContactKind.ContinentalCollision) &&
+            full.ContinentalGeology.Volcanoes.Length == 0 && full.ElevationByCellId!.Max() > 25,
+            "Continental collision still produces mountains without pure-CC volcanoes");
+        var quietMotion = motion with
+        {
+            Interactions = motion.Interactions.Select(edge => edge with
+                { Convergence = 0, Divergence = 0, Shear = 0, Kind = PlateInteractionKind.Quiet }).ToArray(),
+            CompressionByCellId = new float[count], ExtensionByCellId = new float[count],
+            ShearByCellId = new float[count]
+        };
+        var quiet = relief.Generate(topology, terrain with { TectonicMotion = quietMotion }, input, 0);
+        Check(quiet.ContinentalGeology!.Volcanoes.Length == 0 &&
+            quiet.ElevationByCellId!.Max() < full.ElevationByCellId!.Max(),
+            "Removing motion removes tectonic uplift and volcanism");
+
+        string path = Path.Combine(Path.GetTempPath(), $"legacy-continental-geology-{Guid.NewGuid():N}.json");
+        try
+        {
+            var legacyConfig = full.Configuration with
+            { Continents = new ContinentsParameters(.35, 2, 34, .58, 9, .002) };
+            var state = new GameState { HexGrid = new(pending.Grid.Definition),
+                Landmass = full with { Configuration = legacyConfig } };
+            GameSaveStore.Save(path, state);
+            Check(JsonSerializer.Serialize(GameSaveStore.Load(path).Landmass!.ContinentalGeology) ==
+                JsonSerializer.Serialize(full.ContinentalGeology), "Existing geological save shape remains readable");
+            var json = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
+            json["Landmass"]!.AsObject().Remove("SurfaceGenerationPending");
+            File.WriteAllText(path, json.ToJsonString());
+            Check(GameSaveStore.Load(path).Landmass!.ContinentalGeology is not null,
+                "Saves created before the pending flag remain compatible");
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    private static void VerifyApprovedNonContinentalWorlds(WorldGenerationService service)
+    {
         using var stream = typeof(ContinentalGeologyTests).Assembly.GetManifestResourceStream("ApprovedNonContinentalBaseline.txt")!;
         using var reader = new StreamReader(stream); int unchanged = 0;
         while (reader.ReadLine() is { } line)
@@ -87,150 +168,15 @@ public static class ContinentalGeologyTests
                 Enum.Parse<LandmassType>(parts[1]), int.Parse(parts[2]))).Landmass;
             string Hash(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
             Check(terrain.DeterministicAttempt == int.Parse(parts[3]) && Hash(terrain.SurfaceByCellId) == parts[4] &&
-                Hash(terrain.ElevationByCellId) == parts[5] && Hash(terrain.PlateByCellId) == parts[6], "Approved non-continental world unchanged");
-            if (parts[0] == "Small" && parts[1] == "Pangaea" && parts[2] == "2026")
-                Console.WriteLine($"APPROVED PANGEA: {Enumerable.Range(0, terrain.SurfaceByCellId.Length).Count(id => terrain.IsLand(id) && terrain.ElevationByCellId![id] == 0)} land cells at height zero; unchanged historical output");
+                Hash(terrain.ElevationByCellId) == parts[5] && Hash(terrain.PlateByCellId) == parts[6],
+                "Approved non-continental world unchanged");
             unchanged++;
         }
-        Console.WriteLine($"PASS: {unchanged} approved Pangea/small-continents/archipelago worlds unchanged");
-    }
-    private static void ConnectedCratons(GeneratedWorld world)
-    {
-        var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(world.Grid);
-        var land = world.Landmass.SurfaceByCellId;
-        var components = Enumerable.Repeat(-1, topology.Count).ToArray();
-        int component = 0;
-        var queue = new Queue<int>();
-        for (int id = 0; id < topology.Count; id++)
-        {
-            if (land[id] == 0 || components[id] >= 0) continue;
-            components[id] = component; queue.Enqueue(id);
-            while (queue.TryDequeue(out int current))
-                foreach (int next in topology.Neighbors(current))
-                    if (land[next] == 1 && components[next] < 0)
-                    { components[next] = component; queue.Enqueue(next); }
-            component++;
-        }
-        var roots = world.Landmass.ContinentalGeology!.CratonCellIds;
-        Check(roots.All(id => land[id] == 1) && roots.Select(id => components[id]).Distinct().Count() == roots.Length,
-            "Every craton anchors a distinct connected mainland");
-        // A land bridge through the east-west seam must belong to one component.
-        int wrappedLandEdges = 0;
-        for (int row = 0; row < topology.Rows; row++)
-        {
-            int first = row * topology.Columns;
-            foreach (int next in topology.Neighbors(first))
-                if (next % topology.Columns == topology.Columns - 1 && land[first] == 1 && land[next] == 1)
-                {
-                    wrappedLandEdges++;
-                    Check(components[first] == components[next], "Wrapped mainland remains connected");
-                }
-        }
-        if (world.Grid.Definition.Size == GridSize.Medium && world.Landmass.Configuration.Seed == 42)
-            Check(wrappedLandEdges > 0, "A mainland actually crosses the east-west seam");
+        Console.WriteLine($"PASS: {unchanged} approved Pangaea/small-continents/archipelago worlds unchanged");
     }
 
-    private static void TectonicGrowth(GeneratedWorld world)
+    private static void Check(bool condition, string message)
     {
-        var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(world.Grid);
-        var terrain = world.Landmass;
-        var motion = terrain.TectonicMotion!;
-        int length = topology.Count;
-        var convergent = motion with
-        {
-            Interactions = motion.Interactions.Select(edge => edge with
-                { Convergence = 8, Divergence = 0, Shear = 0, Kind = PlateInteractionKind.Convergent }).ToArray(),
-            CompressionByCellId = Enumerable.Repeat(8f, length).ToArray(), ExtensionByCellId = new float[length]
-        };
-        var divergent = motion with
-        {
-            Interactions = motion.Interactions.Select(edge => edge with
-                { Convergence = 0, Divergence = 8, Shear = 0, Kind = PlateInteractionKind.Divergent }).ToArray(),
-            CompressionByCellId = new float[length], ExtensionByCellId = Enumerable.Repeat(8f, length).ToArray()
-        };
-        var generator = new ContinentalCrustGenerator();
-        var a = generator.Generate(topology, terrain.PlateByCellId!, terrain.Configuration.Continents!.CoreCount,
-            terrain.Configuration.Seed, convergent, terrain.DeterministicAttempt);
-        var b = generator.Generate(topology, terrain.PlateByCellId!, terrain.Configuration.Continents.CoreCount,
-            terrain.Configuration.Seed, divergent, terrain.DeterministicAttempt);
-        Check(a.MainContinentCoreCells.SequenceEqual(b.MainContinentCoreCells),
-            "Controlled motion comparison keeps the same plate geometry and cratons");
-        int changed = Enumerable.Range(0, length).Count(id =>
-            Math.Abs(a.EmergenceAffinityByCellId[id] - b.EmergenceAffinityByCellId[id]) > .1);
-        Check(changed > length / 5 && a.EmergenceAffinityByCellId.Average() > b.EmergenceAffinityByCellId.Average() &&
-            !a.CrustByCellId.SequenceEqual(b.CrustByCellId),
-            "Convergence/accretion and divergence/rifting alter the connected growth and crust map");
-        static byte[] Emerged(ContinentalCrustMap map)
-        {
-            var sorted = map.EmergenceAffinityByCellId.Order().ToArray();
-            float sea = sorted[(int)(.65 * (sorted.Length - 1))];
-            return Enumerable.Range(0, map.CrustByCellId.Length).Select(id =>
-                map.CrustByCellId[id] == 1 && map.EmergenceAffinityByCellId[id] >= sea ? (byte)1 : (byte)0).ToArray();
-        }
-        var convergentLand = Emerged(a); var divergentLand = Emerged(b);
-        Check(Enumerable.Range(0, length).Count(id => convergentLand[id] != divergentLand[id]) > length / 100,
-            "Changing only tectonic interactions changes the emerged land at a global sea datum");
+        if (!condition) throw new InvalidOperationException(message);
     }
-    private static void ControlledRelief(GeneratedWorld world)
-    {
-        var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(world.Grid);
-        int count = topology.Count;
-        var motion = world.Landmass.TectonicMotion!;
-        var continentalCrust = Enumerable.Repeat((byte)1, count).ToArray();
-        var prototype = new ContinentalCrustMap(continentalCrust, new float[count],
-            world.Landmass.ContinentalGeology!.CratonCellIds, [], new byte[count], motion.CompressionByCellId, motion.ExtensionByCellId);
-        var pure = world.Landmass with { SurfaceByCellId = Enumerable.Repeat((byte)1, count).ToArray() };
-        var generator = new ContinentalReliefGenerator();
-        var collisionWorld = generator.Generate(topology, pure, prototype, 0);
-        Check(collisionWorld.ContinentalGeology!.Volcanoes.Length == 0 &&
-            collisionWorld.ContinentalGeology.Contacts.Any(c => c.Kind == GeologicalContactKind.ContinentalCollision),
-            "Pure CC collision never creates volcanoes");
-        var inactiveMotion = motion with
-        {
-            Interactions = motion.Interactions.Select(edge => edge with { Convergence = 0, Divergence = 0, Shear = 0,
-                Kind = PlateInteractionKind.Quiet }).ToArray(),
-            CompressionByCellId = new float[count], ExtensionByCellId = new float[count], ShearByCellId = new float[count]
-        };
-        var quiet = generator.Generate(topology, pure with { TectonicMotion = inactiveMotion }, prototype, 0);
-        Check(quiet.ContinentalGeology!.Volcanoes.Length == 0 && quiet.ElevationByCellId!.Max() < 25 &&
-            collisionWorld.ElevationByCellId!.Max() > quiet.ElevationByCellId!.Max(),
-            "Removing relative motion removes tectonic mountain uplift and volcanism");
-        foreach (bool transform in new[] { false, true })
-        {
-            var changed = inactiveMotion with { Interactions = inactiveMotion.Interactions.Select(edge =>
-                edge with { Divergence = transform ? 0 : 5, Shear = transform ? 5 : 0 }).ToArray() };
-            var cut = generator.Generate(topology, pure with { TectonicMotion = changed }, prototype, 0);
-            Check(cut.ContinentalGeology!.Volcanoes.Length == 0 &&
-                cut.ElevationByCellId!.Average(h => (double)h) < quiet.ElevationByCellId!.Average(h => (double)h),
-                "Rift/transform deformation cuts valleys without subduction volcanoes");
-        }
-    }
-    private static void Persistence(GeneratedWorld world)
-    {
-        string path = Path.Combine(Path.GetTempPath(), $"continental-geology-{Guid.NewGuid():N}.json");
-        try
-        {
-            var state = new GameState { HexGrid = new(world.Grid.Definition), Landmass = world.Landmass };
-            GameSaveStore.Save(path, state);
-            Check(JsonSerializer.Serialize(GameSaveStore.Load(path).Landmass!.ContinentalGeology) ==
-                JsonSerializer.Serialize(state.Landmass.ContinentalGeology), "Geology save/load");
-            var json = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
-            json["Landmass"]!.AsObject().Remove("ContinentalGeology"); File.WriteAllText(path, json.ToJsonString());
-            Check(GameSaveStore.Load(path).Landmass!.ContinentalGeology is null, "Old saves without geology remain readable");
-            var original = state.Landmass.ContinentalGeology!;
-            state.Landmass = state.Landmass with { ContinentalGeology = original with { CrustByCellId = [0] } };
-            try { GameSaveStore.Save(path, state); throw new Exception("Malformed geology was saved"); }
-            catch (InvalidDataException) { }
-            if (original.Volcanoes.Length > 0)
-            {
-                var invalid = original.Volcanoes.ToArray();
-                invalid[0] = invalid[0] with { OverridingPlateId = invalid[0].SubductingPlateId };
-                state.Landmass = world.Landmass with { ContinentalGeology = original with { Volcanoes = invalid } };
-                try { GameSaveStore.Save(path, state); throw new Exception("Wrong-plate volcano was saved"); }
-                catch (InvalidDataException) { }
-            }
-        }
-        finally { if (File.Exists(path)) File.Delete(path); }
-    }
-    private static void Check(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
 }

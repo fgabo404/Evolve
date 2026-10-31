@@ -109,8 +109,9 @@ internal sealed class EvolveWindow : GameWindow
                             $"{result.Landmass.Configuration.Type}: " +
                             $"{Stopwatch.GetElapsedTime(_generationStarted).TotalMilliseconds:F1} ms total, " +
                             $"{_rendererPreparationMilliseconds:F1} ms GPU preparation, " +
-                            $"{result.Statistics.LandFraction:P1} land, " +
-                            $"{result.Statistics.ComponentCount} components");
+                            (result.Statistics is { } stats
+                                ? $"{stats.LandFraction:P1} land, {stats.ComponentCount} components"
+                                : "surface pending"));
                 }
                 catch (Exception error)
                 {
@@ -167,7 +168,8 @@ internal sealed class EvolveWindow : GameWindow
         {
             int id = row * columns + ((column % columns) + columns) % columns;
             if (_session.SelectedCell?.Id == id) continue; // selection overlay differs from terrain pixels
-            string biome = terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
+            string biome = terrain.SurfaceGenerationPending ? $"plate {terrain.PlateByCellId![id]}" :
+                terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
             if (_viewMode == MapViewMode.Elevation && terrain.ElevationByCellId is { } levels)
                 biome = $"height {levels[id]}";
             if (terrain.IsImpassableSummit(id)) biome = "impassable summit";
@@ -253,8 +255,15 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
+        if (_session.State.Landmass?.SurfaceGenerationPending == true && WorldButtons().Any(button =>
+            button.Action is UiAction.ToggleSurface or UiAction.ToggleGrayscale or UiAction.ToggleInfrared or
+                UiAction.ToggleRainfall or UiAction.ToggleGeology))
+            throw new InvalidOperationException("Unavailable surface layers are visible while Continents is pending.");
         UiAction[] viewActions =
-        [
+        _session.State.Landmass?.SurfaceGenerationPending == true
+        ? [UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
+            UiAction.StressShear, UiAction.ToggleTectonic]
+        : [
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
             UiAction.ToggleGrayscale, UiAction.ToggleSurface,
             UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
@@ -287,7 +296,7 @@ internal sealed class EvolveWindow : GameWindow
                 : action == UiAction.ToggleGrayscale && terrain?.ElevationByCellId is not null
                     ? _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation
                     : _viewMode;
-            var button = ScreenLayout.Buttons(GameScreen.World, ClientSize.X, ClientSize.Y)
+            var button = WorldButtons()
                 .Single(item => item.Action == action);
             if (Hit(button.Bounds.X + 5, button.Bounds.Y + 5) != action)
                 throw new InvalidOperationException("View button hit testing failed.");
@@ -362,7 +371,9 @@ internal sealed class EvolveWindow : GameWindow
         else if (_session.Screen == GameScreen.Generating)
         {
             _ui.Text("Generando mundo", center, h * .39f, 4, White);
-            _ui.Text("Distribuyendo tierra y océanos", center, h * .52f, 2, Muted);
+            _ui.Text(_session.SelectedType == LandmassType.Continents
+                ? "Calculando placas y movimiento" : "Distribuyendo tierra y océanos",
+                center, h * .52f, 2, Muted);
         }
         else
         {
@@ -446,7 +457,8 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (_session.State.Landmass is { } worldInfo)
         {
-            string kind = worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
+            string kind = worldInfo.SurfaceGenerationPending ? "CONTINENTES: PENDIENTE" :
+                worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
                 worldInfo.Configuration.Type switch
                 {
                     LandmassType.Pangaea => "PANGEA",
@@ -549,7 +561,7 @@ internal sealed class EvolveWindow : GameWindow
     private void DrawButtons()
     {
         if (_ui is null) return;
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in WorldButtons())
         {
             var r = button.Bounds;
             _hover.TryGetValue(button.Action, out float hover);
@@ -658,7 +670,7 @@ internal sealed class EvolveWindow : GameWindow
 
     private IEnumerable<UiButton> VisibleControls()
     {
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in WorldButtons())
             yield return button;
         if (_openDropdown is not { } selector) yield break;
         foreach (var option in ScreenLayout.DropdownOptions(
@@ -673,9 +685,19 @@ internal sealed class EvolveWindow : GameWindow
             foreach (var option in ScreenLayout.DropdownOptions(
                 _session.Screen, ClientSize.X, ClientSize.Y, selector))
                 if (option.Bounds.Contains(x, y)) return option.Action;
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in WorldButtons())
             if (button.Bounds.Contains(x, y)) return button.Action;
         return null;
+    }
+
+    private IEnumerable<UiButton> WorldButtons()
+    {
+        bool pending = _session.Screen == GameScreen.World &&
+            _session.State.Landmass?.SurfaceGenerationPending == true;
+        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+            if (!pending || button.Action is not (UiAction.ToggleSurface or UiAction.ToggleGrayscale or
+                UiAction.ToggleInfrared or UiAction.ToggleRainfall or UiAction.ToggleGeology))
+                yield return button;
     }
 
     protected override void OnMouseDown(MouseButtonEventArgs e)

@@ -26,7 +26,7 @@ public sealed class PlateBoundaryMap
     public static PlateBoundaryMap? Analyze(HexTopology topology, LandmassState terrain)
     {
         if (terrain.PlateByCellId is not { } plates) return null;
-        if (topology.Count != plates.Length || terrain.SurfaceByCellId.Length != topology.Count)
+        if (topology.Count != plates.Length)
             throw new ArgumentException("Plate and topology dimensions differ.", nameof(terrain));
 
         var edges = new List<PlateBoundaryEdge>();

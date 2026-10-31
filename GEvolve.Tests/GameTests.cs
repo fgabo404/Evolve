@@ -181,8 +181,11 @@ public static class GameTests
         resizing.CompleteGeneration(new WorldGenerationService().Generate(changeBoth));
         Check(resizing.State.Landmass!.Configuration.Size == GridSize.Small &&
             resizing.State.Landmass.Configuration.Type == LandmassType.Continents &&
-            resizing.State.Landmass.Configuration.Seed == selectedSeed,
-            "Reconfiguration updates the live world state and selected options");
+            resizing.State.Landmass.Configuration.Seed == selectedSeed &&
+            resizing.State.Landmass.SurfaceGenerationPending &&
+            resizing.State.Landmass.SurfaceByCellId.Length == 0 &&
+            resizing.State.Landmass.TectonicMotion is not null,
+            "Reconfiguration selects pending Continents with real tectonics and no surface");
 
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })

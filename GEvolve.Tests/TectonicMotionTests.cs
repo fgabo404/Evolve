@@ -115,8 +115,10 @@ public static class TectonicMotionTests
             if (config.Type == LandmassType.Continents)
             {
                 var rebuilt = service.Generate(config);
-                Check(GEvolve.Engine.World.LandmassGeneration.LandmassGenerationService.MeetsProfile(config.Type, rebuilt.Statistics) &&
-                    rebuilt.Landmass.ContinentalGeology is not null, "Continents intentionally replaced, including the formerly failing Enormous world");
+                Check(rebuilt.Statistics is null && rebuilt.Landmass.SurfaceGenerationPending &&
+                    rebuilt.Landmass.SurfaceByCellId.Length == 0 &&
+                    rebuilt.Landmass.PlateByCellId is not null && rebuilt.Landmass.TectonicMotion is not null,
+                    "Continents retain official tectonics while surface is pending");
                 continue;
             }
             if (parts[3] == "ERROR")

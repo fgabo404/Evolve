@@ -72,7 +72,8 @@ public sealed class HexGridRenderer : IDisposable
 
     public HexGridRenderer(HexGrid grid, LandmassState landmass)
     {
-        if (landmass.SurfaceByCellId.Length != grid.Cells.Count ||
+        if ((landmass.SurfaceGenerationPending ? landmass.SurfaceByCellId.Length != 0 :
+                landmass.SurfaceByCellId.Length != grid.Cells.Count) ||
             landmass.Configuration.Size != grid.Definition.Size)
             throw new ArgumentException("Landmass state differs from the grid.", nameof(landmass));
         _grid = grid;

@@ -7,8 +7,11 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 
 public sealed class ContinentalReliefGenerator
 {
+    public const string GeologyVersion = "continents-tectonic-2";
     public LandmassState Generate(HexTopology topology, LandmassState terrain, ContinentalCrustMap crust, float seaLevel)
     {
+        if (!terrain.HasSurface)
+            throw new InvalidOperationException("Continental relief requires a generated surface and crust.");
         var motion = terrain.TectonicMotion ?? throw new ArgumentException("Official plate motion required.");
         var plates = terrain.PlateByCellId!;
         int count = topology.Count;
@@ -111,7 +114,7 @@ public sealed class ContinentalReliefGenerator
             volcanoes.Add(new(id, candidate.Type, candidate.Lower, candidate.Upper, candidate.Edge));
         }
         return terrain with { SurfaceByCellId = surface, ElevationByCellId = heights,
-            ContinentalGeology = new(ContinentsGenerator.Version, crust.CrustByCellId, crust.ProvinceByCellId,
+            ContinentalGeology = new(GeologyVersion, crust.CrustByCellId, crust.ProvinceByCellId,
                 crust.MainContinentCoreCells, ages, contacts, volcanoes.ToArray(), features, depth, seaLevel) };
     }
 

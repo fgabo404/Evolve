@@ -8,7 +8,8 @@ using GEvolve.State.Game;
 namespace GEvolve.Engine.World;
 
 /// <summary>
-/// Stage 01 universal tectonics, then stage 02 type-specific surface and relief.
+/// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
+/// Continents currently stops after stage 01 with no surface.
 /// Temperature, precipitation and biome classification remain shared future stages.
 /// </summary>
 public sealed class WorldGenerationService
@@ -25,15 +26,19 @@ public sealed class WorldGenerationService
         // The same 16 plate IDs exist for every world type at the same size/seed.
         byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
         var tectonicMotion = new TectonicMotionGenerator().Generate(topology,
-            new LandmassState(configuration, new byte[topology.Count], 0) { PlateByCellId = plates });
+            new LandmassState(configuration, [], 0) { PlateByCellId = plates, TectonicPreviewOnly = true });
 
         if (configuration.Type == LandmassType.Continents)
         {
-            var continental = new ContinentsGenerator().GenerateTerrain(topology, configuration, plates, tectonicMotion);
-            var statistics = LandmassAnalysis.Analyze(topology, continental.SurfaceByCellId);
-            if (!LandmassGenerationService.MeetsProfile(configuration.Type, statistics))
-                throw new InvalidOperationException("Tectonic Continents failed the unchanged geographic profile.");
-            return new(grid, continental, statistics);
+            // No continental surface exists yet. Keep the actual plates and motion only.
+            var pending = new LandmassState(configuration, [], 0)
+            {
+                PlateByCellId = plates,
+                TectonicMotion = tectonicMotion,
+                TectonicPreviewOnly = true,
+                SurfaceGenerationPending = true
+            };
+            return new(grid, pending, null);
         }
 
         IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch

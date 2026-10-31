@@ -1,6 +1,6 @@
 # Continentes: corteza, subducción y relieve
 
-> Actualización: `ContinentsGenerator.Version` es ahora `continents-tectonic-2`. El ensamblaje cortical y la selección de superficie descritos abajo pertenecen a la versión anterior; consulta [CONTINENTAL_GROWTH.md](CONTINENTAL_GROWTH.md) para el método vigente. La subducción, el relieve y los volcanes de este documento siguen vigentes.
+> Estado vigente: la generación de superficie de **Continentes** fue retirada. `WorldGenerationService` guarda las 16 placas y su movimiento con `SurfaceGenerationPending = true`, superficie vacía y estadísticas ausentes. La descripción de ensamblaje cortical y costas que sigue documenta una implementación histórica eliminada. El clasificador geológico, el generador de relieve, la subducción, los volcanes y la lectura de guardados geológicos anteriores permanecen en el código, pero no se ejecutan sin superficie.
 
 `continents-tectonic-1` fue la ruta activa de **Continentes** en el commit inicial de geología. Es una reconstrucción procedural estática inspirada en procesos geológicos, sin simulación temporal. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y resultados. `tectonic-plates-2` y `tectonic-motion-1` tampoco cambian.
 

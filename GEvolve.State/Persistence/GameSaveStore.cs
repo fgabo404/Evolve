@@ -32,12 +32,19 @@ public static class GameSaveStore
         if (state.Landmass is not { } landmass) return;
         if (state.SaveFormatVersion != EvolveVersion.SaveFormat || state.HexGrid is null ||
             state.HexGrid.Definition.Size != landmass.Configuration.Size ||
-            landmass.SurfaceByCellId.Length != checked(state.HexGrid.Definition.Columns *
-                state.HexGrid.Definition.Rows) ||
+            (landmass.SurfaceGenerationPending
+                ? landmass.Configuration.Type != GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.Continents ||
+                    !landmass.TectonicPreviewOnly || landmass.SurfaceByCellId.Length != 0 ||
+                    landmass.PlateByCellId is null || landmass.TectonicMotion is null ||
+                    landmass.ElevationByCellId is not null || landmass.ContinentalGeology is not null ||
+                    landmass.SlopeByCellId is not null || landmass.Climate is not null || landmass.Biomes is not null
+                : landmass.SurfaceByCellId.Length != checked(state.HexGrid.Definition.Columns *
+                    state.HexGrid.Definition.Rows)) ||
             landmass.SurfaceByCellId.Any(surface => surface is not 0 and not 1) ||
             (landmass.ElevationByCellId is { } heights &&
                 (heights.Length != landmass.SurfaceByCellId.Length || heights.Any(level => level > 100))) ||
-            (landmass.PlateByCellId is { } plates && plates.Length != landmass.SurfaceByCellId.Length))
+            (landmass.PlateByCellId is { } plates && plates.Length != checked(state.HexGrid.Definition.Columns *
+                state.HexGrid.Definition.Rows)))
             throw new InvalidDataException("Invalid landmass save data.");
         TectonicMotionValidation.Validate(landmass);
         ContinentalGeologyValidation.Validate(landmass);

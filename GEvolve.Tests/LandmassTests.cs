@@ -20,17 +20,17 @@ public static class LandmassTests
             EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-12",
             "Independent game, save and generator versions");
         var service = new LandmassGenerationService();
-        Check(service.Generators.Count == 4 &&
-            service.Generators.Select(item => item.Type).Distinct().Count() == 4 &&
-            service.Generators.Select(item => item.GetType()).Distinct().Count() == 4,
-            "Four independent generation strategies");
+        Check(service.Generators.Count == 3 &&
+            service.Generators.Select(item => item.Type).Distinct().Count() == 3 &&
+            service.Generators.Select(item => item.GetType()).Distinct().Count() == 3,
+            "Three finished generation strategies; Continents surface is pending");
 
         var baselineHashes = new Dictionary<(GridSize, LandmassType), string>();
         foreach (var size in Enum.GetValues<GridSize>())
         foreach (int seed in new[] { 2026, 42, -731 })
         {
             var worlds = new Dictionary<LandmassType, GeneratedWorld>();
-            foreach (var type in Enum.GetValues<LandmassType>())
+            foreach (var type in new[] { LandmassType.Pangaea, LandmassType.SmallContinents, LandmassType.Archipelagos })
             {
                 var configuration = LandmassProfiles.Create(size, type, seed);
                 long beforeBytes = GC.GetAllocatedBytesForCurrentThread();
@@ -39,7 +39,7 @@ public static class LandmassTests
                 timer.Stop();
                 long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - beforeBytes;
                 worlds[type] = result;
-                var stats = result.Statistics;
+                var stats = result.Statistics!;
                 Check(result.Grid.Definition == HexGridDefinitions.Get(size) &&
                     result.Landmass.Configuration == configuration &&
                     result.Landmass.SurfaceByCellId.Length == result.Grid.Cells.Count &&
@@ -69,18 +69,17 @@ public static class LandmassTests
                     Check(hash != baselineHashes[(size, type)],
                         "Different seeds change the generated world");
             }
-            var continents = worlds[LandmassType.Continents].Statistics;
-            var pangaea = worlds[LandmassType.Pangaea].Statistics;
-            var small = worlds[LandmassType.SmallContinents].Statistics;
-            var islands = worlds[LandmassType.Archipelagos].Statistics;
-            Check(continents.LargeComponents >= 2 &&
-                pangaea.ComponentCount == 1 && pangaea.DominantLandShare == 1 &&
-                small.ComponentCount > continents.ComponentCount &&
-                small.DominantMassSize < continents.DominantMassSize &&
-                islands.ComponentCount > small.ComponentCount &&
+            var pangaea = worlds[LandmassType.Pangaea].Statistics!;
+            var small = worlds[LandmassType.SmallContinents].Statistics!;
+            var islands = worlds[LandmassType.Archipelagos].Statistics!;
+            Check(pangaea.ComponentCount == 1 && pangaea.DominantLandShare == 1 &&
+                small.ComponentCount > 8 && islands.ComponentCount > small.ComponentCount &&
                 islands.IslandComponents * 2 > islands.ComponentCount,
-                $"Distinct structures {size}/{seed}: components C={continents.ComponentCount}, S={small.ComponentCount}, A={islands.ComponentCount}; " +
-                $"dominant C={continents.DominantMassSize}, S={small.DominantMassSize}");
+                $"Distinct finished structures {size}/{seed}: S={small.ComponentCount}, A={islands.ComponentCount}");
+            var pending = service.Generate(LandmassProfiles.Create(size, LandmassType.Continents, seed));
+            Check(pending.Statistics is null && pending.Landmass.SurfaceGenerationPending &&
+                pending.Landmass.SurfaceByCellId.Length == 0,
+                "Legacy service cannot regenerate old Continents surface");
         }
 
         VerifyPeriodicSeam();

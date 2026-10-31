@@ -4,7 +4,6 @@ using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
 if (args.Contains("--continental-geology")) { ContinentalGeologyTests.Run(); return 0; }
-if (args.Contains("--continental-captures")) { ContinentalMapCaptures.Generate(); return 0; }
 if (args.Contains("--tectonic-motion")) { TectonicMotionTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {

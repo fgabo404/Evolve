@@ -172,10 +172,10 @@ El rango de tierra global sigue siendo aproximadamente 35% como criterio de vali
 ## Movimiento e interacciones: actualización actual
 
 La capa `tectonic-motion-1` se inserta después de las placas `tectonic-plates-2` y antes de las masas terrestres. Orden: **placas → movimientos → interacciones/esfuerzos → tipo de mundo y elevaciones → temperatura → precipitación/humedad → pendientes/biomas**. Las últimas tres etapas siguen desconectadas del pipeline activo. Los generadores terrestres `landmass-12` conservan sus cálculos y no consumen aún los campos nuevos. Véanse fórmulas, persistencia y límites en [TECTONIC_MOTION.md](TECTONIC_MOTION.md). Las secciones anteriores conservan la historia de versiones.
-## Ruta actual de Continentes: `continents-tectonic-1`
+## Ruta histórica de Continentes: `continents-tectonic-1`
 
 La ruta continental se sustituye por **placas originales → movimientos originales → corteza y cratones → ensamblaje y nivel del mar global → contactos/subducción → relieve → volcanes → publicación**. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y huellas; clima y biomas continúan desactivados. Se retiran las velocidades sintéticas de Continentes y su uso de `PlateAwareElevationGenerator`. Véanse detalles, compatibilidad y validación en [CONTINENTAL_GEOLOGY.md](CONTINENTAL_GEOLOGY.md). Las versiones anteriores se conservan arriba como historia del desarrollo.
 
-## Crecimiento continental vigente: `continents-tectonic-2`
+## Estado vigente de Continentes: superficie pendiente
 
-El crecimiento conectado desde cratones sustituye los ejes de terrenos acrecionados y retira los canales artificiales entre provincias. Los costos de expansión consumen las interacciones reales de las placas, y una afinidad continua recibe un solo nivel del mar. Cada masa principal debe contener un cratón distinto. La clasificación de subducción y el relieve conservan su etapa posterior. Procedimiento, pruebas y cinco capturas comparables: [CONTINENTAL_GROWTH.md](CONTINENTAL_GROWTH.md).
+`WorldGenerationService` ejecuta únicamente la cuadrícula, las 16 placas, sus movimientos y los campos de compresión, extensión y cizalla. `LandmassState.SurfaceGenerationPending` indica que `SurfaceByCellId` está vacío; no significa océano. Las estadísticas de superficie, elevaciones y `ContinentalGeology` son nulas. El juego muestra la vista de placas y esfuerzos, sin ofrecer capas de tierra, alturas, biomas ni geología aún no calculadas. La clasificación de contactos y el generador de relieve permanecen para consumir una futura superficie y corteza reales. Los apartados anteriores son historia de implementaciones retiradas; Pangea, Continentes pequeños y Archipiélagos conservan sus rutas activas.
