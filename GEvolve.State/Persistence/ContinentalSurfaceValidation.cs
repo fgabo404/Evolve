@@ -11,7 +11,8 @@ internal static class ContinentalSurfaceValidation
         int count = terrain.SurfaceByCellId.Length;
         var plates = terrain.PlateByCellId;
         if (terrain.Configuration.Type != LandmassType.Continents || !terrain.HasSurface ||
-            terrain.TectonicMotion is null || terrain.ElevationByCellId is not null ||
+            terrain.TectonicMotion is null ||
+            ((terrain.ElevationByCellId is null) != (terrain.ContinentalElevation is null)) ||
             terrain.ContinentalGeology is not null || terrain.Climate is not null || terrain.Biomes is not null ||
             surface.Version != "plate-groups-surface-1" || !float.IsFinite(surface.SeaLevel) ||
             plates is null || plates.Length != count ||

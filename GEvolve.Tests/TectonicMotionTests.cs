@@ -116,7 +116,7 @@ public static class TectonicMotionTests
             {
                 var rebuilt = service.Generate(config);
                 Check(rebuilt.Statistics is not null && rebuilt.Landmass.ContinentalSurface is not null &&
-                    rebuilt.Landmass.ElevationByCellId is null &&
+                    rebuilt.Landmass.ElevationByCellId is not null &&
                     rebuilt.Landmass.PlateByCellId is not null && rebuilt.Landmass.TectonicMotion is not null,
                     "Continents retain official tectonics with a plate-derived surface");
                 continue;

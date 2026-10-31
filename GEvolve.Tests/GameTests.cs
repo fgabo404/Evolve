@@ -183,7 +183,7 @@ public static class GameTests
             resizing.State.Landmass.Configuration.Type == LandmassType.Continents &&
             resizing.State.Landmass.Configuration.Seed == selectedSeed &&
             resizing.State.Landmass.ContinentalSurface is not null &&
-            resizing.State.Landmass.HasSurface && resizing.State.Landmass.ElevationByCellId is null &&
+            resizing.State.Landmass.HasSurface && resizing.State.Landmass.ElevationByCellId is not null &&
             resizing.State.Landmass.TectonicMotion is not null,
             "Reconfiguration selects plate-derived Continents with real tectonics");
 

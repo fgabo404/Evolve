@@ -78,8 +78,9 @@ public static class LandmassTests
                 $"Distinct finished structures {size}/{seed}: S={small.ComponentCount}, A={islands.ComponentCount}");
             var continental = service.Generate(LandmassProfiles.Create(size, LandmassType.Continents, seed));
             Check(continental.Statistics?.LandFraction is >= .33 and <= .37 &&
-                continental.Landmass.ContinentalSurface is not null && continental.Landmass.ElevationByCellId is null,
-                "Continents have a new tectonic surface with relief pending");
+                continental.Landmass.ContinentalSurface is not null &&
+                continental.Landmass.ElevationByCellId is not null,
+                "Continents have a new tectonic surface and elevation");
         }
 
         VerifyPeriodicSeam();

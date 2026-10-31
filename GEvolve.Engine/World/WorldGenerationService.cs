@@ -9,7 +9,8 @@ namespace GEvolve.Engine.World;
 
 /// <summary>
 /// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
-/// Continents derives surface from plate groups, with geology and climate left pending.
+/// Continents derives surface from plate groups and elevation from existing motion;
+/// volcanism and climate remain pending.
 /// Temperature, precipitation and biome classification remain shared future stages.
 /// </summary>
 public sealed class WorldGenerationService
@@ -38,6 +39,7 @@ public sealed class WorldGenerationService
                 TectonicMotion = tectonicMotion,
                 ContinentalSurface = generated.State
             };
+            terrain = new ContinentalElevationGenerator().Generate(topology, terrain);
             return new(grid, terrain, LandmassAnalysis.Analyze(topology, generated.Surface));
         }
 

@@ -20,8 +20,9 @@ public static class StagedLandmassTests
             var continental = service.Generate(continentalConfig);
             generated[LandmassType.Continents] = continental;
             Check(continental.Landmass.HasSurface && continental.Landmass.ContinentalSurface is not null &&
-                continental.Landmass.ElevationByCellId is null && continental.Landmass.TectonicMotion is not null,
-                "Continents derive surface from plates, leaving relief pending");
+                continental.Landmass.ElevationByCellId is not null &&
+                continental.Landmass.TectonicMotion is not null,
+                "Continents derive surface and relief from plates");
 
             foreach (var type in finishedTypes)
             {

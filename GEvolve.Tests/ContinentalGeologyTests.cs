@@ -58,6 +58,7 @@ public static class ContinentalGeologyTests
         var input = new ContinentalCrustMap(crust, new float[count],
             motion.ArrowCellByPlateId.Take(2).ToArray(), new byte[count]);
         var noSurface = continental.Landmass with { SurfaceByCellId = [], ContinentalSurface = null,
+            ContinentalElevation = null, ElevationByCellId = null,
             SurfaceGenerationPending = true, TectonicPreviewOnly = true };
         try
         {
@@ -68,7 +69,8 @@ public static class ContinentalGeologyTests
         var terrain = continental.Landmass with
         {
             SurfaceByCellId = Enumerable.Repeat((byte)1, count).ToArray(),
-            SurfaceGenerationPending = false, TectonicPreviewOnly = false, ContinentalSurface = null
+            SurfaceGenerationPending = false, TectonicPreviewOnly = false, ContinentalSurface = null,
+            ContinentalElevation = null, ElevationByCellId = null
         };
         var relief = new ContinentalReliefGenerator();
         var full = relief.Generate(topology, terrain, input, 0);

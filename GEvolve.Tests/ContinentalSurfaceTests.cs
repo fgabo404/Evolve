@@ -28,9 +28,10 @@ internal static class ContinentalSurfaceTests
             int smallestGroupLand = int.MaxValue;
             Check(count is >= 2 and <= 6 && world.Statistics?.LandFraction is >= .33 and <= .37 &&
                 terrain.HasSurface && !terrain.SurfaceGenerationPending && !terrain.TectonicPreviewOnly &&
-                terrain.ElevationByCellId is null && terrain.ContinentalGeology is null &&
+                terrain.ElevationByCellId is not null && terrain.ContinentalElevation is not null &&
+                terrain.ContinentalGeology is null &&
                 terrain.Climate is null && terrain.Biomes is null,
-                "Continents have only a plate-derived surface, with later stages pending");
+                "Continents have a plate-derived surface and tectonic elevation, with later stages pending");
             for (byte group = 0; group < count; group++)
             {
                 var memberPlates = Enumerable.Range(0, 16).Where(plate => groups[plate] == group).ToArray();
@@ -100,6 +101,7 @@ internal static class ContinentalSurfaceTests
         }
         Check(multiPlate > 0 && mixedPlate > 0,
             "The map must include multi-plate continents and plates containing both land and ocean");
+        ContinentalSurfaceBaseline.Verify();
     }
 
     private static void VerifyPersistence(GeneratedWorld world)

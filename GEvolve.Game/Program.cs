@@ -256,13 +256,14 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (_session.Screen != GameScreen.World) return;
         if (_session.State.Landmass?.ContinentalSurface is not null && WorldButtons().Any(button =>
-            button.Action is UiAction.ToggleGrayscale or UiAction.ToggleInfrared or
+            button.Action is UiAction.ToggleInfrared or
                 UiAction.ToggleRainfall or UiAction.ToggleGeology))
-            throw new InvalidOperationException("Unavailable derived layers are visible before continental geology.");
+            throw new InvalidOperationException("Climate or geology is visible before generation.");
         UiAction[] viewActions =
         _session.State.Landmass?.ContinentalSurface is not null
-        ? [UiAction.ToggleTectonic, UiAction.ToggleSurface, UiAction.StressCompression,
-            UiAction.StressExtension, UiAction.StressShear, UiAction.ToggleSurface]
+        ? [UiAction.ToggleTectonic, UiAction.ToggleSurface, UiAction.ToggleGrayscale,
+            UiAction.ToggleSurface, UiAction.StressCompression, UiAction.StressExtension,
+            UiAction.StressShear, UiAction.ToggleSurface]
         : [
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
             UiAction.ToggleGrayscale, UiAction.ToggleSurface,
@@ -457,7 +458,7 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (_session.State.Landmass is { } worldInfo)
         {
-            string kind = worldInfo.ContinentalSurface is not null ? "CONTINENTES: SUPERFICIE" :
+            string kind = worldInfo.ContinentalSurface is not null ? "CONTINENTES: RELIEVE" :
                 worldInfo.SurfaceGenerationPending ? "CONTINENTES: PENDIENTE" :
                 worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
                 worldInfo.Configuration.Type switch

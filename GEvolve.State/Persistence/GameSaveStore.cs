@@ -48,6 +48,7 @@ public static class GameSaveStore
             throw new InvalidDataException("Invalid landmass save data.");
         TectonicMotionValidation.Validate(landmass);
         ContinentalSurfaceValidation.Validate(landmass);
+        ContinentalElevationValidation.Validate(landmass);
         ContinentalGeologyValidation.Validate(landmass);
         if (landmass.SlopeByCellId is { } slopes &&
             (landmass.ElevationByCellId is null || slopes.Length != landmass.SurfaceByCellId.Length ||

@@ -1,6 +1,6 @@
 # Continentes: corteza, subducción y relieve
 
-> Estado vigente: **Continentes** genera una superficie nueva desde grupos de placas; véase [CONTINENTS_SURFACE.md](CONTINENTS_SURFACE.md). La descripción de ensamblaje cortical y costas que sigue documenta una implementación histórica eliminada. El clasificador geológico, el generador de relieve, la subducción, los volcanes y la lectura de guardados geológicos anteriores permanecen en el código, pero no se ejecutan aún en la nueva ruta.
+> Estado vigente: **Continentes** genera superficie desde grupos de placas y elevaciones desde contactos clasificados; véanse [CONTINENTS_SURFACE.md](CONTINENTS_SURFACE.md) y [CONTINENTAL_ELEVATION.md](CONTINENTAL_ELEVATION.md). La descripción de ensamblaje cortical y costas que sigue documenta una implementación histórica eliminada. El generador anterior de relieve y volcanes y la lectura de guardados geológicos anteriores permanecen; la nueva ruta reutiliza el clasificador, pero no genera volcanes.
 
 `continents-tectonic-1` fue la ruta activa de **Continentes** en el commit inicial de geología. Es una reconstrucción procedural estática inspirada en procesos geológicos, sin simulación temporal. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y resultados. `tectonic-plates-2` y `tectonic-motion-1` tampoco cambian.
 

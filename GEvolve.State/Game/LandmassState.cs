@@ -13,6 +13,7 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public TectonicMotionState? TectonicMotion { get; init; }
     public ContinentalGeologyState? ContinentalGeology { get; init; }
     public ContinentalSurfaceState? ContinentalSurface { get; init; }
+    public ContinentalElevationState? ContinentalElevation { get; init; }
     /// <summary>Compatibilidad con guardados creados mientras la superficie continental estaba pendiente.</summary>
     public bool SurfaceGenerationPending { get; init; }
     /// <summary>

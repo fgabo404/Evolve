@@ -1,6 +1,6 @@
 # Evolve — Arquitectura de v0.001
 
-> **Estado actual de Continentes:** Engine agrupa las 16 placas originales y deriva de ellas corteza, tierra y océanos mediante un nivel del mar global. State conserva la identidad de cada continente. Game muestra superficie, placas y esfuerzos; relieve, geología, clima y biomas permanecen pendientes. La descripción histórica de `ContinentsGenerator` más abajo ya no representa código activo. Véase [CONTINENTS_SURFACE.md](CONTINENTS_SURFACE.md).
+> **Estado actual de Continentes:** Engine agrupa las 16 placas originales y deriva corteza, tierra y océanos mediante un nivel del mar global; después calcula elevaciones desde contactos tectónicos clasificados. State conserva identidad, alturas y profundidad oceánica separada. Game muestra superficie, altura, placas y esfuerzos; volcanes, clima y biomas permanecen pendientes. Véanse [CONTINENTS_SURFACE.md](CONTINENTS_SURFACE.md) y [CONTINENTAL_ELEVATION.md](CONTINENTAL_ELEVATION.md). La descripción histórica de `ContinentsGenerator` más abajo ya no representa código activo.
 
 La base v0.001 implementa las capas 01 (grid) y 02 (tierra y océano). La revisión actual añade las elevaciones tectónicas 0–100 de Pangea y una clasificación inicial de biomas posterior al terreno. Clima, recursos, civilizaciones y vista 3D siguen pendientes. La clasificación y sus limitaciones se documentan en [BIOMES.md](BIOMES.md).
 
@@ -18,7 +18,7 @@ Las flechas representan dependencias de compilación. `Definitions` contiene los
 
 `GameSession` comienza en el menú sin mundo. **Crear mundo** permite elegir Pequeño (100 × 70), Mediano (150 × 100) o Grande (250 × 200), uno de los cuatro tipos y una semilla entera editable o aleatoria. Los valores iniciales son Pequeño y Continentes. Al generar, `Engine` construye el grid flat-top `odd-q` con ID `fila × columnas + columna` y cierre horizontal este–oeste. Luego `LandmassGenerationService` selecciona el generador específico, aplica un máximo de cuatro intentos deterministas y analiza el resultado. La generación se ejecuta fuera del hilo gráfico; la creación de buffers OpenGL ocurre en él.
 
-- **Continentes:** `PlateGroupSurfaceGenerator` deriva corteza y superficie de conjuntos conectados de placas; relieve y etapas posteriores están pendientes.
+- **Continentes:** `PlateGroupSurfaceGenerator` deriva corteza y superficie de conjuntos conectados de placas; `ContinentalElevationGenerator` asigna alturas según colisión, subducción, extensión y cizalla.
 - `PangaeaGenerator`: placas tectónicas, expansión conectada y elevaciones 0–100; la etapa posterior de biomas conserva estos resultados.
 - `SmallContinentsGenerator`: núcleos de alcance limitado y corredores oceánicos entre regiones.
 - `ArchipelagosGenerator`: trayectorias curvas que colocan grupos y cadenas de islas de distintos tamaños.
