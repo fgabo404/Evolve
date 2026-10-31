@@ -9,6 +9,10 @@
     <PackageReference Include="OpenTK" Version="4.9.4" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\\NPC\\**\\*.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\\NPC\\**\\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\GEvolve.Definitions\GEvolve.Definitions.csproj" />
     <ProjectReference Include="..\GEvolve.Engine\GEvolve.Engine.csproj" />
     <ProjectReference Include="..\GEvolve.State\GEvolve.State.csproj" />
