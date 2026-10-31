@@ -79,7 +79,8 @@ public static class LandmassTests
                 small.DominantMassSize < continents.DominantMassSize &&
                 islands.ComponentCount > small.ComponentCount &&
                 islands.IslandComponents * 2 > islands.ComponentCount,
-                "Distinct continent, Pangaea, fragmented and island structures");
+                $"Distinct structures {size}/{seed}: components C={continents.ComponentCount}, S={small.ComponentCount}, A={islands.ComponentCount}; " +
+                $"dominant C={continents.DominantMassSize}, S={small.DominantMassSize}");
         }
 
         VerifyPeriodicSeam();

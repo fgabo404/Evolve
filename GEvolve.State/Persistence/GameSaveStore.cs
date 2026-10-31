@@ -40,6 +40,7 @@ public static class GameSaveStore
             (landmass.PlateByCellId is { } plates && plates.Length != landmass.SurfaceByCellId.Length))
             throw new InvalidDataException("Invalid landmass save data.");
         TectonicMotionValidation.Validate(landmass);
+        ContinentalGeologyValidation.Validate(landmass);
         if (landmass.SlopeByCellId is { } slopes &&
             (landmass.ElevationByCellId is null || slopes.Length != landmass.SurfaceByCellId.Length ||
              slopes.Where((value, id) => value > 100 || !landmass.IsLand(id) && value != 0).Any()))

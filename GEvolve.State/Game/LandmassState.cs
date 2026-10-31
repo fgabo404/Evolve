@@ -10,6 +10,7 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public byte[]? SlopeByCellId { get; init; }
     public byte[]? PlateByCellId { get; init; }
     public TectonicMotionState? TectonicMotion { get; init; }
+    public ContinentalGeologyState? ContinentalGeology { get; init; }
     /// <summary>
     /// Stage 01 only: no land/ocean, relief, climate or biomes have been classified.
     /// SurfaceByCellId is an unclassified compatibility placeholder in this mode.

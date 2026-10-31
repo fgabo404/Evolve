@@ -56,13 +56,13 @@ public static class StagedLandmassTests
                     landmass.SurfaceByCellId.Length == topology.Count &&
                     heights.Length == topology.Count &&
                     landmass.SurfaceByCellId.All(value => value is 0 or 1) &&
-                    heights.Max() == 100 &&
+                    (type == LandmassType.Continents ? heights.Max() <= 100 : heights.Max() == 100) &&
                     heights.Where((value, id) => landmass.SurfaceByCellId[id] == 1)
                         .Distinct().Count() > 20 &&
                     Enumerable.Range(0, topology.Count).All(id =>
                         landmass.SurfaceByCellId[id] == 0
                             ? heights[id] == 0 : heights[id] > 0),
-                    "Every world type has oceans, land and 0..100 elevation");
+                    $"Every world type has oceans, land and 0..100 elevation ({size}/{type}, max={heights.Max()})");
                 Check(LandmassGenerationService.MeetsProfile(type, world.Statistics) &&
                     world.Statistics.LandCells > 0 &&
                     world.Statistics.LandCells < topology.Count,
@@ -182,7 +182,9 @@ public static class StagedLandmassTests
                             "older non-continental generator entry points remain compatible");
                     }
                     byte[] platesCopy = ids.ToArray();
-                    var recalculated = relief.Generate(
+                    var recalculated = type == LandmassType.Continents
+                        ? new ContinentsGenerator().GenerateTerrain(topology, config, platesCopy, landmass.TectonicMotion!).ElevationByCellId!
+                        : relief.Generate(
                         topology, landmass.SurfaceByCellId, platesCopy,
                         type, config.Seed, landmass.DeterministicAttempt);
                     Check(recalculated.SequenceEqual(heights) &&

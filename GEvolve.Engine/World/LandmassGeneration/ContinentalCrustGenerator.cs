@@ -1,325 +1,146 @@
-using GEvolve.Engine.World.LandmassGeneration.Shared;
+﻿using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.Tectonics;
+using GEvolve.State.Game;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
-/// <summary>
-/// Synthetic geological assembly: a continental craton and several attached
-/// terranes per mainland, inherited plate boundaries, accretion and rift
-/// signals. Continental crust may be submerged and may cross plate boundaries.
-/// This is a tectonically guided reconstruction, not a time simulation.
-/// </summary>
-public sealed record ContinentalCrustMap(
-    byte[] CrustByCellId,
-    float[] EmergenceAffinityByCellId,
-    int[] MainContinentCoreCells,
-    byte[] MainContinentCorePlates,
-    byte[] ProvinceByCellId,
-    float[] CollisionByCellId,
-    float[] RiftByCellId);
+public sealed record ContinentalCrustMap(byte[] CrustByCellId, float[] EmergenceAffinityByCellId,
+    int[] MainContinentCoreCells, byte[] MainContinentCorePlates, byte[] ProvinceByCellId,
+    float[] CollisionByCellId, float[] RiftByCellId);
 
+/// <summary>Connected cratons and accreted backbones on the actual plate graph.
+/// No synthetic velocities, per-continent area budgets or ellipse primitives.</summary>
 public sealed class ContinentalCrustGenerator
 {
-    public const string Version = "continental-assembly-1";
-    private const int PlateCount = TectonicPlateGenerator.NumberOfPlates;
+    public const string Version = "continental-assembly-2";
 
-    private readonly record struct Fragment(
-        int Owner, double X, double Y, double Cos, double Sin,
-        double MajorRadius, double MinorRadius, double Strength);
-
-    public ContinentalCrustMap Generate(
-        HexTopology topology, ReadOnlySpan<byte> plateIds, int continentCount, int seed)
+    public ContinentalCrustMap Generate(HexTopology topology, ReadOnlySpan<byte> plateIds,
+        int continentCount, int seed, TectonicMotionState? motion = null)
     {
-        ArgumentNullException.ThrowIfNull(topology);
-        if (continentCount is < 2 or > 6)
-            throw new ArgumentOutOfRangeException(nameof(continentCount));
-        int count = topology.Count, width = topology.Columns, height = topology.Rows;
-        if (plateIds.Length != count)
-            throw new ArgumentException("Stage 01 plate IDs must match the grid.", nameof(plateIds));
+        if (continentCount is < 2 or > 6 || plateIds.Length != topology.Count)
+            throw new ArgumentException("Invalid continental crust inputs.");
         var plates = plateIds.ToArray();
-        int[] platePopulation = new int[PlateCount];
-        var plateBorders = new List<int>[PlateCount];
-        for (int p = 0; p < PlateCount; p++) plateBorders[p] = [];
-        var distanceFromBorder = new int[count];
-        Array.Fill(distanceFromBorder, -1);
-        var borderQueue = new Queue<int>();
-
-        for (int cell = 0; cell < count; cell++)
-        {
-            int plate = plates[cell];
-            if (plate >= PlateCount)
-                throw new ArgumentException("Unknown tectonic plate.", nameof(plateIds));
-            platePopulation[plate]++;
-            foreach (int other in topology.Neighbors(cell))
-                if (plates[other] != plate)
-                {
-                    if (distanceFromBorder[cell] < 0)
-                    {
-                        distanceFromBorder[cell] = 0;
-                        borderQueue.Enqueue(cell);
-                        plateBorders[plate].Add(cell);
-                    }
-                    break;
-                }
-        }
-        if (platePopulation.Any(n => n == 0))
-            throw new ArgumentException("All sixteen plates must be present.", nameof(plateIds));
-
-        while (borderQueue.TryDequeue(out int cell))
-            foreach (int next in topology.Neighbors(cell))
-                if (plates[next] == plates[cell] && distanceFromBorder[next] < 0)
-                {
-                    distanceFromBorder[next] = distanceFromBorder[cell] + 1;
-                    borderQueue.Enqueue(next);
-                }
-
-        // The ancient cratons begin in deep interiors of ACTUAL plates.
-        var plateCores = new int[PlateCount];
-        var coreDepth = new int[PlateCount];
-        Array.Fill(coreDepth, -1);
-        for (int cell = 0; cell < count; cell++)
-        {
-            int p = plates[cell], row = cell / width;
-            int depth = distanceFromBorder[cell] - (row < height / 12 ||
-                row > height * 11 / 12 ? 4 : 0);
-            if (depth <= coreDepth[p]) continue;
-            coreDepth[p] = depth;
-            plateCores[p] = cell;
-        }
-
+        // Compatibility callers reconstruct the SAME official motions, never a private proxy.
+        motion ??= new TectonicMotionGenerator().Generate(topology,
+            new(GEvolve.Definitions.WorldGeneration.Configuration.LandmassProfiles.Create(
+                topology.Grid.Definition.Size, GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.Continents, seed),
+                new byte[topology.Count], 0) { PlateByCellId = plates });
+        int count = topology.Count, width = topology.Columns, rows = topology.Rows;
         var rng = new DeterministicRandom(seed, 0x43524154);
-        var hubs = new int[continentCount];
-        var hubPlates = new byte[continentCount];
-        int first = 0;
-        double ticket = rng.NextDouble() * platePopulation.Sum(n => Math.Sqrt(n));
-        for (int p = 0; p < PlateCount; p++)
+        var plateCores = new int[16];
+        var bestDepth = Enumerable.Repeat(double.NegativeInfinity, 16).ToArray();
+        for (int id = 0; id < count; id++)
         {
-            ticket -= Math.Sqrt(platePopulation[p]);
-            if (ticket <= 0) { first = p; break; }
+            double latitudePenalty = Math.Abs(id / width / (double)rows - .5) * 12;
+            double score = motion.DistanceToBoundaryByCellId[id] - latitudePenalty;
+            if (score > bestDepth[plates[id]]) { bestDepth[plates[id]] = score; plateCores[plates[id]] = id; }
         }
-        hubs[0] = plateCores[first];
-        hubPlates[0] = (byte)first;
-
-        // Farthest tectonic interiors become distinct continental ancestors.
+        var hubs = new int[continentCount]; var hubPlates = new byte[continentCount];
+        hubPlates[0] = (byte)rng.NextInt(16); hubs[0] = plateCores[hubPlates[0]];
         for (int owner = 1; owner < continentCount; owner++)
         {
-            int bestPlate = -1;
-            double bestScore = double.NegativeInfinity;
-            for (int p = 0; p < PlateCount; p++)
+            int best = -1; double separation = -1;
+            for (int p = 0; p < 16; p++)
             {
                 if (hubPlates.AsSpan(0, owner).Contains((byte)p)) continue;
-                int separation = int.MaxValue;
-                for (int prior = 0; prior < owner; prior++)
-                    separation = Math.Min(separation,
-                        topology.Distance(plateCores[p], hubs[prior]));
-                double score = separation + .16 * coreDepth[p] +
-                    .7 * Math.Sqrt(platePopulation[p]);
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestPlate = p;
-                }
+                double candidateSeparation = hubs.Take(owner).Min(hub => topology.Distance(hub, plateCores[p]));
+                if (candidateSeparation > separation) { separation = candidateSeparation; best = p; }
             }
-            if (bestPlate < 0) throw new InvalidOperationException("No continental root plate.");
-            hubs[owner] = plateCores[bestPlate];
-            hubPlates[owner] = (byte)bestPlate;
+            hubPlates[owner] = (byte)best; hubs[owner] = plateCores[best];
         }
+        var roughness = new float[count];
+        for (int id = 0; id < count; id++)
+            roughness[id] = (float)PeriodicNoise.Sample(id % width, id / width, width, rows, 9, seed ^ 0x13A27);
 
-        // Seeded pseudo-velocities let inherited plate contacts act as
-        // convergent sutures or divergent rifts. They are NOT actual motions.
-        var vx = new double[PlateCount];
-        var vy = new double[PlateCount];
-        var motions = new DeterministicRandom(seed, 0x4D4F544E);
-        for (int p = 0; p < PlateCount; p++)
+        // Geological ancestry: multi-source travel cost, not a land quota or a plate-as-continent rule.
+        var distanceFromRoot = Enumerable.Repeat(double.PositiveInfinity, count).ToArray();
+        var province = new byte[count]; var parent = Enumerable.Repeat(-1, count).ToArray();
+        var queue = new PriorityQueue<int, (double Cost, int Id)>();
+        for (byte owner = 0; owner < continentCount; owner++)
         {
-            double angle = motions.NextDouble() * Math.PI * 2;
-            vx[p] = Math.Cos(angle);
-            vy[p] = Math.Sin(angle);
+            int id = hubs[owner]; distanceFromRoot[id] = 0; province[id] = owner; queue.Enqueue(id, (0, id));
         }
-        var collisions = new float[count];
-        var rifts = new float[count];
-        for (int cell = 0; cell < count; cell++)
+        while (queue.TryDequeue(out int id, out var priority))
         {
-            int p = plates[cell], x = cell % width, y = cell / width;
-            foreach (int next in topology.Neighbors(cell))
+            if (priority.Cost != distanceFromRoot[id]) continue;
+            foreach (int next in topology.Neighbors(id))
             {
-                int q = plates[next];
-                if (p == q) continue;
-                double dx = next % width - x;
-                dx -= width * Math.Round(dx / width);
-                double dy = next / width - y;
-                double magnitude = Math.Sqrt(dx * dx + dy * dy);
-                if (magnitude == 0) continue;
-                // Positive relative approach is convergent; negative splits.
-                double approach = ((vx[p] - vx[q]) * dx +
-                    (vy[p] - vy[q]) * dy) / magnitude;
-                if (approach > 0)
-                    collisions[cell] = Math.Max(collisions[cell],
-                        (float)Math.Min(1, approach / 2));
-                else
-                    rifts[cell] = Math.Max(rifts[cell],
-                        (float)Math.Min(1, -approach / 2));
+                double candidate = priority.Cost + Cost(id, next);
+                if (candidate >= distanceFromRoot[next]) continue;
+                distanceFromRoot[next] = candidate; province[next] = province[id]; parent[next] = id;
+                queue.Enqueue(next, (candidate, next));
             }
         }
+        var clearance = Enumerable.Repeat(-1, count).ToArray();
+        var flood = new Queue<int>();
+        for (int id = 0; id < count; id++)
+            foreach (int next in topology.Neighbors(id))
+                if (province[id] != province[next]) { clearance[id] = 0; flood.Enqueue(id); break; }
+        while (flood.TryDequeue(out int id))
+            foreach (int next in topology.Neighbors(id))
+                if (clearance[next] < 0) { clearance[next] = clearance[id] + 1; flood.Enqueue(next); }
 
-        // Diffusion gives each event a finite geological zone, not a 1-hex
-        // artifact exactly on the plate border.
-        for (int pass = 0; pass < 6; pass++)
-        {
-            var nextCollision = new float[count];
-            var nextRift = new float[count];
-            for (int cell = 0; cell < count; cell++)
-            {
-                double c = collisions[cell] * 3.3;
-                double r = rifts[cell] * 3.3;
-                double weight = 3.3;
-                foreach (int nb in topology.Neighbors(cell))
-                {
-                    c += collisions[nb]; r += rifts[nb]; weight++;
-                }
-                nextCollision[cell] = (float)(c / weight);
-                nextRift[cell] = (float)(r / weight);
-            }
-            collisions = nextCollision;
-            rifts = nextRift;
-        }
-
-        // Geological fragments are anisotropic, attached and curved; the shape
-        // is NOT a distance field around a single circular continent seed.
-        var fragments = new List<Fragment>(continentCount * 23);
-        double averageRadius = Math.Sqrt(count * .35 /
-            (continentCount * Math.PI));
+        var skeleton = new bool[count];
         for (int owner = 0; owner < continentCount; owner++)
         {
-            int hub = hubs[owner], rootPlate = hubPlates[owner];
-            double rootX = hub % width, rootY = hub / width;
-            double scale = .85 + .29 * rng.NextDouble();
-            double radius = averageRadius * scale;
-            double rootAngle = rng.NextDouble() * Math.PI * 2;
-
-            Add(owner, rootX, rootY, rootAngle,
-                radius * .90, radius * .52, 1.85);
-
-            // Craton margins acquire terranes along different plate-facing
-            // directions. Some arcs continue onto adjacent plates, like the
-            // composite margins of real continents.
-            int arms = 4 + rng.NextInt(3);
-            for (int arm = 0; arm < arms; arm++)
+            int hub = hubs[owner]; skeleton[hub] = true;
+            double maxReach = Enumerable.Range(0, count).Where(id => province[id] == owner).Max(id => distanceFromRoot[id]) * .62;
+            double heading = motion.Motions[hubPlates[owner]].DirectionDegrees * Math.PI / 180;
+            // Attached terranes target the real plate contacts in several directions.
+            for (int arm = 0; arm < 4; arm++)
             {
-                double heading = rootAngle + 2 * Math.PI * arm / arms +
-                    (rng.NextDouble() - .5) * .8;
-                double endpointX = rootX + Math.Cos(heading) * radius;
-                double endpointY = rootY + Math.Sin(heading) * radius;
-                double nearest = double.PositiveInfinity;
-
-                // Favor existing contact zones with neighboring plates. Only
-                // the real stage-01 plate geometry supplies these contacts.
-                foreach (int cell in plateBorders[rootPlate])
+                double angle = heading + arm * Math.PI / 2;
+                int endpoint = hub; double best = double.NegativeInfinity;
+                for (int id = 0; id < count; id++)
                 {
-                    double bx = cell % width - rootX;
-                    bx -= width * Math.Round(bx / width);
-                    double by = cell / width - rootY;
-                    double headingError = Math.Abs(Math.Atan2(
-                        Math.Sin(Math.Atan2(by, bx) - heading),
-                        Math.Cos(Math.Atan2(by, bx) - heading)));
-                    double cost = headingError * radius * .55 +
-                        .22 * Math.Abs(Math.Sqrt(bx * bx + by * by) - radius);
-                    if (cost >= nearest) continue;
-                    nearest = cost;
-                    endpointX = rootX + bx;
-                    endpointY = rootY + by;
+                    if (province[id] != owner || clearance[id] < 3 || distanceFromRoot[id] > maxReach) continue;
+                    double dx = id % width - hub % width; dx -= width * Math.Round(dx / width);
+                    double dy = (id / width - hub / width) * 1.1547;
+                    double alignment = dx * Math.Cos(angle) + dy * Math.Sin(angle);
+                    double contact = 1 + .025 * motion.CompressionByCellId[id] - .015 * motion.ExtensionByCellId[id];
+                    double score = alignment * contact - .30 * Math.Abs(-dx * Math.Sin(angle) + dy * Math.Cos(angle));
+                    if (score > best) { best = score; endpoint = id; }
                 }
-
-                double extension = .78 + .62 * rng.NextDouble();
-                double dx = endpointX - rootX;
-                double dy = endpointY - rootY;
-                double dist = Math.Sqrt(dx * dx + dy * dy);
-                if (dist < 1) { dx = Math.Cos(heading); dy = Math.Sin(heading); dist = 1; }
-                dx /= dist; dy /= dist;
-                double bend = (rng.NextDouble() - .5) * radius * .7;
-                // Three consecutive attached terranes make a bent geological
-                // backbone, rather than free-floating noise circles.
-                for (int step = 1; step <= 3; step++)
+                for (int id = endpoint; id >= 0; id = parent[id])
                 {
-                    double t = step / 3.0;
-                    double length = radius * extension * t;
-                    double cx = rootX + dx * length +
-                        (-dy) * bend * t * t;
-                    double cy = rootY + dy * length +
-                        dx * bend * t * t;
-                    double tangent = Math.Atan2(dy, dx) + bend / (2 * radius) * t;
-                    double major = radius * (.46 + .12 * rng.NextDouble());
-                    double minor = radius * (.22 + .12 * rng.NextDouble());
-                    Add(owner, cx, cy, tangent, major, minor,
-                        1.47 - .10 * step);
+                    if (clearance[id] >= 2) skeleton[id] = true;
+                    if (id == hub) break;
                 }
             }
         }
-
-        // Evaluate the tectonic assembly from attached cratons and terranes.
-        // Max of fragment profiles preserves the inherited lobes and peninsulas.
+        var distance = Enumerable.Repeat(double.PositiveInfinity, count).ToArray();
+        for (int id = 0; id < count; id++)
+            if (skeleton[id]) { distance[id] = 0; queue.Enqueue(id, (0, id)); }
+        while (queue.TryDequeue(out int id, out var priority))
+        {
+            if (priority.Cost != distance[id]) continue;
+            foreach (int next in topology.Neighbors(id))
+            {
+                if (province[next] != province[id]) continue;
+                double candidate = priority.Cost + Cost(id, next);
+                if (candidate >= distance[next]) continue;
+                distance[next] = candidate; queue.Enqueue(next, (candidate, next));
+            }
+        }
+        double scale = Math.Sqrt(count / (double)continentCount) * .15;
         var affinity = new float[count];
-        var province = new byte[count];
-        for (int cell = 0; cell < count; cell++)
-        {
-            int x = cell % width, y = cell / width;
-            double warpX = PeriodicNoise.Sample(x, y, width, height, 3,
-                seed ^ 0x2A6137) * width * .026;
-            double warpY = PeriodicNoise.Sample(x, y, width, height, 3,
-                seed ^ 0x491B23) * height * .026;
-            double wx = x + warpX, wy = y + warpY;
-            double coast = .20 * PeriodicNoise.Sample(wx, wy,
-                width, height, 7, seed ^ 0x5985A1) +
-                .08 * PeriodicNoise.Sample(wx, wy,
-                    width, height, 17, seed ^ 0x1AF28C);
-            double best = double.NegativeInfinity;
-            int bestOwner = 0;
-            foreach (var fragment in fragments)
-            {
-                double dx = x - fragment.X;
-                dx -= width * Math.Round(dx / width);
-                double dy = y - fragment.Y;
-                double longitudinal = dx * fragment.Cos + dy * fragment.Sin;
-                double transverse = -dx * fragment.Sin + dy * fragment.Cos;
-                double ellipsoid = Math.Sqrt(
-                    Math.Pow(longitudinal / fragment.MajorRadius, 2) +
-                    Math.Pow(transverse / fragment.MinorRadius, 2));
-                double candidate = fragment.Strength - 1.23 * ellipsoid;
-                if (candidate <= best) continue;
-                best = candidate;
-                bestOwner = fragment.Owner;
-            }
-            // Collision uplifts ancient contacts; rifting lowers sea floors.
-            affinity[cell] = (float)(best + coast +
-                .16 * collisions[cell] - .30 * rifts[cell]);
-            province[cell] = (byte)bestOwner;
-        }
+        for (int id = 0; id < count; id++)
+            affinity[id] = clearance[id] < 1 ? -100 :
+                (float)(-distance[id] / scale + .07 * roughness[id] - .012 * motion.ExtensionByCellId[id]);
+        var sorted = affinity.Order().ToArray();
+        float datum = sorted[(int)(.45 * (count - 1))];
+        var crust = affinity.Select(value => value >= datum ? (byte)CrustKind.Continental : (byte)CrustKind.Oceanic).ToArray();
+        for (int i = 0; i < hubs.Length; i++) { crust[hubs[i]] = 1; affinity[hubs[i]] = 1; province[hubs[i]] = (byte)i; }
+        return new(crust, affinity, hubs, hubPlates, province,
+            motion.CompressionByCellId, motion.ExtensionByCellId);
 
-        // Crust is broader than dry land: its outer shelves stay underwater.
-        // The global threshold regulates crustal abundance, NOT a land quota
-        // for any continent. The next layer separately chooses sea level.
-        var sorted = affinity.ToArray();
-        Array.Sort(sorted);
-        float crustDatum = sorted[(int)(.54 * (count - 1))];
-        var crust = new byte[count];
-        for (int cell = 0; cell < count; cell++)
-            crust[cell] = affinity[cell] >= crustDatum ? (byte)1 : (byte)0;
-        for (int owner = 0; owner < continentCount; owner++)
+        double Cost(int from, int to)
         {
-            crust[hubs[owner]] = 1;
-            province[hubs[owner]] = (byte)owner;
-            affinity[hubs[owner]] = Math.Max(affinity[hubs[owner]], 1.8f);
-        }
-
-        return new ContinentalCrustMap(crust, affinity, hubs,
-            hubPlates, province, collisions, rifts);
-
-        void Add(int owner, double x, double y, double angle,
-            double major, double minor, double strength)
-        {
-            fragments.Add(new Fragment(owner, x, y,
-                Math.Cos(angle), Math.Sin(angle),
-                Math.Max(2, major), Math.Max(2, minor), strength));
+            var normal = TectonicMotionGenerator.BoundaryNormal(topology, from, to);
+            var direction = motion.Motions[plates[to]].UnitVector;
+            double alignment = Math.Abs(normal.X * direction.X + normal.Y * direction.Y);
+            return Math.Max(.4, 1.25 - .35 * alignment + .20 * roughness[to] +
+                .015 * motion.ExtensionByCellId[to] - .012 * motion.CompressionByCellId[to]);
         }
     }
 }

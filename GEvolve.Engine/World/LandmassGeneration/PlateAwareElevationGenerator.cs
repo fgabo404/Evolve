@@ -5,7 +5,8 @@ using GEvolve.Engine.World.Tectonics;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 /// <summary>
-/// Stage 02 topography for continents, small continents and archipelagos.
+/// Preserved topography for small continents and archipelagos.
+/// Continents use ContinentalReliefGenerator with the persisted real motion instead.
 /// Consumes an existing land mask and the immutable universal plate IDs.
 /// The type chooses a different balance of continental interior and tectonic relief.
 /// No climate, precipitation or biome classification is performed here.
@@ -20,6 +21,8 @@ public sealed class PlateAwareElevationGenerator
     {
         if (type is LandmassType.Pangaea)
             throw new ArgumentException("Pangaea already provides its own elevation model.", nameof(type));
+        if (type is LandmassType.Continents)
+            throw new ArgumentException("Continents require ContinentalReliefGenerator and persisted plate motion.", nameof(type));
         if (surface.Length != topology.Count || plates.Length != topology.Count ||
             surface.IndexOfAnyExcept((byte)0, (byte)1) >= 0 ||
             plates.ToArray().Any(plate => plate >= TectonicPlateGenerator.NumberOfPlates))
@@ -108,7 +111,6 @@ public sealed class PlateAwareElevationGenerator
         var (interiorWeight, mountainWeight, broadWeight, mediumWeight, fineWeight) =
             type switch
             {
-                LandmassType.Continents => (1.30, 2.8, 1.15, .58, .24),
                 LandmassType.SmallContinents => (.68, 2.6, .94, .75, .34),
                 LandmassType.Archipelagos => (.26, 3.5, .76, .72, .42),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))

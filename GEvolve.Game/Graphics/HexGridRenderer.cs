@@ -211,6 +211,44 @@ public sealed class HexGridRenderer : IDisposable
         }
     }
 
+    public void DrawContinentalGeology(UiRenderer ui, MapCamera2D camera)
+    {
+        if (_landmass.ContinentalGeology is not { } geology || _landmass.TectonicMotion is not { } motion) return;
+        int columns = _grid.Definition.Columns;
+        var range = camera.VisibleRange();
+        foreach (var contact in geology.Contacts)
+        {
+            if (contact.Kind is not (GeologicalContactKind.OceanContinentSubduction or GeologicalContactKind.OceanOceanSubduction)) continue;
+            var edge = motion.Interactions[contact.InteractionIndex];
+            int column = edge.FirstCellId % columns, row = edge.FirstCellId / columns;
+            for (int copy = (int)Math.Floor((range.FirstColumn - column) / (double)columns);
+                column + copy * columns <= range.LastColumn; copy++)
+            {
+                Vector2 center = FlatHexGeometry.Center(new(column + copy * columns, row));
+                Vector2 normal = new((float)edge.Normal.X, (float)edge.Normal.Y);
+                Vector2 tangent = new(-normal.Y, normal.X);
+                Vector2 middle = center + normal * (.8660254f);
+                Vector2 screen = camera.WorldToScreen(middle);
+                if (screen.X < 0 || screen.X > camera.ViewWidth || screen.Y < MapCamera2D.TopBarHeight || screen.Y > camera.ViewHeight) continue;
+                ui.Line(camera.WorldToScreen(middle - tangent * .5f), camera.WorldToScreen(middle + tangent * .5f),
+                    2, new(1, .65f, .22f, 1));
+            }
+        }
+        foreach (var volcano in geology.Volcanoes)
+        {
+            int column = volcano.CellId % columns, row = volcano.CellId / columns;
+            for (int copy = (int)Math.Ceiling((range.FirstColumn - column) / (double)columns);
+                column + copy * columns <= range.LastColumn; copy++)
+            {
+                Vector2 point = camera.WorldToScreen(FlatHexGeometry.Center(new(column + copy * columns, row)));
+                if (point.Y < MapCamera2D.TopBarHeight || point.Y > camera.ViewHeight) continue;
+                Vector2 top = point + new Vector2(0, -5), left = point + new Vector2(-4, 4), right = point + new Vector2(4, 4);
+                foreach (var (width, tint) in new[] { (4f, new Vector4(.08f,.04f,.03f,1)), (1.5f, new Vector4(1,.85f,.32f,1)) })
+                { ui.Line(top, left, width, tint); ui.Line(left, right, width, tint); ui.Line(right, top, width, tint); }
+            }
+        }
+    }
+
     private void UpdateVisible(MapCamera2D camera)
     {
         VisibleHexRange range = camera.VisibleRange();

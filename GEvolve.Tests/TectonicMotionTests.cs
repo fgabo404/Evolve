@@ -112,6 +112,13 @@ public static class TectonicMotionTests
         {
             var parts = line.Split('|');
             var config = LandmassProfiles.Create(Enum.Parse<GridSize>(parts[0]), Enum.Parse<LandmassType>(parts[1]), int.Parse(parts[2]));
+            if (config.Type == LandmassType.Continents)
+            {
+                var rebuilt = service.Generate(config);
+                Check(GEvolve.Engine.World.LandmassGeneration.LandmassGenerationService.MeetsProfile(config.Type, rebuilt.Statistics) &&
+                    rebuilt.Landmass.ContinentalGeology is not null, "Continents intentionally replaced, including the formerly failing Enormous world");
+                continue;
+            }
             if (parts[3] == "ERROR")
             {
                 try { service.Generate(config); throw new Exception("Expected existing generation failure changed"); }

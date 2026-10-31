@@ -27,10 +27,18 @@ public sealed class WorldGenerationService
         var tectonicMotion = new TectonicMotionGenerator().Generate(topology,
             new LandmassState(configuration, new byte[topology.Count], 0) { PlateByCellId = plates });
 
+        if (configuration.Type == LandmassType.Continents)
+        {
+            var continental = new ContinentsGenerator().GenerateTerrain(topology, configuration, plates, tectonicMotion);
+            var statistics = LandmassAnalysis.Analyze(topology, continental.SurfaceByCellId);
+            if (!LandmassGenerationService.MeetsProfile(configuration.Type, statistics))
+                throw new InvalidOperationException("Tectonic Continents failed the unchanged geographic profile.");
+            return new(grid, continental, statistics);
+        }
+
         IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch
         {
             LandmassType.Pangaea => null,
-            LandmassType.Continents => new ContinentsGenerator(),
             LandmassType.SmallContinents => new SmallContinentsGenerator(),
             LandmassType.Archipelagos => new ArchipelagosGenerator(),
             _ => throw new ArgumentOutOfRangeException(nameof(configuration))

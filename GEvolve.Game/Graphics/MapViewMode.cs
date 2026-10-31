@@ -3,12 +3,13 @@ using GEvolve.State.Game;
 
 namespace GEvolve.Game.Graphics;
 
-public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall, Tectonic, Compression, Extension, Shear }
+public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall, Tectonic, Compression, Extension, Shear, Geology }
 
 public static class MapViewColors
 {
     public static Vector3 ForCell(LandmassState terrain, int id, MapViewMode mode) => mode switch
     {
+        MapViewMode.Geology when terrain.ContinentalGeology is not null => ContinentalGeologyPalette.ForCell(terrain, id),
         MapViewMode.Compression when terrain.TectonicMotion is { } motion =>
             TectonicStressPalette.ForValue(motion.CompressionByCellId[id], mode),
         MapViewMode.Extension when terrain.TectonicMotion is { } motion =>

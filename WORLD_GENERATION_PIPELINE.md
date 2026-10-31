@@ -172,3 +172,6 @@ El rango de tierra global sigue siendo aproximadamente 35% como criterio de vali
 ## Movimiento e interacciones: actualización actual
 
 La capa `tectonic-motion-1` se inserta después de las placas `tectonic-plates-2` y antes de las masas terrestres. Orden: **placas → movimientos → interacciones/esfuerzos → tipo de mundo y elevaciones → temperatura → precipitación/humedad → pendientes/biomas**. Las últimas tres etapas siguen desconectadas del pipeline activo. Los generadores terrestres `landmass-12` conservan sus cálculos y no consumen aún los campos nuevos. Véanse fórmulas, persistencia y límites en [TECTONIC_MOTION.md](TECTONIC_MOTION.md). Las secciones anteriores conservan la historia de versiones.
+## Ruta actual de Continentes: `continents-tectonic-1`
+
+La ruta continental se sustituye por **placas originales → movimientos originales → corteza y cratones → ensamblaje y nivel del mar global → contactos/subducción → relieve → volcanes → publicación**. Pangea, Continentes pequeños y Archipiélagos conservan sus algoritmos y huellas; clima y biomas continúan desactivados. Se retiran las velocidades sintéticas de Continentes y su uso de `PlateAwareElevationGenerator`. Véanse detalles, compatibilidad y validación en [CONTINENTAL_GEOLOGY.md](CONTINENTAL_GEOLOGY.md). Las versiones anteriores se conservan arriba como historia del desarrollo.
