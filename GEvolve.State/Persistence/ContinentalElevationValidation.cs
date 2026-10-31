@@ -13,11 +13,33 @@ internal static class ContinentalElevationValidation
         var heights = terrain.ElevationByCellId;
         if (terrain.Configuration.Type != LandmassType.Continents || terrain.ContinentalSurface is null ||
             !terrain.HasSurface || terrain.ContinentalGeology is not null ||
-            relief.Version != "continental-elevation-1" || motion is null || heights is null ||
+            relief.Version is not ("continental-elevation-1" or "continental-elevation-2") ||
+            motion is null || heights is null ||
             relief.Contacts is null || relief.Contacts.Length != motion.Interactions.Length ||
             relief.LandformByCellId is null || relief.LandformByCellId.Length != count ||
             relief.OceanDepthByCellId is null || relief.OceanDepthByCellId.Length != count)
             throw new InvalidDataException("Invalid continental elevation stage.");
+        if (relief.Version == "continental-elevation-2")
+        {
+            if (relief.Systems is null || relief.UpliftByCellId is null ||
+                relief.SubsidenceByCellId is null || relief.UpliftByCellId.Length != count ||
+                relief.SubsidenceByCellId.Length != count)
+                throw new InvalidDataException("Invalid regional tectonic fields.");
+            for (int systemId = 0; systemId < relief.Systems.Length; systemId++)
+            {
+                var system = relief.Systems[systemId];
+                if (system is null || system.Id != systemId ||
+                    system.Kind == GeologicalContactKind.Quiet || !Enum.IsDefined(system.Kind) ||
+                    system.InteractionIndices is null || system.InteractionIndices.Length == 0 ||
+                    system.AxisCellIds is null || system.AxisCellIds.Length == 0 ||
+                    !double.IsFinite(system.Intensity) || system.Intensity < 0 ||
+                    !double.IsFinite(system.WidthHexes) || system.WidthHexes <= 0 ||
+                    system.InteractionIndices.Any(index => index < 0 || index >= relief.Contacts.Length ||
+                        relief.Contacts[index].Kind != system.Kind) ||
+                    system.AxisCellIds.Any(id => id < 0 || id >= count))
+                    throw new InvalidDataException("Invalid regional tectonic system.");
+            }
+        }
         for (int id = 0; id < count; id++)
         {
             if (!Enum.IsDefined((ContinentalReliefKind)relief.LandformByCellId[id]) ||

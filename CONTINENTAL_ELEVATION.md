@@ -1,21 +1,27 @@
-# Continentes: elevación tectónica
+# Continentes: relieve de sistemas tectónicos
 
-`WorldGenerationService` conserva sin modificaciones la superficie aprobada de `PlateGroupSurfaceGenerator`. A continuación, `ContinentalElevationGenerator` clasifica cada interacción original con `ContinentalReliefGenerator.ClassifyContacts`, que reutiliza `GeologicalContactClassifier` y su regla determinista de subducción. No se generan nuevas direcciones, velocidades ni campos tectónicos.
+`PlateGroupSurfaceGenerator` sigue fijando la superficie, corteza y continentes aprobados. La etapa de elevación clasifica las interacciones de las 16 placas con las reglas deterministas de `ContinentalReliefGenerator.ClassifyContacts`. `TectonicReliefSystemAnalyzer` agrupa contactos vecinos **del mismo par de placas y del mismo proceso**; una frontera puede cambiar de proceso a lo largo de su recorrido. Cada sistema recibe un ID estable, sus interacciones, el eje de hexágonos conectado, intensidad media, número de tramos y anchura derivada de esa longitud. Se usa la vecindad real de `HexTopology`, incluida la unión este-oeste.
 
-Las colisiones de corteza continental alimentan el levantamiento de cordilleras; la subducción oceánica–continental actúa en la placa superior. Los contactos oceánicos–oceánicos solo pueden elevar tierra preexistente. La divergencia continental reduce la altura en rifts, la cizalla produce deformación local y la divergencia oceánica reduce la profundidad de las dorsales. `TectonicMotionGenerator.Spread` propaga estas señales con anchura limitada sobre la vecindad hexagonal, incluida la costura horizontal. Una variación periódica pequeña evita cadenas uniformes. El interior estable y la distancia a costa determinan llanuras, colinas y mesetas.
+`ContinentalElevationGenerator` calcula campos regionales a partir de esos ejes, sin propagar impulsos independientes desde cada hexágono fronterizo:
 
-`ElevationByCellId` usa 0 en océano y 1–100 en tierra. `ContinentalElevationState` guarda los contactos clasificados, el tipo de relieve y una profundidad oceánica relativa separada. La regla global de cumbres infranqueables desde 85 permanece en `TerrainRules`. No hay normalización por cuantiles de altura: el máximo cambia con la actividad geológica de la semilla.
+- **Colisión continental:** cinturón elevado a ambos lados del eje y meseta más amplia. Variación suave a lo largo del cinturón añade flancos, ramas menores y bajos intermontanos.
+- **Subducción oceánica–continental:** fosa en la placa inferior oceánica y levantamiento con máximo desplazado hacia el interior de la placa superior terrestre. Se conserva la identidad de la placa superior para ubicar un arco volcánico en una etapa posterior; ahora no se crean volcanes.
+- **Subducción oceánica–oceánica:** fosa en la placa inferior y campo de arco en la placa superior. Solo eleva tierra que ya existía; nunca crea nuevas islas ni mueve la costa.
+- **Divergencia continental:** depresión en el eje y flancos elevados. **Divergencia oceánica:** dorsal de menor profundidad en un campo batimétrico separado.
+- **Transformante:** deformación local acotada, sin un término de gran cordillera.
 
-La interfaz ofrece **SUPERFICIE**, **VER ALTURAS**, placas y los tres esfuerzos. El clasificador geológico y el generador histórico de volcanes siguen conservados, pero la nueva ruta **no genera volcanes**, clima ni biomas y no altera la costa.
+La intensidad usa la velocidad relativa de cada sistema. La anchura usa la longitud conectada, con límites globales iguales para todas las semillas. Una variación periódica pequeña modula únicamente el relieve secundario; no puede formar cordilleras lejos de los sistemas activos. El interior estable conserva llanuras, colinas y mesetas bajas. No hay cuantiles ni ajuste forzado de porcentajes de montaña.
 
-## Validación
+`ElevationByCellId` mantiene tierra 1–100 y océano 0. La profundidad oceánica relativa sigue separada. Las cumbres desde 85 conservan la regla global de terreno infranqueable. `ContinentalElevationState` versión 2 guarda sistemas, contactos, tipos de relieve y campos regionales de levantamiento y subsidencia. Los guardados de la versión 1 y los guardados solo de superficie siguen siendo legibles.
 
-`ApprovedContinentalSurfaceBaseline.txt` se registró **antes** de integrar las alturas. Sus 12 filas SHA-256 cubren superficie, placas, agrupación, corteza e identidad continental en cuatro tamaños y tres semillas. La prueba de elevación verifica alturas y profundidades, asociación de cordilleras con convergencia, rifts junto a extensión, continuidad horizontal, determinismo y persistencia. La suite conserva un fallo previo de `StagedLandmass` en `Small/Pangaea` sin modificar esa prueba ni Pangea.
+## Comprobación
 
-La comparación visual de **SUPERFICIE**, **VER ALTURAS** y **COMPRESIÓN** se exporta con:
+Las 12 huellas de `ApprovedContinentalSurfaceBaseline.txt` se registraron antes de la primera integración de elevaciones. Comparan superficie, placas, agrupación, corteza e identidad continental para cuatro tamaños y tres semillas. Las pruebas nuevas verifican la partición de todos los contactos activos en ejes conectados, determinismo, alturas, continuidad horizontal, persistencia y señales de colisiones, subducción, rifts y dorsales. Las 36 huellas de Pangea, Continentes pequeños y Archipiélagos siguen bajo sus pruebas históricas.
+
+Para exportar comparaciones de **placas y movimiento**, **sistemas clasificados**, **levantamiento/subsidencia** y **altura final** de la misma semilla:
 
 ```powershell
 dotnet run --project GEvolve.Tests --no-build --no-restore -- --continental-elevation-captures
 ```
 
-El modelo es una aproximación estática del movimiento actual. No simula millones de años de evolución geológica. Algunas semillas tienen cordilleras menores porque sus contactos convergentes ocurren principalmente en el océano; no se fuerzan máximos artificiales.
+Este es un modelo estático de la cinemática actual. No integra millones de años de acreción, erosión o enfriamiento. Algunas semillas carecen de cordilleras altas si sus contactos fuertes ocurren principalmente en el océano. La presencia de sistemas oceánicos no implica que haya islas preexistentes cerca de todos ellos. No se activan volcanes, clima ni biomas.

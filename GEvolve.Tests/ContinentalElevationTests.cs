@@ -14,6 +14,10 @@ internal static class ContinentalElevationTests
         var service = new WorldGenerationService();
         int highTotal = 0, collisionTotal = 0, riftTotal = 0, riftLandTotal = 0,
             seamPairs = 0, lowBoundaryTotal = 0;
+        var systemCounts = new int[Enum.GetValues<GeologicalContactKind>().Length];
+        int extendedCollisions = 0, elevatedCollisionAxes = 0, longMountainBelts = 0, coastalArcs = 0,
+            oceanTrenches = 0, islandArcs = 0, riftAxes = 0, ridgeAxes = 0;
+        bool existingIslandArcChecked = false;
         foreach (var size in Enum.GetValues<GridSize>())
         foreach (int seed in new[] { 2026, 42, -731 })
         {
@@ -24,6 +28,59 @@ internal static class ContinentalElevationTests
             var relief = terrain.ContinentalElevation ?? throw new Exception("Missing tectonic relief state");
             var surface = terrain.SurfaceByCellId;
             var motion = terrain.TectonicMotion!;
+            foreach (var system in VerifySystems(topology, terrain))
+            {
+                systemCounts[(int)system.Kind]++;
+                var edges = system.InteractionIndices.Select(index => motion.Interactions[index]).ToArray();
+                if (system.Kind == GeologicalContactKind.ContinentalCollision &&
+                    system.InteractionIndices.Length >= 8 && system.Intensity >= 1)
+                {
+                    extendedCollisions++;
+                    int landAxis = system.AxisCellIds.Count(id => terrain.SurfaceByCellId[id] == 1);
+                    int mountainAxis = system.AxisCellIds.Count(id => terrain.SurfaceByCellId[id] == 1 &&
+                        terrain.ElevationByCellId![id] >= 44);
+                    if (mountainAxis > 0) elevatedCollisionAxes++;
+                    if (landAxis >= 8 && mountainAxis >= landAxis * .35) longMountainBelts++;
+                }
+                if (system.Kind == GeologicalContactKind.OceanContinentSubduction)
+                    foreach (var edge in edges)
+                    {
+                        int upper = edge.FirstPlateId == system.OverridingPlateId
+                            ? edge.FirstCellId : edge.SecondCellId;
+                        int lower = upper == edge.FirstCellId ? edge.SecondCellId : edge.FirstCellId;
+                        if (terrain.SurfaceByCellId[upper] == 1 &&
+                            relief.UpliftByCellId[upper] > 0) coastalArcs++;
+                        if (terrain.SurfaceByCellId[lower] == 0 &&
+                            relief.OceanDepthByCellId[lower] > 58) oceanTrenches++;
+                    }
+                if (system.Kind == GeologicalContactKind.OceanOceanSubduction)
+                    foreach (var edge in edges)
+                    {
+                        int upper = edge.FirstPlateId == system.OverridingPlateId
+                            ? edge.FirstCellId : edge.SecondCellId;
+                        if (terrain.SurfaceByCellId[upper] == 1 &&
+                            relief.UpliftByCellId[upper] > 0) islandArcs++;
+                        if (!existingIslandArcChecked && terrain.SurfaceByCellId[upper] == 0)
+                        {
+                            int lower = upper == edge.FirstCellId ? edge.SecondCellId : edge.FirstCellId;
+                            var hypotheticalSurface = terrain.SurfaceByCellId.ToArray();
+                            hypotheticalSurface[upper] = 1;
+                            var hypothetical = new ContinentalElevationGenerator().Generate(topology,
+                                terrain with { SurfaceByCellId = hypotheticalSurface });
+                            Check(hypothetical.ElevationByCellId![upper] > 0 &&
+                                hypothetical.ContinentalElevation!.UpliftByCellId[upper] > 0 &&
+                                hypothetical.ElevationByCellId[lower] == 0,
+                                "Ocean-ocean upper plate can raise existing islands without creating land");
+                            existingIslandArcChecked = true;
+                        }
+                    }
+                if (system.Kind == GeologicalContactKind.ContinentalRift &&
+                    system.AxisCellIds.Any(id => terrain.SurfaceByCellId[id] == 1 &&
+                        relief.SubsidenceByCellId[id] > 0)) riftAxes++;
+                if (system.Kind == GeologicalContactKind.OceanRidge &&
+                    system.AxisCellIds.Any(id => terrain.SurfaceByCellId[id] == 0 &&
+                        relief.OceanDepthByCellId[id] < 56)) ridgeAxes++;
+            }
             int land = world.Statistics!.LandCells, high = 0, mountain = 0;
             for (int id = 0; id < topology.Count; id++)
             {
@@ -124,7 +181,7 @@ internal static class ContinentalElevationTests
             if (export && (size, seed) is (GridSize.Small, 2026) or (GridSize.Medium, 42) or
                 (GridSize.Large, 2026) or (GridSize.Large, -731))
             {
-                string name = $"continental-elevation-{size.ToString().ToLowerInvariant()}-{seed}";
+                string name = $"continental-orogeny-{size.ToString().ToLowerInvariant()}-{seed}";
                 ContinentalElevationDiagnostics.Export(name + ".svg", world);
                 ContinentalElevationDiagnostics.ExportBitmap(name + ".bmp", world);
                 Console.WriteLine($"CAPTURE: {name}.svg");
@@ -136,7 +193,58 @@ internal static class ContinentalElevationTests
         Check(collisionTotal > 0 && riftTotal > 0 && riftLandTotal > 0 && seamPairs > 0 &&
             lowBoundaryTotal > 0,
             "Convergence and extension contribute without making every land boundary mountainous");
+        Console.WriteLine("TECTONIC SYSTEMS: " + string.Join(", ",
+            Enum.GetValues<GeologicalContactKind>().Select(kind => $"{kind}={systemCounts[(int)kind]}")));
+        Console.WriteLine($"PROCESS EVIDENCE: extended collisions {elevatedCollisionAxes}/{extendedCollisions}, long mountain belts {longMountainBelts}, " +
+            $"coastal arc cells {coastalArcs}, trench cells {oceanTrenches}, island arc cells {islandArcs}, " +
+            $"rift axes {riftAxes}, ridge axes {ridgeAxes}");
+        Check(extendedCollisions > 0 && elevatedCollisionAxes > 0 && longMountainBelts > 0 && coastalArcs > 0 &&
+            oceanTrenches > 0 && existingIslandArcChecked && riftAxes > 0 && ridgeAxes > 0,
+            "Connected collisions, subduction, rifts and ocean ridges must leave geological evidence");
         Console.WriteLine($"PASS: continental tectonic relief; {highTotal} impassable summits across 12 worlds");
+    }
+
+    private static TectonicReliefSystem[] VerifySystems(HexTopology topology, LandmassState terrain)
+    {
+        var relief = terrain.ContinentalElevation!;
+        var motion = terrain.TectonicMotion!;
+        var systems = relief.Systems;
+        Check(relief.Version == ContinentalElevationGenerator.Version &&
+            relief.UpliftByCellId.Length == topology.Count &&
+            relief.SubsidenceByCellId.Length == topology.Count,
+            "Regional tectonic fields are present");
+        int[] assigned = new int[relief.Contacts.Length];
+        for (int systemId = 0; systemId < systems.Length; systemId++)
+        {
+            var system = systems[systemId];
+            Check(system.Id == systemId && system.InteractionIndices.Length > 0 &&
+                system.AxisCellIds.Length > 0 && system.WidthHexes is >= 3 and <= 13,
+                "Stable nonempty tectonic system");
+            var axis = system.AxisCellIds.ToHashSet();
+            foreach (int index in system.InteractionIndices)
+            {
+                assigned[index]++;
+                var contact = relief.Contacts[index];
+                var edge = motion.Interactions[index];
+                Check(contact.Kind == system.Kind &&
+                    Math.Min(edge.FirstPlateId, edge.SecondPlateId) == system.FirstPlateId &&
+                    Math.Max(edge.FirstPlateId, edge.SecondPlateId) == system.SecondPlateId &&
+                    contact.OverridingPlateId == system.OverridingPlateId &&
+                    axis.Contains(edge.FirstCellId) && axis.Contains(edge.SecondCellId),
+                    "System contains only its classified contiguous plate margin");
+            }
+            var visited = new HashSet<int> { system.AxisCellIds[0] };
+            var queue = new Queue<int>();
+            queue.Enqueue(system.AxisCellIds[0]);
+            while (queue.Count > 0)
+                foreach (int neighbor in topology.Neighbors(queue.Dequeue()))
+                    if (axis.Contains(neighbor) && visited.Add(neighbor)) queue.Enqueue(neighbor);
+            Check(visited.Count == axis.Count, "Tectonic axis must be connected on the real hex topology");
+        }
+        for (int index = 0; index < assigned.Length; index++)
+            Check(assigned[index] == (relief.Contacts[index].Kind == GeologicalContactKind.Quiet ? 0 : 1),
+                "Each active contact belongs to exactly one tectonic system");
+        return systems;
     }
 
     private static int[] DistanceFromContacts(HexTopology topology, TectonicMotionState motion,
@@ -186,6 +294,18 @@ internal static class ContinentalElevationTests
             GameSaveStore.Save(path, state);
             Check(GameSaveStore.Load(path).Landmass!.ContinentalSurface is not null,
                 "Surface-only continental saves remain compatible");
+            // Previous elevation-stage saves used the local contact model and had no systems.
+            state.Landmass = world.Landmass with
+            {
+                ContinentalElevation = world.Landmass.ContinentalElevation! with
+                {
+                    Version = "continental-elevation-1", Systems = [],
+                    UpliftByCellId = [], SubsidenceByCellId = []
+                }
+            };
+            GameSaveStore.Save(path, state);
+            Check(GameSaveStore.Load(path).Landmass!.ContinentalElevation!.Version ==
+                "continental-elevation-1", "Previous elevation-stage saves remain readable");
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }

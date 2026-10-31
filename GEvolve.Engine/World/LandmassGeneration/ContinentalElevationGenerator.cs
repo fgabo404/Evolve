@@ -1,14 +1,13 @@
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
-using GEvolve.Engine.World.Tectonics;
 using GEvolve.State.Game;
 
 namespace GEvolve.Engine.World.LandmassGeneration;
 
-/// <summary>Static tectonic relief over the already approved continental surface.</summary>
+/// <summary>Regional tectonic systems over the unchanged approved continental surface.</summary>
 public sealed class ContinentalElevationGenerator
 {
-    public const string Version = "continental-elevation-1";
+    public const string Version = "continental-elevation-2";
 
     public LandmassState Generate(HexTopology topology, LandmassState terrain)
     {
@@ -22,64 +21,82 @@ public sealed class ContinentalElevationGenerator
         var ages = Enumerable.Range(0, 16).Select(_ => (ushort)(20 + ageRandom.NextInt(161))).ToArray();
         GeologicalContact[] contacts = ContinentalReliefGenerator.ClassifyContacts(
             motion, surface.CrustByCellId, ages);
+        TectonicReliefSystem[] systems = TectonicReliefSystemAnalyzer.Analyze(topology, motion, contacts);
 
         var collision = new float[count];
-        var coastalSubduction = new float[count];
+        var collisionPlateau = new float[count];
+        var coastalArc = new float[count];
         var islandArc = new float[count];
         var rift = new float[count];
+        var riftFlank = new float[count];
         var fault = new float[count];
         var ridge = new float[count];
         var trench = new float[count];
-        foreach (var contact in contacts)
+        var seen = new int[count];
+        var distances = new ushort[count];
+        var queue = new int[count];
+        int stamp = 0;
+
+        foreach (var system in systems)
         {
-            var edge = motion.Interactions[contact.InteractionIndex];
-            int a = edge.FirstCellId, b = edge.SecondCellId;
-            switch (contact.Kind)
+            double strength = Math.Sqrt(Math.Clamp(system.Intensity /
+                ContinentalGeologySettings.ReferenceSpeedCmPerYear, 0, 1));
+            if (strength <= 0) continue;
+            switch (system.Kind)
             {
                 case GeologicalContactKind.ContinentalCollision:
-                    Seed(collision, a, edge.Convergence);
-                    Seed(collision, b, edge.Convergence);
+                    SpreadSystem(system, false, (id, distance) =>
+                    {
+                        double fold = Bell(distance, system.WidthHexes * .52);
+                        collision[id] = Math.Max(collision[id], (float)(strength * fold));
+                        collisionPlateau[id] = Math.Max(collisionPlateau[id],
+                            (float)(strength * Bell(distance, system.WidthHexes * 1.3)));
+                    });
                     break;
                 case GeologicalContactKind.OceanContinentSubduction:
+                    SpreadSystem(system, false, (id, distance) =>
+                        coastalArc[id] = Math.Max(coastalArc[id],
+                            (float)(strength * Bell(distance - 2, system.WidthHexes * .53))));
+                    SpreadSystem(system, true, (id, distance) =>
+                        trench[id] = Math.Max(trench[id],
+                            (float)(strength * Bell(distance, system.WidthHexes * .42))));
+                    break;
                 case GeologicalContactKind.OceanOceanSubduction:
-                    int upper = edge.FirstPlateId == contact.OverridingPlateId ? a : b;
-                    int lower = upper == a ? b : a;
-                    Seed(trench, lower, edge.Convergence);
-                    // Elevation belongs to the overriding plate; oceanic arcs only
-                    // affect a cell if that plate already has land from the surface stage.
-                    if (surface.CrustByCellId[upper] == (byte)CrustKind.Continental ||
-                        terrain.SurfaceByCellId[upper] == 1)
-                        Seed(contact.Kind == GeologicalContactKind.OceanContinentSubduction
-                            ? coastalSubduction : islandArc, upper, edge.Convergence);
+                    SpreadSystem(system, false, (id, distance) =>
+                        islandArc[id] = Math.Max(islandArc[id],
+                            (float)(strength * Bell(distance - 2, system.WidthHexes * .48))));
+                    SpreadSystem(system, true, (id, distance) =>
+                        trench[id] = Math.Max(trench[id],
+                            (float)(strength * Bell(distance, system.WidthHexes * .42))));
                     break;
                 case GeologicalContactKind.ContinentalRift:
-                    if (surface.CrustByCellId[a] == (byte)CrustKind.Continental)
-                        Seed(rift, a, edge.Divergence);
-                    if (surface.CrustByCellId[b] == (byte)CrustKind.Continental)
-                        Seed(rift, b, edge.Divergence);
+                    SpreadSystem(system, false, (id, distance) =>
+                    {
+                        rift[id] = Math.Max(rift[id], (float)(strength * Bell(distance,
+                            system.WidthHexes * .36)));
+                        riftFlank[id] = Math.Max(riftFlank[id], (float)(strength *
+                            Bell(distance - system.WidthHexes * .65, system.WidthHexes * .30)));
+                    });
                     break;
                 case GeologicalContactKind.OceanRidge:
-                    Seed(ridge, a, edge.Divergence);
-                    Seed(ridge, b, edge.Divergence);
+                    SpreadSystem(system, false, (id, distance) =>
+                        ridge[id] = Math.Max(ridge[id], (float)(strength *
+                            Bell(distance, system.WidthHexes * .55))));
                     break;
                 case GeologicalContactKind.Transform:
-                    Seed(fault, a, edge.Shear);
-                    Seed(fault, b, edge.Shear);
+                    SpreadSystem(system, false, (id, distance) =>
+                        fault[id] = Math.Max(fault[id], (float)(strength *
+                            Bell(distance, system.WidthHexes * .30))));
                     break;
             }
         }
 
-        double radius = motion.InfluenceRadiusHexes;
-        var uplift = TectonicMotionGenerator.Spread(topology, collision, coastalSubduction,
-            islandArc, radius * 1.35);
-        var deformation = TectonicMotionGenerator.Spread(topology, rift, fault, ridge,
-            Math.Max(1, radius * .65));
-        var oceanTrench = TectonicMotionGenerator.Spread(topology, trench,
-            new float[count], new float[count], Math.Max(1, radius * .7));
         byte[] coastDistance = DistanceToCoast(topology, terrain.SurfaceByCellId);
         var height = new byte[count];
         var depth = new byte[count];
         var landform = new byte[count];
+        var uplift = new byte[count];
+        var subsidence = new byte[count];
         for (int id = 0; id < count; id++)
         {
             int x = id % topology.Columns, y = id / topology.Columns;
@@ -87,38 +104,110 @@ public sealed class ContinentalElevationGenerator
                 terrain.Configuration.Seed ^ 0x704A53);
             double fine = PeriodicNoise.Sample(x, y, topology.Columns, topology.Rows, 23,
                 terrain.Configuration.Seed ^ 0x32521B);
+            // Small along-belt corrugation creates branches and intermontane lows;
+            // it cannot produce a range where there is no classified tectonic system.
+            double corrugation = Math.Clamp(1 + .18 * broad + .10 * fine, .7, 1.3);
+            double regionalUplift = 72 * collision[id] * corrugation +
+                16 * collisionPlateau[id] + 7 * collisionPlateau[id] * Math.Max(0, fine) +
+                54 * coastalArc[id] * corrugation + 44 * islandArc[id] * corrugation +
+                8 * riftFlank[id];
+            double regionalDown = 24 * rift[id] + 9 * fault[id] +
+                4 * collision[id] * Math.Max(0, -fine);
+            uplift[id] = (byte)Math.Clamp((int)Math.Round(regionalUplift), 0, 100);
+            subsidence[id] = (byte)Math.Clamp((int)Math.Round(regionalDown), 0, 100);
             if (terrain.SurfaceByCellId[id] == 0)
             {
                 depth[id] = (byte)Math.Clamp((int)Math.Round(58 + 3 * broad +
-                    24 * Response(oceanTrench.Compression[id]) -
-                    21 * Response(deformation.Shear[id])), 1, 100);
+                    25 * trench[id] - 23 * ridge[id]), 1, 100);
                 continue;
             }
 
-            double continentInterior = 11 * (1 - Math.Exp(-coastDistance[id] / 7.0));
-            double stablePlateau = Math.Min(4,
-                Math.Max(0, motion.DistanceToBoundaryByCellId[id] - 3) * .12);
-            double fold = Response(uplift.Compression[id]);
-            double coastalArc = Response(uplift.Extension[id]);
-            double island = Response(uplift.Shear[id]);
-            double extension = Response(deformation.Compression[id]);
-            double shear = Response(deformation.Extension[id]);
-            double level = 8 + continentInterior + stablePlateau + 3.5 * broad + 1.4 * fine +
-                72 * fold + 49 * coastalArc + 43 * island - 22 * extension - 10 * shear;
+            double interior = 11 * (1 - Math.Exp(-coastDistance[id] / 7.0));
+            double stable = Math.Min(4, Math.Max(0,
+                motion.DistanceToBoundaryByCellId[id] - 3) * .12);
+            double level = 8 + interior + stable + 3.5 * broad + 1.4 * fine +
+                regionalUplift - regionalDown;
             height[id] = (byte)Math.Clamp((int)Math.Round(level), 1, 100);
-            landform[id] = (byte)(height[id] >= 75 && fold >= .45 ? ContinentalReliefKind.HighRange :
-                height[id] >= 44 && (fold >= .22 || coastalArc >= .25 || island >= .25)
-                    ? ContinentalReliefKind.Mountain :
-                extension >= .25 ? ContinentalReliefKind.Rift :
-                shear >= .30 ? ContinentalReliefKind.Fault :
-                height[id] >= 30 ? ContinentalReliefKind.Plateau :
+            landform[id] = (byte)(height[id] >= 75 && collision[id] >= .45
+                ? ContinentalReliefKind.HighRange :
+                height[id] >= 44 && (collision[id] >= .20 || coastalArc[id] >= .24 ||
+                    islandArc[id] >= .24) ? ContinentalReliefKind.Mountain :
+                rift[id] >= .25 ? ContinentalReliefKind.Rift :
+                fault[id] >= .30 ? ContinentalReliefKind.Fault :
+                height[id] >= 30 || collisionPlateau[id] >= .30 ? ContinentalReliefKind.Plateau :
                 height[id] >= 18 ? ContinentalReliefKind.Hills :
                 coastDistance[id] <= 3 ? ContinentalReliefKind.CoastalPlain :
                 ContinentalReliefKind.InlandPlain);
         }
-        return terrain with { ElevationByCellId = height,
-            ContinentalElevation = new ContinentalElevationState(Version, contacts, landform, depth) };
+        return terrain with
+        {
+            ElevationByCellId = height,
+            ContinentalElevation = new ContinentalElevationState(Version, contacts, landform, depth)
+            {
+                Systems = systems, UpliftByCellId = uplift, SubsidenceByCellId = subsidence
+            }
+        };
+
+        void SpreadSystem(TectonicReliefSystem system, bool trenchSide, Action<int, double> apply)
+        {
+            ++stamp;
+            int head = 0, tail = 0;
+            foreach (int index in system.InteractionIndices)
+            {
+                var edge = motion.Interactions[index];
+                int first = edge.FirstCellId, second = edge.SecondCellId;
+                if (system.Kind is GeologicalContactKind.OceanContinentSubduction or
+                    GeologicalContactKind.OceanOceanSubduction)
+                {
+                    int upper = edge.FirstPlateId == system.OverridingPlateId ? first : second;
+                    Start(trenchSide ? (upper == first ? second : first) : upper);
+                }
+                else { Start(first); Start(second); }
+            }
+            int limit = (int)Math.Ceiling(system.WidthHexes * 1.7);
+            while (head < tail)
+            {
+                int id = queue[head++], distance = distances[id];
+                apply(id, distance);
+                if (distance >= limit) continue;
+                foreach (int next in topology.Neighbors(id))
+                    if (seen[next] != stamp && Eligible(next))
+                    {
+                        seen[next] = stamp;
+                        distances[next] = (ushort)(distance + 1);
+                        queue[tail++] = next;
+                    }
+            }
+            void Start(int id)
+            {
+                if (seen[id] == stamp || !Eligible(id)) return;
+                seen[id] = stamp;
+                distances[id] = 0;
+                queue[tail++] = id;
+            }
+            bool Eligible(int id) => system.Kind switch
+            {
+                GeologicalContactKind.ContinentalCollision or GeologicalContactKind.ContinentalRift =>
+                    terrain.SurfaceByCellId[id] == 1 &&
+                    surface.CrustByCellId[id] == (byte)CrustKind.Continental,
+                GeologicalContactKind.OceanContinentSubduction => trenchSide
+                    ? terrain.SurfaceByCellId[id] == 0 &&
+                        plates[id] == (system.FirstPlateId == system.OverridingPlateId
+                            ? system.SecondPlateId : system.FirstPlateId)
+                    : terrain.SurfaceByCellId[id] == 1 && plates[id] == system.OverridingPlateId,
+                GeologicalContactKind.OceanOceanSubduction => trenchSide
+                    ? terrain.SurfaceByCellId[id] == 0 &&
+                        plates[id] == (system.FirstPlateId == system.OverridingPlateId
+                            ? system.SecondPlateId : system.FirstPlateId)
+                    : plates[id] == system.OverridingPlateId,
+                GeologicalContactKind.OceanRidge => terrain.SurfaceByCellId[id] == 0,
+                _ => true
+            };
+        }
     }
+
+    private static double Bell(double distance, double width)
+        => Math.Exp(-.5 * distance * distance / (width * width));
 
     private static byte[] DistanceToCoast(HexTopology topology, byte[] surface)
     {
@@ -147,9 +236,4 @@ public sealed class ContinentalElevationGenerator
         }
         return distance;
     }
-
-    private static double Response(float value) => Math.Sqrt(Math.Clamp(
-        value / ContinentalGeologySettings.ReferenceSpeedCmPerYear, 0, 1));
-    private static void Seed(float[] field, int id, double value)
-        => field[id] = Math.Max(field[id], (float)value);
 }
