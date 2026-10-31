@@ -3,12 +3,18 @@ using GEvolve.State.Game;
 
 namespace GEvolve.Game.Graphics;
 
-public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall, Tectonic, Compression, Extension, Shear }
+public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall, Tectonic, Compression, Extension, Shear, Geology }
 
 public static class MapViewColors
 {
-    public static Vector3 ForCell(LandmassState terrain, int id, MapViewMode mode) => mode switch
+    public static Vector3 ForCell(LandmassState terrain, int id, MapViewMode mode)
     {
+        if (!terrain.HasSurface && mode is not (MapViewMode.Tectonic or MapViewMode.Compression or
+            MapViewMode.Extension or MapViewMode.Shear))
+            throw new InvalidOperationException("This map layer requires a generated surface.");
+        return mode switch
+    {
+        MapViewMode.Geology when terrain.ContinentalGeology is not null => ContinentalGeologyPalette.ForCell(terrain, id),
         MapViewMode.Compression when terrain.TectonicMotion is { } motion =>
             TectonicStressPalette.ForValue(motion.CompressionByCellId[id], mode),
         MapViewMode.Extension when terrain.TectonicMotion is { } motion =>
@@ -24,5 +30,6 @@ public static class MapViewColors
         MapViewMode.Elevation when !terrain.IsImpassableSummit(id) &&
             terrain.ElevationByCellId is { } heights => new Vector3(heights[id] / 100f),
         _ => BiomePalette.ForCell(terrain, id)
-    };
+        };
+    }
 }

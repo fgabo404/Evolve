@@ -73,7 +73,7 @@ public static class BiomeTests
         int worlds = 0, assigned = 0, gaps = 0;
         foreach (var size in Enum.GetValues<GridSize>())
         foreach (int seed in new[] { 2026, 42, -731 })
-        foreach (var type in Enum.GetValues<LandmassType>())
+        foreach (var type in new[] { LandmassType.Pangaea, LandmassType.SmallContinents, LandmassType.Archipelagos })
         {
             var generated = new LandmassGenerationService().Generate(
                 LandmassProfiles.Create(size, type, seed));

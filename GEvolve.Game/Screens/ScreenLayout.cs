@@ -9,7 +9,7 @@ public enum UiAction
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
-    StressCompression, StressExtension, StressShear
+    StressCompression, StressExtension, StressShear, ToggleGeology
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -73,19 +73,24 @@ public static class ScreenLayout
             return [new(UiAction.Back, "Volver", new(menuX,
                 MathF.Max(260, height * .55f), menuWidth, menuHeight))];
         if (screen == GameScreen.World)
+        {
+            float Y(int index, float normal) => height < 650 ? 132 + index * 20 : normal;
+            float controlHeight = height < 650 ? 18 : 36;
             return [
-                new(UiAction.SizeSelect, "Tamaño", new(12, 146, 261, 36)),
-                new(UiAction.TypeSelect, "Tipo de mundo", new(12, 192, 261, 36)),
-                new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, 248, 261, 36)),
-                new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, 290, 261, 36)),
-                new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, 332, 261, 36)),
-                new(UiAction.StressCompression, "ESFUERZO: COMPRESIÓN", new(12, 374, 261, 32)),
-                new(UiAction.StressExtension, "ESFUERZO: EXTENSIÓN", new(12, 412, 261, 32)),
-                new(UiAction.StressShear, "ESFUERZO: CIZALLA", new(12, 448, 261, 30)),
+                new(UiAction.SizeSelect, "Tamaño", new(12, Y(0,146), 261, controlHeight)),
+                new(UiAction.TypeSelect, "Tipo de mundo", new(12, Y(1,192), 261, controlHeight)),
+                new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, Y(2,248), 261, controlHeight)),
+                new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, Y(3,290), 261, controlHeight)),
+                new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, Y(4,332), 261, controlHeight)),
+                new(UiAction.StressCompression, "ESFUERZO: COMPRESIÓN", new(12, Y(5,374), 261, controlHeight)),
+                new(UiAction.StressExtension, "ESFUERZO: EXTENSIÓN", new(12, Y(6,416), 261, controlHeight)),
+                new(UiAction.StressShear, "ESFUERZO: CIZALLA", new(12, Y(7,458), 261, controlHeight)),
+                new(UiAction.ToggleGeology, "RELIEVE: GEOLOGÍA", new(12, Y(8,500), 261, controlHeight)),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",
                 new(MathF.Max(8, width - 190), 11, MathF.Min(180, width - 16), 36))];
+        }
         return [];
     }
 

@@ -112,6 +112,15 @@ public static class TectonicMotionTests
         {
             var parts = line.Split('|');
             var config = LandmassProfiles.Create(Enum.Parse<GridSize>(parts[0]), Enum.Parse<LandmassType>(parts[1]), int.Parse(parts[2]));
+            if (config.Type == LandmassType.Continents)
+            {
+                var rebuilt = service.Generate(config);
+                Check(rebuilt.Statistics is null && rebuilt.Landmass.SurfaceGenerationPending &&
+                    rebuilt.Landmass.SurfaceByCellId.Length == 0 &&
+                    rebuilt.Landmass.PlateByCellId is not null && rebuilt.Landmass.TectonicMotion is not null,
+                    "Continents retain official tectonics while surface is pending");
+                continue;
+            }
             if (parts[3] == "ERROR")
             {
                 try { service.Generate(config); throw new Exception("Expected existing generation failure changed"); }

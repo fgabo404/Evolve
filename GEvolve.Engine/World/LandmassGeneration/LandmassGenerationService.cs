@@ -8,13 +8,13 @@ using GEvolve.Engine.World.Climate;
 namespace GEvolve.Engine.World.LandmassGeneration;
 
 public sealed record GeneratedWorld(HexGrid Grid, LandmassState Landmass,
-    LandmassStatistics Statistics);
+    LandmassStatistics? Statistics);
 
 /// <summary>Elige una estrategia propia y valida el resultado con intentos acotados.</summary>
 public sealed class LandmassGenerationService
 {
     public IReadOnlyList<ILandmassGenerator> Generators { get; } =
-        [new ContinentsGenerator(), new PangaeaGenerator(),
+        [new PangaeaGenerator(),
          new SmallContinentsGenerator(), new ArchipelagosGenerator()];
 
     public GeneratedWorld Generate(LandmassConfiguration configuration)
@@ -24,6 +24,8 @@ public sealed class LandmassGenerationService
             configuration.Type, configuration.Seed))
             throw new ArgumentException("Configuration is not an official v0.001 profile.",
                 nameof(configuration));
+        if (configuration.Type == LandmassType.Continents)
+            return new GEvolve.Engine.World.WorldGenerationService().Generate(configuration);
         var grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
         var topology = new HexTopology(grid);
         ILandmassGenerator generator = Generators.Single(item => item.Type == configuration.Type);
@@ -61,8 +63,6 @@ public sealed class LandmassGenerationService
     public static bool MeetsProfile(LandmassType type, LandmassStatistics result)
         => type switch
         {
-            LandmassType.Continents => result.LandFraction is >= .27 and <= .43 &&
-                result.LargeComponents >= 2 && result.DominantLandShare < .75,
             LandmassType.Pangaea => result.LandFraction is >= .30 and <= .55 &&
                 result.ComponentCount == 1 && result.DominantLandShare == 1,
             LandmassType.SmallContinents => result.LandFraction is >= .23 and <= .38 &&

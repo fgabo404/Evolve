@@ -1,5 +1,7 @@
 # Evolve — Arquitectura de v0.001
 
+> **Estado actual de Continentes:** la generación de tierra y océano está retirada. Engine conserva las 16 placas, sus direcciones y velocidades y los campos tectónicos, y devuelve estadísticas de superficie nulas. State registra `SurfaceGenerationPending` con `SurfaceByCellId` vacío. Game muestra únicamente placas y esfuerzos. El generador de relieve, la clasificación geológica y la persistencia antigua siguen disponibles para cuando exista una nueva superficie. La descripción histórica de `ContinentsGenerator` más abajo ya no representa código activo. Véase [CONTINENTS_PENDING.md](CONTINENTS_PENDING.md).
+
 La base v0.001 implementa las capas 01 (grid) y 02 (tierra y océano). La revisión actual añade las elevaciones tectónicas 0–100 de Pangea y una clasificación inicial de biomas posterior al terreno. Clima, recursos, civilizaciones y vista 3D siguen pendientes. La clasificación y sus limitaciones se documentan en [BIOMES.md](BIOMES.md).
 
 ```text
@@ -10,13 +12,13 @@ GEvolve.Definitions ──→ GEvolve.Engine ──→ GEvolve.State
 GEvolve.Tests verifica los módulos anteriores.
 ```
 
-Las flechas representan dependencias de compilación. `Definitions` contiene los tamaños, tipos y perfiles oficiales; `Engine` ejecuta la geometría y los cuatro algoritmos; `State` conserva la configuración efectiva y el resultado; `Game` presenta los controles y dibuja el mundo con OpenTK/OpenGL. No hay referencias circulares. El antiguo Simulator web y el prototipo 3D no forman parte de esta solución.
+Las flechas representan dependencias de compilación. `Definitions` contiene los tamaños, tipos y perfiles oficiales; `Engine` ejecuta la geometría, la tectónica y los tres algoritmos de superficie terminados; `State` conserva la configuración efectiva y el resultado; `Game` presenta los controles y dibuja el mundo con OpenTK/OpenGL. No hay referencias circulares. El antiguo Simulator web y el prototipo 3D no forman parte de esta solución.
 
 ## Generación
 
 `GameSession` comienza en el menú sin mundo. **Crear mundo** permite elegir Pequeño (100 × 70), Mediano (150 × 100) o Grande (250 × 200), uno de los cuatro tipos y una semilla entera editable o aleatoria. Los valores iniciales son Pequeño y Continentes. Al generar, `Engine` construye el grid flat-top `odd-q` con ID `fila × columnas + columna` y cierre horizontal este–oeste. Luego `LandmassGenerationService` selecciona el generador específico, aplica un máximo de cuatro intentos deterministas y analiza el resultado. La generación se ejecuta fuera del hilo gráfico; la creación de buffers OpenGL ocurre en él.
 
-- `ContinentsGenerator`: núcleos separados y crecimiento territorial irregular de varios frentes.
+- **Continentes:** la superficie está pendiente; se generan solamente placas y movimiento.
 - `PangaeaGenerator`: placas tectónicas, expansión conectada y elevaciones 0–100; la etapa posterior de biomas conserva estos resultados.
 - `SmallContinentsGenerator`: núcleos de alcance limitado y corredores oceánicos entre regiones.
 - `ArchipelagosGenerator`: trayectorias curvas que colocan grupos y cadenas de islas de distintos tamaños.

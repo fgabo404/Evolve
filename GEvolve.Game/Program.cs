@@ -48,6 +48,9 @@ internal sealed class EvolveWindow : GameWindow
         (GridSize.Small, LandmassType.Continents, 2026),
         (GridSize.Medium, LandmassType.Continents, 2026),
         (GridSize.Large, LandmassType.Continents, 2026),
+        (GridSize.Enormous, LandmassType.Continents, 2026),
+        (GridSize.Small, LandmassType.Continents, 42),
+        (GridSize.Medium, LandmassType.Continents, -731),
         (GridSize.Large, LandmassType.Pangaea, 2026),
         (GridSize.Small, LandmassType.Pangaea, 42),
         (GridSize.Medium, LandmassType.Pangaea, -731),
@@ -106,8 +109,9 @@ internal sealed class EvolveWindow : GameWindow
                             $"{result.Landmass.Configuration.Type}: " +
                             $"{Stopwatch.GetElapsedTime(_generationStarted).TotalMilliseconds:F1} ms total, " +
                             $"{_rendererPreparationMilliseconds:F1} ms GPU preparation, " +
-                            $"{result.Statistics.LandFraction:P1} land, " +
-                            $"{result.Statistics.ComponentCount} components");
+                            (result.Statistics is { } stats
+                                ? $"{stats.LandFraction:P1} land, {stats.ComponentCount} components"
+                                : "surface pending"));
                 }
                 catch (Exception error)
                 {
@@ -164,7 +168,8 @@ internal sealed class EvolveWindow : GameWindow
         {
             int id = row * columns + ((column % columns) + columns) % columns;
             if (_session.SelectedCell?.Id == id) continue; // selection overlay differs from terrain pixels
-            string biome = terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
+            string biome = terrain.SurfaceGenerationPending ? $"plate {terrain.PlateByCellId![id]}" :
+                terrain.Biomes?.Get(id).BiomeId ?? (terrain.IsLand(id) ? "land" : "ocean");
             if (_viewMode == MapViewMode.Elevation && terrain.ElevationByCellId is { } levels)
                 biome = $"height {levels[id]}";
             if (terrain.IsImpassableSummit(id)) biome = "impassable summit";
@@ -174,8 +179,20 @@ internal sealed class EvolveWindow : GameWindow
                 biome = $"rainfall {terrain.Climate!.BasePrecipitationMmByCellId![id]}";
             if (_viewMode == MapViewMode.Tectonic && terrain.PlateByCellId is { } plates)
                 biome = $"plate {plates[id]}";
+            if (_viewMode == MapViewMode.Geology && terrain.ContinentalGeology is { } geological)
+                biome = $"geology {geological.LandformByCellId[id]} / {(terrain.IsLand(id) ? "land" : "ocean")}";
             if (checkedBiomes.Contains(biome)) continue;
             Vector2 screen = _camera.WorldToScreen(FlatHexGeometry.Center(new(column, row)));
+            if (_viewMode == MapViewMode.Geology && terrain.ContinentalGeology is { } geologyOverlay)
+            {
+                float period = FlatHexGeometry.PeriodWidth(columns) * _camera.Scale;
+                if (geologyOverlay.Volcanoes.Any(volcano =>
+                {
+                    var point = _camera.WorldToScreen(FlatHexGeometry.Center(new(volcano.CellId % columns, volcano.CellId / columns)));
+                    float dx = screen.X - point.X; dx -= MathF.Round(dx / period) * period;
+                    return dx * dx + MathF.Pow(screen.Y - point.Y, 2) < 9 * 9;
+                })) continue;
+            }
             if (_viewMode == MapViewMode.Tectonic && terrain.TectonicMotion is { } tectonic)
             {
                 float period = FlatHexGeometry.PeriodWidth(columns) * _camera.Scale;
@@ -238,12 +255,19 @@ internal sealed class EvolveWindow : GameWindow
             return;
         }
         if (_session.Screen != GameScreen.World) return;
+        if (_session.State.Landmass?.SurfaceGenerationPending == true && WorldButtons().Any(button =>
+            button.Action is UiAction.ToggleSurface or UiAction.ToggleGrayscale or UiAction.ToggleInfrared or
+                UiAction.ToggleRainfall or UiAction.ToggleGeology))
+            throw new InvalidOperationException("Unavailable surface layers are visible while Continents is pending.");
         UiAction[] viewActions =
-        [
+        _session.State.Landmass?.SurfaceGenerationPending == true
+        ? [UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
+            UiAction.StressShear, UiAction.ToggleTectonic]
+        : [
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
             UiAction.ToggleGrayscale, UiAction.ToggleSurface,
             UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
-            UiAction.StressShear, UiAction.ToggleSurface
+            UiAction.StressShear, UiAction.ToggleGeology, UiAction.ToggleSurface
         ];
         if (_smokeViewStep < viewActions.Length)
         {
@@ -254,7 +278,9 @@ internal sealed class EvolveWindow : GameWindow
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
             var action = viewActions[_smokeViewStep];
-            var expectedMode = action == UiAction.StressCompression ? MapViewMode.Compression
+            var expectedMode = action == UiAction.ToggleGeology && terrain?.ContinentalGeology is not null
+                ? MapViewMode.Geology
+                : action == UiAction.StressCompression ? MapViewMode.Compression
                 : action == UiAction.StressExtension ? MapViewMode.Extension
                 : action == UiAction.StressShear ? MapViewMode.Shear
                 : action == UiAction.ToggleSurface
@@ -270,7 +296,7 @@ internal sealed class EvolveWindow : GameWindow
                 : action == UiAction.ToggleGrayscale && terrain?.ElevationByCellId is not null
                     ? _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation
                     : _viewMode;
-            var button = ScreenLayout.Buttons(GameScreen.World, ClientSize.X, ClientSize.Y)
+            var button = WorldButtons()
                 .Single(item => item.Action == action);
             if (Hit(button.Bounds.X + 5, button.Bounds.Y + 5) != action)
                 throw new InvalidOperationException("View button hit testing failed.");
@@ -345,7 +371,9 @@ internal sealed class EvolveWindow : GameWindow
         else if (_session.Screen == GameScreen.Generating)
         {
             _ui.Text("Generando mundo", center, h * .39f, 4, White);
-            _ui.Text("Distribuyendo tierra y océanos", center, h * .52f, 2, Muted);
+            _ui.Text(_session.SelectedType == LandmassType.Continents
+                ? "Calculando placas y movimiento" : "Distribuyendo tierra y océanos",
+                center, h * .52f, 2, Muted);
         }
         else
         {
@@ -372,6 +400,7 @@ internal sealed class EvolveWindow : GameWindow
             _gridRenderer.DrawPlateBoundaries(_ui, _camera);
             _gridRenderer.DrawPlateMotions(_ui, _camera);
         }
+        if (_viewMode == MapViewMode.Geology) _gridRenderer.DrawContinentalGeology(_ui, _camera);
 
         if (_session.SelectedCell is { } selected)
         {
@@ -428,7 +457,8 @@ internal sealed class EvolveWindow : GameWindow
         }
         if (_session.State.Landmass is { } worldInfo)
         {
-            string kind = worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
+            string kind = worldInfo.SurfaceGenerationPending ? "CONTINENTES: PENDIENTE" :
+                worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
                 worldInfo.Configuration.Type switch
                 {
                     LandmassType.Pangaea => "PANGEA",
@@ -493,6 +523,20 @@ internal sealed class EvolveWindow : GameWindow
             string[] lines = plateInfo is null
                 ? [label, details, biome, temperature, rainfall]
                 : [label, details, biome, temperature, rainfall, plateInfo];
+            if (landmass.ContinentalGeology is { } geology)
+            {
+                string rock = geology.CrustByCellId[cell.Id] == 1 ? "CONTINENTAL" : "OCEÁNICA";
+                string form = (ContinentalLandform)geology.LandformByCellId[cell.Id] switch
+                {
+                    ContinentalLandform.MountainBelt => "CORDILLERA", ContinentalLandform.Rift => "RIFT",
+                    ContinentalLandform.Fault => "FALLA", ContinentalLandform.Trench => "FOSA",
+                    ContinentalLandform.Ridge => "DORSAL", ContinentalLandform.VolcanicArc => "ARCO VOLCÁNICO", _ => "NINGUNO"
+                };
+                var volcano = geology.Volcanoes.FirstOrDefault(v => v.CellId == cell.Id);
+                string geologicalInfo = $"CORTEZA: {rock}  RELIEVE: {form}  PROF: {geology.OceanDepthByCellId[cell.Id]}/100";
+                if (volcano is not null) geologicalInfo += $"  VOLCÁN: {volcano.Kind} P{volcano.SubductingPlateId}->P{volcano.OverridingPlateId}";
+                lines = [.. lines, geologicalInfo];
+            }
             int maxLength = lines.Max(line => line.Length);
             float pixel = MathF.Min(1.6f, (ClientSize.X - 48) / (6f * maxLength));
             float labelWidth = maxLength * 6 * pixel;
@@ -517,7 +561,7 @@ internal sealed class EvolveWindow : GameWindow
     private void DrawButtons()
     {
         if (_ui is null) return;
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in WorldButtons())
         {
             var r = button.Bounds;
             _hover.TryGetValue(button.Action, out float hover);
@@ -535,7 +579,8 @@ internal sealed class EvolveWindow : GameWindow
                 button.Action == UiAction.ToggleTectonic && _viewMode == MapViewMode.Tectonic ||
                 button.Action == UiAction.StressCompression && _viewMode == MapViewMode.Compression ||
                 button.Action == UiAction.StressExtension && _viewMode == MapViewMode.Extension ||
-                button.Action == UiAction.StressShear && _viewMode == MapViewMode.Shear;
+                button.Action == UiAction.StressShear && _viewMode == MapViewMode.Shear ||
+                button.Action == UiAction.ToggleGeology && _viewMode == MapViewMode.Geology;
             _ui.Rect(r.X + 3, r.Y + 4, r.Width, r.Height,
                 new Vector4(.02f, .05f, .09f, .7f));
             Vector4 baseColor = button.Action == UiAction.Generate
@@ -568,7 +613,8 @@ internal sealed class EvolveWindow : GameWindow
             }
             else
             {
-                float pixel = _session.Screen == GameScreen.World ? 1.9f :
+                float pixel = _session.Screen == GameScreen.World
+                    ? MathF.Min(1.9f, MathF.Min((r.Height - 4) / 7, (r.Width - 16) / (button.Text.Length * 6f))) :
                     typeAction || button.Action == UiAction.RandomSeed ?
                         MathF.Min(2.1f, (r.Width - 16) / (button.Text.Length * 6f)) : 2.5f;
                 string text = button.Action == UiAction.ToggleGrayscale
@@ -624,7 +670,7 @@ internal sealed class EvolveWindow : GameWindow
 
     private IEnumerable<UiButton> VisibleControls()
     {
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in WorldButtons())
             yield return button;
         if (_openDropdown is not { } selector) yield break;
         foreach (var option in ScreenLayout.DropdownOptions(
@@ -639,9 +685,19 @@ internal sealed class EvolveWindow : GameWindow
             foreach (var option in ScreenLayout.DropdownOptions(
                 _session.Screen, ClientSize.X, ClientSize.Y, selector))
                 if (option.Bounds.Contains(x, y)) return option.Action;
-        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+        foreach (var button in WorldButtons())
             if (button.Bounds.Contains(x, y)) return button.Action;
         return null;
+    }
+
+    private IEnumerable<UiButton> WorldButtons()
+    {
+        bool pending = _session.Screen == GameScreen.World &&
+            _session.State.Landmass?.SurfaceGenerationPending == true;
+        foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y))
+            if (!pending || button.Action is not (UiAction.ToggleSurface or UiAction.ToggleGrayscale or
+                UiAction.ToggleInfrared or UiAction.ToggleRainfall or UiAction.ToggleGeology))
+                yield return button;
     }
 
     protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -768,6 +824,10 @@ internal sealed class EvolveWindow : GameWindow
                         UiAction.StressExtension => MapViewMode.Extension,
                         _ => MapViewMode.Shear
                     };
+                break;
+            case UiAction.ToggleGeology:
+                if (_session.Screen == GameScreen.World && _session.State.Landmass?.ContinentalGeology is not null)
+                    _viewMode = _viewMode == MapViewMode.Geology ? MapViewMode.Biomes : MapViewMode.Geology;
                 break;
             case UiAction.ToggleGrayscale:
                 if (_session.Screen == GameScreen.World &&

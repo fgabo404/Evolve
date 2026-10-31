@@ -7,8 +7,8 @@ internal static class TectonicMotionValidation
     public static void Validate(LandmassState terrain)
     {
         if (terrain.TectonicMotion is not { } motion) return;
-        int count = terrain.SurfaceByCellId.Length;
         var plates = terrain.PlateByCellId;
+        int count = plates?.Length ?? 0;
         bool Nonnegative(double value) => double.IsFinite(value) && value >= 0;
         bool InvalidField(float[]? field) => field is null || field.Length != count || field.Any(v => !Nonnegative(v));
         if (plates is null || plates.Any(p => p >= 16) || string.IsNullOrWhiteSpace(motion.Version) ||
