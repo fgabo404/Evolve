@@ -1,0 +1,57 @@
+{
+  "id": "npc_001",
+  "name": "Aventurero",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "animationFps": 8,
+  "animations": {
+    "idle_N": {
+      "file": "idle_N.png",
+      "frames": 1
+    },
+    "walk_N": {
+      "file": "walk_N.png",
+      "frames": 4
+    },
+    "idle_NE": {
+      "file": "idle_NE.png",
+      "frames": 1
+    },
+    "walk_NE": {
+      "file": "walk_NE.png",
+      "frames": 4
+    },
+    "idle_SE": {
+      "file": "idle_SE.png",
+      "frames": 1
+    },
+    "walk_SE": {
+      "file": "walk_SE.png",
+      "frames": 4
+    },
+    "idle_S": {
+      "file": "idle_S.png",
+      "frames": 1
+    },
+    "walk_S": {
+      "file": "walk_S.png",
+      "frames": 4
+    },
+    "idle_SW": {
+      "file": "idle_SW.png",
+      "frames": 1
+    },
+    "walk_SW": {
+      "file": "walk_SW.png",
+      "frames": 4
+    },
+    "idle_NW": {
+      "file": "idle_NW.png",
+      "frames": 1
+    },
+    "walk_NW": {
+      "file": "walk_NW.png",
+      "frames": 4
+    }
+  }
+}
