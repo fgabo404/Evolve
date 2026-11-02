@@ -698,6 +698,11 @@ function renderUnresolved() {
 async function start() {
   try {
     const pairs = await Promise.all(CATALOGS.map(async item => {
+      if (location.protocol === "file:") {
+        const local = window.EvolveOfflineCatalogs?.[item.type];
+        if (!local) throw Error(`Missing offline catalog: ${item.type}`);
+        return [item.type, local];
+      }
       const response = await fetch(item.file);
       if (!response.ok) throw Error(`${item.file}: HTTP ${response.status}`);
       return [item.type, await response.json()];
@@ -710,7 +715,7 @@ async function start() {
     if (!history.state?.trail) history.replaceState({ trail: [route] }, "", location.href);
     syncRoute();
   } catch (error) {
-    const serverHint = location.protocol === "file:" ? ` ${tr("Abre la Wiki desde un servidor HTTP local.", "Open the Wiki from a local HTTP server.")}` : "";
+    const serverHint = "";
     setNotice(`${tr("No se pudo iniciar la Wiki", "Could not start the Wiki")}: ${error.message}.${serverHint}`);
   }
 }

@@ -4,13 +4,8 @@ Enciclopedia local de solo lectura. Usa HTML, CSS y JavaScript nativo para consu
 
 ## Abrir
 
-Desde `Evolve/GEvolve.Definitions/`:
+Abre `GEvolve.Definitions/wiki/index.html` con doble clic. No requiere Node.js ni servidor HTTP. `offline-data.js` contiene una copia de los seis catálogos para uso local; al actualizar los JSON originales hay que regenerar esa copia.
 
-```powershell
-node wiki/serve.js
-```
-
-Abre `http://127.0.0.1:8765/wiki/`. También puedes servir esa carpeta con `python -m http.server 8765` o VS Code Live Server. La lectura de JSON mediante `fetch()` requiere HTTP local; `file://` suele bloquearla.
 
 ## Navegación
 
