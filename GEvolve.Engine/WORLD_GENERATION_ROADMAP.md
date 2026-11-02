@@ -71,18 +71,18 @@ flowchart TD
 
 ## 3. Hitos y criterios de aceptación
 
-### H01 — Orquestador único
+### H01 — Orquestador único (COMPLETADO; aprobado por auditoría)
 
-**Objetivo:** `WorldGenerationService` es la única fachada pública recomendada.
+**Objetivo cumplido:** `WorldGenerationService` es el único orquestador de generación mundial. H01-A y H01-B1 a H01-B7 están completados y aprobados; este cierre arquitectónico **no** implica que todas las capas o tipos de mundo estén terminados.
 
-- [ ] Añadir `Generate(GridSize size, LandmassType type, int seed = 2026)` mediante `LandmassProfiles.Create`.
-- [ ] Conservar `Generate(LandmassConfiguration)` y su compatibilidad.
-- [ ] Inventariar y unificar llamadas a `WorldGenerationService` y `LandmassGenerationService` sin eliminar prematuramente rutas funcionales.
-- [ ] Mantener estado explícito `TectonicPreviewOnly` / `SurfaceGenerationPending` para `Continents`.
-- [ ] El orquestador solo coordina; las matemáticas permanecen en generadores especializados.
+- [x] Añadir `Generate(GridSize size, LandmassType type, int seed = 2026)` mediante `LandmassProfiles.Create`.
+- [x] Conservar `Generate(LandmassConfiguration)` y su compatibilidad.
+- [x] Inventariar y unificar llamadas a `WorldGenerationService` y `LandmassGenerationService` sin eliminar prematuramente rutas funcionales.
+- [x] Mantener estado explícito `TectonicPreviewOnly` / `SurfaceGenerationPending` para `Continents`.
+- [x] El orquestador solo coordina; las matemáticas permanecen en generadores especializados.
 
 **Gate:** llamadas simples para todo `GridSize`/`LandmassType`; sin regresiones de resultados anteriores; error/resultado parcial inequívoco.  
-**Archivos clave:** `World/WorldGenerationService.cs`, `World/LandmassGeneration/LandmassGenerationService.cs`, configuración de Definitions.
+**Archivos clave vigentes:** `World/WorldGenerationService.cs`, `World/LandmassGeneration/GeneratedWorld.cs`, generadores especializados y configuración de Definitions. `LandmassGenerationService` fue eliminado en H01-B4.
 
 #### H01-A — API pública de generación (completado; aprobado por auditoría)
 
@@ -107,7 +107,7 @@ flowchart TD
 
 **Auditoría aprobada de 36 baselines no continentales (corrección de elevación Pangaea):** la ejecución local reportada confirmó 36 escenarios inspeccionados y exactamente 12 diferencias, todas en el hash SHA-256 de elevación de Pangaea para Small/Medium/Large/Enormous × semillas 2026, 42 y -731; sin diferencias en intentos, máscaras terrestres ni placas. Los 12 hashes aprobados se actualizaron en `ApprovedNonContinentalBaseline.txt` mediante `test(worldgen): refresh approved Pangaea elevation baselines` (`9602de4f65869a093c1121760e5920206f21e322`). Una comprobación de diff antes del commit verificó **exactamente 12 cambios del sexto campo** y los otros 24 escenarios intactos. Las aserciones estrictas se conservan. **Pendiente:** recompilar y ejecutar toda la suite *después* de la actualización para confirmar ausencia de nuevas excepciones; H01-A sigue abierto hasta aprobación formal de auditoría. H01-B no iniciado.
 
-#### H01-B — Consolidación definitiva del orquestador (en curso, sin cierre de auditoría)
+#### H01-B — Consolidación definitiva del orquestador (COMPLETADO; aprobado por auditoría)
 
 **Objetivo aprobado:** un único orquestador mundial, `WorldGenerationService`, sin pipelines legacy permanentes. Preservar los algoritmos especializados y sus pruebas; no integrar anticipadamente clima, precipitaciones ni biomas. `Continents` mantiene superficie pendiente.
 
@@ -117,11 +117,13 @@ flowchart TD
 - [x] **H01-B4 — Eliminar pipeline landmass legacy:** retirados `PangaeaGenerator` y `LandmassGenerationService`; `GeneratedWorld` trasladado a archivo independiente preservando namespace y contrato. **Aprobado por auditoría:** compilación correcta de cinco proyectos .NET 10, suite `GEvolve.Tests` completa sin excepciones, equivalencia H01-A, 12 baselines tectónicos y 36 geográficos intactos, `Continents` con superficie pendiente; HEAD local validado `c0c91675e37e070972057004d7623be00666b8ff`, eliminación `refactor(worldgen): remove obsolete landmass generation pipeline` (`1445fa520c0623b0e51059372d62e94ad89e6a67`).
 - [x] **H01-B5 — Simulación sobre estado oficial:** `SimulationEngine(GameState)` conserva la instancia de estado y ya no invoca `WorldSystem.Generar` ni expone `WorldMap`; `AdvanceTurn` y `AdvanceTurns` permanecen idénticos. `GEvolve.Tests/Program.cs` genera geografía exclusivamente desde `WorldGenerationService` fuera del motor, comprueba preservación de superficie, elevación, placas, temperatura, estado por referencia, avances y persistencia. **Aprobado por auditoría:** HEAD `8d8492e8c3d036bbd0fde5f6d170c3dd79c312ae`, compilación .NET 10 y suite completa aprobadas; commits `b5eb7dbdc3850b63df269933d2ee47677ed5e8bc` y `cd649f16ed0a5214696f4c527acbe1c3ca543463`.
 - [x] **H01-B6 — Limpieza adicional:** `WorldTests` migrado a invariantes del orquestador oficial; eliminados `WorldSystem`, `WorldGenerator`, `WorldMap`, `GeneradorMasasTerrestres`, `GeneradorArchipielagos`, `GeneradorCordilleras`, `GeneradorBiomas` y `AnalizadorRelieve`, tras auditar sus consumidores. Los componentes de tectónica, geografía, clima, pendientes y biomas oficiales permanecen. **Aprobado por auditoría:** cinco proyectos .NET 10 compilados, `GEvolve.Tests` completo sin excepciones, equivalencia H01-A, 12 baselines tectónicos y 36 geográficos intactos; `Continents` conserva la superficie pendiente y `SimulationEngine` no genera geografía. Corrección posterior `fix(tests): correct span neighbor assertion in world tests` (`fa01641fe6f66f75870d7f711034505e6228a42c`), verificada localmente.
-- [ ] **H01-B7 — Auditoría final:** verificar un único orquestador, DAG, cuatro tipos (Continents aún parcial), persistencia, baselines y suite completa .NET 10.
+- [x] **H01-B7 — Auditoría final:** aprobada y cerrada tras eliminar los contratos y sobrecargas de generación de superficies sin placas tectónicas universales; `IPlateAwareLandmassGenerator` exige placas válidas. Commit de implementación validado: `refactor(worldgen): enforce universal plates in landmass generation contracts` (`3dbe5ea7ec67cb8aabf0f50b3af954d2a99ec64f`). La auditoría local confirmó build .NET 10 sin restauración, suite completa `GEvolve.Tests`, equivalencia H01-A, 12 baselines tectónicos y 36 geográficos.
 
-**Gates H01-B1, H01-B2 y H01-B3:** aprobados formalmente por auditoría; H01-B3 validado sobre HEAD `8dbb215a98c8e3bd3a3f9529b398a186b1f83a95`. **Gate H01-B4 aprobado** por auditoría con suite local completa sobre HEAD `c0c91675e37e070972057004d7623be00666b8ff`. **H01-B5:** aprobado por auditoría con compilación y suite local .NET 10. **H01-B6:** gate aprobado por auditoría después de la corrección `fa01641fe6f66f75870d7f711034505e6228a42c`. **H01-B7:** auditoría final en curso; no marcar como cerrado sin aprobación formal.
+**Gates H01-B1, H01-B2 y H01-B3:** aprobados formalmente por auditoría; H01-B3 validado sobre HEAD `8dbb215a98c8e3bd3a3f9529b398a186b1f83a95`. **Gate H01-B4 aprobado** por auditoría con suite local completa sobre HEAD `c0c91675e37e070972057004d7623be00666b8ff`. **H01-B5:** aprobado por auditoría con compilación y suite local .NET 10. **H01-B6:** gate aprobado por auditoría después de la corrección `fa01641fe6f66f75870d7f711034505e6228a42c`. **H01-B7:** aprobado y cerrado por auditoría sobre `3dbe5ea7ec67cb8aabf0f50b3af954d2a99ec64f`. **H01 completo:** cierre arquitectónico aprobado; los resultados deterministas oficiales permanecen intactos.
 
 **H01-B3/H01-B4:** las cuatro pruebas dejaron de llamar `LandmassGenerationService` y las dos clases legacy fueron retiradas en H01-B4. No se alteraron semillas, algoritmos ni baselines. Verificar toda la suite antes de aprobar. `StagedLandmassTests`, `TectonicMotionTests` y `ContinentalGeologyTests` ya verifican el pipeline oficial. No modificar hashes oficiales ni algoritmos durante H01-B2.
+
+**Alcance del cierre H01:** se retiraron los pipelines `LandmassGenerationService`, `PangaeaGenerator`, `WorldSystem`, `WorldGenerator` y sus auxiliares obsoletos; `SimulationEngine` consume `GameState` sin generar ni regenerar geografía. Las tres superficies implementadas conservan sus resultados deterministas aprobados. `Continents` sigue con `SurfaceGenerationPending` y sin superficie: se completará en su hito correspondiente. La integración de temperatura, precipitaciones, hidrología, biomas y demás etapas pertenece exclusivamente a hitos futuros; H02 no se inicia mediante este cierre.
 
 ### H02 — Cuadrícula y topología
 
@@ -289,6 +291,6 @@ Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator
 
 ## 7. Próximo paso
 
-**Iniciar H01 — Orquestador único.** Antes de escribir código, inspeccionar las llamadas reales a los dos servicios actuales y preparar un cambio limitado a la fachada de generación, sin tocar tectónica, superficie ni relieve.
+**H01 cerrado y aprobado.** El siguiente hito es H02, que no se inicia en este commit documental.
 
 Esta planificación se puede refinar cuando cada hito descubra restricciones reales de código. No sustituye la documentación de arquitectura ni representa implementaciones ya realizadas.
