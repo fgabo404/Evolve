@@ -94,7 +94,8 @@ flowchart TD
 
 **Evidencia de código:** `feat(worldgen): add unified world generation entry point` (`2f11e7cf672547ecfba984edfd772560003945d6`).  
 **Evidencia de pruebas añadidas:** `test(worldgen): verify unified generation facade compatibility` (`687cb0d7647fd12814cb75c17b50b08519f6c4e6`).  
-**Pendiente:** compilación/ejecución; el entorno de edición no dispone de `dotnet`. No declarar H01-A terminado hasta satisfacer el gate.
+**Corrección de pruebas:** `test(worldgen): fix public facade statistics equivalence assertion` (`c4afe9eac11166c7f0be1174fb8d3d2072682d46`); igualdad estructural de `ComponentSizes` y comprobación de semilla alternativa para los cuatro tipos. El fallo original `Public facade matches existing generation for Pangaea` se observó en ejecución local antes de esta corrección.  
+**Pendiente:** recompilar y ejecutar de nuevo la suite completa tras la corrección; el entorno de edición no dispone de `dotnet`. No declarar H01-A terminado hasta satisfacer el gate.
 
 #### H01-B — Consolidación del orquestador (no iniciada)
 
