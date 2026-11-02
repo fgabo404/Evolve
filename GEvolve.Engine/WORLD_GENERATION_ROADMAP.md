@@ -143,16 +143,21 @@ flowchart TD
 
 **Archivos clave:** `GEvolve.Engine/Grid/HexGrid.cs`, `GEvolve.Engine/World/LandmassGeneration/Shared/HexTopology.cs`, `GEvolve.Definitions/WorldGeneration/Configuration/HexGridDefinition.cs` y `GEvolve.Tests/GridTests.cs`.
 
-### H03 — Placas tectónicas universales
+### H03 — Placas tectónicas universales (COMPLETADO; aprobado por auditoría)
 
-- [x] Comparar el arreglo tectónico completo para los cuatro tipos y tamaños con las semillas 2026, 42 y -731.
-- [x] Verificar IDs 0..15, cobertura total, placas no vacías y una región conectada por placa con vecinos reales de `HexTopology`.
-- [x] Verificar fronteras completas, canónicas y sin duplicados, incluida la costura E/O; no equiparar placas con corteza, costas o continentes.
-- [x] Documentar que la versión actual utiliza exactamente 16 placas, sin cambiar esa cantidad.
-- [x] Confirmar determinismo para configuraciones idénticas y variación de las particiones completas entre las tres semillas oficiales.
+**Cierre formal:** auditoría arquitectónica aprobada sobre `test(worldgen): verify H03 universal tectonic plate invariants` (`0298640243f781506f5c03876282737aed0ef50f`). Compilación y suite local confirmadas **después del rebase** y con HEAD idéntico a dicho SHA.
 
-**Gate:** compilación .NET 10 y suite local completa aprobadas, incluidos H01-A, H02, 12 baselines tectónicos y 36 geográficos sin cambios. H03 queda pendiente de aprobación arquitectónica; ninguna celda quedó sin placa ni hubo regiones desconectadas.
-**Archivo clave:** `Tectonics/TectonicPlateGenerator.cs`.
+- [x] Confirmar **16 placas tectónicas universales** con IDs 0..15 para los **cuatro tamaños** (Small, Medium, Large, Enormous), los **cuatro tipos de mundo** (Pangaea, SmallContinents, Archipelagos, Continents) y las **tres semillas oficiales** (2026, 42, -731).
+- [x] Verificar cobertura completa: cada hexágono pertenece a una placa válida, las 16 placas están presentes y cada placa forma **una sola región conectada** por vecinos de `HexTopology`.
+- [x] Verificar **fronteras tectónicas completas, canónicas y sin duplicados**, incluidas las aristas que atraviesan la continuidad horizontal este-oeste; no confundir placas con corteza, costas ni continentes.
+- [x] Verificar determinismo de particiones completas con tamaños y semillas idénticos, y variación entre las tres semillas oficiales.
+- [x] Confirmar persistencia del estado tectónico y conservación del orquestador oficial `WorldGenerationService`, sin alterar algoritmos, perfiles, semillas ni intentos.
+- [x] Confirmar validación local posterior al rebase: `git rev-parse HEAD` devolvió `0298640243f781506f5c03876282737aed0ef50f`; `dotnet build` compiló correctamente los cinco proyectos .NET 10; `dotnet run --project GEvolve.Tests` finalizó con la suite completa aprobada, equivalencia H01-A, H02, **12 baselines tectónicos** y **36 baselines geográficos** intactos.
+- [x] Mantener `Continents` **pendiente de superficie** en todos los tamaños y semillas; su previsualización tectónica no constituye una superficie oceánica generada.
+
+**Gate H03:** **APROBADO Y CERRADO** por auditoría. La generación universal de placas y sus invariantes están comprobados; **H04 no iniciado**.
+
+**Archivo clave:** `Tectonics/TectonicPlateGenerator.cs`. Evidencia en `GEvolve.Tests/TectonicPlateTests.cs`.
 
 ### H04 — Movimiento y esfuerzo
 
