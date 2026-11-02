@@ -1,6 +1,7 @@
 using System.Numerics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
 using GEvolve.Engine.World.Climate;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
@@ -26,9 +27,12 @@ public static class PrecipitationTests
         foreach(var size in Enum.GetValues<GridSize>())
         foreach(int seed in new[] { 2026,42,-731 })
         {
-            var world=new LandmassGenerationService().Generate(
+            var world=new WorldGenerationService().Generate(
                 LandmassProfiles.Create(size,LandmassType.Pangaea,seed));
-            var land=world.Landmass;
+            var topology=new HexTopology(world.Grid);
+            var withTemperature=new TemperatureGenerator().Apply(topology,world.Landmass);
+            var land=generator.Apply(topology,withTemperature);
+            world=world with { Landmass=land };
             var climate=land.Climate!;
             var rain=climate.BasePrecipitationMmByCellId!;
             var humidity=climate.BaseMoistureByCellId!;
