@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
+using GEvolve.Engine.World.Tectonics;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.State.Game;
@@ -14,11 +16,12 @@ public static class LandmassTests
 
     public static void Run()
     {
-        var service = new LandmassGenerationService();
-        Check(service.Generators.Count == 3 &&
-            service.Generators.Select(item => item.Type).Distinct().Count() == 3 &&
-            service.Generators.Select(item => item.GetType()).Distinct().Count() == 3,
-            "Three finished generation strategies; Continents surface is pending");
+        var service = new WorldGenerationService();
+        Check(new[] { LandmassType.Pangaea, LandmassType.SmallContinents,
+                LandmassType.Archipelagos }.Distinct().Count() == 3 &&
+            new[] { typeof(PangaeaFromPlatesGenerator), typeof(SmallContinentsGenerator),
+                typeof(ArchipelagosGenerator) }.Distinct().Count() == 3,
+            "Three distinct official specialized strategies; Continents surface is pending");
 
         var baselineHashes = new Dictionary<(GridSize, LandmassType), string>();
         foreach (var size in Enum.GetValues<GridSize>())
@@ -74,7 +77,7 @@ public static class LandmassTests
             var pending = service.Generate(LandmassProfiles.Create(size, LandmassType.Continents, seed));
             Check(pending.Statistics is null && pending.Landmass.SurfaceGenerationPending &&
                 pending.Landmass.SurfaceByCellId.Length == 0,
-                "Legacy service cannot regenerate old Continents surface");
+                "Official pipeline keeps Continents surface explicitly pending");
         }
 
         VerifyPeriodicSeam();
@@ -92,9 +95,9 @@ public static class LandmassTests
                 .All(value=>value==0) &&
             tectonic.Landmass.PlateByCellId is { } plates &&
             plates.Length == expectedCount &&
-            plates.All(plate => plate < PangaeaGenerator.NumberOfPlates) &&
-            plates.Distinct().Count() >= 12,
-            "Pangaea has 16 plate seeds and unchanged 0..100 height semantics");
+            plates.All(plate => plate < TectonicPlateGenerator.NumberOfPlates) &&
+            plates.Distinct().Count() == TectonicPlateGenerator.NumberOfPlates,
+            "Official Pangaea has 16 universal plates and 0..100 height semantics");
     }
 
     private static void VerifyPeriodicSeam()
@@ -122,7 +125,7 @@ public static class LandmassTests
         }
     }
 
-    private static void VerifyPersistence(LandmassGenerationService service)
+    private static void VerifyPersistence(WorldGenerationService service)
     {
         var result = service.Generate(LandmassProfiles.Create(
             GridSize.Small, LandmassType.Pangaea, -731));
