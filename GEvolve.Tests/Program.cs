@@ -1,4 +1,7 @@
 using GEvolve.Engine;
+using GEvolve.Engine.World;
+using GEvolve.Engine.World.Climate;
+using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
@@ -26,21 +29,58 @@ if (args.Contains("--all-suites"))
     return failures == 0 ? 0 : 1;
 }
 
-var state = new GameState { WorldSettings = new WorldSettings(Ancho: 20, Alto: 20, Semilla: 42) };
+// World generation is external to simulation; environmental generators remain independent.
+var generated = new WorldGenerationService().Generate(GridSize.Small, LandmassType.Pangaea, 42);
+var topology = new HexTopology(generated.Grid);
+var terrain = new TemperatureGenerator().Apply(topology, generated.Landmass);
+var state = new GameState
+{
+    WorldSettings = new WorldSettings(Ancho: 20, Alto: 20, Semilla: 42),
+    HexGrid = new HexGridState(generated.Grid.Definition),
+    Landmass = terrain
+};
+var originalSurface = (byte[])terrain.SurfaceByCellId.Clone();
+var originalElevation = (byte[])terrain.ElevationByCellId!.Clone();
+var originalPlates = (byte[])terrain.PlateByCellId!.Clone();
+var originalClimate = (short[])terrain.Climate!.BaseTemperatureTenthsByCellId.Clone();
+
+try { _ = new SimulationEngine(null!); throw new Exception("Null GameState unexpectedly accepted."); }
+catch (ArgumentNullException) { }
+
 var simulation = new SimulationEngine(state);
+if (!ReferenceEquals(simulation.State, state) ||
+    !ReferenceEquals(state.Landmass, terrain))
+    throw new Exception("Simulation constructor must preserve supplied state and geography.");
 simulation.AdvanceTurns(3);
 if (state.Turn != 3) throw new Exception("Turn advancement failed.");
+try { simulation.AdvanceTurns(-1); throw new Exception("Negative turn count was accepted."); }
+catch (ArgumentOutOfRangeException) { }
+if (state.Turn != 3) throw new Exception("Rejected turn count changed state.");
+simulation.AdvanceTurn();
+if (state.Turn != 4) throw new Exception("Single turn advancement failed.");
+if (!ReferenceEquals(state.Landmass, terrain) ||
+    !terrain.SurfaceByCellId.SequenceEqual(originalSurface) ||
+    !terrain.ElevationByCellId!.SequenceEqual(originalElevation) ||
+    !terrain.PlateByCellId!.SequenceEqual(originalPlates) ||
+    !terrain.Climate!.BaseTemperatureTenthsByCellId.SequenceEqual(originalClimate))
+    throw new Exception("Simulation construction or turns modified world geography or climate.");
 string path = Path.Combine(Path.GetTempPath(), $"evolve-test-{Guid.NewGuid():N}.json");
 try
 {
     GameSaveStore.Save(path, state);
     var loaded = GameSaveStore.Load(path);
-    if (loaded.Turn != 3 || loaded.WorldSettings.Semilla != 42)
-        throw new Exception("Save/load test failed.");
-    var otherWorld = new SimulationEngine(loaded).World;
-    if (!simulation.World.Celdas.SequenceEqual(otherWorld.Celdas))
-        throw new Exception("World generation is not deterministic.");
-    Console.WriteLine("PASS: turns, save/load, deterministic world");
+    if (loaded.Turn != 4 || loaded.WorldSettings.Semilla != 42 ||
+        loaded.HexGrid?.Definition != generated.Grid.Definition ||
+        loaded.Landmass?.Configuration != terrain.Configuration ||
+        !loaded.Landmass.SurfaceByCellId.SequenceEqual(originalSurface) ||
+        !loaded.Landmass.ElevationByCellId!.SequenceEqual(originalElevation) ||
+        !loaded.Landmass.PlateByCellId!.SequenceEqual(originalPlates) ||
+        !loaded.Landmass.Climate!.BaseTemperatureTenthsByCellId.SequenceEqual(originalClimate))
+        throw new Exception("Save/load must preserve turns, WorldSettings and official world layers.");
+    var restoredSimulation = new SimulationEngine(loaded);
+    if (!ReferenceEquals(restoredSimulation.State, loaded) || loaded.Turn != 4)
+        throw new Exception("Restoring the simulation changed world state.");
+    Console.WriteLine("PASS: simulation uses external official world; turns, unchanged layers and save/load");
 }
 finally { if (File.Exists(path)) File.Delete(path); }
 
