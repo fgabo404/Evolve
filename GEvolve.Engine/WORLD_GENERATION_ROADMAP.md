@@ -111,15 +111,17 @@ flowchart TD
 
 **Objetivo aprobado:** un único orquestador mundial, `WorldGenerationService`, sin pipelines legacy permanentes. Preservar los algoritmos especializados y sus pruebas; no integrar anticipadamente clima, precipitaciones ni biomas. `Continents` mantiene superficie pendiente.
 
-- [ ] **H01-B1 — Validación geográfica especializada:** extraer `LandmassGenerationService.MeetsProfile` a `LandmassProfileValidator.MeetsProfile`, conservando sin cambios los umbrales y migrando llamadas en motor y pruebas. **Implementado; pendiente de compilación, suite .NET 10 y aprobación formal de auditoría.**
-- [ ] **H01-B2 — Pruebas geográficas oficiales:** migrar pruebas de generación geográfica al `WorldGenerationService` y mantener determinismo, perfiles, hashes e invariantes.
+- [x] **H01-B1 — Validación geográfica especializada:** `LandmassProfileValidator.MeetsProfile` conserva los umbrales originales y todos sus consumidores fueron actualizados. **Aprobado por auditoría**, con ejecución local completa de `GEvolve.Tests` sin excepciones en HEAD `ff305a01e2e75d03da481d33396db8d6026b4510` (12 baselines históricos, 36 geográficos y equivalencia H01-A aprobados).
+- [ ] **H01-B2 — Pruebas geográficas oficiales:** `LandmassTests` migrado a `WorldGenerationService` (commit `af8bd7c62b2b0141c024b57aabd361f79a9c1f6f`); se mantienen perfiles, conectividad, seam, determinismo, variación por semilla, persistencia y Continents pendiente. **Implementado, pendiente de validación local .NET 10 y auditoría.**
 - [ ] **H01-B3 — Pruebas ambientales independientes:** desacoplar `TemperatureTests`, `PrecipitationTests`, `BiomeTests` y pruebas de pendientes de la generación legacy, conservando su cobertura sin adelantar las etapas del DAG.
 - [ ] **H01-B4 — Eliminar pipeline landmass legacy:** retirar `PangaeaGenerator` y `LandmassGenerationService` tras resolver todos sus consumidores; conservar generadores de masas especializados.
 - [ ] **H01-B5 — Simulación sobre estado oficial:** retirar la dependencia de `SimulationEngine` respecto a `WorldSystem` sin generar de nuevo el mundo.
 - [ ] **H01-B6 — Limpieza adicional:** eliminar `WorldSystem`, `WorldGenerator` y auxiliares obsoletos solo después de migrar consumidores y cobertura.
 - [ ] **H01-B7 — Auditoría final:** verificar un único orquestador, DAG, cuatro tipos (Continents aún parcial), persistencia, baselines y suite completa .NET 10.
 
-**Gate H01-B1:** igualdad exacta de umbrales y resultados, ninguna referencia restante a `LandmassGenerationService.MeetsProfile`, equivalencia H01-A y baselines oficiales intactos. No iniciar H01-B2 hasta aprobación explícita.
+**Gate H01-B1:** aprobado formalmente por auditoría. **Gate H01-B2 pendiente:** compilación, suite completa, perfiles y baselines sin regresiones, revisión de invariantes geográficos; no iniciar H01-B3 hasta aprobación explícita.
+
+**Consumidores legacy restantes (reservados para H01-B3/B4):** `TemperatureTests`, `PrecipitationTests`, `BiomeTests` y `PlateBoundaryTests` todavía utilizan `LandmassGenerationService`. La migración de pruebas ambientales se reserva para H01-B3; no eliminar todavía el servicio. `StagedLandmassTests`, `TectonicMotionTests` y `ContinentalGeologyTests` ya verifican el pipeline oficial. No modificar hashes oficiales ni algoritmos durante H01-B2.
 
 ### H02 — Cuadrícula y topología
 
