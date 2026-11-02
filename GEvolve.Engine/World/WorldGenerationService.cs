@@ -67,7 +67,7 @@ public sealed class WorldGenerationService
                 // Plate guidance gently influences their surface *and* shared relief.
                 surface = landmassGenerator!.Generate(topology, configuration, attempt, plates);
                 last = LandmassAnalysis.Analyze(topology, surface);
-                if (!LandmassGenerationService.MeetsProfile(configuration.Type, last))
+                if (!LandmassProfileValidator.MeetsProfile(configuration.Type, last))
                     continue;
                 elevation = _relief.Generate(
                     topology, surface, plates, configuration.Type, configuration.Seed, attempt);
@@ -76,7 +76,7 @@ public sealed class WorldGenerationService
             if (configuration.Type == LandmassType.Pangaea)
             {
                 last = LandmassAnalysis.Analyze(topology, surface);
-                if (!LandmassGenerationService.MeetsProfile(configuration.Type, last))
+                if (!LandmassProfileValidator.MeetsProfile(configuration.Type, last))
                     continue;
             }
 
