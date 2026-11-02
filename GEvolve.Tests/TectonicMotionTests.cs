@@ -108,6 +108,7 @@ public static class TectonicMotionTests
         using var stream = typeof(TectonicMotionTests).Assembly.GetManifestResourceStream("TectonicMotionTerrainBaseline.txt")!;
         using var reader = new StreamReader(stream);
         int unchanged = 0, failures = 0;
+        var baselineMismatches = new List<string>();
         while (reader.ReadLine() is { } line)
         {
             var parts = line.Split('|');
@@ -129,12 +130,34 @@ public static class TectonicMotionTests
             }
             var terrain = service.Generate(config).Landmass;
             string Hash(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
-            Check(terrain.DeterministicAttempt == int.Parse(parts[3]) && Hash(terrain.SurfaceByCellId) == parts[4] &&
-                Hash(terrain.ElevationByCellId) == parts[5] && Hash(terrain.PlateByCellId) == parts[6], "Pre-motion terrain hash unchanged");
+            var actualAttempt = terrain.DeterministicAttempt;
+            var actualSurface = Hash(terrain.SurfaceByCellId);
+            var actualElevation = Hash(terrain.ElevationByCellId);
+            var actualPlates = Hash(terrain.PlateByCellId);
+            bool attemptMatches = actualAttempt == int.Parse(parts[3]);
+            bool surfaceMatches = actualSurface == parts[4];
+            bool elevationMatches = actualElevation == parts[5];
+            bool platesMatch = actualPlates == parts[6];
+            if (!attemptMatches || !surfaceMatches || !elevationMatches || !platesMatch)
+            {
+                string scenario = $"{parts[0]}/{parts[1]}/{parts[2]}";
+                Console.WriteLine($"BASELINE MISMATCH {scenario}");
+                if (!attemptMatches)
+                    Console.WriteLine($"  attempt: expected={parts[3]}, actual={actualAttempt}");
+                if (!surfaceMatches)
+                    Console.WriteLine($"  surface: expected={parts[4]}, actual={actualSurface}");
+                if (!elevationMatches)
+                    Console.WriteLine($"  elevation: expected={parts[5]}, actual={actualElevation}");
+                if (!platesMatch)
+                    Console.WriteLine($"  plates: expected={parts[6]}, actual={actualPlates}");
+                baselineMismatches.Add(scenario);
+            }
             Check(terrain.Climate is null && terrain.Biomes is null && terrain.SlopeByCellId is null,
                 "Disconnected downstream stages remain disconnected");
             unchanged++;
         }
+        Check(baselineMismatches.Count == 0,
+            $"Pre-motion terrain baselines differ in {baselineMismatches.Count} scenario(s): {string.Join(", ", baselineMismatches)}");
         Console.WriteLine($"PASS: {unchanged} pre-motion terrain hashes unchanged; {failures} documented pre-existing generation failure unchanged");
     }
 
