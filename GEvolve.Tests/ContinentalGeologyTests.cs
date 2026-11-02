@@ -161,17 +161,35 @@ public static class ContinentalGeologyTests
     {
         using var stream = typeof(ContinentalGeologyTests).Assembly.GetManifestResourceStream("ApprovedNonContinentalBaseline.txt")!;
         using var reader = new StreamReader(stream); int unchanged = 0;
+        var mismatches = new List<string>();
         while (reader.ReadLine() is { } line)
         {
             var parts = line.Split('|');
             var terrain = service.Generate(LandmassProfiles.Create(Enum.Parse<GridSize>(parts[0]),
                 Enum.Parse<LandmassType>(parts[1]), int.Parse(parts[2]))).Landmass;
             string Hash(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
-            Check(terrain.DeterministicAttempt == int.Parse(parts[3]) && Hash(terrain.SurfaceByCellId) == parts[4] &&
-                Hash(terrain.ElevationByCellId) == parts[5] && Hash(terrain.PlateByCellId) == parts[6],
-                "Approved non-continental world unchanged");
-            unchanged++;
+            string scenario = $"{parts[0]}/{parts[1]}/{parts[2]}";
+            int attempt = terrain.DeterministicAttempt;
+            string surface = Hash(terrain.SurfaceByCellId);
+            string elevation = Hash(terrain.ElevationByCellId);
+            string plates = Hash(terrain.PlateByCellId);
+            bool attemptMatches = attempt == int.Parse(parts[3]);
+            bool surfaceMatches = surface == parts[4];
+            bool elevationMatches = elevation == parts[5];
+            bool platesMatch = plates == parts[6];
+            if (!attemptMatches || !surfaceMatches || !elevationMatches || !platesMatch)
+            {
+                Console.WriteLine($"APPROVED BASELINE MISMATCH {scenario}");
+                if (!attemptMatches) Console.WriteLine($"  attempt: expected={parts[3]}, actual={attempt}");
+                if (!surfaceMatches) Console.WriteLine($"  surface: expected={parts[4]}, actual={surface}");
+                if (!elevationMatches) Console.WriteLine($"  elevation: expected={parts[5]}, actual={elevation}");
+                if (!platesMatch) Console.WriteLine($"  plates: expected={parts[6]}, actual={plates}");
+                mismatches.Add(scenario);
+            }
+            else unchanged++;
         }
+        Check(mismatches.Count == 0,
+            $"Approved non-continental world baselines differ in {mismatches.Count} scenario(s): {string.Join(", ", mismatches)}");
         Console.WriteLine($"PASS: {unchanged} approved Pangaea/small-continents/archipelago worlds unchanged");
     }
 
