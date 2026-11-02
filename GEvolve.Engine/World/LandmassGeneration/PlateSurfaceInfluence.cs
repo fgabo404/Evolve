@@ -10,16 +10,13 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// </summary>
 internal sealed class PlateSurfaceInfluence
 {
-    private readonly byte[]? _plates;
+    private readonly byte[] _plates;
     private readonly double[] _regionalPreference = new double[TectonicPlateGenerator.NumberOfPlates];
-    private readonly ushort[]? _boundaryDistance;
-
-    public bool Enabled => _plates is not null;
+    private readonly ushort[] _boundaryDistance;
 
     public PlateSurfaceInfluence(HexTopology topology, ReadOnlySpan<byte> plates, int seed)
     {
-        if (plates.IsEmpty) return;
-        if (plates.Length != topology.Count)
+        if (plates.IsEmpty || plates.Length != topology.Count)
             throw new ArgumentException("Plate array must match the hex topology.", nameof(plates));
         for (int id = 0; id < plates.Length; id++)
             if (plates[id] >= TectonicPlateGenerator.NumberOfPlates)
@@ -53,12 +50,10 @@ internal sealed class PlateSurfaceInfluence
             }
     }
 
-    public int DistanceToBoundary(int cell) =>
-        _boundaryDistance is null ? int.MaxValue : _boundaryDistance[cell];
+    public int DistanceToBoundary(int cell) => _boundaryDistance[cell];
 
     public double ExpansionCost(int from, int to)
     {
-        if (_plates is null) return 0;
         double crossing = _plates[from] != _plates[to] ? .25 : -.055;
         // Slightly more or less continental-friendly plate interiors.
         return crossing + .11 * _regionalPreference[_plates[to]];
@@ -66,7 +61,6 @@ internal sealed class PlateSurfaceInfluence
 
     public double RadiusFactor(int center, int cell)
     {
-        if (_plates is null) return 1;
         // Keep the original minimum radius, so the small-continent type
         // does not become unexpectedly underpopulated at high resolutions.
         double regional = .09 * (_regionalPreference[_plates[cell]] + 1) / 2;
@@ -76,7 +70,6 @@ internal sealed class PlateSurfaceInfluence
 
     public double IslandFactor(int center)
     {
-        if (_boundaryDistance is null) return 1;
         // Prefer some elongated tectonic island arcs; still allow hotspot islands.
         return 1 + .15 * Math.Exp(-_boundaryDistance[center] / 3.0);
     }

@@ -8,10 +8,6 @@ public sealed class SmallContinentsGenerator : IPlateAwareLandmassGenerator
 {
     public LandmassType Type => LandmassType.SmallContinents;
 
-    // Keep the legacy path callable, while the staged world passes existing plates.
-    public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
-        => Generate(topology, configuration, attempt, ReadOnlySpan<byte>.Empty);
-
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
         int attempt, ReadOnlySpan<byte> plates)
     {

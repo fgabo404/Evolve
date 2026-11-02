@@ -8,10 +8,6 @@ public sealed class ArchipelagosGenerator : IPlateAwareLandmassGenerator
 {
     public LandmassType Type => LandmassType.Archipelagos;
 
-    // Keep the legacy path callable, while the staged world passes existing plates.
-    public byte[] Generate(HexTopology topology, LandmassConfiguration configuration, int attempt)
-        => Generate(topology, configuration, attempt, ReadOnlySpan<byte>.Empty);
-
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
         int attempt, ReadOnlySpan<byte> plates)
     {
@@ -31,7 +27,7 @@ public sealed class ArchipelagosGenerator : IPlateAwareLandmassGenerator
             // Most chains begin near tectonic boundaries; others form independent
             // intraplate island groups. This is a geographic preference, not a
             // guarantee that every plate border creates islands.
-            if (tectonics.Enabled && random.NextDouble() < .75)
+            if (random.NextDouble() < .75)
             {
                 int bestColumn = (int)x, bestRow = (int)y;
                 int bestDistance = tectonics.DistanceToBoundary(

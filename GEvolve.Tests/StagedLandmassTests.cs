@@ -73,10 +73,11 @@ public static class StagedLandmassTests
                         IPlateAwareLandmassGenerator surfaceGenerator = type == LandmassType.SmallContinents
                             ? new SmallContinentsGenerator() : new ArchipelagosGenerator();
                         var landWithPlates = surfaceGenerator.Generate(topology, config, landmass.DeterministicAttempt, ids);
-                        var legacyLand = surfaceGenerator.Generate(topology, config, landmass.DeterministicAttempt);
-                        Check(landWithPlates.SequenceEqual(landmass.SurfaceByCellId) &&
-                            !legacyLand.SequenceEqual(landWithPlates) && ids.SequenceEqual(platesPreview),
-                            "Non-continental staged generators retain plate-aware and legacy entry points");
+                        Check(surfaceGenerator.Type == type &&
+                            landWithPlates.SequenceEqual(landmass.SurfaceByCellId) &&
+                            ids.SequenceEqual(platesPreview),
+                            "Non-continental staged generators require and preserve universal plates");
+                        VerifyInvalidPlates(surfaceGenerator, topology, config, landmass.DeterministicAttempt, ids);
                     }
                     byte[] platesCopy = ids.ToArray();
                     var recalculated = relief.Generate(topology, landmass.SurfaceByCellId,
@@ -187,6 +188,27 @@ public static class StagedLandmassTests
                 $"Explicit alternate seed stays deterministic for {type}");
         }
         Console.WriteLine("PASS: H01-A public generation facade equivalence");
+    }
+
+    private static void VerifyInvalidPlates(IPlateAwareLandmassGenerator generator,
+        HexTopology topology, LandmassConfiguration configuration, int attempt, byte[] validPlates)
+    {
+        ExpectInvalidPlates(() => generator.Generate(topology, configuration, attempt, []), "empty");
+        ExpectInvalidPlates(() => generator.Generate(topology, configuration, attempt,
+            new byte[topology.Count - 1]), "short");
+        ExpectInvalidPlates(() => generator.Generate(topology, configuration, attempt,
+            new byte[topology.Count + 1]), "long");
+        var invalidId = validPlates.ToArray();
+        invalidId[0] = (byte)TectonicPlateGenerator.NumberOfPlates;
+        ExpectInvalidPlates(() => generator.Generate(topology, configuration, attempt, invalidId),
+            "invalid ID");
+    }
+
+    private static void ExpectInvalidPlates(Action generate, string caseName)
+    {
+        try { generate(); }
+        catch (ArgumentException error) when (error.ParamName == "plates") { return; }
+        throw new InvalidOperationException($"Plate-aware surface generator accepted {caseName} plates");
     }
 
     private static void Check(bool condition, string message)

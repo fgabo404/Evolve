@@ -1,11 +1,11 @@
 # Evolve — Arquitectura técnica de generación mundial
 
-> **Rama de referencia:** `worldgenerator` (desarrollo) · **Base estable:** `master` · **Estado:** diseño objetivo + inventario de la implementación actual.  
+> **Rama de referencia:** `worldgenerator` (desarrollo) · **Base estable:** `master` · **Estado:** diseño objetivo + contrato vigente en `worldgenerator`.
 > **Alcance:** motor `GEvolve.Engine`. Este documento NO afirma que las etapas planificadas estén implementadas.
 
 ## 1. Objetivo y responsabilidades
 
-`WorldGenerationService` será el **único punto de entrada público recomendado** para obtener un `GeneratedWorld`. Los inputs obligatorios son tamaño (`GridSize`) y tipo de mundo (`LandmassType`); se admite una semilla (`int`) opcional para reproducibilidad.
+`WorldGenerationService` es el **único orquestador** para obtener un `GeneratedWorld`. Los inputs obligatorios son tamaño (`GridSize`) y tipo de mundo (`LandmassType`); se admite una semilla (`int`) opcional para reproducibilidad.
 
 - **Engine:** construye y calcula todas las capas del mundo mediante algoritmos deterministas.
 - **Definitions:** define configuraciones, enumeraciones y perfiles.
@@ -15,33 +15,16 @@
 
 **Regla:** el orquestador coordina etapas, dependencias, validación y resultado; la matemática y los algoritmos pertenecen a generadores especializados.
 
-## 2. API objetivo
+## 2. API vigente
 
-Los tipos `GridSize`, `LandmassType`, `LandmassConfiguration`, `LandmassProfiles` y `GeneratedWorld` ya existen en `master`.
+Los tipos `GridSize`, `LandmassType`, `LandmassConfiguration`, `LandmassProfiles` y `GeneratedWorld` están presentes en `worldgenerator`.
 
 ```csharp
-public sealed class WorldGenerationService
-{
-    public GeneratedWorld Generate(
-        GridSize size,
-        LandmassType worldType,
-        int seed = 2026)
-    {
-        var config = LandmassProfiles.Create(size, worldType, seed);
-        return Generate(config);
-    }
-
-    // La implementación actual ya dispone del overload que recibe LandmassConfiguration.
-    public GeneratedWorld Generate(LandmassConfiguration configuration)
-    {
-        // Orquestación: validar -> generar dependencias -> devolver resultado.
-        // Este bloque es una firma conceptual, no código listo para sustituir.
-        throw new NotImplementedException();
-    }
-}
+public GeneratedWorld Generate(GridSize size, LandmassType worldType, int seed = 2026)
+    => Generate(LandmassProfiles.Create(size, worldType, seed));
 ```
 
-**Estado H01-A:** la sobrecarga de tres parámetros se incorporó en `worldgenerator` y delega directamente al método existente. La implementación de `Generate(LandmassConfiguration)` permanece intacta. La verificación de compilación y ejecución sigue pendiente en un entorno con .NET.
+**H01-A aprobado:** esta sobrecarga delega en `Generate(LandmassConfiguration)`, que valida el perfil oficial y coordina las etapas existentes.
 
 La salida existente es:
 
@@ -100,7 +83,7 @@ flowchart TD
 
 **Interpretación:** las flechas describen dependencia de datos y orden lógico, no necesariamente una única llamada lineal. Geología y clima consumen varias capas previas. `WorldGenerationContext` es un patrón sugerido y **no debe duplicar** innecesariamente `LandmassState`. Las fases climáticas y de biomas aparecen como objetivo de integración en el pipeline universal; hay implementaciones previas separadas.
 
-## 4. Diagrama del código comprobado en master
+## 4. Diagrama del código vigente en `worldgenerator`
 
 ```mermaid
 flowchart TD
@@ -121,24 +104,23 @@ flowchart TD
     Pending --> Partial["GeneratedWorld<br/>sin superficie"]
     A -. "Hasta 4 intentos" .-> T
 
-    Legacy["LandmassGenerationService<br/>ruta anterior aún presente"] --> Old["Generadores / temperatura / precipitación / biomas"]
-    Legacy -->|Continents| S
 ```
 
 ### Hallazgos confirmados
 
 1. En `WorldGenerationService` el orden actual es **grid → placas → movimiento → superficie/elevación según tipo**.
-2. `TectonicPlateGenerator` de `master` genera **16 placas**, universales respecto al tipo de mundo para el mismo tamaño y semilla. La partición se realiza mediante crecimiento conectado ponderado en un grafo hexagonal, con ruido multiescala periódico horizontalmente.
+2. `TectonicPlateGenerator` genera **16 placas**, universales respecto al tipo de mundo para el mismo tamaño y semilla. La partición se realiza mediante crecimiento conectado ponderado en un grafo hexagonal, con ruido multiescala periódico horizontalmente.
 3. `TectonicMotionGenerator` proyecta velocidades relativas sobre normal y tangente y calcula convergencia, divergencia y cizalla; propaga esfuerzos mediante una envolvente gaussiana.
 4. `Pangaea`, `SmallContinents` y `Archipelagos` tienen rutas implementadas para superficie/elevación y validaciones morfológicas.
 5. **`Continents` no genera superficie en ese servicio**; devuelve preview de tectónica con `SurfaceGenerationPending`. Nunca confundir sus ceros con océanos reales.
 6. `ContinentalReliefGenerator` contiene lógica geológica avanzada, pero la presencia del archivo no equivale a estar integrado en la ruta principal.
-7. Coexiste `LandmassGenerationService`, con una ruta anterior que aplica `TemperatureGenerator`, `PrecipitationGenerator` y `BiomeClassifier`. No asumir que esas etapas corren desde el `WorldGenerationService` principal.
-8. No se afirma que exista un sistema universal de ríos, lagos y cuencas conectado actualmente.
+7. `LandmassGenerationService` y su generador Pangaea anterior fueron retirados. `WorldGenerationService` no ejecuta todavía temperatura, precipitación ni clasificación de biomas; las pruebas ambientales componen esos generadores especializados explícitamente.
+8. `SmallContinentsGenerator` y `ArchipelagosGenerator` implementan `IPlateAwareLandmassGenerator` y exigen placas universales válidas. Se retiraron `ILandmassGenerator` y las sobrecargas de superficie sin placas.
+9. No se afirma que exista un sistema universal de ríos, lagos y cuencas conectado actualmente.
 
 ## 5. Dependencias y contratos de datos
 
-| Etapa | Entradas mínimas | Salidas lógicas | Estado respecto a master |
+| Etapa | Entradas mínimas | Salidas lógicas | Estado en `worldgenerator` |
 |---|---|---|---|
 | Grid/topología | Tamaño | Celdas, vecinos, índices, wrap horizontal | Implementado |
 | Placas | Grid, seed | `PlateByCellId` | Implementado |
@@ -155,6 +137,7 @@ flowchart TD
 ### Invariantes
 
 - Los arrays por celda usan **el mismo `CellId` y longitud `topology.Count`**.
+- Los generadores de superficie de continentes pequeños y archipiélagos rechazan placas vacías, longitudes distintas de `topology.Count` e IDs fuera de `0..15`.
 - Una semilla y configuración equivalentes deben producir resultados equivalentes.
 - La envoltura es **este-oeste**, no norte-sur; no es una superficie esférica.
 - Las placas no son continentes: una placa puede contener litosfera continental y oceánica.
@@ -195,13 +178,14 @@ Un posible `WorldGenerationContext` interno puede transportar `HexGrid`, `HexTop
 ```text
 GEvolve.Engine/
   World/
-    WorldGenerationService.cs                 <-- entrada principal actual; orquestador objetivo
+    WorldGenerationService.cs                 <-- único orquestador
     Tectonics/
       TectonicPlateGenerator.cs
       PlateMotionGenerator.cs
       TectonicMotionGenerator.cs
     LandmassGeneration/
-      LandmassGenerationService.cs            <-- ruta anterior que debe revisarse
+      IPlateAwareLandmassGenerator.cs         <-- contrato de superficie con placas
+      PlateSurfaceInfluence.cs                <-- validación y guía tectónica
       PangaeaFromPlatesGenerator.cs
       SmallContinentsGenerator.cs
       ArchipelagosGenerator.cs
@@ -222,16 +206,16 @@ Las rutas anteriores son una **guía lógica** basada en archivos conocidos; rev
 ## 8. Roadmap incremental
 
 ### Fase 1 — Entrada única (sin modificar algoritmos)
-- [x] Añadir la sobrecarga pública `Generate(GridSize, LandmassType, int seed = 2026)` (implementada en `worldgenerator`; validación en ejecución pendiente).
-- [ ] Construir configuración con `LandmassProfiles.Create` y reutilizar la implementación existente.
+- [x] Añadir la sobrecarga pública `Generate(GridSize, LandmassType, int seed = 2026)` (implementada y validada en `worldgenerator`).
+- [x] Construir configuración con `LandmassProfiles.Create` y reutilizar la implementación existente.
 - [ ] Documentar salida completa vs. preview pendiente y las excepciones.
 - [ ] Confirmar todos los sitios de invocación desde Game y servicios.
 
 **Aceptación:** el consumidor puede pedir cualquier tipo/tamaño mediante una sola API, sin perder información sobre generaciones pendientes.
 
 ### Fase 2 — Consolidar orquestación
-- [ ] Auditar usos de `LandmassGenerationService` vs. `WorldGenerationService`.
-- [ ] Elegir una ruta canónica sin romper guardados ni previews.
+- [x] Retirar `LandmassGenerationService` y migrar sus consumidores a `WorldGenerationService`.
+- [x] Elegir `WorldGenerationService` como ruta canónica sin romper guardados ni previews.
 - [ ] Mantener los generadores especializados fuera del orquestador.
 - [ ] Definir contrato de resultados parciales y reglas de validación.
 
@@ -273,24 +257,25 @@ Las rutas anteriores son una **guía lógica** basada en archivos conocidos; rev
 5. **No**: fingir que una etapa planificada ya existe o que un preview equivale a un mundo terminado.
 6. **No**: implementar nuevos algoritmos solo por añadir el orquestador.
 
-## 10. Referencias de código en master
+## 10. Referencias del código vigente
 
 - `GEvolve.Engine/World/WorldGenerationService.cs`
 - `GEvolve.Engine/World/Tectonics/TectonicPlateGenerator.cs`
 - `GEvolve.Engine/World/Tectonics/PlateMotionGenerator.cs`
 - `GEvolve.Engine/World/Tectonics/TectonicMotionGenerator.cs`
-- `GEvolve.Engine/World/LandmassGeneration/LandmassGenerationService.cs`
+- `GEvolve.Engine/World/LandmassGeneration/IPlateAwareLandmassGenerator.cs`
+- `GEvolve.Engine/World/LandmassGeneration/PlateSurfaceInfluence.cs`
 - `GEvolve.Engine/World/LandmassGeneration/ContinentalReliefGenerator.cs`
 - `GEvolve.Definitions/WorldGeneration/Configuration/LandmassConfiguration.cs`
 
-**Nota de alcance:** este commit solo incorpora documentación técnica. No modifica la lógica ni cambia el contrato público del motor.
+**Nota de alcance:** el contrato actual exige placas para los generadores de superficie de continentes pequeños y archipiélagos; las fases futuras del diagrama principal siguen siendo propuestas.
 
 
 ---
 
 # Anexo de especificación de ingeniería (v1)
 
-> **Convención de trazabilidad:** [ACTUAL] significa observado en código de `master`; [OBJETIVO] es una decisión de diseño aún no implementada; [RIESGO] indica comportamiento que requiere verificación en ejecución. Esta sección no constituye una declaración de conformidad del motor.
+> **Convención de trazabilidad:** [ACTUAL] significa observado en código de `worldgenerator`; [OBJETIVO] es una decisión de diseño aún no implementada; [RIESGO] indica comportamiento que requiere verificación en ejecución. Esta sección no constituye una declaración de conformidad del motor.
 
 ## A. Límites arquitectónicos y aislamiento de responsabilidades
 
@@ -363,10 +348,9 @@ flowchart TD
 - [ACTUAL] `LandmassType`: `Continents`, `Pangaea`, `SmallContinents`, `Archipelagos`.
 - [ACTUAL] `LandmassProfiles.CurrentGeneratorVersion = "landmass-12"` en el archivo de configuración consultado.
 
-### C.2 Fachada propuesta sin romper compatibilidad
+### C.2 Fachada implementada
 
 ```csharp
-// OBJETIVO: nueva sobrecarga; conservar el overload original.
 public GeneratedWorld Generate(GridSize size, LandmassType type, int seed = 2026)
 {
     var configuration = LandmassProfiles.Create(size, type, seed);
@@ -374,7 +358,20 @@ public GeneratedWorld Generate(GridSize size, LandmassType type, int seed = 2026
 }
 ```
 
-**H01-A implementado en `worldgenerator`:** la nueva sobrecarga delega a la existente, sin modificar la lógica de generación. La ejecución de la matriz de validación aún no se ha confirmado.
+**H01-A aprobado:** la sobrecarga delega a la existente y la matriz de validación pasó en .NET 10.
+
+### C.2.1 Contrato de superficie con placas
+
+```csharp
+public interface IPlateAwareLandmassGenerator
+{
+    LandmassType Type { get; }
+    byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
+        int attempt, ReadOnlySpan<byte> plates);
+}
+```
+
+`SmallContinentsGenerator` y `ArchipelagosGenerator` solo exponen esta firma. `PlateSurfaceInfluence` exige un arreglo de longitud `topology.Count` cuyos IDs sean menores que `TectonicPlateGenerator.NumberOfPlates` (16); los arreglos vacíos, cortos, largos o con IDs inválidos producen `ArgumentException` para `plates`. El orquestador produce y entrega esas placas antes de generar superficie. `PangaeaFromPlatesGenerator` conserva su firma especializada con placas y elevación. No existe `ILandmassGenerator`.
 
 **No introducir `WorldGenerationRequest` como clase obligatoria en la primera fase**: con los tipos existentes, la firma basta. Si se incorporan decenas de parámetros independientes, evaluar un DTO inmutable más adelante.
 
@@ -388,7 +385,7 @@ public GeneratedWorld Generate(GridSize size, LandmassType type, int seed = 2026
 | Pending [ACTUAL] | Tipo `Continents` aún sin superficie en `WorldGenerationService` | `SurfaceGenerationPending` |
 | Failed [OBJETIVO] | No se pudo satisfacer el contrato | Excepción/error; no confundir con mapa vacío |
 
-**Precisión:** la tabla de estados es conceptual; no existe necesariamente una enumeración con esos nombres en `master`.
+**Precisión:** la tabla de estados es conceptual; no existe una enumeración con esos nombres en `worldgenerator`.
 
 ### C.4 Semántica de los datos
 
@@ -460,6 +457,8 @@ Continents       -> Preview tectónica, sin superficie en el servicio publicado
 ```
 
 El servicio repite como máximo cuatro intentos de generación y usa `LandmassAnalysis` / `MeetsProfile` para validar propiedades morfológicas. **No interpretar estos criterios como una garantía de realismo tectónico**. Revisar que la validación de perfil ocurre después de las operaciones que puedan cambiar superficie.
+
+Los dos generadores de superficie no continental reciben las placas universales mediante `IPlateAwareLandmassGenerator`; no conservan sobrecargas de generación sin placas. La guía de `PlateSurfaceInfluence` valida longitud e IDs antes de construir la superficie, sin alterar las placas recibidas.
 
 ### F.2 Geología
 
@@ -564,9 +563,9 @@ No tratar los diagnostics como parte del algoritmo aleatorio. El pipeline debe e
 
 ### K.1 Migración segura
 
-1. Inventariar consumidores de `WorldGenerationService`, `LandmassGenerationService` y previews.
+1. Inventariar consumidores de `WorldGenerationService` y previews; el servicio legacy fue retirado en H01-B4.
 2. Añadir sobrecarga pública con tamaño/tipo/semilla sin modificar el overload existente.
-3. Actualizar consumidores gradualmente; mantener rutas legadas compatibles temporalmente.
+3. Actualizar consumidores gradualmente; H01-B7 retira el contrato de superficie sin placas.
 4. Consolidar un único pipeline **solo cuando** la semántica de cada tipo y de las etapas climáticas esté verificada.
 5. Eliminar duplicación tras asegurar compatibilidad de partidas, replays y herramientas.
 6. Activar hidrología/recursos como nuevas fases únicamente con contratos y métricas.
