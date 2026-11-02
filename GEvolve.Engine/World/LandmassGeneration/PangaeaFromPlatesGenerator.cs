@@ -216,7 +216,7 @@ public sealed class PangaeaFromPlatesGenerator
                 ?Math.Clamp((value-anchors[section])/span,0,1):0;
             elevation[id]=(byte)Math.Clamp(
                 (int)Math.Round(level[section]+fraction*
-                    (level[section+1]-level[section])),0,100);
+                    (level[section+1]-level[section])),1,100);
         }
         return (surface, elevation);
     }
