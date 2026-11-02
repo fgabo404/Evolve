@@ -97,6 +97,8 @@ flowchart TD
 **Corrección de pruebas:** `test(worldgen): fix public facade statistics equivalence assertion` (`c4afe9eac11166c7f0be1174fb8d3d2072682d46`); igualdad estructural de `ComponentSizes` y comprobación de semilla alternativa para los cuatro tipos. El fallo original `Public facade matches existing generation for Pangaea` se observó en ejecución local antes de esta corrección.  
 **Pendiente:** recompilar y ejecutar de nuevo la suite completa tras la corrección; el entorno de edición no dispone de `dotnet`. No declarar H01-A terminado hasta satisfacer el gate.
 
+**Diagnóstico posterior a H01-A (Pangaea):** la suite reportó `Every finished world has oceans, land and 0..100 elevation (Small/Pangaea, max=100)`. En `PangaeaFromPlatesGenerator`, el percentil mínimo de potencial se cuantiza al nivel 0 también sobre tierra; el contrato de la prueba exige tierra > 0 y océano = 0. Se dividieron seis verificaciones con contadores de anomalías en `StagedLandmassTests` (commit `5128c9585758ce9a74d398314d28b2dcf8af09cc`). No se alteró ningún algoritmo. Falta ejecutar la suite para confirmar el número de celdas afectadas y verificar todos los tamaños. H01-A sigue abierto; cualquier corrección del generador requiere aprobación previa.
+
 #### H01-B — Consolidación del orquestador (no iniciada)
 
 - [ ] Auditar ambos servicios y sus consumidores.
