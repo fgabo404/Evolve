@@ -1,4 +1,3 @@
-using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 
 namespace GEvolve.Engine;
@@ -7,12 +6,10 @@ namespace GEvolve.Engine;
 public sealed class SimulationEngine
 {
     public GameState State { get; }
-    public WorldMap World { get; }
 
     public SimulationEngine(GameState state)
     {
         State = state ?? throw new ArgumentNullException(nameof(state));
-        World = WorldSystem.Generar(state.WorldSettings);
     }
 
     public void AdvanceTurn()
