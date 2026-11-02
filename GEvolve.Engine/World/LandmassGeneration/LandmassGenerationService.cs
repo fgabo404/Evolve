@@ -44,7 +44,7 @@ public sealed class LandmassGenerationService
             else surface = generator.Generate(topology, configuration, attempt);
             LandmassStatistics statistics = LandmassAnalysis.Analyze(topology, surface);
             last = statistics;
-            if (MeetsProfile(configuration.Type, statistics))
+            if (LandmassProfileValidator.MeetsProfile(configuration.Type, statistics))
                 {
                     var terrain = new LandmassState(configuration, surface, attempt)
                         { ElevationByCellId = elevation, PlateByCellId = plates };
@@ -60,16 +60,4 @@ public sealed class LandmassGenerationService
             $"dominant={last?.DominantLandShare:P1}, small={last?.SmallComponents}).");
     }
 
-    public static bool MeetsProfile(LandmassType type, LandmassStatistics result)
-        => type switch
-        {
-            LandmassType.Pangaea => result.LandFraction is >= .30 and <= .55 &&
-                result.ComponentCount == 1 && result.DominantLandShare == 1,
-            LandmassType.SmallContinents => result.LandFraction is >= .23 and <= .38 &&
-                result.ComponentCount >= 8 && result.DominantLandShare < .23,
-            LandmassType.Archipelagos => result.LandFraction is >= .14 and <= .27 &&
-                result.ComponentCount >= 20 && result.DominantLandShare < .12 &&
-                result.SmallComponents * 2 >= result.ComponentCount,
-            _ => false
-        };
 }
