@@ -53,7 +53,7 @@ flowchart TD
 
 | Hito | Resultado verificable | Estado inicial |
 |---|---|---|
-| 01 — Orquestador | API de entrada única y resultados explícitos | Por realizar |
+| 01 — Orquestador | API de entrada única y resultados explícitos | H01-A aprobado; H01-B pendiente |
 | 02 — Grid | Topología determinista y seam E/O validado | Base existente; pendiente de gate |
 | 03 — Placas | Partición conectada para todo tipo y tamaño | Base existente; pendiente de gate |
 | 04 — Movimiento | Velocidades, interacciones y campos de esfuerzo | Base existente; pendiente de gate |
@@ -84,18 +84,18 @@ flowchart TD
 **Gate:** llamadas simples para todo `GridSize`/`LandmassType`; sin regresiones de resultados anteriores; error/resultado parcial inequívoco.  
 **Archivos clave:** `World/WorldGenerationService.cs`, `World/LandmassGeneration/LandmassGenerationService.cs`, configuración de Definitions.
 
-#### H01-A — API pública de generación (implementación; validación pendiente)
+#### H01-A — API pública de generación (completado; aprobado por auditoría)
 
 - [x] Añadir sobrecarga `Generate(GridSize size, LandmassType worldType, int seed = 2026)`.
 - [x] Delegar a `LandmassProfiles.Create` y `Generate(LandmassConfiguration)` sin cambiar algoritmos.
 - [x] Añadir pruebas de equivalencia en `StagedLandmassTests` para los cuatro tipos en tamaño Small, semilla por defecto y semilla alternativa.
-- [ ] Confirmar compilación y ejecución de pruebas en entorno .NET; validar también los demás tamaños con la suite existente.
-- [ ] Cerrar el gate H01-A tras verificar resultados y ausencia de regresiones.
+- [x] Confirmar compilación y ejecución de pruebas en entorno .NET 10; validar también los demás tamaños con la suite existente.
+- [x] Cerrar el gate H01-A tras verificar resultados y ausencia de regresiones.
 
 **Evidencia de código:** `feat(worldgen): add unified world generation entry point` (`2f11e7cf672547ecfba984edfd772560003945d6`).  
 **Evidencia de pruebas añadidas:** `test(worldgen): verify unified generation facade compatibility` (`687cb0d7647fd12814cb75c17b50b08519f6c4e6`).  
 **Corrección de pruebas:** `test(worldgen): fix public facade statistics equivalence assertion` (`c4afe9eac11166c7f0be1174fb8d3d2072682d46`); igualdad estructural de `ComponentSizes` y comprobación de semilla alternativa para los cuatro tipos. El fallo original `Public facade matches existing generation for Pangaea` se observó en ejecución local antes de esta corrección.  
-**Pendiente:** recompilar y ejecutar de nuevo la suite completa tras la corrección; el entorno de edición no dispone de `dotnet`. No declarar H01-A terminado hasta satisfacer el gate.
+**Cierre formal H01-A:** auditoría arquitectónica aprobó el hito a partir del HEAD `04b0cef8fb5eabed989e4b964184612e595bcb9d`. La ejecución local .NET 10 confirmó compilación correcta de los cinco proyectos, equivalencia de la API pública, superficie y elevaciones válidas, determinismo y regresiones tectónicas, 12 baselines históricos y 36 geográficos; `GEvolve.Tests` finalizó sin excepciones. Este cierre es documental y no modifica algoritmos.
 
 **Diagnóstico posterior a H01-A (Pangaea):** la suite reportó `Every finished world has oceans, land and 0..100 elevation (Small/Pangaea, max=100)`. En `PangaeaFromPlatesGenerator`, el percentil mínimo de potencial se cuantiza al nivel 0 también sobre tierra; el contrato de la prueba exige tierra > 0 y océano = 0. Se dividieron seis verificaciones con contadores de anomalías en `StagedLandmassTests` (commit `5128c9585758ce9a74d398314d28b2dcf8af09cc`). No se alteró ningún algoritmo. Falta ejecutar la suite para confirmar el número de celdas afectadas y verificar todos los tamaños. H01-A sigue abierto; cualquier corrección del generador requiere aprobación previa.
 
