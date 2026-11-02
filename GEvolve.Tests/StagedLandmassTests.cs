@@ -41,13 +41,26 @@ public static class StagedLandmassTests
                 Check(!landmass.TectonicPreviewOnly && ids.Distinct().Count() == TectonicPlateGenerator.NumberOfPlates &&
                     ids.SequenceEqual(platesPreview) && platesPreview.SequenceEqual(immutableSnapshot),
                     "Every finished map keeps the exact stage 01 plates");
-                // Keep the historical land-height expectation. Its known Pangaea failure remains visible.
-                Check(landmass.SurfaceByCellId.Length == topology.Count && heights.Length == topology.Count &&
-                    landmass.SurfaceByCellId.All(value => value is 0 or 1) && heights.Max() == 100 &&
-                    heights.Where((value, id) => landmass.SurfaceByCellId[id] == 1).Distinct().Count() > 20 &&
-                    Enumerable.Range(0, topology.Count).All(id => landmass.SurfaceByCellId[id] == 0
-                        ? heights[id] == 0 : heights[id] > 0),
-                    $"Every finished world has oceans, land and 0..100 elevation ({size}/{type}, max={heights.Max()})");
+                Check(landmass.SurfaceByCellId.Length == topology.Count && heights.Length == topology.Count,
+                    $"Surface and elevation arrays match topology ({size}/{type}: surface={landmass.SurfaceByCellId.Length}, elevation={heights.Length}, expected={topology.Count})");
+                Check(landmass.SurfaceByCellId.All(value => value is 0 or 1),
+                    $"Surface is binary ({size}/{type})");
+                Check(heights.Max() == 100,
+                    $"Elevation reaches level 100 ({size}/{type}: max={heights.Max()})");
+                Check(heights.Where((value, id) => landmass.SurfaceByCellId[id] == 1)
+                    .Distinct().Count() > 20,
+                    $"Land elevation variety exceeds 20 levels ({size}/{type})");
+                int nonzeroOcean = 0, zeroLand = 0;
+                for (int id = 0; id < topology.Count; id++)
+                {
+                    if (landmass.SurfaceByCellId[id] == 0 && heights[id] != 0) nonzeroOcean++;
+                    if (landmass.SurfaceByCellId[id] == 1 && heights[id] == 0) zeroLand++;
+                }
+                Console.WriteLine($"ELEVATION DIAGNOSTIC {size}/{type}: ocean above zero={nonzeroOcean}, land at zero={zeroLand}");
+                Check(nonzeroOcean == 0,
+                    $"Ocean cells have elevation zero ({size}/{type}: violations={nonzeroOcean})");
+                Check(zeroLand == 0,
+                    $"Land cells have positive elevation ({size}/{type}: violations={zeroLand})");
                 Check(LandmassGenerationService.MeetsProfile(type, stats) &&
                     stats.LandCells > 0 && stats.LandCells < topology.Count,
                     "Finished types retain their original geographic profiles");
