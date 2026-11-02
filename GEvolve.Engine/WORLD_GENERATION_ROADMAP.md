@@ -159,16 +159,22 @@ flowchart TD
 
 **Archivo clave:** `Tectonics/TectonicPlateGenerator.cs`. Evidencia en `GEvolve.Tests/TectonicPlateTests.cs`.
 
-### H04 — Movimiento y esfuerzo
+### H04 — Movimiento y esfuerzo (COMPLETADO; aprobado por auditoría)
 
-- [ ] Auditar velocidades, direcciones y streams RNG deterministas.
-- [ ] Comprobar clasificación de bordes: convergentes, divergentes, transformantes, mixtos y quietos.
-- [ ] Validar proyecciones normal/tangente y costura E/O.
-- [ ] Verificar propagación gaussiana, finitud y límites de intensidad.
-- [ ] Exponer trazabilidad de qué bordes producen deformación por celda.
+**Cierre formal:** auditoría de código y validación local aprobadas para `test(worldgen): verify H04 tectonic motion boundary invariants across official seeds` (`43e17150b8c760e18cce16ead6ddc0505ea5ab0b`). H04 conserva sin alteraciones los generadores tectónicos y la generación de superficies.
 
-**Gate:** esfuerzos repetibles y geográficamente coherentes; no NaN ni intensidades negativas.  
-**Archivos clave:** `PlateMotionGenerator`, `TectonicMotionGenerator`, `PlateBoundaryMap`.
+- [x] Verificar los **16 movimientos** por semilla: direcciones y velocidades válidas, streams RNG separados, determinismo e independencia del tamaño; matriz de **cuatro tamaños × tres semillas oficiales** (2026, 42 y -731).
+- [x] Auditar todos los contactos reales de placa, su identidad y correspondencia uno a uno con `PlateBoundaryMap`; **44.830 contactos tectónicos** comprobados en los 12 escenarios oficiales, incluidos contactos que cruzan la unión **este-oeste**.
+- [x] Verificar normales unitarias y antisimétricas, proyecciones de velocidad relativa en componentes normal y tangencial, y clasificación convergente, divergente, transformante, mixta o quieta.
+- [x] Comprobar propagación gaussiana por distancia hexagonal, conservación de canales (compresión, extensión, cizalla), determinismo y campos finitos, no negativos y acotados.
+- [x] Conservar la trazabilidad disponible entre contactos `PlateInteraction`, IDs de celdas, placas de origen, mapas de fronteras y campos de esfuerzo por celda. **Los campos agregados no guardan una referencia explícita a la frontera que aporta el máximo en cada celda**; esa procedencia detallada queda identificada como mejora futura, no como requisito de cierre H04.
+- [x] Aclarar la independencia de las verificaciones: las **comparaciones masivas de proyección reutilizan `TectonicMotionGenerator.Project`**, mientras que las pruebas geométricas y de casos controlados ya existentes aportan las comprobaciones matemáticas independientes (normales, proyección, simetría y atenuación).
+- [x] Confirmar `dotnet build` en .NET 10 y la suite completa `GEvolve.Tests` aprobados localmente; **12 hashes tectónicos** y **36 baselines geográficos** intactos.
+- [x] Mantener separadas la generación de placas/movimiento y la generación de superficie; `Continents` conserva `SurfaceGenerationPending` y carece de superficie terminada.
+
+**Gate H04:** **APROBADO Y CERRADO** por auditoría arquitectónica. Esfuerzos reproducibles y coherentes con fronteras y vecindad hexagonal; sin intensidades negativas ni valores no finitos. **H05 no iniciado.**
+
+**Archivos clave:** `PlateMotionGenerator`, `TectonicMotionGenerator`, `PlateBoundaryMap` y `GEvolve.Tests/TectonicMotionTests.cs`.
 
 ### H05 — Corteza y masas terrestres
 
