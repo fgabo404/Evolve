@@ -40,7 +40,7 @@ public static class LandmassTests
                     result.Landmass.SurfaceByCellId.Length == result.Grid.Cells.Count &&
                     result.Landmass.SurfaceByCellId.All(value => value is 0 or 1) &&
                     stats.LandCells > 0 && stats.LandCells < stats.TotalCells &&
-                    LandmassGenerationService.MeetsProfile(type, stats),
+                    LandmassProfileValidator.MeetsProfile(type, stats),
                     "Configuration, IDs, classification and profile statistics");
                 Check(stats.ComponentSizes.Sum() == stats.LandCells &&
                     stats.ComponentSizes.SequenceEqual(stats.ComponentSizes.OrderDescending()),
