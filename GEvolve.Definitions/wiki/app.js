@@ -2,9 +2,9 @@
 
 const CATALOGS = [
   { type: "world", title: { es: "Mundo (Biomas)", en: "World (Biomes)" }, file: "../World/biomes.json" },
-  { type: "animals", title: { es: "Animales", en: "Animals" }, file: "../Resources/Fauna/animals.json" },
-  { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Resources/Flora/plants.json" },
-  { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Resources/Minerals/minerals.json" },
+  { type: "animals", title: { es: "Animales", en: "Animals" }, file: "../Resources/fauna.json" },
+  { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Resources/flora.json" },
+  { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Resources/minerals.json" },
   { type: "resources", title: { es: "Recursos", en: "Resources" }, file: "../Resources/resources.catalog.guide.json" },
   { type: "technologies", title: { es: "Tecnologías", en: "Technologies" }, file: "../Technologies/agriculture.tech.json" }
 ];
