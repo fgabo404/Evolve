@@ -107,11 +107,19 @@ flowchart TD
 
 **Auditoría aprobada de 36 baselines no continentales (corrección de elevación Pangaea):** la ejecución local reportada confirmó 36 escenarios inspeccionados y exactamente 12 diferencias, todas en el hash SHA-256 de elevación de Pangaea para Small/Medium/Large/Enormous × semillas 2026, 42 y -731; sin diferencias en intentos, máscaras terrestres ni placas. Los 12 hashes aprobados se actualizaron en `ApprovedNonContinentalBaseline.txt` mediante `test(worldgen): refresh approved Pangaea elevation baselines` (`9602de4f65869a093c1121760e5920206f21e322`). Una comprobación de diff antes del commit verificó **exactamente 12 cambios del sexto campo** y los otros 24 escenarios intactos. Las aserciones estrictas se conservan. **Pendiente:** recompilar y ejecutar toda la suite *después* de la actualización para confirmar ausencia de nuevas excepciones; H01-A sigue abierto hasta aprobación formal de auditoría. H01-B no iniciado.
 
-#### H01-B — Consolidación del orquestador (no iniciada)
+#### H01-B — Consolidación definitiva del orquestador (en curso, sin cierre de auditoría)
 
-- [ ] Auditar ambos servicios y sus consumidores.
-- [ ] Resolver las responsabilidades duplicadas sin romper persistencia, previews ni resultados existentes.
-- [ ] Respetar el DAG de la arquitectura y mantener generadores especializados.
+**Objetivo aprobado:** un único orquestador mundial, `WorldGenerationService`, sin pipelines legacy permanentes. Preservar los algoritmos especializados y sus pruebas; no integrar anticipadamente clima, precipitaciones ni biomas. `Continents` mantiene superficie pendiente.
+
+- [ ] **H01-B1 — Validación geográfica especializada:** extraer `LandmassGenerationService.MeetsProfile` a `LandmassProfileValidator.MeetsProfile`, conservando sin cambios los umbrales y migrando llamadas en motor y pruebas. **Implementado; pendiente de compilación, suite .NET 10 y aprobación formal de auditoría.**
+- [ ] **H01-B2 — Pruebas geográficas oficiales:** migrar pruebas de generación geográfica al `WorldGenerationService` y mantener determinismo, perfiles, hashes e invariantes.
+- [ ] **H01-B3 — Pruebas ambientales independientes:** desacoplar `TemperatureTests`, `PrecipitationTests`, `BiomeTests` y pruebas de pendientes de la generación legacy, conservando su cobertura sin adelantar las etapas del DAG.
+- [ ] **H01-B4 — Eliminar pipeline landmass legacy:** retirar `PangaeaGenerator` y `LandmassGenerationService` tras resolver todos sus consumidores; conservar generadores de masas especializados.
+- [ ] **H01-B5 — Simulación sobre estado oficial:** retirar la dependencia de `SimulationEngine` respecto a `WorldSystem` sin generar de nuevo el mundo.
+- [ ] **H01-B6 — Limpieza adicional:** eliminar `WorldSystem`, `WorldGenerator` y auxiliares obsoletos solo después de migrar consumidores y cobertura.
+- [ ] **H01-B7 — Auditoría final:** verificar un único orquestador, DAG, cuatro tipos (Continents aún parcial), persistencia, baselines y suite completa .NET 10.
+
+**Gate H01-B1:** igualdad exacta de umbrales y resultados, ninguna referencia restante a `LandmassGenerationService.MeetsProfile`, equivalencia H01-A y baselines oficiales intactos. No iniciar H01-B2 hasta aprobación explícita.
 
 ### H02 — Cuadrícula y topología
 
