@@ -1,10 +1,10 @@
 # Evolve — Wiki de catálogos
 
-Enciclopedia local de solo lectura. Usa HTML, CSS y JavaScript nativo para consultar los seis catálogos JSON de `Catalogs/`. No carga las referencias biológicas ni modifica el motor o las definiciones.
+Enciclopedia local de solo lectura. Usa HTML, CSS y JavaScript nativo para consultar los seis catálogos JSON de `GEvolve.Definitions/`. No carga las referencias biológicas ni modifica el motor o las definiciones.
 
 ## Abrir
 
-Desde `Evolve/GEvolve.Definitions/Catalogs/`:
+Desde `Evolve/GEvolve.Definitions/`:
 
 ```powershell
 node wiki/serve.js
@@ -14,7 +14,7 @@ Abre `http://127.0.0.1:8765/wiki/`. También puedes servir esa carpeta con `pyth
 
 ## Navegación
 
-El menú muestra Mundo, Animales, Plantas, Minerales, Recursos y Tecnologías. Las fichas enlazan biomas con subbiomas y sus listas de fauna, flora y minerales, y las fuentes con recursos, recursos con procesos de transformación y referencias tecnológicas explícitas. Los procesos tienen ficha accesible desde sus enlaces; las variantes regionales no tienen ficha ni navegación. Las plantas proceden de `Plants/plants.json`; los candidatos agrícolas históricos no se cargan automáticamente.
+El menú muestra Mundo, Animales, Plantas, Minerales, Recursos y Tecnologías. Las fichas enlazan biomas con subbiomas y sus listas de fauna, flora y minerales, y las fuentes con recursos, recursos con procesos de transformación y referencias tecnológicas explícitas. Los procesos tienen ficha accesible desde sus enlaces; las variantes regionales no tienen ficha ni navegación. Las plantas proceden de `Resources/Flora/plants.json`; los candidatos agrícolas históricos no se cargan automáticamente.
 
 Tecnologías abre el árbol desde `Technologies/agriculture.tech.json`. Esta versión contiene una sola tecnología: **Lenguaje** (`language`, orden 0). Desde ella salen tres ramas visuales planificadas: **Agricultura**, **Domesticación** y **Otras tecnologías**. Las cajas de rama no son tecnologías, requisitos ni capacidades jugables. Las demás tecnologías se incorporarán una por una con requisitos explícitos que desciendan de Lenguaje. El archivo anterior, `agriculture.technologies.json`, permanece intacto como referencia.
 
@@ -28,7 +28,7 @@ Una URL como `#type=resources&id=RES%23000031` abre una ficha concreta. Se admit
 
 ## Comprobaciones
 
-Desde `Catalogs/`:
+Desde `GEvolve.Definitions/`:
 
 ```powershell
 node --check wiki/catalog-index.js
@@ -43,4 +43,4 @@ La prueba usa los JSON reales y las API nativas de Node.js. Comprueba el índice
 
 ## Nuevos catálogos de juego
 
-La Wiki consume `World/biomes.json`, `Animals/animals.json`, `Plants/plants.json` y `Minerals/minerals.json`. Mundo incluye ocho biomas principales con fichas para sus 22 subbiomas. Los enlaces funcionan en ambas direcciones: subbioma → entidad, entidad → subbioma y entidad → recurso → proceso. No se carga ningún JSON de `Old/` ni los catálogos biológicos auxiliares.
+La Wiki consume `World/biomes.json`, `Animals/animals.json`, `Resources/Flora/plants.json` y `Minerals/minerals.json`. Mundo incluye ocho biomas principales con fichas para sus 22 subbiomas. Los enlaces funcionan en ambas direcciones: subbioma → entidad, entidad → subbioma y entidad → recurso → proceso. No se carga ningún JSON de `Old/` ni los catálogos biológicos auxiliares.

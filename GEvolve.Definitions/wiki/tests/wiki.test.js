@@ -8,9 +8,9 @@ const wiki = path.resolve(__dirname, "..");
 const catalogs = path.resolve(wiki, "..");
 const files = {
   world: "World/biomes.json",
-  animals: "Animals/animals.json",
-  plants: "Plants/plants.json",
-  minerals: "Minerals/minerals.json",
+  animals: "Resources/Fauna/animals.json",
+  plants: "Resources/Flora/plants.json",
+  minerals: "Resources/Minerals/minerals.json",
   resources: "Resources/resources.catalog.guide.json",
   technologies: "Technologies/agriculture.tech.json"
 };
