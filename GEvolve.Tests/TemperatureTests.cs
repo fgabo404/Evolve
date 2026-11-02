@@ -1,6 +1,7 @@
 using System.Numerics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
 using GEvolve.Engine.World.Climate;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
@@ -65,8 +66,9 @@ public static class TemperatureTests
         foreach (var size in Enum.GetValues<GridSize>())
         foreach (int seed in new[] { 2026, 42, -731 })
         {
-            var generated = new LandmassGenerationService().Generate(LandmassProfiles.Create(size, LandmassType.Pangaea, seed));
-            var terrain = generated.Landmass;
+            var generated = new WorldGenerationService().Generate(LandmassProfiles.Create(size, LandmassType.Pangaea, seed));
+            var terrain = generator.Apply(new HexTopology(generated.Grid), generated.Landmass);
+            generated = generated with { Landmass = terrain };
             var climate = terrain.Climate!;
             var repeated = generator.Apply(new HexTopology(generated.Grid), terrain);
             Check(climate.BaseTemperatureTenthsByCellId.Length == terrain.SurfaceByCellId.Length &&
@@ -88,9 +90,8 @@ public static class TemperatureTests
                     else if (mode == MapViewMode.Tectonic && terrain.PlateByCellId is { } plates)
                         Check(color == PlatePalette.ForPlate(plates[id], !terrain.IsLand(id)),
                             "Tectonic view uses original plate IDs");
-                    else if (mode == MapViewMode.Rainfall)
-                        Check(color == RainfallPalette.ForMillimetres(
-                            climate.BasePrecipitationMmByCellId![id]),
+                    else if (mode == MapViewMode.Rainfall && climate.BasePrecipitationMmByCellId is { } rainfall)
+                        Check(color == RainfallPalette.ForMillimetres(rainfall[id]),
                             "Rainfall view shows precipitation even on summits");
                     else if (mode != MapViewMode.Tectonic && terrain.IsImpassableSummit(id))
                         Check(color == Vector3.One, "Summits stay white in terrain views");
