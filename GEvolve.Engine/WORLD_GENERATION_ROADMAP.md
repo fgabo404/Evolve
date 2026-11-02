@@ -145,13 +145,13 @@ flowchart TD
 
 ### H03 — Placas tectónicas universales
 
-- [ ] Confirmar que el mismo `TectonicPlateGenerator` sirve todos los tipos.
-- [ ] Verificar cobertura completa, IDs válidos, conectividad de cada placa y fronteras irregulares.
-- [ ] Conservar separación entre placa tectónica y tipo de corteza.
-- [ ] Documentar cantidad de placas real de la versión implementada (en `master` consultado: 16), sin cambiarla sin decisión independiente.
-- [ ] Confirmar reproducibilidad de partición para tamaño y seed idénticos.
+- [x] Comparar el arreglo tectónico completo para los cuatro tipos y tamaños con las semillas 2026, 42 y -731.
+- [x] Verificar IDs 0..15, cobertura total, placas no vacías y una región conectada por placa con vecinos reales de `HexTopology`.
+- [x] Verificar fronteras completas, canónicas y sin duplicados, incluida la costura E/O; no equiparar placas con corteza, costas o continentes.
+- [x] Documentar que la versión actual utiliza exactamente 16 placas, sin cambiar esa cantidad.
+- [x] Confirmar determinismo para configuraciones idénticas y variación de las particiones completas entre las tres semillas oficiales.
 
-**Gate:** ningún hexágono queda sin placa; sin regiones de placa desconectadas.  
+**Gate:** compilación .NET 10 y suite local completa aprobadas, incluidos H01-A, H02, 12 baselines tectónicos y 36 geográficos sin cambios. H03 queda pendiente de aprobación arquitectónica; ninguna celda quedó sin placa ni hubo regiones desconectadas.
 **Archivo clave:** `Tectonics/TectonicPlateGenerator.cs`.
 
 ### H04 — Movimiento y esfuerzo

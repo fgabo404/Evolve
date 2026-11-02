@@ -425,14 +425,16 @@ No imponer arrays completos a los estados preview que explícitamente no dispone
 
 ### E.1 Partición tectónica [ACTUAL]
 
-`TectonicPlateGenerator` emplea 16 placas (`NumberOfPlates = 16` en código consultado), selecciona semillas espacialmente separadas, baraja costes de expansión y crece regiones mediante `PriorityQueue`. La resistencia del terreno combina ruido periódico multibanda, con `domain warping`, y cada placa usa combinaciones distintas de los campos. El coste acumulado de crecimiento puede modelarse como:
+`TectonicPlateGenerator` emplea exactamente 16 placas (`NumberOfPlates = 16`), selecciona semillas espacialmente separadas, baraja costes de expansión y crece regiones mediante `PriorityQueue`. La resistencia del terreno combina ruido periódico multibanda, con `domain warping`, y cada placa usa combinaciones distintas de los campos. El coste acumulado de crecimiento puede modelarse como:
 
 ```text
 cost(next, plate) = cost(current, plate) + baseCost[plate] * resistance(next, plate)
 resistance = clamp(1 - irregularity * noiseMix, minResistance, maxResistance)
 ```
 
-Una celda es reclamada desde una celda conectada; no se asignan etiquetas de placa mediante umbrales independientes. Validar conectividad de cada región con BFS/DFS sobre `HexTopology`, incluyendo costura horizontal.
+Una celda es reclamada desde una celda conectada; no se asignan etiquetas de placa mediante umbrales independientes. `TectonicPlateTests` verifica con BFS sobre `HexTopology` que cada ID de 0 a 15 forma una única región, sin celdas vacías, para los cuatro tamaños y las semillas 2026, 42 y -731. Compara el arreglo completo entre Pangaea, SmallContinents, Archipelagos y Continents, y repite la preview de cada tamaño y semilla para comprobar determinismo. Las tres semillas producen particiones distintas en cada tamaño. `Continents` conserva su superficie pendiente.
+
+`PlateBoundaryMap` representa cada frontera como una arista canónica entre vecinos reales con IDs distintos. Las pruebas contrastan todas las aristas esperadas con las emitidas, sin duplicados, comprueban las interacciones de la costura E/O y repiten el análisis para verificar determinismo. Ninguna regla exige que una frontera coincida con costas, montañas o continentes: el ID tectónico no clasifica superficie ni corteza.
 
 ### E.2 Cinemática y deformación [ACTUAL]
 
