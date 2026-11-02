@@ -11,6 +11,7 @@ public static class StagedLandmassTests
     public static void Run()
     {
         var service = new WorldGenerationService();
+        VerifyPublicGenerationEntryPoint(service);
         var relief = new PlateAwareElevationGenerator();
         var finishedTypes = new[] { LandmassType.Pangaea, LandmassType.SmallContinents, LandmassType.Archipelagos };
         foreach (var size in Enum.GetValues<GridSize>())
@@ -117,6 +118,44 @@ public static class StagedLandmassTests
                 "Alternate seed retains finished type and universal tectonics");
         }
         Console.WriteLine("PASS: pending Continents and unchanged finished staged generators");
+    }
+
+    private static void VerifyPublicGenerationEntryPoint(WorldGenerationService service)
+    {
+        foreach (var type in Enum.GetValues<LandmassType>())
+        {
+            var configuration = LandmassProfiles.Create(GridSize.Small, type, 2026);
+            var viaConfiguration = service.Generate(configuration);
+            var viaParameters = service.Generate(GridSize.Small, type);
+            var baseline = viaConfiguration.Landmass;
+            var actual = viaParameters.Landmass;
+
+            Check(actual.Configuration == baseline.Configuration &&
+                actual.DeterministicAttempt == baseline.DeterministicAttempt &&
+                actual.TectonicPreviewOnly == baseline.TectonicPreviewOnly &&
+                actual.SurfaceGenerationPending == baseline.SurfaceGenerationPending &&
+                actual.HasSurface == baseline.HasSurface &&
+                actual.PlateByCellId!.SequenceEqual(baseline.PlateByCellId!) &&
+                actual.SurfaceByCellId.SequenceEqual(baseline.SurfaceByCellId) &&
+                (actual.ElevationByCellId is null && baseline.ElevationByCellId is null ||
+                 actual.ElevationByCellId is not null && baseline.ElevationByCellId is not null &&
+                 actual.ElevationByCellId.SequenceEqual(baseline.ElevationByCellId)) &&
+                viaParameters.Statistics == viaConfiguration.Statistics,
+                $"Public facade matches existing generation for {type}");
+            if (type == LandmassType.Continents)
+                Check(actual.SurfaceGenerationPending && actual.TectonicPreviewOnly &&
+                    !actual.HasSurface && actual.SurfaceByCellId.Length == 0 &&
+                    actual.ElevationByCellId is null && viaParameters.Statistics is null,
+                    "Public facade does not invent a continental surface");
+        }
+
+        var alternateConfig = LandmassProfiles.Create(GridSize.Small, LandmassType.Continents, -731);
+        var alternate = service.Generate(GridSize.Small, LandmassType.Continents, -731);
+        Check(alternate.Landmass.Configuration == alternateConfig &&
+            alternate.Landmass.PlateByCellId!.SequenceEqual(
+                service.Generate(alternateConfig).Landmass.PlateByCellId!),
+            "Explicit alternate seed stays deterministic");
+        Console.WriteLine("PASS: H01-A public generation facade equivalence");
     }
 
     private static void Check(bool condition, string message)
