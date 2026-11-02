@@ -1,6 +1,6 @@
 # Evolve — Arquitectura técnica de generación mundial
 
-> **Rama de referencia:** `master` · **Estado:** diseño objetivo + inventario de la implementación actual.  
+> **Rama de referencia:** `worldgenerator` (desarrollo) · **Base estable:** `master` · **Estado:** diseño objetivo + inventario de la implementación actual.  
 > **Alcance:** motor `GEvolve.Engine`. Este documento NO afirma que las etapas planificadas estén implementadas.
 
 ## 1. Objetivo y responsabilidades
