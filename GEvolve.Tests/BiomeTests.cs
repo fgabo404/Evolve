@@ -2,6 +2,8 @@ using System.Diagnostics;
 using GEvolve.Definitions.Catalogs.World;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.World.BiomeGeneration;
+using GEvolve.Engine.World;
+using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Game.Graphics;
 using GEvolve.State.Game;
@@ -75,9 +77,10 @@ public static class BiomeTests
         foreach (int seed in new[] { 2026, 42, -731 })
         foreach (var type in new[] { LandmassType.Pangaea, LandmassType.SmallContinents, LandmassType.Archipelagos })
         {
-            var generated = new LandmassGenerationService().Generate(
+            var generated = new WorldGenerationService().Generate(
                 LandmassProfiles.Create(size, type, seed));
-            var terrain = generated.Landmass;
+            var terrain = classifier.Apply(generated.Landmass, new HexTopology(generated.Grid));
+            generated = generated with { Landmass = terrain };
             Check(terrain.SurfaceByCellId.Length == generated.Grid.Cells.Count &&
                 terrain.Configuration.GeneratorVersion == "landmass-12",
                 "Current size and generator version agree");
