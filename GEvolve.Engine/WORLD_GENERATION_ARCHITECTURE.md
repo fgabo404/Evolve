@@ -396,9 +396,11 @@ public interface IPlateAwareLandmassGenerator
 ### D.1 Indexación y vecindad
 
 - [ACTUAL] Espacio hexagonal discretizado y envuelto horizontalmente.
-- [OBJETIVO] `CellId` estable dentro de una generación y correspondencia biyectiva índice/coordenada.
-- [OBJETIVO] Cada celda tiene como máximo seis vecinos únicos; las celdas junto al seam E/O se conectan correctamente.
-- [OBJETIVO] Norte y sur no se envuelven; evitar usar métricas esféricas sin adaptar la topología.
+- [ACTUAL] `CellId = fila × columnas + columna`, consecutivo de `0` a `N−1`; `HexGrid` y `HexTopology` conservan la misma vecindad.
+- [ACTUAL] Cada celda tiene como máximo seis vecinos únicos y simétricos; la costura E/O se conecta y los bordes norte/sur permanecen abiertos.
+- [ACTUAL] `HexTopology.Id` envuelve columnas, pero rechaza filas fuera de rango. `Neighbors` y `Distance` rechazan IDs fuera de `0..N−1` con `ArgumentOutOfRangeException`. `HexGrid.TryGet` conserva su consulta sin envolvimiento.
+
+**Tres proporciones distintas:** `Columns/Rows` es la proporción lógica de la matriz y se aproxima a `3:2` (200/133, 250/167, 300/200, 400/267). Un hexágono flat-top de radio `r` tiene ancho `2r` y alto `√3r`, proporción `2/√3 ≈ 1,155`, que no define la proporción del mapa. El periodo horizontal físico es `1,5 × Columns × r` y la altura física es `√3 × (Rows + 0,5) × r`; su cociente ronda `1,29–1,30` en los tamaños oficiales. `MapCamera2D` aplica una escala uniforme en X/Y, por lo que esta proporción se conserva al mostrar el mapa completo; el recorte, zoom y tamaño de ventana cambian el área visible, no la geometría ni la topología.
 
 Para una cuadrícula de `W × H` celdas, la ocupación base de un array `byte[N]` es aproximadamente `N` bytes, con `N=W×H`, sin incluir encabezados del objeto, estructuras auxiliares ni referencias. Un array `float[N]` necesita aproximadamente `4N` bytes. Son estimaciones teóricas, no mediciones del profiler.
 
@@ -416,6 +418,8 @@ Conectividad E/O preservada
 ```
 
 No imponer arrays completos a los estados preview que explícitamente no disponen de superficie.
+
+**Validación H02:** `GridTests` recorre todas las celdas y enlaces de los cuatro tamaños, compara `HexGrid.Distance` y `HexTopology.Distance` con BFS sobre vecinos reales desde diez orígenes deterministas por tamaño (150 pares por tamaño) y mide por separado tiempo, bytes asignados y colecciones GC durante la construcción de Enormous. La diferencia de memoria retenida tras GC forzado es una observación separada de los bytes asignados; no hay umbrales de tiempo dependientes del hardware.
 
 ## E. Detalle algorítmico: placas y movimiento
 

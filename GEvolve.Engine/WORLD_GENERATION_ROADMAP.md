@@ -127,12 +127,12 @@ flowchart TD
 
 ### H02 — Cuadrícula y topología
 
-- [ ] Confirmar enumeraciones de tamaños, total de celdas, correspondencia `CellId` y geometría 3:2 acordada para visualización, sin confundir aspecto visual con vecindad.
-- [ ] Garantizar un único índice por hexágono y como máximo seis vecinos distintos.
-- [ ] Comprobar conexión horizontal E/O, ausencia de envoltura vertical y distancias sobre seam.
-- [ ] Validar la escala y memoria para el tamaño más grande realmente definido.
+- [x] Confirmar enumeraciones de tamaños, total de celdas, correspondencia `CellId` y distinguir proporción lógica 3:2, hexágono flat-top y extensión física renderizada.
+- [x] Garantizar un único índice por hexágono y como máximo seis vecinos distintos y simétricos en los cuatro tamaños.
+- [x] Comprobar conexión horizontal E/O, ausencia de envoltura vertical y distancias contra BFS sobre vecinos reales.
+- [x] Medir tiempo, bytes asignados, memoria retenida y colecciones GC para construir Enormous, sin umbrales dependientes del hardware.
 
-**Gate:** identidad, vecindad y conectividad consistentes en todos los tamaños.  
+**Gate:** compilación .NET 10 y suite local completa aprobadas, incluidos H01-A, 12 baselines tectónicos y 36 geográficos sin cambios; H02 queda pendiente de aprobación arquitectónica. Identidad, vecindad y conectividad fueron verificadas en los cuatro tamaños.
 **Archivos clave:** `GEvolve.Engine.Grid`, `HexTopology`, `HexGridDefinitions`.
 
 ### H03 — Placas tectónicas universales

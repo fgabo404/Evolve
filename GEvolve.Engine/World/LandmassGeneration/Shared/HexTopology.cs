@@ -22,9 +22,29 @@ public sealed class HexTopology
             _neighbors[cell.Id * 6 + _counts[cell.Id]++] = neighbor.Id;
     }
 
-    public ReadOnlySpan<int> Neighbors(int id) => _neighbors.AsSpan(id * 6, _counts[id]);
+    public ReadOnlySpan<int> Neighbors(int id)
+    {
+        ValidateId(id);
+        return _neighbors.AsSpan(id * 6, _counts[id]);
+    }
     public int Distance(int first, int second)
-        => Grid.Distance(Grid.Cells[first], Grid.Cells[second]);
+    {
+        if ((uint)first >= (uint)Count)
+            throw new ArgumentOutOfRangeException(nameof(first));
+        if ((uint)second >= (uint)Count)
+            throw new ArgumentOutOfRangeException(nameof(second));
+        return Grid.Distance(Grid.Cells[first], Grid.Cells[second]);
+    }
     public int Id(int column, int row)
-        => row * Columns + ((column % Columns) + Columns) % Columns;
+    {
+        if ((uint)row >= (uint)Rows)
+            throw new ArgumentOutOfRangeException(nameof(row));
+        return row * Columns + ((column % Columns) + Columns) % Columns;
+    }
+
+    private void ValidateId(int id)
+    {
+        if ((uint)id >= (uint)Count)
+            throw new ArgumentOutOfRangeException(nameof(id));
+    }
 }
