@@ -61,7 +61,7 @@ public static class StagedLandmassTests
                     $"Ocean cells have elevation zero ({size}/{type}: violations={nonzeroOcean})");
                 Check(zeroLand == 0,
                     $"Land cells have positive elevation ({size}/{type}: violations={zeroLand})");
-                Check(LandmassGenerationService.MeetsProfile(type, stats) &&
+                Check(LandmassProfileValidator.MeetsProfile(type, stats) &&
                     stats.LandCells > 0 && stats.LandCells < topology.Count,
                     "Finished types retain their original geographic profiles");
                 Check(landmass.Climate is null && landmass.SlopeByCellId is null && landmass.Biomes is null,
@@ -127,7 +127,7 @@ public static class StagedLandmassTests
             var world = service.Generate(config);
             Check(world.Landmass.PlateByCellId!.SequenceEqual(
                     service.GeneratePlatePreview(config).Landmass.PlateByCellId!) &&
-                LandmassGenerationService.MeetsProfile(type, world.Statistics!),
+                LandmassProfileValidator.MeetsProfile(type, world.Statistics!),
                 "Alternate seed retains finished type and universal tectonics");
         }
         Console.WriteLine("PASS: pending Continents and unchanged finished staged generators");
