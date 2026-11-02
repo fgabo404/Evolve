@@ -23,8 +23,9 @@ public static class GameTests
         session.OpenCreateWorld();
         Check(session.Screen == GameScreen.CreateWorld && session.SelectedSize == GridSize.Small,
             "Create screen defaults to Small");
-        Check(session.SelectedType == LandmassType.Pangaea && session.SeedText == "2026" &&
-            session.State.Landmass is null, "Default world type and visible seed");
+        Check(session.SelectedType == LandmassType.Pangaea &&
+            int.TryParse(session.SeedText, out _) && session.State.Landmass is null,
+            "Default world type and valid random initial seed");
         var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
         Check(createButtons.Count(button =>
                 button.Action is UiAction.SizeSelect or UiAction.TypeSelect) == 2 &&
