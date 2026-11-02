@@ -17,6 +17,10 @@ public sealed class WorldGenerationService
     private readonly PangaeaFromPlatesGenerator _pangaea = new();
     private readonly PlateAwareElevationGenerator _relief = new();
 
+    /// <summary>Generates a world using the official profile for the selected size, type and seed.</summary>
+    public GeneratedWorld Generate(GridSize size, LandmassType worldType, int seed = 2026)
+        => Generate(LandmassProfiles.Create(size, worldType, seed));
+
     public GeneratedWorld Generate(LandmassConfiguration configuration)
     {
         Validate(configuration);
