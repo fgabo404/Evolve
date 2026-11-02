@@ -1,5 +1,6 @@
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.Tectonics;
@@ -56,7 +57,7 @@ public static class PlateBoundaryTests
             (GridSize.Small, 2026), (GridSize.Medium, 42),
             (GridSize.Large, -731), (GridSize.Enormous, 2026) })
         {
-            var generated = new LandmassGenerationService().Generate(
+            var generated = new WorldGenerationService().Generate(
                 LandmassProfiles.Create(size, LandmassType.Pangaea, seed));
             var world = generated.Landmass;
             var grid = new HexTopology(generated.Grid);
@@ -66,7 +67,7 @@ public static class PlateBoundaryTests
                 first.DistanceToBoundaryByCellId.SequenceEqual(repeated.DistanceToBoundaryByCellId) &&
                 first.BoundaryCellCount > 0,
                 "Tectonic boundaries are reproducible for real Pangea maps");
-            Check(ReferenceEquals(world.PlateByCellId, world.PlateByCellId) &&
+            Check(world.PlateByCellId!.SequenceEqual(TectonicPlateGenerator.Generate(grid, seed)) &&
                 first.Edges.All(e => world.PlateByCellId![e.FirstCellId] !=
                     world.PlateByCellId[e.SecondCellId]),
                 "Analysis never invents tectonic plate boundaries");
