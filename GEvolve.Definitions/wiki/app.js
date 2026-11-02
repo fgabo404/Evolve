@@ -5,7 +5,7 @@ const CATALOGS = [
   { type: "animals", title: { es: "Animales", en: "Animals" }, file: "../Resources/fauna.json" },
   { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Resources/flora.json" },
   { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Resources/minerals.json" },
-  { type: "resources", title: { es: "Recursos", en: "Resources" }, file: "../Resources/resources.catalog.guide.json" },
+  { type: "resources", title: { es: "Recursos", en: "Resources" }, file: "../Resources/resources.json" },
   { type: "technologies", title: { es: "Tecnologías", en: "Technologies" }, file: "../Technologies/agriculture.tech.json" }
 ];
 const state = { lang: "es", query: "", type: "world", id: null, data: null, index: null,

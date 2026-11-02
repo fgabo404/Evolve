@@ -11,7 +11,7 @@ const files = {
   animals: "Resources/fauna.json",
   plants: "Resources/flora.json",
   minerals: "Resources/minerals.json",
-  resources: "Resources/resources.catalog.guide.json",
+  resources: "Resources/resources.json",
   technologies: "Technologies/agriculture.tech.json"
 };
 const data = Object.fromEntries(Object.entries(files).map(([type, file]) =>
