@@ -284,3 +284,315 @@ Las rutas anteriores son una **guía lógica** basada en archivos conocidos; rev
 - `GEvolve.Definitions/WorldGeneration/Configuration/LandmassConfiguration.cs`
 
 **Nota de alcance:** este commit solo incorpora documentación técnica. No modifica la lógica ni cambia el contrato público del motor.
+
+
+---
+
+# Anexo de especificación de ingeniería (v1)
+
+> **Convención de trazabilidad:** [ACTUAL] significa observado en código de `master`; [OBJETIVO] es una decisión de diseño aún no implementada; [RIESGO] indica comportamiento que requiere verificación en ejecución. Esta sección no constituye una declaración de conformidad del motor.
+
+## A. Límites arquitectónicos y aislamiento de responsabilidades
+
+```mermaid
+flowchart LR
+    UI["GEvolve.Game / UI"] --> API["WorldGenerationService (Engine)"]
+    API --> CFG["LandmassProfiles (Definitions)"]
+    API --> TOPO["HexGrid / HexTopology"]
+    API --> TECT["Tectonics"]
+    API --> LAND["Landmass / Elevation"]
+    API -. "futuro" .-> CLIM["Climate / Hydrology / Biomes"]
+    CFG --> API
+    TOPO --> STATE["LandmassState (State)"]
+    TECT --> STATE
+    LAND --> STATE
+    CLIM -.-> STATE
+    STATE --> OUT["GeneratedWorld"]
+    OUT --> UI
+    OUT --> SAVE["Persistence"]
+```
+
+**Dependencias permitidas [OBJETIVO]:** las fases pueden depender de tipos de `Definitions`, geometría y outputs previos, pero no de `GEvolve.Game` ni del renderer. `State` no debería tener dependencia de gráficos. El orquestador no debe almacenar estado global mutable compartido entre ejecuciones.
+
+**Ownership:** cada módulo debe declarar los campos que produce. Una etapa posterior no reescribe una capa anterior sin una regla explícita (por ejemplo, emergencia volcánica que cambia superficie); cualquier mutación debe volver a validar invariantes derivadas y estadísticas.
+
+## B. Grafo de dependencias de datos (DAG)
+
+La secuencia **no es solo una cadena**: una fase puede necesitar varias capas. Cada arista se interpreta como requisito previo, no como una llamada obligatoriamente sincrónica.
+
+```mermaid
+flowchart TD
+    Q["Request: Size + Type + Seed"] --> V["Validate / Profile"]
+    V --> G["Grid / Topology"]
+    G --> P["Plate IDs"]
+    P --> M["Motion / Stress"]
+    P --> S["Surface / Crust"]
+    M --> S
+    S --> E["Elevation"]
+    M --> E
+    M --> GEO["Geological features"]
+    S --> GEO
+    E --> GEO
+    S --> T["Temperature"]
+    E --> T
+    T --> R["Precipitation"]
+    E --> R
+    S --> R
+    R --> H["Hydrology"]
+    E --> H
+    GEO --> B["Biome classification"]
+    T --> B
+    R --> B
+    H --> B
+    E --> B
+    DEF["Biome definitions"] --> B
+    B --> POP["Resource population"]
+    RES["Resource definitions"] --> POP
+    POP --> O["World snapshot / GeneratedWorld"]
+```
+
+**Política de prerequisitos [OBJETIVO]:** las fases deben declarar entradas obligatorias. Si faltan capas, o se devuelve un estado parcial explícito o se lanza un error tipado; no completar arrays con ceros indistinguibles de datos reales.
+
+## C. Contratos de API y compatibilidad
+
+### C.1 Contrato actual
+
+- [ACTUAL] `WorldGenerationService.Generate(LandmassConfiguration)` valida la igualdad contra `LandmassProfiles.Create(size,type,seed)`.
+- [ACTUAL] `GeneratePlatePreview(LandmassConfiguration)` devuelve un estado de visualización tectónica.
+- [ACTUAL] `GeneratedWorld(HexGrid Grid, LandmassState Landmass, LandmassStatistics? Statistics)`.
+- [ACTUAL] `LandmassType`: `Continents`, `Pangaea`, `SmallContinents`, `Archipelagos`.
+- [ACTUAL] `LandmassProfiles.CurrentGeneratorVersion = "landmass-12"` en el archivo de configuración consultado.
+
+### C.2 Fachada propuesta sin romper compatibilidad
+
+```csharp
+// OBJETIVO: nueva sobrecarga; conservar el overload original.
+public GeneratedWorld Generate(GridSize size, LandmassType type, int seed = 2026)
+{
+    var configuration = LandmassProfiles.Create(size, type, seed);
+    return Generate(configuration);
+}
+```
+
+**No introducir `WorldGenerationRequest` como clase obligatoria en la primera fase**: con los tipos existentes, la firma basta. Si se incorporan decenas de parámetros independientes, evaluar un DTO inmutable más adelante.
+
+### C.3 Estados del resultado
+
+| Estado semántico | Significado | Condición exigida |
+|---|---|---|
+| Complete [OBJETIVO] | Todas las capas habilitadas por el pipeline están materializadas | Arrays válidos y dependencias satisfechas |
+| Partial [OBJETIVO] | Generación deliberadamente incompleta | Razón explícita y campos disponibles |
+| Preview [ACTUAL] | Inspección de placas/movimiento sin superficie real | `TectonicPreviewOnly` |
+| Pending [ACTUAL] | Tipo `Continents` aún sin superficie en `WorldGenerationService` | `SurfaceGenerationPending` |
+| Failed [OBJETIVO] | No se pudo satisfacer el contrato | Excepción/error; no confundir con mapa vacío |
+
+**Precisión:** la tabla de estados es conceptual; no existe necesariamente una enumeración con esos nombres en `master`.
+
+### C.4 Semántica de los datos
+
+`PlateByCellId` es un ID de placa, `SurfaceByCellId` representa ocupación tierra/océano, `ElevationByCellId` representa niveles del juego. Todos deben indexarse por `CellId`. No interpretar `Elevation=0` sin consultar el tipo de superficie y la validez de la fase. No asumir que IDs de bioma o de recursos pueden representarse siempre en `byte`: validar cardinalidad y el contrato del catálogo.
+
+## D. Detalle algorítmico: topología
+
+### D.1 Indexación y vecindad
+
+- [ACTUAL] Espacio hexagonal discretizado y envuelto horizontalmente.
+- [OBJETIVO] `CellId` estable dentro de una generación y correspondencia biyectiva índice/coordenada.
+- [OBJETIVO] Cada celda tiene como máximo seis vecinos únicos; las celdas junto al seam E/O se conectan correctamente.
+- [OBJETIVO] Norte y sur no se envuelven; evitar usar métricas esféricas sin adaptar la topología.
+
+Para una cuadrícula de `W × H` celdas, la ocupación base de un array `byte[N]` es aproximadamente `N` bytes, con `N=W×H`, sin incluir encabezados del objeto, estructuras auxiliares ni referencias. Un array `float[N]` necesita aproximadamente `4N` bytes. Son estimaciones teóricas, no mediciones del profiler.
+
+### D.2 Invariantes verificables
+
+```text
+N = grid.CellCount
+PlateByCellId.Length == N
+HasSurface => SurfaceByCellId.Length == N
+HasElevation => ElevationByCellId.Length == N
+0 <= CellId < N
+IDs de placa válidos para la versión del algoritmo
+No hay celdas con placa sin asignar
+Conectividad E/O preservada
+```
+
+No imponer arrays completos a los estados preview que explícitamente no disponen de superficie.
+
+## E. Detalle algorítmico: placas y movimiento
+
+### E.1 Partición tectónica [ACTUAL]
+
+`TectonicPlateGenerator` emplea 16 placas (`NumberOfPlates = 16` en código consultado), selecciona semillas espacialmente separadas, baraja costes de expansión y crece regiones mediante `PriorityQueue`. La resistencia del terreno combina ruido periódico multibanda, con `domain warping`, y cada placa usa combinaciones distintas de los campos. El coste acumulado de crecimiento puede modelarse como:
+
+```text
+cost(next, plate) = cost(current, plate) + baseCost[plate] * resistance(next, plate)
+resistance = clamp(1 - irregularity * noiseMix, minResistance, maxResistance)
+```
+
+Una celda es reclamada desde una celda conectada; no se asignan etiquetas de placa mediante umbrales independientes. Validar conectividad de cada región con BFS/DFS sobre `HexTopology`, incluyendo costura horizontal.
+
+### E.2 Cinemática y deformación [ACTUAL]
+
+```text
+velocity(plate) = speed * (cos(theta), sin(theta))
+relativeVelocity(A,B) = velocity(B) - velocity(A)
+normalComponent = dot(relativeVelocity, edgeNormal)
+shearComponent = abs(dot(relativeVelocity, edgeTangent))
+convergence = max(0, -normalComponent)
+divergence = max(0, normalComponent)
+```
+
+Las categorías de interacción incluyen convergencia, divergencia, transformante, mixta y quieta según umbrales. Los campos de influencia se propagan con kernel `exp(-(distance/radius)^2)`, usando máximo por canal para no multiplicar artificialmente la intensidad por densidad de bordes.
+
+**Limitación física declarada:** modelo cinemático 2D; no resuelve flexión de placas, geodinámica térmica, reología ni evolución temporal continua. La velocidad está expresada en cm/año, pero no implica que la grid use una resolución espacial en km calibrada.
+
+## F. Detalle: masas terrestres, relieve y accidentes
+
+### F.1 Selección de estrategia [ACTUAL]
+
+```text
+Pangaea          -> PangaeaFromPlatesGenerator
+SmallContinents  -> SmallContinentsGenerator + PlateAwareElevationGenerator
+Archipelagos     -> ArchipelagosGenerator + PlateAwareElevationGenerator
+Continents       -> Preview tectónica, sin superficie en el servicio publicado
+```
+
+El servicio repite como máximo cuatro intentos de generación y usa `LandmassAnalysis` / `MeetsProfile` para validar propiedades morfológicas. **No interpretar estos criterios como una garantía de realismo tectónico**. Revisar que la validación de perfil ocurre después de las operaciones que puedan cambiar superficie.
+
+### F.2 Geología
+
+[ACTUAL] `ContinentalReliefGenerator` clasifica contactos (colisión continental, rift, dorsales, transformante, subducción oceánica/continental), crea campos de deformación y propone volcanes sobre la placa superior con desplazamiento respecto a la fosa. También calcula profundidad oceánica. [RIESGO] No está conectado a la ruta `Continents` del `WorldGenerationService` publicado: una clase presente no es una etapa ejecutada.
+
+**Reglas [OBJETIVO]:**
+1. El tipo de corteza no equivale al identificador de placa.
+2. El levantamiento orogénico debe derivarse de contactos y deformación, no de ruido aislado.
+3. Las fallas, rifts, dorsales y arcos volcánicos deberían conservar procedencia geológica.
+4. Toda alteración tardía de superficie (por volcanismo u otros eventos) obliga a recalcular o invalidar estadísticas y datos derivados.
+5. La escala `0–100` es una cuantización de juego; documentar explícitamente una función de conversión antes de usar metros o km.
+
+## G. Diseño climático, hidrológico y ecológico [OBJETIVO]
+
+### G.1 Temperatura
+
+Una formulación futura de referencia, **no implementada aquí**, puede ser:
+
+```text
+T(cell) = latitudeBaseline(latitude)
+        - lapseRate * altitudeKm
+        + continentalityCorrection
+        + regionalNoise
+```
+
+Se requieren escala vertical física, definición de latitud y estacionalidad antes de calibrar parámetros. Una latitud inferida linealmente de filas es aproximación sobre la topología cilíndrica.
+
+### G.2 Precipitación
+
+La precipitación debe depender de advección de humedad, proximidad a océanos, vientos y orografía. Modelar explícitamente barlovento/sotavento si se quiere sombra pluviométrica. No basta con colorear ruido independiente por celda. La normalización debe preservar variación climática entre tamaños.
+
+### G.3 Hidrología
+
+**Orden recomendado:** elevación + precipitación → dirección de flujo → tratamiento de sumideros → acumulación → selección de canales → cuencas → lagos / desembocaduras. En topología hexagonal cada celda terrestre tiene hasta seis receptores candidatos; definir desempate determinista en pendientes iguales. Usar grafos y evitar ciclos de drenaje. Decidir explícitamente si los lagos endorreicos están permitidos.
+
+Los ríos y lagos pertenecen a hidrología; las cordilleras, fosas, fallas y volcanes a geología. Una capa de `GeographicFeatures` puede reunirlos para renderizado sin borrar su procedencia.
+
+### G.4 Biomas y recursos
+
+`BiomeClassifier` debe consumir temperatura, precipitación, elevación y rasgos físicos, con reglas ordenadas y deterministas. La clasificación ecológica es distinta de la población de flora/fauna/minerales. Los catálogos JSON definen elegibilidad, identificadores, biomas compatibles y reglas de aparición. Las posiciones efectivas de recursos deben proceder de un generador separado y reproducible. Considerar **geología para minerales**, no limitar todos los recursos a etiquetas de bioma.
+
+### G.5 Evitar ciclos de dependencias
+
+El DAG inicial es acíclico. Si se introduce retroalimentación (erosión fluvial que altera elevación, cambios de costa que afectan precipitación), definir un **solver iterativo explícito**, con orden, número de iteraciones, criterio de convergencia y versionado; no crear dependencias circulares implícitas en el orquestador.
+
+## H. Determinismo y versionado
+
+- [OBJETIVO] Igual configuración + mismo algoritmo/versiones de catálogos => mismo resultado byte a byte en el entorno de referencia.
+- [ACTUAL] Generadores tectónicos usan streams deterministas separados; mantener independencia por dominio.
+- [OBJETIVO] Evitar consumir el RNG de una etapa en otra; usar `seed` + salt estable por etapa + índice de intento.
+- [OBJETIVO] Fijar orden de iteración, desempates y ordenamientos estables; no depender del orden de enumeración de contenedores no ordenados.
+- [RIESGO] Diferencias de `float/double`, arquitectura o cambios del runtime pueden afectar igualdad binaria entre plataformas; ejecutar fixtures comparativos reales antes de prometer cross-platform determinism.
+- [OBJETIVO] Registrar versiones de generadores y esquemas en metadatos de partidas. Cambios algorítmicos pueden regenerar mapas diferentes pese a conservar la semilla.
+
+## I. Rendimiento y complejidad
+
+Sea `N` el número de celdas, `E` el número de aristas hexagonales y `P` las placas.
+
+| Subsistema | Característica | Punto de vigilancia |
+|---|---|---|
+| Grid | O(N) memoria base | Representación de vecinos / asignaciones |
+| Crecimiento de placas | Cola de prioridad sobre candidatos del grafo | Número de encolados, `O(log Q)` por operación |
+| Análisis de componentes | BFS/DFS cercano a O(N+E) | Repetición por intento |
+| Movimiento | Interacciones en bordes + propagación espacial | Radio y límite de difusión; coste puede dominar |
+| Elevación/clima | Barridos por celda, normalmente O(N) por fase | Ruido multibanda y conversiones |
+| Hidrología [OBJETIVO] | Drenaje / acumulación sobre grafo | Ordenación, depresiones y ausencia de ciclos |
+| Recursos [OBJETIVO] | Reglas por celda y catálogo | Índices por bioma y geología |
+
+Estas expresiones describen operaciones; **no son benchmarks medidos**. Instrumentar por fase: duración, bytes asignados, GC, tamaño de arrays, número de intentos, cobertura de datos, métricas geográficas y huella por semilla. Medir con tamaños reales de `HexGridDefinitions`.
+
+## J. Validación, pruebas de contrato y observabilidad
+
+### J.1 Matriz mínima de escenarios
+
+| Dimensión | Cobertura |
+|---|---|
+| Tipo | Todos los valores de `LandmassType` |
+| Tamaño | Todos los valores de `GridSize` |
+| Semilla | Fija, alternativa, casos extremos documentados |
+| Estado | Completo, preview, pendiente, error de perfil |
+| Geografía | Costura horizontal, límites N/S, conectividad de placas y continentes |
+| Datos | Rango de IDs, arrays alineados, finite values, alturas/superficie coherentes |
+| Repetición | Comparación de hashes / snapshots deterministas |
+
+**En línea con el criterio del proyecto:** no es necesario crear una carpeta `TEST` o volver a adoptar un laboratorio de generación anterior. Las comprobaciones de contrato se pueden integrar en la infraestructura de pruebas elegida para el repositorio y en validadores de Engine sin introducir directorios temporales.
+
+### J.2 Resultado diagnóstico [OBJETIVO]
+
+Registrar como mínimo:
+
+```text
+WorldSize, WorldType, Seed, GeneratorVersion,
+PlateCount, LandCellCount, OceanCellCount,
+ComponentCount, DominantLandShare,
+ChosenAttempt, SurfaceAvailable, ElevationAvailable,
+PerStageDuration, AllocatedBytes, FailureReason
+```
+
+No tratar los diagnostics como parte del algoritmo aleatorio. El pipeline debe exponer claramente qué etapa no pudo completarse y por qué.
+
+## K. Migración y criterios de aceptación
+
+### K.1 Migración segura
+
+1. Inventariar consumidores de `WorldGenerationService`, `LandmassGenerationService` y previews.
+2. Añadir sobrecarga pública con tamaño/tipo/semilla sin modificar el overload existente.
+3. Actualizar consumidores gradualmente; mantener rutas legadas compatibles temporalmente.
+4. Consolidar un único pipeline **solo cuando** la semántica de cada tipo y de las etapas climáticas esté verificada.
+5. Eliminar duplicación tras asegurar compatibilidad de partidas, replays y herramientas.
+6. Activar hidrología/recursos como nuevas fases únicamente con contratos y métricas.
+
+### K.2 Definition of Done de la primera iteración
+
+- [ ] La API expone `Generate(GridSize, LandmassType, int seed = 2026)`.
+- [ ] El servicio construye configuración mediante `LandmassProfiles.Create`.
+- [ ] Todos los tipos y tamaños válidos conservan el comportamiento actual.
+- [ ] `Continents` conserva explícitamente su estado pendiente; no se presenta como mundo completo.
+- [ ] Ningún generador cambia sus fórmulas por refactor de orquestación.
+- [ ] Los consumidores no necesitan crear o seleccionar generadores internos.
+- [ ] Se verifican resultados deterministas para semillas de referencia.
+- [ ] El documento refleja cualquier cambio real de contrato.
+
+## L. Registro de decisiones (ADR simplificado)
+
+| ID | Decisión | Motivo | Estado |
+|---|---|---|---|
+| ADR-WG-001 | Un solo orquestador público | API estable / encapsulamiento | Propuesto |
+| ADR-WG-002 | Placas universales antes de tipo de superficie | Coherencia geológica | Ya aplicado en servicio principal |
+| ADR-WG-003 | Separar generación geológica e hidrológica | Diferentes dependencias y modelos físicos | Propuesto |
+| ADR-WG-004 | Bioma ≠ población de recursos | Reglas independientes y extensibles | Propuesto |
+| ADR-WG-005 | Resultados parciales explícitos | No fabricar mapas válidos desde previews | Parcialmente disponible |
+| ADR-WG-006 | Mantener `GeneratedWorld` como contrato inicial | Reducir riesgo de migración | Propuesto |
+| ADR-WG-007 | No duplicar `LandmassState` por adelantado | Evitar estados inconsistentes | Propuesto |
+| ADR-WG-008 | Versionado de algoritmos y resultados | Reproducción y compatibilidad | Parcialmente disponible |
+
+---
+
+*Este anexo es documentación de ingeniería. No modifica algoritmos, clases ni archivos de código. Las hipótesis de futuras etapas deben convertirse en requisitos verificables antes de implementarse.*
