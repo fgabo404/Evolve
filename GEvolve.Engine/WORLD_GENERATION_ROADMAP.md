@@ -1,0 +1,255 @@
+# Evolve — Roadmap de generación mundial
+
+> **Rama de trabajo:** `worldgenerator`  
+> **Documento rector:** [WORLD_GENERATION_ARCHITECTURE.md](WORLD_GENERATION_ARCHITECTURE.md)  
+> **Estado:** planificación; ningún hito se considera completado por el simple hecho de existir una clase.
+> **Objetivo final:** producir un mundo hexagonal determinista, coherente, persistible y consumible por la simulación y el renderer, para todos los tipos de mapa admitidos.
+
+## Reglas del roadmap
+
+- El código vigente en la rama `worldgenerator` es la fuente de verdad de implementación; este documento define el destino y los gates de aceptación.
+- Marcar `[x]` únicamente cuando exista evidencia verificable: código integrado, compilación, validaciones y commit.
+- No modificar `master` ni `develop` como parte de estos hitos; integrar después mediante PR autorizado.
+- Preferir reutilizar los componentes de `GEvolve.Engine`, `GEvolve.State` y `GEvolve.Definitions`.
+- No crear un segundo generador completo en paralelo, ni una carpeta de laboratorios/TEST, CSV o SVG temporales.
+- Cada cambio de contrato o algoritmo debe acompañarse de actualización documental y nota de compatibilidad/versionado.
+- **Alcance del mundo completo:** incluye grid, tectónica, tierra/océanos, relieve, clima, hidrología, biomas y población de recursos; renderizado de alta fidelidad y simulación de civilizaciones quedan fuera.
+
+## 1. Vista general y dependencias
+
+```mermaid
+flowchart TD
+  I["GridSize + LandmassType + Seed"] --> O["01. Orquestador único"]
+  O --> G["02. HexGrid / HexTopology"]
+  G --> P["03. Placas tectónicas"]
+  P --> M["04. Movimiento e interacciones"]
+  M --> L["05. Corteza y masas terrestres"]
+  L --> E["06. Altitud y batimetría"]
+  M --> GEO["07. Relieve geológico"]
+  L --> GEO
+  E --> GEO
+  L --> T["08. Temperatura"]
+  E --> T
+  T --> R["09. Precipitaciones"]
+  L --> R
+  E --> R
+  E --> H["10. Hidrología"]
+  R --> H
+  GEO --> B["11. Biomas"]
+  T --> B
+  R --> B
+  H --> B
+  B --> RES["12. Recursos naturales"]
+  GEO --> RES
+  DEF["Catálogos JSON"] --> B
+  DEF --> RES
+  RES --> V["13. Validación e integración"]
+  V --> W["GeneratedWorld completo"]
+```
+
+**Leyenda:** las flechas indican entradas indispensables. No asumir que una etapa posterior puede ejecutarse con arrays vacíos que simulan resultados.
+
+## 2. Matriz de avance
+
+| Hito | Resultado verificable | Estado inicial |
+|---|---|---|
+| 01 — Orquestador | API de entrada única y resultados explícitos | Por realizar |
+| 02 — Grid | Topología determinista y seam E/O validado | Base existente; pendiente de gate |
+| 03 — Placas | Partición conectada para todo tipo y tamaño | Base existente; pendiente de gate |
+| 04 — Movimiento | Velocidades, interacciones y campos de esfuerzo | Base existente; pendiente de gate |
+| 05 — Masas terrestres | Cuatro estrategias coherentes, incluido Continents | Incompleto |
+| 06 — Elevación | Terreno 1–100 y mar 0 con batimetría separada | Parcial |
+| 07 — Geología | Orogenia, arcos, volcanes, fallas y dorsales integrados | Parcial / por conectar |
+| 08 — Temperatura | Campo térmico por celda en pipeline único | Implementación previa; por integrar |
+| 09 — Precipitación | Humedad y precipitación geográficamente coherentes | Implementación previa; por integrar |
+| 10 — Hidrología | Cuencas, ríos, lagos y flujo determinista | Por realizar |
+| 11 — Biomas | Biomas por celda desde factores ambientales | Implementación previa; por integrar |
+| 12 — Recursos | Flora, fauna y minerales por reglas y geología | Por realizar / auditar |
+| 13 — Cierre | Mundo completo, persistencia, perfilado y revisión | Por realizar |
+
+**Nota:** el estado inicial describe el código revisado al planificar; actualizar tras inspeccionar commits posteriores.
+
+## 3. Hitos y criterios de aceptación
+
+### H01 — Orquestador único
+
+**Objetivo:** `WorldGenerationService` es la única fachada pública recomendada.
+
+- [ ] Añadir `Generate(GridSize size, LandmassType type, int seed = 2026)` mediante `LandmassProfiles.Create`.
+- [ ] Conservar `Generate(LandmassConfiguration)` y su compatibilidad.
+- [ ] Inventariar y unificar llamadas a `WorldGenerationService` y `LandmassGenerationService` sin eliminar prematuramente rutas funcionales.
+- [ ] Mantener estado explícito `TectonicPreviewOnly` / `SurfaceGenerationPending` para `Continents`.
+- [ ] El orquestador solo coordina; las matemáticas permanecen en generadores especializados.
+
+**Gate:** llamadas simples para todo `GridSize`/`LandmassType`; sin regresiones de resultados anteriores; error/resultado parcial inequívoco.  
+**Archivos clave:** `World/WorldGenerationService.cs`, `World/LandmassGeneration/LandmassGenerationService.cs`, configuración de Definitions.
+
+### H02 — Cuadrícula y topología
+
+- [ ] Confirmar enumeraciones de tamaños, total de celdas, correspondencia `CellId` y geometría 3:2 acordada para visualización, sin confundir aspecto visual con vecindad.
+- [ ] Garantizar un único índice por hexágono y como máximo seis vecinos distintos.
+- [ ] Comprobar conexión horizontal E/O, ausencia de envoltura vertical y distancias sobre seam.
+- [ ] Validar la escala y memoria para el tamaño más grande realmente definido.
+
+**Gate:** identidad, vecindad y conectividad consistentes en todos los tamaños.  
+**Archivos clave:** `GEvolve.Engine.Grid`, `HexTopology`, `HexGridDefinitions`.
+
+### H03 — Placas tectónicas universales
+
+- [ ] Confirmar que el mismo `TectonicPlateGenerator` sirve todos los tipos.
+- [ ] Verificar cobertura completa, IDs válidos, conectividad de cada placa y fronteras irregulares.
+- [ ] Conservar separación entre placa tectónica y tipo de corteza.
+- [ ] Documentar cantidad de placas real de la versión implementada (en `master` consultado: 16), sin cambiarla sin decisión independiente.
+- [ ] Confirmar reproducibilidad de partición para tamaño y seed idénticos.
+
+**Gate:** ningún hexágono queda sin placa; sin regiones de placa desconectadas.  
+**Archivo clave:** `Tectonics/TectonicPlateGenerator.cs`.
+
+### H04 — Movimiento y esfuerzo
+
+- [ ] Auditar velocidades, direcciones y streams RNG deterministas.
+- [ ] Comprobar clasificación de bordes: convergentes, divergentes, transformantes, mixtos y quietos.
+- [ ] Validar proyecciones normal/tangente y costura E/O.
+- [ ] Verificar propagación gaussiana, finitud y límites de intensidad.
+- [ ] Exponer trazabilidad de qué bordes producen deformación por celda.
+
+**Gate:** esfuerzos repetibles y geográficamente coherentes; no NaN ni intensidades negativas.  
+**Archivos clave:** `PlateMotionGenerator`, `TectonicMotionGenerator`, `PlateBoundaryMap`.
+
+### H05 — Corteza y masas terrestres
+
+- [ ] Auditar `Pangaea`, `SmallContinents`, `Archipelagos` y `Continents`.
+- [ ] Completar `Continents` desde corteza/ensamblaje tectónico, sin equiparar placas con continentes.
+- [ ] Mantener selección explícita por tipo, pero tectónica base compartida.
+- [ ] Definir cuotas de superficie, componentes, contigüidad, tamaños y separación por tipo.
+- [ ] Validar costas y continuidad por seam; evitar máscaras sin plausibilidad continental.
+- [ ] Mantener intentos acotados y deterministas, diagnósticos de rechazo y resultados parciales explícitos.
+
+**Gate:** todos los tipos producen tierra y océanos reales con perfil válido; `Continents` deja de estar pendiente solo tras pasar todas las comprobaciones.  
+**Archivos clave:** `LandmassGeneration/*Generator.cs`, `ContinentalCrustMap`, `LandmassAnalysis`.
+
+### H06 — Altitud y batimetría
+
+- [ ] Distinguir `SurfaceByCellId`, `ElevationByCellId` y profundidad oceánica.
+- [ ] Mantener elevación terrestre cuantizada 1–100 y mar nivel 0 cuando corresponda a la representación actual.
+- [ ] Comprobar transición costa–llanura–meseta–alta montaña.
+- [ ] Evitar ruido que genere picos aislados sin explicación geológica.
+- [ ] Definir explícitamente cualquier conversión futura entre niveles del juego y metros físicos.
+
+**Gate:** no hay celdas tierra/mar contradictorias; arrays completos; perfiles reproducibles.  
+**Archivos clave:** `PlateAwareElevationGenerator`, modelos de `LandmassState`.
+
+### H07 — Geología y accidentes tectónicos
+
+- [ ] Conectar el relieve a contactos reales placa/corteza.
+- [ ] Integrar colisión continental, subducción, divergencia y transformantes.
+- [ ] Derivar cinturones montañosos, fallas, rifts, arcos volcánicos, dorsales y fosas.
+- [ ] Conservar continuidad regional y procedencia geológica de cada accidente.
+- [ ] Si el volcanismo emerge nuevas islas, recalcular superficie/estadísticas y capas dependientes.
+
+**Gate:** los accidentes coinciden con causas tectónicas rastreables; sin modificaciones de superficie ocultas.  
+**Archivo clave:** `ContinentalReliefGenerator.cs`; dependencias de tectónica/corteza.
+
+### H08 — Temperatura
+
+- [ ] Auditar la implementación existente de `TemperatureGenerator`.
+- [ ] Integrarla después de superficie/elevación en el orquestador único.
+- [ ] Definir latitud, temperatura base, gradiente altitudinal y continentalidad.
+- [ ] Documentar si el modelo representa media anual o estacionalidad.
+- [ ] Estabilizar unidades y rangos físicos, evitando asumir que altura 0–100 equivale a km.
+
+**Gate:** cobertura térmica total, finitud, patrones latitudinales y efecto altitudinal plausibles.  
+**Archivo clave:** `World/Climate/TemperatureGenerator.cs` (verificar ubicación exacta).
+
+### H09 — Precipitaciones y humedad
+
+- [ ] Auditar e integrar `PrecipitationGenerator`.
+- [ ] Considerar fuentes oceánicas, transporte de humedad, vientos, relieve y sombra orográfica.
+- [ ] Separar precipitación de humedad del suelo si ambas se necesitan.
+- [ ] Usar ruido solo como variación secundaria, no como causa principal.
+- [ ] Definir unidades y rangos, evitando ciclos con hidrología.
+
+**Gate:** continentes interiores, barlovento y sotavento reflejan dependencias físicas; cobertura completa y reproducible.
+
+### H10 — Hidrología
+
+- [ ] Definir algoritmo de flujo sobre los seis vecinos.
+- [ ] Tratar cuencas, depresiones, divisorias, lagos y endorreísmo.
+- [ ] Acumular escorrentía/caudal dependiente de precipitación y pendiente.
+- [ ] Extraer redes de ríos con salidas al mar o cuencas terminales.
+- [ ] Garantizar drenaje sin ciclos no controlados y sin ríos que asciendan artificialmente.
+- [ ] Mantener hidrología separada de rasgos tectónicos aunque el renderer los muestre juntos.
+
+**Gate:** rutas de flujo coherentes, conservación de acumulación según el modelo y cuencas cerradas solo cuando sean deliberadas.
+
+### H11 — Biomas
+
+- [ ] Auditar clasificación existente y catálogos JSON de biomas.
+- [ ] Clasificar por temperatura, precipitación/humedad, elevación, hidrología y geología cuando corresponda.
+- [ ] Priorizar reglas de forma explícita: mar, costa, cumbres, humedales, regiones climáticas.
+- [ ] Verificar referencias de IDs y cobertura de toda celda válida.
+- [ ] Distinguir clasificación física del bioma de su contenido potencial.
+
+**Gate:** ninguna celda queda sin bioma válido; no aparecen clasificaciones físicamente contradictorias.
+
+### H12 — Recursos naturales y ecosistemas
+
+- [ ] Vincular flora a biomas, humedad, temperatura y condiciones locales.
+- [ ] Vincular fauna a biomas, hábitats y reglas de distribución.
+- [ ] Vincular minerales a contexto geológico y afloramientos, no únicamente a biomas.
+- [ ] Leer catálogos JSON mediante contratos de IDs y relaciones válidas.
+- [ ] Definir `available`/elegible vs. `spawn` efectivo; usar RNG separado.
+- [ ] Mantener la población de recursos desacoplada de la clasificación ambiental.
+
+**Gate:** recursos reproducibles, referencias existentes, distribuciones ecológica/geológicamente posibles y sin duplicidad accidental.
+
+### H13 — Mundo completo y entrega al juego
+
+- [ ] Diseñar una condición formal `WorldReady` basada en capas requeridas, no solo en ausencia de excepciones.
+- [ ] Devolver resultado por API única; renderer y simulación consumen datos sin regenerarlos.
+- [ ] Comprobar persistencia/serialización, versiones del generador y reproducibilidad de carga.
+- [ ] Verificar tamaños/semillas/tipos en una matriz de regresión.
+- [ ] Medir memoria, duración por fase y GC en tamaños reales (especialmente el mayor).
+- [ ] Generar métricas de QA: cobertura, componentes, rangos, conectividad, integridad de ríos/biomas/recursos.
+- [ ] Actualizar arquitectura, roadmap, notas de migración y evidencia de cierre.
+
+**Gate FINAL:** los cuatro tipos de mundo devuelven un `GeneratedWorld` utilizable, con todas las capas habilitadas y validadas, sin depender del renderer ni de herramientas temporales.
+
+## 4. Protocolo de entrega por hito
+
+Por cada fase se debe conservar:
+
+1. **Diagnóstico previo:** archivos actuales, comportamiento, diferencias con el objetivo y riesgos.
+2. **Contrato técnico:** entradas, salidas, unidad/rango, invariantes, dependencia y versión.
+3. **Implementación:** modificación mínima de clases existentes y nuevas clases solo si aportan responsabilidades distintas.
+4. **Validación:** compilación, fixtures deterministas, casos límite, continuidad E/O y escenarios de todas las familias de mapa.
+5. **Evidencia:** resultados observados y limitaciones; no marcar aprobado por resultados visuales exclusivamente.
+6. **Documentación:** actualizar este roadmap y `WORLD_GENERATION_ARCHITECTURE.md`.
+7. **Commit:** siempre reportar mensaje completo de Conventional Commits, SHA y rama.
+
+## 5. Política Git
+
+```text
+master            estable
+  └── develop     integración
+       └── worldgenerator  trabajo actual
+```
+
+Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator → develop → master` se realizan mediante PR y revisión autorizada. No utilizar `reset --hard`, `push --force` ni modificar ramas protegidas como mecanismo rutinario.
+
+## 6. Criterios transversales
+
+- **Determinismo:** misma configuración, versiones y semilla deben reproducir capas para un entorno de referencia.
+- **Topología:** ningún generador puede romper el seam horizontal.
+- **Alineación:** todo array por celda usa los índices de la misma `HexTopology`.
+- **Estados parciales:** `Continents` no puede declararse finalizado mientras su superficie esté pendiente.
+- **Datos derivados:** toda alteración de tierra/altura invalida las capas dependientes que ya se hubieran calculado.
+- **Versionado:** los cambios de algoritmo que alteren mapas requieren versión y nota de compatibilidad con saves.
+- **Rendimiento:** evitar pasadas redundantes, buffers innecesarios y búsquedas de costo cuadrático sin perfilar.
+- **Calidad científica:** separar simplificaciones conscientes de errores de simulación.
+
+## 7. Próximo paso
+
+**Iniciar H01 — Orquestador único.** Antes de escribir código, inspeccionar las llamadas reales a los dos servicios actuales y preparar un cambio limitado a la fachada de generación, sin tocar tectónica, superficie ni relieve.
+
+Esta planificación se puede refinar cuando cada hito descubra restricciones reales de código. No sustituye la documentación de arquitectura ni representa implementaciones ya realizadas.
