@@ -8,3 +8,13 @@ TestResults/
 # Local game saves and generated 2D maps
 saves/
 output/
+
+# Generated geographic diagnostics and local test artifacts
+/orogenic-*.svg
+/orogenic-*.csv
+/orogenic-*.bmp
+/continental-*.svg
+/continental-*.csv
+/continental-*.bmp
+/TestResults/
+/GEvolve.Tests/
