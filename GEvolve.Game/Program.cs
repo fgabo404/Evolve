@@ -18,7 +18,7 @@ namespace GEvolve.Game;
 
 internal sealed class EvolveWindow : GameWindow
 {
-    private static string GameVersion => "v" + (typeof(EvolveWindow).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false).Cast<System.Reflection.AssemblyInformationalVersionAttribute>().SingleOrDefault()?.InformationalVersion ?? "0.0.1");
+    private static string GameVersion => "v" + (typeof(EvolveWindow).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false).Cast<System.Reflection.AssemblyInformationalVersionAttribute>().Single().InformationalVersion.Split('+')[0]);
     private static readonly Vector4 White = new(1, 1, 1, 1);
     private static readonly Vector4 Muted = new(.65f, .76f, .83f, 1);
     private static readonly Vector4 Accent = new(.38f, .76f, .89f, 1);
@@ -346,7 +346,7 @@ internal sealed class EvolveWindow : GameWindow
         if (_session.Screen == GameScreen.MainMenu)
         {
             float versionPixel = Math.Clamp(w / 205f, 4, 6.5f);
-            _ui.Text($"{"Evolve"} {GameVersion}",
+            _ui.Text($"Evolve {GameVersion}",
                 center, h * .17f, versionPixel, White);
             _ui.Text("Civilization Simulator", center, h * .17f + versionPixel * 9,
                 Math.Clamp(w / 480f, 1.5f, 2.5f), Muted);

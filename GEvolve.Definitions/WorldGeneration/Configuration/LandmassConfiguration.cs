@@ -23,7 +23,7 @@ public sealed record LandmassConfiguration(GridSize Size, LandmassType Type, int
     SmallContinentsParameters? SmallContinents = null,
     ArchipelagosParameters? Archipelagos = null);
 
-/// <summary>Objetivos experimentales de v0.001, no reglas definitivas del juego.</summary>
+/// <summary>Perfiles experimentales de generación de masas terrestres.</summary>
 public static class LandmassProfiles
 {
     public const string CurrentGeneratorVersion = "landmass-12";
