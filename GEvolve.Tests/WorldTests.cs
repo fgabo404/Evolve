@@ -95,7 +95,7 @@ try
                 "Every map type reuses universal plates for equal size and seed.");
         var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(generated.Grid);
         int west = topology.Id(0, definition.Rows / 2);
-        Verificar(topology.Neighbors(west).Any(id => id % definition.Columns == definition.Columns - 1),
+        Verificar(topology.Neighbors(west).ToArray().Any(id => id % definition.Columns == definition.Columns - 1),
             "Official topology wraps east to west.");
         if (type == LandmassType.Continents)
         {
