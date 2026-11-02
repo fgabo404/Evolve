@@ -125,15 +125,23 @@ flowchart TD
 
 **Alcance del cierre H01:** se retiraron los pipelines `LandmassGenerationService`, `PangaeaGenerator`, `WorldSystem`, `WorldGenerator` y sus auxiliares obsoletos; `SimulationEngine` consume `GameState` sin generar ni regenerar geografía. Las tres superficies implementadas conservan sus resultados deterministas aprobados. `Continents` sigue con `SurfaceGenerationPending` y sin superficie: se completará en su hito correspondiente. La integración de temperatura, precipitaciones, hidrología, biomas y demás etapas pertenece exclusivamente a hitos futuros; H02 no se inicia mediante este cierre.
 
-### H02 — Cuadrícula y topología
+### H02 — Cuadrícula y topología (COMPLETADO; aprobado por auditoría)
 
-- [x] Confirmar enumeraciones de tamaños, total de celdas, correspondencia `CellId` y distinguir proporción lógica 3:2, hexágono flat-top y extensión física renderizada.
-- [x] Garantizar un único índice por hexágono y como máximo seis vecinos distintos y simétricos en los cuatro tamaños.
-- [x] Comprobar conexión horizontal E/O, ausencia de envoltura vertical y distancias contra BFS sobre vecinos reales.
-- [x] Medir tiempo, bytes asignados, memoria retenida y colecciones GC para construir Enormous, sin umbrales dependientes del hardware.
+**Cierre formal:** H02 aprobado por auditoría arquitectónica tras revisar los cuatro archivos publicados en `test(worldgen): verify H02 hex grid topology and distance invariants` (`cf1db55a65aac42043cdeac767f73bf372988386`).
 
-**Gate:** compilación .NET 10 y suite local completa aprobadas, incluidos H01-A, 12 baselines tectónicos y 36 geográficos sin cambios; H02 queda pendiente de aprobación arquitectónica. Identidad, vecindad y conectividad fueron verificadas en los cuatro tamaños.
-**Archivos clave:** `GEvolve.Engine.Grid`, `HexTopology`, `HexGridDefinitions`.
+- [x] Confirmar los cuatro tamaños oficiales de `HexGridDefinitions`: **Small 200×133 = 26,600**, **Medium 250×167 = 41,750**, **Large 300×200 = 60,000** y **Enormous 400×267 = 106,800** celdas.
+- [x] Verificar `CellId = row * Columns + column`, asignación única, estable y consistente con las coordenadas y arrays de datos; **235,150 celdas** auditadas.
+- [x] Confirmar vecindad hexagonal de **cero a seis vecinos**, sin duplicados ni autorreferencias, simétrica y compatible con la topología oficial.
+- [x] Confirmar continuidad horizontal **este-oeste en todas las filas** y bordes **norte/sur abiertos**, sin envoltura vertical.
+- [x] Contrastar las distancias hexagonales, incluidos caminos que atraviesan la unión horizontal, mediante **diez recorridos BFS independientes por tamaño** y **150 comparaciones de distancia por tamaño**.
+- [x] Verificar los contratos de rechazo de índices y coordenadas inválidos sin alterar la identidad ni la geometría oficial.
+- [x] Distinguir la relación lógica de **columnas:filas ≈ 3:2** de las dimensiones físicas del hexágono `flat-top` y de la relación visual renderizada; no cambiar tamaños.
+- [x] Medir la construcción de **Enormous** (tiempo, asignaciones, memoria retenida y GC) como **diagnóstico dependiente del hardware**, sin convertir las mediciones en umbrales de aceptación.
+- [x] Registrar evidencia local: **`dotnet build` de .NET 10 sin errores ni advertencias**, suite completa **`dotnet run --project GEvolve.Tests` aprobada**, equivalencia **H01-A**, **12 baselines tectónicos** y **36 geográficos** intactos. `Continents` continúa explícitamente **pendiente de superficie**.
+
+**Gate H02:** **APROBADO Y CERRADO** por auditoría. No se modifican dimensiones, algoritmos, semillas, perfiles ni baselines con este cierre documental. **H03 no iniciado.**
+
+**Archivos clave:** `GEvolve.Engine/Grid/HexGrid.cs`, `GEvolve.Engine/World/LandmassGeneration/Shared/HexTopology.cs`, `GEvolve.Definitions/WorldGeneration/Configuration/HexGridDefinition.cs` y `GEvolve.Tests/GridTests.cs`.
 
 ### H03 — Placas tectónicas universales
 
