@@ -176,7 +176,7 @@ async function ready() {
   assert.match(ids.detail.textContent, /Associated resources/);
   const animalId = new URLSearchParams(location.hash.slice(1)).get("id");
   ids.search.value = animalId; ids.search.oninput({ target: ids.search });
-  assert.equal(ids.count.textContent, "1 / 101");
+  assert.equal(ids.count.textContent, `1 / ${data.animals.animals.length}`);
   assert.equal(ids.search.value, animalId);
   vm.runInContext("navigate('resources')", context);
   ids.language.value = "es"; ids.language.onchange({ target: ids.language });
@@ -203,7 +203,7 @@ async function ready() {
   assert(ids["roadmap-nodes"].children.filter(node => node.className.includes(" technology")).length >= 1);
   assert.equal(ids["roadmap-nodes"].children.filter(node => node.className.includes(" branch")).length, 3);
   assert(ids["roadmap-nodes"].children.filter(node => node.className.includes(" external")).length >= 0);
-  assert.equal(ids["roadmap-lines"].children.filter(node => node.tag === "path").length, 3);
+  assert.equal(ids["roadmap-lines"].children.filter(node => node.tag === "path").length, 5);
   assert.match(ids["roadmap-nodes"].textContent, /Agriculture|Domestication|Other technologies/);
   const agricultureBranch = ids["roadmap-nodes"].children.find(node => node.className.includes(" branch") && node.textContent.includes("Agriculture"));
   assert(agricultureBranch);
@@ -237,7 +237,7 @@ async function ready() {
   ids.language.value = "es"; ids.language.onchange({ target: ids.language });
   assert.match(ids["roadmap-panel"].textContent, /Lenguaje/);
   ids.search.value = "lenguaje"; ids.search.oninput({ target: ids.search });
-  assert.equal(ids.count.textContent, "1 / 1");
+  assert.equal(ids.count.textContent, `1 / ${data.technologies.technologies.length}`);
   location.hash = "#type=technologies&id=language";
   listeners.hashchange();
   assert.match(ids["roadmap-panel"].textContent, /Lenguaje/);
