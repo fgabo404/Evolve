@@ -1,11 +1,11 @@
 using System.Text.Json;
 using GEvolve.State.Game;
-using GEvolve.Definitions.Versioning;
 
 namespace GEvolve.State.Persistence;
 
 public static class GameSaveStore
 {
+    public const int CurrentFormatVersion = 2;
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true, PropertyNameCaseInsensitive = true };
     public static void Save(string path, GameState state)
     {
@@ -21,7 +21,7 @@ public static class GameSaveStore
     {
         var state = JsonSerializer.Deserialize<GameState>(File.ReadAllText(path), Options)
             ?? throw new InvalidDataException("Save file is empty.");
-        if (state.SaveFormatVersion is not 1 && state.SaveFormatVersion != EvolveVersion.SaveFormat)
+        if (state.SaveFormatVersion is not 1 && state.SaveFormatVersion != CurrentFormatVersion)
             throw new NotSupportedException($"Unsupported save format: {state.SaveFormatVersion}");
         Validate(state);
         return state;
@@ -30,7 +30,7 @@ public static class GameSaveStore
     private static void Validate(GameState state)
     {
         if (state.Landmass is not { } landmass) return;
-        if (state.SaveFormatVersion != EvolveVersion.SaveFormat || state.HexGrid is null ||
+        if (state.SaveFormatVersion != CurrentFormatVersion || state.HexGrid is null ||
             state.HexGrid.Definition.Size != landmass.Configuration.Size ||
             (landmass.SurfaceGenerationPending
                 ? landmass.Configuration.Type != GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.Continents ||

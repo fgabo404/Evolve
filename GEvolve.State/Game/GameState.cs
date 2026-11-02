@@ -1,12 +1,12 @@
 using GEvolve.Definitions.WorldGeneration.Configuration;
-using GEvolve.Definitions.Versioning;
+using GEvolve.State.Persistence;
 
 namespace GEvolve.State.Game;
 
 /// <summary>Per-save mutable data; JSON catalog definitions remain external/read-only.</summary>
 public sealed class GameState
 {
-    public int SaveFormatVersion { get; set; } = EvolveVersion.SaveFormat;
+    public int SaveFormatVersion { get; set; } = GameSaveStore.CurrentFormatVersion;
     public string DefinitionSetVersion { get; set; } = "prototype-unversioned";
     public long Turn { get; set; }
     public WorldSettings WorldSettings { get; set; } = new();

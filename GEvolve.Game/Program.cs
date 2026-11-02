@@ -1,7 +1,6 @@
 using System.Numerics;
 using System.Diagnostics;
 using GEvolve.Definitions.WorldGeneration.Configuration;
-using GEvolve.Definitions.Versioning;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
@@ -19,6 +18,7 @@ namespace GEvolve.Game;
 
 internal sealed class EvolveWindow : GameWindow
 {
+    private static string GameVersion => "v" + (typeof(EvolveWindow).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false).Cast<System.Reflection.AssemblyInformationalVersionAttribute>().SingleOrDefault()?.InformationalVersion ?? "0.0.1");
     private static readonly Vector4 White = new(1, 1, 1, 1);
     private static readonly Vector4 Muted = new(.65f, .76f, .83f, 1);
     private static readonly Vector4 Accent = new(.38f, .76f, .89f, 1);
@@ -346,7 +346,7 @@ internal sealed class EvolveWindow : GameWindow
         if (_session.Screen == GameScreen.MainMenu)
         {
             float versionPixel = Math.Clamp(w / 205f, 4, 6.5f);
-            _ui.Text($"{EvolveVersion.GameName} {EvolveVersion.Display}",
+            _ui.Text($"{"Evolve"} {GameVersion}",
                 center, h * .17f, versionPixel, White);
             _ui.Text("Civilization Simulator", center, h * .17f + versionPixel * 9,
                 Math.Clamp(w / 480f, 1.5f, 2.5f), Muted);
@@ -366,7 +366,7 @@ internal sealed class EvolveWindow : GameWindow
             // Both dropdowns choose only the size/type of the next world;
             // stage 01 plates continue to depend exclusively on size and seed.
             _ui.Text("Semilla", seed.X, seed.Y - 24, 1.8f, Muted, centered: false);
-            _ui.Text(EvolveVersion.Display, 16, h - 27, 1.7f, Muted, centered: false);
+            _ui.Text(GameVersion, 16, h - 27, 1.7f, Muted, centered: false);
         }
         else if (_session.Screen == GameScreen.Generating)
         {
@@ -424,7 +424,7 @@ internal sealed class EvolveWindow : GameWindow
             new Vector4(.06f, .13f, .20f, 1));
         _ui.Rect(0, MapCamera2D.TopBarHeight - 2, ClientSize.X, 2,
             new Vector4(.28f, .54f, .63f, 1));
-        _ui.Text($"EVOLVE {EvolveVersion.Display}", 18, 19, 2.4f, White,
+        _ui.Text($"EVOLVE {GameVersion}", 18, 19, 2.4f, White,
             centered: false);
         string size = grid.Definition.Size switch
         {

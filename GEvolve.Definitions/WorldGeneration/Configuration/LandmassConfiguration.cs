@@ -1,4 +1,3 @@
-using GEvolve.Definitions.Versioning;
 
 namespace GEvolve.Definitions.WorldGeneration.Configuration;
 
@@ -27,6 +26,8 @@ public sealed record LandmassConfiguration(GridSize Size, LandmassType Type, int
 /// <summary>Objetivos experimentales de v0.001, no reglas definitivas del juego.</summary>
 public static class LandmassProfiles
 {
+    public const string CurrentGeneratorVersion = "landmass-12";
+
     public static LandmassConfiguration Create(GridSize size, LandmassType type, int seed)
     {
         _ = HexGridDefinitions.Get(size);
@@ -35,10 +36,10 @@ public static class LandmassProfiles
         // density proportional to area instead of reusing the old 7k/15k/50k profiles.
         return type switch
         {
-            LandmassType.Continents => new(size, type, seed, EvolveVersion.LandmassGenerator),
-            LandmassType.Pangaea => new(size, type, seed, EvolveVersion.LandmassGenerator,
+            LandmassType.Continents => new(size, type, seed, CurrentGeneratorVersion),
+            LandmassType.Pangaea => new(size, type, seed, CurrentGeneratorVersion,
                 Pangaea: new(.40, .58, 7, .0015, .32)),
-            LandmassType.SmallContinents => new(size, type, seed, EvolveVersion.LandmassGenerator,
+            LandmassType.SmallContinents => new(size, type, seed, CurrentGeneratorVersion,
                 SmallContinents: new(.30, size switch {
                     GridSize.Small => 36, GridSize.Medium => 52,
                     GridSize.Large => 76, _ => 124
@@ -46,7 +47,7 @@ public static class LandmassProfiles
                     GridSize.Small => 11.5, GridSize.Medium => 12.5,
                     GridSize.Large => 13.5, _ => 14.5
                 }, 2, .38, 15, .004)),
-            LandmassType.Archipelagos => new(size, type, seed, EvolveVersion.LandmassGenerator,
+            LandmassType.Archipelagos => new(size, type, seed, CurrentGeneratorVersion,
                 Archipelagos: new(.20, size switch {
                     GridSize.Small => 55, GridSize.Medium => 88,
                     GridSize.Large => 128, _ => 220

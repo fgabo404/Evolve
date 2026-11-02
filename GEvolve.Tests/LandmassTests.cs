@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using GEvolve.Definitions.Versioning;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World.LandmassGeneration;
@@ -15,10 +14,6 @@ public static class LandmassTests
 
     public static void Run()
     {
-        Check(EvolveVersion.GameName == "Evolve" && EvolveVersion.Display == "v0.001" &&
-            EvolveVersion.Technical == new Version(0, 0, 1, 0) &&
-            EvolveVersion.SaveFormat == 2 && EvolveVersion.LandmassGenerator == "landmass-12",
-            "Independent game, save and generator versions");
         var service = new LandmassGenerationService();
         Check(service.Generators.Count == 3 &&
             service.Generators.Select(item => item.Type).Distinct().Count() == 3 &&
@@ -141,7 +136,7 @@ public static class LandmassTests
             };
             GameSaveStore.Save(path, state);
             var loaded = GameSaveStore.Load(path);
-            Check(loaded.SaveFormatVersion == EvolveVersion.SaveFormat &&
+            Check(loaded.SaveFormatVersion == GameSaveStore.CurrentFormatVersion &&
                 loaded.HexGrid?.Definition == result.Grid.Definition &&
                 loaded.Landmass?.Configuration == result.Landmass.Configuration &&
                 loaded.Landmass.SurfaceByCellId.SequenceEqual(result.Landmass.SurfaceByCellId) &&
