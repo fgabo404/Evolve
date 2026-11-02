@@ -99,7 +99,87 @@ public static class TectonicMotionTests
             if (size == GridSize.Small) Persistence(world);
             Console.WriteLine($"PASS: tectonic motion {size}, {result.Interactions.Length} interactions, radius {result.InfluenceRadiusHexes:F2} hex");
         }
+        VerifyOfficialMotionMatrix(service, generator);
         VerifyTerrainBaselines(service);
+    }
+
+    // H04: check every real boundary for all official sizes and regression seeds.
+    // No new tectonic algorithm or reconstructed world-generation fixture.
+    private static void VerifyOfficialMotionMatrix(
+        WorldGenerationService service, TectonicMotionGenerator generator)
+    {
+        foreach (GridSize size in Enum.GetValues<GridSize>())
+        foreach (int seed in new[] { 2026, 42, -731 })
+        {
+            var configuration = LandmassProfiles.Create(size, LandmassType.Pangaea, seed);
+            var world = service.GeneratePlatePreview(configuration);
+            var topology = new HexTopology(world.Grid);
+            var plates = world.Landmass.PlateByCellId!;
+            var state = world.Landmass.TectonicMotion!;
+            var boundaries = PlateBoundaryMap.Analyze(topology, world.Landmass)!;
+            var expectedMotions = PlateMotionGenerator.Generate(seed);
+
+            Check(state.Motions.SequenceEqual(expectedMotions) &&
+                state.Motions.Select(m => m.PlateId).SequenceEqual(
+                    Enumerable.Range(0, TectonicPlateGenerator.NumberOfPlates).Select(i => (byte)i)),
+                $"H04 motion RNG and plate ordering ({size}/{seed})");
+            Check(state.Interactions.Length == boundaries.Edges.Count &&
+                state.DistanceToBoundaryByCellId.SequenceEqual(boundaries.DistanceToBoundaryByCellId),
+                $"H04 complete boundary correspondence ({size}/{seed})");
+
+            int seamEdges = 0;
+            for (int index = 0; index < state.Interactions.Length; index++)
+            {
+                var edge = boundaries.Edges[index];
+                var interaction = state.Interactions[index];
+                Check(interaction.FirstCellId == edge.FirstCellId &&
+                    interaction.SecondCellId == edge.SecondCellId &&
+                    edge.FirstCellId < edge.SecondCellId &&
+                    plates[edge.FirstCellId] != plates[edge.SecondCellId] &&
+                    topology.Neighbors(edge.FirstCellId).Contains(edge.SecondCellId) &&
+                    interaction.FirstPlateId == plates[edge.FirstCellId] &&
+                    interaction.SecondPlateId == plates[edge.SecondCellId],
+                    $"H04 exact edge identities ({size}/{seed}, edge {index})");
+
+                var normal = TectonicMotionGenerator.BoundaryNormal(
+                    topology, edge.FirstCellId, edge.SecondCellId);
+                var reverse = TectonicMotionGenerator.BoundaryNormal(
+                    topology, edge.SecondCellId, edge.FirstCellId);
+                Check(Math.Abs(normal.X + reverse.X) < 1e-12 &&
+                    Math.Abs(normal.Y + reverse.Y) < 1e-12 &&
+                    Math.Abs(normal.X * normal.X + normal.Y * normal.Y - 1) < 1e-12,
+                    $"H04 normals are unit and antisymmetric ({size}/{seed}, edge {index})");
+                var expected = generator.Project(edge.FirstCellId, edge.SecondCellId,
+                    expectedMotions[interaction.FirstPlateId],
+                    expectedMotions[interaction.SecondPlateId], normal);
+                Check(interaction == expected &&
+                    double.IsFinite(interaction.Convergence) &&
+                    double.IsFinite(interaction.Divergence) &&
+                    double.IsFinite(interaction.Shear) &&
+                    interaction.Convergence >= 0 && interaction.Divergence >= 0 &&
+                    interaction.Shear >= 0 &&
+                    !(interaction.Convergence > 0 && interaction.Divergence > 0),
+                    $"H04 boundary projections and classification ({size}/{seed}, edge {index})");
+
+                int left = edge.FirstCellId % topology.Columns;
+                int right = edge.SecondCellId % topology.Columns;
+                if (Math.Abs(left - right) == topology.Columns - 1) seamEdges++;
+            }
+
+            Check(seamEdges > 0, $"H04 real cross-seam interactions ({size}/{seed})");
+            foreach (float[] field in new[]
+            {
+                state.CompressionByCellId, state.ExtensionByCellId, state.ShearByCellId
+            })
+                Check(field.Length == topology.Count &&
+                    field.All(value => float.IsFinite(value) && value >= 0 && value <= 16),
+                    $"H04 finite nonnegative fields ({size}/{seed})");
+            Check(state.ArrowCellByPlateId.Length == TectonicPlateGenerator.NumberOfPlates &&
+                Enumerable.Range(0, state.ArrowCellByPlateId.Length)
+                    .All(id => plates[state.ArrowCellByPlateId[id]] == id),
+                $"H04 anchors lie inside their plates ({size}/{seed})");
+            Console.WriteLine($"PASS: H04 {size}/{seed}: {state.Interactions.Length} verified contacts, {seamEdges} seam edges");
+        }
     }
 
     private static void VerifyTerrainBaselines(WorldGenerationService service)
