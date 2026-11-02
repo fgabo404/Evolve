@@ -28,7 +28,8 @@ public sealed class GameSession
         if (Screen != GameScreen.MainMenu) return;
         SelectedSize = GridSize.Small;
         SelectedType = LandmassType.Pangaea;
-        SeedText = "2026";
+        SeedText = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue)
+            .ToString(CultureInfo.InvariantCulture);
         Error = null;
         Screen = GameScreen.CreateWorld;
     }
