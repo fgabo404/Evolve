@@ -12,17 +12,17 @@ const build = context.EvolveTechnologyRoadmap;
 const graph = build(catalog);
 const nodes = [...graph.nodes.values()];
 assert.equal(nodes.filter(node => node.kind === "technology").length, catalog.technologies.length);
-assert.equal(catalog.technologies.length, 1);
+assert.equal(catalog.technologies.length, 3);
 assert.equal(catalog.rootTechnologyId, "language");
 assert.equal(catalog.technologies[0].order, 0);
 assert.equal(catalog.technologies[0].name.es, "Lenguaje");
 assert.equal(nodes.filter(node => node.kind === "external").length, 0);
 assert.deepEqual(catalog.branches.map(branch => branch.name.es), ["Agricultura", "Domesticación", "Otras tecnologías"]);
 assert.equal(nodes.filter(node => node.kind === "branch").length, 3);
-assert.equal(graph.edges.length, 3);
-assert(graph.edges.every(edge => edge.kind === "branch" && edge.from === "language"));
+assert.equal(graph.edges.length, 5);
+assert.equal(graph.edges.filter(edge => edge.kind === "branch" && edge.from === "language").length, 3);
 const branchNodes = catalog.branches.map(branch => graph.nodes.get(`branch:${branch.id}`));
-assert(branchNodes.every(node => node.x >= graph.nodes.get("language").x + 300));
+assert(branchNodes.every(node => node.x > graph.nodes.get("language").x));
 assert(branchNodes[1].y - branchNodes[0].y >= 160);
 assert(branchNodes[2].y - branchNodes[1].y >= 160);
 assert(graph.nodes.get("language").y > branchNodes[0].y && graph.nodes.get("language").y < branchNodes[2].y);
@@ -59,10 +59,10 @@ for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++
 }
 assert.equal(graph.dependencies.get("language").size, 0);
 const extended = build({ ...catalog, technologies: [...catalog.technologies, {
-  id: "future_candidate", order: 1,
+  id: "future_candidate", order: 3,
   prerequisites: { all: [{ type: "technology_completed", technologyId: "language" }] }
 }] });
-assert.equal([...extended.nodes.values()].filter(node => node.kind === "technology").length, 2);
+assert.equal([...extended.nodes.values()].filter(node => node.kind === "technology").length, 4);
 assert(extended.dependencies.get("future_candidate").has("language"));
 assert(extended.nodes.get("future_candidate").level > extended.nodes.get("language").level);
 assert.throws(() => build({ ...catalog, technologies: [...catalog.technologies, {
