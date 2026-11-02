@@ -71,130 +71,59 @@ try
         "La generación de prueba debe ser determinista.");
     Verificar(LanzaArgumento(() => HexDemoWorld.CrearRadial(-1)),
         "El radio negativo debe rechazarse.");
-    // Verificación mínima del prototipo procedural sin requerir GPU.
-    var mundo = WorldGenerator.Crear(100, 50, semilla: 2026);
-    Verificar(mundo.Count == 5000, "El mundo debe contener 5000 hexágonos.");
-    Verificar(mundo.Select(x => x.Coordenada).Distinct().Count() == 5000,
-        "Las coordenadas del mundo deben ser únicas.");
-    Verificar(mundo.Any(x => x.Superficie == TipoSuperficie.Oceano) &&
-             mundo.Any(x => x.Superficie == TipoSuperficie.Tierra),
-        "Deben existir tanto tierra como océanos.");
-    Verificar(mundo.All(x => float.IsFinite(x.Elevacion) && x.Elevacion > 0f),
-        "Todas las elevaciones deben ser válidas.");
-    Verificar(mundo.SequenceEqual(WorldGenerator.Crear(100, 50, semilla: 2026)),
-        "La misma semilla debe reproducir el mundo.");
-    // Nuevo sistema de generación, regiones y topología este-oeste.
-    var config = new WorldSettings(100, 50, 2026, 10, 30);
-    var sistema = WorldSystem.Generar(config);
-    Verificar(sistema.Celdas.Count == 5000, "Sistema: 5000 celdas.");
-    Verificar(sistema.Chunks.Count == 50, "Sistema: 50 chunks de 10x10.");
-    Verificar(sistema.Chunks.Sum(x => x.Celdas.Count) == 5000, "Chunks completos.");
-    Verificar(sistema.Celdas.All(x => x.Altura <= 100), "Altura 0-100.");
-    Verificar(sistema.Celdas.Where(x => x.Superficie == TipoSuperficie.Oceano)
-        .All(x => x.Altura == 0 && x.Relieve == NivelRelieve.Mar),
-        "Todos los hexágonos del océano deben ser de nivel 0.");
-    Verificar(sistema.Celdas.Any(x => x.Superficie == TipoSuperficie.Tierra)
-        && sistema.Celdas.Any(x => x.Superficie == TipoSuperficie.Oceano),
-        "Debe existir mar y tierra.");
-    Verificar(sistema.Celdas.SequenceEqual(WorldSystem.Generar(config).Celdas),
-        "La generación debe ser reproducible.");
-    Verificar(sistema.IntentarObtener(-1, 20, out var oeste)
-        && sistema.IntentarObtener(99, 20, out var este) && oeste == este,
-        "El extremo oeste debe conectar con el este.");
-    Verificar(!sistema.IntentarObtener(4, -1, out _)
-        && !sistema.IntentarObtener(4, 50, out _),
-        "Norte y sur no envuelven.");
-    Verificar(sistema.Celdas.All(x => x.Relieve ==
-        ReglasRelieve.Clasificar(x.Altura, config.NivelMar)),
-        "Cada celda debe respetar la clasificación oficial del relieve.");
-    Verificar(ReglasRelieve.Clasificar(0, 30) == NivelRelieve.Mar
-        && ReglasRelieve.Clasificar(40, 30) == NivelRelieve.Medio
-        && ReglasRelieve.Clasificar(65, 30) == NivelRelieve.Alto
-        && ReglasRelieve.Clasificar(80, 30) == NivelRelieve.Impasable,
-        "Umbrales de relieve de cuatro niveles.");
-    Verificar(sistema.Analisis.Count == 5000, "Un análisis de pendiente por hexágono.");
-    Verificar(sistema.Analisis.All(x => x.PendienteMaxima <= 100 &&
-        float.IsFinite(x.PendienteMedia)), "Pendientes válidas.");
-    Verificar(sistema.Analisis.SequenceEqual(WorldSystem.Generar(config).Analisis),
-        "Análisis de relieve reproducible.");
-    Verificar(sistema.Celdas.Select((celda, i) => (celda, i))
-        .Where(x => x.celda.Altura >= 80)
-        .All(x => sistema.Analisis[x.i].PasoDificil),
-        "Cumbres de nivel 80 o superior siempre restringidas.");
-    var mundoGrande = WorldSystem.Generar(new WorldSettings(200, 150, 2026, 10, 30));
-    Verificar(mundoGrande.Celdas.Count == 30_000, "Mapa 200x150 debe contener 30000 hexágonos.");
-    Verificar(mundoGrande.Chunks.Count == 300, "El mapa grande tendrá 300 regiones lógicas.");
-    Verificar(mundoGrande.IntentarObtener(-1, 80, out var extremoA)
-        && mundoGrande.IntentarObtener(199, 80, out var extremoB)
-        && extremoA == extremoB, "La continuidad este-oeste se conserva en 200x150.");
-    Verificar(mundoGrande.Celdas.Where(x => x.Superficie == TipoSuperficie.Oceano)
-        .All(x => x.Altura == 0), "Todos los niveles del mar deben ser cero.");
-    Verificar(mundoGrande.Celdas.Where(x => x.Superficie == TipoSuperficie.Tierra)
-        .All(x => x.Altura >= 1 && x.Relieve != NivelRelieve.Mar),
-        "La tierra baja puede comenzar en nivel 1.");
-    Verificar(mundoGrande.Celdas.Any(x => x.Superficie == TipoSuperficie.Tierra && x.Altura <= 10),
-        "Deben existir costas bajas entre niveles 1 y 10.");
-    Verificar(mundoGrande.Celdas.Any(x => x.Altura >= 60 && x.Altura < 80),
-        "Deben existir elevaciones altas 60-79.");
-    Verificar(mundoGrande.Celdas.Any(x => x.Altura >= 80),
-        "Deben existir cumbres de nivel 80-100.");
-    Verificar(ReglasRelieve.Clasificar(5, 30) == NivelRelieve.Medio,
-        "Una costa de nivel 5 no es océano.");
-    // Perfil aprobado de generación y verificación del porcentaje exacto.
-    var perfil = new WorldSettings(200, 150, 2026, 10, 30,
-        TipoMundo.ContinentesGrandes, EdadGeologica.Normal, 60, 40);
-    var generado = WorldSystem.Generar(perfil);
-    Verificar(generado.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == 18_000,
-        "El océano debe cubrir 60% de las 30000 celdas.");
-    Verificar(generado.Celdas.All(x =>
-        x.Superficie == TipoSuperficie.Oceano ? x.Altura == 0 : x.Altura is >= 1 and <= 100),
-        "Mar 0 y tierra 1-100.");
-    Verificar(generado.Celdas.SequenceEqual(WorldSystem.Generar(perfil).Celdas),
-        "Misma semilla y configuración deben producir mismo mapa.");
-    Verificar(!generado.Celdas.SequenceEqual(WorldSystem.Generar(perfil with
-        { Tipo = TipoMundo.Pangea }).Celdas), "Cambiar tipo debe modificar el mapa.");
-    Verificar(!generado.Celdas.SequenceEqual(WorldSystem.Generar(perfil with
-        { Semilla = 2027 }).Celdas), "Cambiar semilla debe modificar el mapa.");
-    foreach (TipoMundo variedad in Enum.GetValues<TipoMundo>())
+    // Geographic invariants now belong to the official world generation pipeline.
+    var generator = new GEvolve.Engine.World.WorldGenerationService();
+    var size = GridSize.Small;
+    var definition = HexGridDefinitions.Get(size);
+    var expectedCells = checked(definition.Columns * definition.Rows);
+    byte[]? referencePlates = null;
+    foreach (var type in new[] { LandmassType.Pangaea, LandmassType.SmallContinents,
+        LandmassType.Archipelagos, LandmassType.Continents })
     {
-        var variante = WorldSystem.Generar(perfil with { Tipo = variedad });
-        Verificar(variante.Celdas.Count == 30_000 &&
-            variante.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == 18_000,
-            "Cada tipo debe preservar dimensiones y cuota oceánica.");
+        var generated = generator.Generate(size, type, 2026);
+        var terrain = generated.Landmass;
+        Verificar(generated.Grid.Cells.Count == expectedCells &&
+            terrain.Configuration == LandmassProfiles.Create(size, type, 2026),
+            "Official configuration, dimensions and grid agree.");
+        Verificar(terrain.PlateByCellId is { } plates &&
+            plates.Length == expectedCells,
+            "Universal tectonic plates cover the complete grid.");
+        if (referencePlates is null)
+            referencePlates = (byte[])terrain.PlateByCellId!.Clone();
+        else
+            Verificar(referencePlates.SequenceEqual(terrain.PlateByCellId!),
+                "Every map type reuses universal plates for equal size and seed.");
+        var topology = new GEvolve.Engine.World.LandmassGeneration.Shared.HexTopology(generated.Grid);
+        int west = topology.Id(0, definition.Rows / 2);
+        Verificar(topology.Neighbors(west).Any(id => id % definition.Columns == definition.Columns - 1),
+            "Official topology wraps east to west.");
+        if (type == LandmassType.Continents)
+        {
+            Verificar(terrain.SurfaceGenerationPending && terrain.TectonicPreviewOnly &&
+                terrain.SurfaceByCellId.Length == 0 && generated.Statistics is null,
+                "Continents remains an explicit tectonic-only result.");
+            continue;
+        }
+        Verificar(generated.Statistics is { } statistics &&
+            GEvolve.Engine.World.LandmassGeneration.LandmassProfileValidator.MeetsProfile(type, statistics),
+            "Finished world meets its geographic profile.");
+        Verificar(terrain.SurfaceByCellId.Length == expectedCells &&
+            terrain.ElevationByCellId is { Length: var heightCount } && heightCount == expectedCells &&
+            terrain.SurfaceByCellId.Any(x => x == 0) &&
+            terrain.SurfaceByCellId.Any(x => x == 1) &&
+            Enumerable.Range(0, expectedCells).All(id =>
+                terrain.SurfaceByCellId[id] == 0
+                    ? terrain.ElevationByCellId![id] == 0
+                    : terrain.ElevationByCellId![id] is >= 1 and <= 100),
+            "Official terrain contains oceans at zero and land at heights 1..100.");
+        var repeated = generator.Generate(size, type, 2026);
+        Verificar(terrain.DeterministicAttempt == repeated.Landmass.DeterministicAttempt &&
+            terrain.SurfaceByCellId.SequenceEqual(repeated.Landmass.SurfaceByCellId) &&
+            terrain.ElevationByCellId!.SequenceEqual(repeated.Landmass.ElevationByCellId!) &&
+            terrain.PlateByCellId!.SequenceEqual(repeated.Landmass.PlateByCellId!),
+            "Official geographic generation is deterministic.");
     }
-    Verificar(LanzaArgumento(() => WorldSystem.Generar(perfil with
-        { PorcentajeOceanos = 101 })), "Porcentaje inválido rechazado.");
-    var continentes = WorldPresets.Aplicar(TipoMundo.ContinentesGrandes, 200, 150, 2026);
-    Verificar(continentes.Tipo == TipoMundo.ContinentesGrandes &&
-        continentes.PorcentajeOceanos == 60 && continentes.IntensidadMontanosa == 40 &&
-        continentes.Edad == EdadGeologica.Normal, "Valores aprobados de Continentes.");
-    foreach (TipoMundo familia in Enum.GetValues<TipoMundo>())
-    {
-        var ajustes = WorldPresets.Aplicar(familia, 200, 150, 2026);
-        ajustes.Validar();
-        var mundoPerfil = WorldSystem.Generar(ajustes);
-        int aguaEsperada = 30000 * ajustes.PorcentajeOceanos / 100;
-        Verificar(mundoPerfil.Celdas.Count(x => x.Superficie == TipoSuperficie.Oceano) == aguaEsperada,
-            "Cada tipo aplica su cuota de agua preconfigurada.");
-        Verificar(mundoPerfil.Celdas.All(x => x.Superficie == TipoSuperficie.Oceano
-            ? x.Altura == 0 : x.Altura is >= 1 and <= 100), "Alturas válidas por perfil.");
-    }
-    Verificar(generado.Celdas.All(c => Enum.IsDefined(c.Bioma)),
-        "Todo hexagono debe tener bioma valido.");
-    Verificar(generado.Celdas.Where(c => c.Altura >= 80)
-        .All(c => c.Bioma == Bioma.Cumbres), "Cumbres clasificadas correctamente.");
-    Verificar(generado.Celdas.Where(c => c.Superficie == TipoSuperficie.Oceano)
-        .Any(c => c.Bioma is Bioma.Arrecife or Bioma.EstuarioLitoral),
-        "Debe existir una franja marina costera.");
-    Verificar(generado.Celdas.Where(c => c.Fila == 0 || c.Fila == 149)
-        .All(c => c.Bioma is Bioma.TundraArtica or Bioma.TundraAntartica),
-        "Bordes polares helados.");
-    Console.WriteLine("OK — Tipos de mundo, semilla y cuota oceánica de 60%.");
-    Console.WriteLine("OK — Mundo 200x150, 30000 hexágonos, 300 chunks y mar nivel cero.");
-    Console.WriteLine("OK — Pendientes, valles, crestas y pasos difíciles calculados.");
-    Console.WriteLine("OK — Sistema de mundo: elevación 0-100, chunks y topología.");
-    Console.WriteLine("OK — Mundo procedural 100x50 y 5000 celdas verificadas.");
-    Console.WriteLine("OK — Grid 20x20 y mapa radial de 397 hexágonos verificados.");
+    Console.WriteLine("OK — Official world types, topology, plates, surface, elevation and determinism.");
     return 0;
 }
 catch (Exception ex)
