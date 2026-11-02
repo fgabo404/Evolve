@@ -41,7 +41,7 @@ public sealed class WorldGenerationService
 }
 ```
 
-**Importante:** la sobrecarga de tres parámetros es una **propuesta**, no una API existente verificada. No reemplazar el cuerpo actual de `Generate(LandmassConfiguration)` por el ejemplo.
+**Estado H01-A:** la sobrecarga de tres parámetros se incorporó en `worldgenerator` y delega directamente al método existente. La implementación de `Generate(LandmassConfiguration)` permanece intacta. La verificación de compilación y ejecución sigue pendiente en un entorno con .NET.
 
 La salida existente es:
 
@@ -222,7 +222,7 @@ Las rutas anteriores son una **guía lógica** basada en archivos conocidos; rev
 ## 8. Roadmap incremental
 
 ### Fase 1 — Entrada única (sin modificar algoritmos)
-- [ ] Añadir la sobrecarga pública `Generate(GridSize, LandmassType, int seed = 2026)`.
+- [x] Añadir la sobrecarga pública `Generate(GridSize, LandmassType, int seed = 2026)` (implementada en `worldgenerator`; validación en ejecución pendiente).
 - [ ] Construir configuración con `LandmassProfiles.Create` y reutilizar la implementación existente.
 - [ ] Documentar salida completa vs. preview pendiente y las excepciones.
 - [ ] Confirmar todos los sitios de invocación desde Game y servicios.
@@ -373,6 +373,8 @@ public GeneratedWorld Generate(GridSize size, LandmassType type, int seed = 2026
     return Generate(configuration);
 }
 ```
+
+**H01-A implementado en `worldgenerator`:** la nueva sobrecarga delega a la existente, sin modificar la lógica de generación. La ejecución de la matriz de validación aún no se ha confirmado.
 
 **No introducir `WorldGenerationRequest` como clase obligatoria en la primera fase**: con los tipos existentes, la firma basta. Si se incorporan decenas de parámetros independientes, evaluar un DTO inmutable más adelante.
 
