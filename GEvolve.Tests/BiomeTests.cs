@@ -2,6 +2,7 @@ using System.Diagnostics;
 using GEvolve.Definitions.Catalogs.World;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.World.BiomeGeneration;
+using GEvolve.Engine.World.Climate;
 using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.LandmassGeneration;
@@ -79,7 +80,18 @@ public static class BiomeTests
         {
             var generated = new WorldGenerationService().Generate(
                 LandmassProfiles.Create(size, type, seed));
-            var terrain = classifier.Apply(generated.Landmass, new HexTopology(generated.Grid));
+            var topology = new HexTopology(generated.Grid);
+            if (size == GridSize.Small && type == LandmassType.Pangaea && seed == 2026)
+            {
+                var terrainOnly = classifier.Apply(generated.Landmass, topology);
+                Check(terrainOnly.Climate is null &&
+                    Enumerable.Range(0, terrainOnly.SurfaceByCellId.Length).All(id =>
+                        terrainOnly.Biomes!.Get(id).Status == BiomeClassificationStatus.Assigned),
+                    "Terrain-only classification covers a complete official world");
+            }
+            var withTemperature = new TemperatureGenerator().Apply(topology, generated.Landmass);
+            var withPrecipitation = new PrecipitationGenerator().Apply(topology, withTemperature);
+            var terrain = classifier.Apply(withPrecipitation, topology);
             generated = generated with { Landmass = terrain };
             Check(terrain.SurfaceByCellId.Length == generated.Grid.Cells.Count &&
                 terrain.Configuration.GeneratorVersion == "landmass-12",

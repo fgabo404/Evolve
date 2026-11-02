@@ -93,6 +93,18 @@ public static class TemperatureTests
                     else if (mode == MapViewMode.Rainfall && climate.BasePrecipitationMmByCellId is { } rainfall)
                         Check(color == RainfallPalette.ForMillimetres(rainfall[id]),
                             "Rainfall view shows precipitation even on summits");
+                    else if (mode is MapViewMode.Compression or MapViewMode.Extension or MapViewMode.Shear &&
+                        terrain.TectonicMotion is { } motion)
+                    {
+                        float value = mode switch
+                        {
+                            MapViewMode.Compression => motion.CompressionByCellId[id],
+                            MapViewMode.Extension => motion.ExtensionByCellId[id],
+                            _ => motion.ShearByCellId[id]
+                        };
+                        Check(color == TectonicStressPalette.ForValue(value, mode),
+                            "Stress views show tectonic values even on summits");
+                    }
                     else if (mode != MapViewMode.Tectonic && terrain.IsImpassableSummit(id))
                         Check(color == Vector3.One, "Summits stay white in terrain views");
                 }
