@@ -84,6 +84,24 @@ flowchart TD
 **Gate:** llamadas simples para todo `GridSize`/`LandmassType`; sin regresiones de resultados anteriores; error/resultado parcial inequívoco.  
 **Archivos clave:** `World/WorldGenerationService.cs`, `World/LandmassGeneration/LandmassGenerationService.cs`, configuración de Definitions.
 
+#### H01-A — API pública de generación (implementación; validación pendiente)
+
+- [x] Añadir sobrecarga `Generate(GridSize size, LandmassType worldType, int seed = 2026)`.
+- [x] Delegar a `LandmassProfiles.Create` y `Generate(LandmassConfiguration)` sin cambiar algoritmos.
+- [x] Añadir pruebas de equivalencia en `StagedLandmassTests` para los cuatro tipos en tamaño Small, semilla por defecto y semilla alternativa.
+- [ ] Confirmar compilación y ejecución de pruebas en entorno .NET; validar también los demás tamaños con la suite existente.
+- [ ] Cerrar el gate H01-A tras verificar resultados y ausencia de regresiones.
+
+**Evidencia de código:** `feat(worldgen): add unified world generation entry point` (`2f11e7cf672547ecfba984edfd772560003945d6`).  
+**Evidencia de pruebas añadidas:** `test(worldgen): verify unified generation facade compatibility` (`687cb0d7647fd12814cb75c17b50b08519f6c4e6`).  
+**Pendiente:** compilación/ejecución; el entorno de edición no dispone de `dotnet`. No declarar H01-A terminado hasta satisfacer el gate.
+
+#### H01-B — Consolidación del orquestador (no iniciada)
+
+- [ ] Auditar ambos servicios y sus consumidores.
+- [ ] Resolver las responsabilidades duplicadas sin romper persistencia, previews ni resultados existentes.
+- [ ] Respetar el DAG de la arquitectura y mantener generadores especializados.
+
 ### H02 — Cuadrícula y topología
 
 - [ ] Confirmar enumeraciones de tamaños, total de celdas, correspondencia `CellId` y geometría 3:2 acordada para visualización, sin confundir aspecto visual con vecindad.
