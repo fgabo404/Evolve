@@ -140,7 +140,13 @@ public static class StagedLandmassTests
                 (actual.ElevationByCellId is null && baseline.ElevationByCellId is null ||
                  actual.ElevationByCellId is not null && baseline.ElevationByCellId is not null &&
                  actual.ElevationByCellId.SequenceEqual(baseline.ElevationByCellId)) &&
-                viaParameters.Statistics == viaConfiguration.Statistics,
+                (viaParameters.Statistics is null && viaConfiguration.Statistics is null ||
+                 viaParameters.Statistics is { } actualStats &&
+                 viaConfiguration.Statistics is { } baselineStats &&
+                 actualStats.LandCells == baselineStats.LandCells &&
+                 actualStats.TotalCells == baselineStats.TotalCells &&
+                 actualStats.IslandComponents == baselineStats.IslandComponents &&
+                 actualStats.ComponentSizes.SequenceEqual(baselineStats.ComponentSizes)),
                 $"Public facade matches existing generation for {type}");
             if (type == LandmassType.Continents)
                 Check(actual.SurfaceGenerationPending && actual.TectonicPreviewOnly &&
@@ -149,12 +155,24 @@ public static class StagedLandmassTests
                     "Public facade does not invent a continental surface");
         }
 
-        var alternateConfig = LandmassProfiles.Create(GridSize.Small, LandmassType.Continents, -731);
-        var alternate = service.Generate(GridSize.Small, LandmassType.Continents, -731);
-        Check(alternate.Landmass.Configuration == alternateConfig &&
-            alternate.Landmass.PlateByCellId!.SequenceEqual(
-                service.Generate(alternateConfig).Landmass.PlateByCellId!),
-            "Explicit alternate seed stays deterministic");
+        foreach (var type in Enum.GetValues<LandmassType>())
+        {
+            var alternateConfig = LandmassProfiles.Create(GridSize.Small, type, -731);
+            var alternate = service.Generate(GridSize.Small, type, -731);
+            var baselineAlternate = service.Generate(alternateConfig);
+            Check(alternate.Landmass.Configuration == alternateConfig &&
+                alternate.Landmass.PlateByCellId!.SequenceEqual(
+                    baselineAlternate.Landmass.PlateByCellId!) &&
+                alternate.Landmass.SurfaceByCellId.SequenceEqual(
+                    baselineAlternate.Landmass.SurfaceByCellId) &&
+                (alternate.Landmass.ElevationByCellId is null &&
+                 baselineAlternate.Landmass.ElevationByCellId is null ||
+                 alternate.Landmass.ElevationByCellId is not null &&
+                 baselineAlternate.Landmass.ElevationByCellId is not null &&
+                 alternate.Landmass.ElevationByCellId.SequenceEqual(
+                     baselineAlternate.Landmass.ElevationByCellId)),
+                $"Explicit alternate seed stays deterministic for {type}");
+        }
         Console.WriteLine("PASS: H01-A public generation facade equivalence");
     }
 
