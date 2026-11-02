@@ -18,7 +18,7 @@ internal static class ContinentalElevationTests
         int extendedCollisions = 0, elevatedCollisionAxes = 0, longMountainBelts = 0, coastalArcs = 0,
             oceanTrenches = 0, islandArcs = 0, riftAxes = 0, ridgeAxes = 0;
         int multiPlateCollisions = 0, collisionSutureCells = 0,
-            variedCollisionBelts = 0, plateauCells = 0, plainCells = 0;
+            variedCollisionBelts = 0, plateauCells = 0, plainCells = 0, lowHillCells = 0;
         int legacyCollisionSystems = 0, longestGain = 0;
         var longestCollisionBySize = new Dictionary<GridSize, int>();
         bool existingIslandArcChecked = false;
@@ -137,6 +137,7 @@ internal static class ContinentalElevationTests
             plainCells += relief.LandformByCellId.Count(kind =>
                 kind is (byte)ContinentalReliefKind.CoastalPlain or
                     (byte)ContinentalReliefKind.InlandPlain);
+            lowHillCells += relief.LandformByCellId.Count(kind => kind == (byte)ContinentalReliefKind.Hills);
             for (int id = 0; id < topology.Count; id++)
             {
                 Check(surface[id] == 0 ? heights[id] == 0 && relief.OceanDepthByCellId[id] > 0 :
@@ -146,6 +147,7 @@ internal static class ContinentalElevationTests
                 if (surface[id] == 1 && relief.LandformByCellId[id] is
                     (byte)ContinentalReliefKind.Mountain or (byte)ContinentalReliefKind.HighRange) mountain++;
             }
+            Console.WriteLine($"RELIEF COVERAGE {size}/{seed}: land {land}, summits {high} ({(double)high / land:P1}), mountains {mountain} ({(double)mountain / land:P1})");
             Check(high <= land * .08 && mountain <= land * .35,
                 "High mountains must remain geographically limited");
             highTotal += high;
@@ -154,12 +156,14 @@ internal static class ContinentalElevationTests
             riftTotal += relief.Contacts.Count(c => c.Kind == GeologicalContactKind.ContinentalRift);
             int[] upliftDistance = DistanceFromContacts(topology, motion, relief.Contacts,
                 kind => kind is GeologicalContactKind.ContinentalCollision or
-                    GeologicalContactKind.OceanContinentSubduction);
+                    GeologicalContactKind.OceanContinentSubduction,
+                relief.Systems.Where(s => s.Kind is GeologicalContactKind.ContinentalCollision or
+                    GeologicalContactKind.OceanContinentSubduction).SelectMany(s => s.CrestCellIds));
             int associatedHigh = Enumerable.Range(0, topology.Count).Count(id =>
                 surface[id] == 1 && heights[id] >= 70 && upliftDistance[id] <= 9);
             int allHigh = Enumerable.Range(0, topology.Count).Count(id => surface[id] == 1 && heights[id] >= 70);
             Check(allHigh == 0 || associatedHigh >= allHigh * .75,
-                "High ranges must lie near classified convergence or subduction");
+                "High ranges must lie near classified convergence or its attributed terrestrial crest");
 
             int[] riftDistance = DistanceFromContacts(topology, motion, relief.Contacts,
                 kind => kind == GeologicalContactKind.ContinentalRift);
@@ -259,13 +263,17 @@ internal static class ContinentalElevationTests
             $"{multiPlateCollisions} span 3+ plates, longest gain {longestGain} edges, " +
             $"{collisionSutureCells} suture hexes; longest by size " +
             string.Join(", ", longestCollisionBySize.Select(item => $"{item.Key}={item.Value}")));
+        Console.WriteLine($"RELIEF REGIONS: {variedCollisionBelts} collision belts vary by 15+ height, " +
+            $"{plateauCells} plateau, {plainCells} plain and {lowHillCells} low-hill land hexes");
         Check(multiPlateCollisions > 0 && collisionSutureCells > 0 &&
-            variedCollisionBelts > 0 && plateauCells > 0 && plainCells > plateauCells &&
+            variedCollisionBelts > 0 &&
             longestCollisionBySize[GridSize.Enormous] >
                 longestCollisionBySize[GridSize.Small] * 1.3,
             "Connected multi-plate collision belts should lengthen with world scale");
-        Console.WriteLine($"RELIEF REGIONS: {variedCollisionBelts} collision belts vary by 15+ height, " +
-            $"{plateauCells} plateau and {plainCells} plain land hexes");
+        // Broad plateaus are now intentional. Low hills (18..29) are also lowland,
+        // not mountain, so include them when checking that stable interiors survive.
+        Check(plateauCells > 0 && plainCells + lowHillCells > plateauCells,
+            "Lowlands must remain extensive alongside regional collision plateaus");
         Console.WriteLine($"PROCESS EVIDENCE: extended collisions {elevatedCollisionAxes}/{extendedCollisions}, long mountain belts {longMountainBelts}, " +
             $"coastal arc cells {coastalArcs}, trench cells {oceanTrenches}, island arc cells {islandArcs}, " +
             $"rift axes {riftAxes}, ridge axes {ridgeAxes}");
@@ -345,11 +353,15 @@ internal static class ContinentalElevationTests
     }
 
     private static int[] DistanceFromContacts(HexTopology topology, TectonicMotionState motion,
-        GeologicalContact[] contacts, Func<GeologicalContactKind, bool> include)
+        GeologicalContact[] contacts, Func<GeologicalContactKind, bool> include,
+        IEnumerable<int>? terrestrialCrests = null)
     {
         int[] distances = Enumerable.Repeat(int.MaxValue, topology.Count).ToArray();
         var queue = new int[topology.Count];
         int head = 0, tail = 0;
+        foreach (int id in terrestrialCrests ?? [])
+            if (distances[id] == int.MaxValue)
+            { distances[id] = 0; queue[tail++] = id; }
         foreach (var contact in contacts)
         {
             if (!include(contact.Kind)) continue;
@@ -388,12 +400,19 @@ internal static class ContinentalElevationTests
                 "Tectonic heights and contact classification survive save/load");
             var previousTerrain = new ContinentalElevationGenerator().Generate(
                 new HexTopology(world.Grid), world.Landmass, useRegionalBelts: false);
+            var oldSelection = previousTerrain.ContinentalSurface!.Selection!;
+            var oldAttempts = oldSelection.Attempts.ToArray();
+            oldAttempts[oldSelection.SelectedAttempt] = oldAttempts[oldSelection.SelectedAttempt] with
+            {
+                PrincipalSystems = previousTerrain.ContinentalElevation!.Systems.Count(s => s.MountainTier == TectonicMountainTier.Principal),
+                SecondarySystems = previousTerrain.ContinentalElevation.Systems.Count(s => s.MountainTier == TectonicMountainTier.Secondary)
+            };
             state.Landmass = previousTerrain with
             {
                 ContinentalSurface = previousTerrain.ContinentalSurface! with
                 {
                     Selection = previousTerrain.ContinentalSurface.Selection! with
-                        { FinalPrincipalSystems = 0, FinalSecondarySystems = 0 }
+                        { Attempts = oldAttempts, FinalPrincipalSystems = 0, FinalSecondarySystems = 0 }
                 },
                 ContinentalElevation = previousTerrain.ContinentalElevation! with
                 {

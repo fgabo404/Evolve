@@ -33,4 +33,11 @@ public sealed record TectonicReliefSystem(int Id, GeologicalContactKind Kind,
     public int LandMountainAxisHexes { get; init; }
     public byte MaximumLandElevation { get; init; }
     public double MeanLandElevation { get; init; }
+    public int[] CrestCellIds { get; init; } = [];
+    public int[] CrestSourceCellIds { get; init; } = [];
+    public int[] MainCrestCellIds { get; init; } = [];
+    public int ContinuousCrestLength { get; init; }
+    public int ConnectedMountainCells { get; init; }
+    public double EffectiveBeltWidth { get; init; }
+    public double MeanCrestProminence { get; init; }
 }

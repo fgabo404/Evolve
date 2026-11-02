@@ -35,7 +35,7 @@ internal static class ContinentalSurfaceValidation
                  entry.Outcome is null).Any() ||
              selection.Attempts[selection.SelectedAttempt].PrincipalSystems < 1 ||
              terrain.ContinentalElevation is null ||
-             (terrain.ContinentalElevation.Version == "continental-elevation-5"
+             (terrain.ContinentalElevation.Version is "continental-elevation-5" or "continental-elevation-6"
                  ? selection.FinalPrincipalSystems < 1 ||
                    selection.FinalPrincipalSystems != terrain.ContinentalElevation.Systems.Count(system =>
                        system.MountainTier == TectonicMountainTier.Principal) ||

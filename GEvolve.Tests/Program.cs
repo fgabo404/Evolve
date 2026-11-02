@@ -3,6 +3,12 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
+if (args.Contains("--orogenic-attempts")) { OrogenicMorphologyTests.InspectAttempts(); return 0; }
+if (args.Contains("--orogenic-morphology"))
+{
+    try { OrogenicMorphologyTests.Run(); return 0; }
+    catch (Exception error) { Console.WriteLine(error); return 1; }
+}
 if (args.Contains("--continental-elevation-captures")) { ContinentalElevationTests.Run(export: true); return 0; }
 if (args.Contains("--continental-selection")) { ContinentalSelectionTests.Run(); return 0; }
 if (args.Contains("--continental-selection-rows"))
@@ -26,6 +32,7 @@ if (args.Contains("--all-suites"))
         ("ContinentalSurface", () => ContinentalSurfaceTests.Run()),
         ("ContinentalElevation", () => ContinentalElevationTests.Run()),
         ("ContinentalSelection", ContinentalSelectionTests.Run),
+        ("OrogenicMorphology", OrogenicMorphologyTests.Run),
         ("ContinentalGeology", ContinentalGeologyTests.Run)];
     int failures = 0;
     string? requestedSuite = args.FirstOrDefault(arg => arg.StartsWith("--suite=", StringComparison.Ordinal))?[8..];

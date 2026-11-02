@@ -1,56 +1,71 @@
-# Continentes: relieve de sistemas tectónicos
+# Continentes: morfología orogénica regional
 
-`PlateGroupSurfaceGenerator` fija superficie, corteza y continentes para cada agrupación candidata. La selección conserva sus reglas y resultados aprobados; véase [CONTINENTAL_SELECTION.md](CONTINENTAL_SELECTION.md). La etapa de elevación clasifica las interacciones de las 16 placas con las reglas deterministas de `ContinentalReliefGenerator.ClassifyContacts`. `TectonicReliefSystemAnalyzer` agrupa primero contactos vecinos del mismo par de placas y proceso. En la elevación final, conecta además tramos de colisión continental de pares distintos que comparten una placa y una sutura próxima. Cada sistema recibe un ID estable, sus interacciones, el eje de hexágonos conectado, las placas participantes, intensidad media, número de tramos y anchura derivada de esa longitud. Se usa la vecindad real de `HexTopology`, incluida la unión este-oeste.
+La versión `continental-elevation-6` construye el relieve terrestre de Continentes a partir de los contactos y sistemas tectónicos existentes. No modifica las placas, su movimiento, los esfuerzos, los grupos propuestos por cada intento ni el generador de superficie. La selección usa ahora la cresta terrestre efectiva; por ello puede elegir otro intento. Los candidatos históricos se reproducen y comparan sin actualizar sus huellas.
 
-`ContinentalElevationGenerator` calcula campos regionales a partir de esos ejes, sin propagar impulsos independientes desde cada hexágono fronterizo:
+## Causa de las cordilleras pequeñas
 
-- **Colisión continental:** cinturón elevado a ambos lados del eje y meseta más amplia. Variación suave a lo largo del cinturón añade flancos, ramas menores y bajos intermontanos.
-- **Subducción oceánica–continental:** fosa en la placa inferior oceánica y levantamiento con máximo desplazado hacia el interior de la placa superior terrestre. Se conserva la identidad de la placa superior para ubicar un arco volcánico en una etapa posterior; ahora no se crean volcanes.
-- **Subducción oceánica–oceánica:** fosa en la placa inferior y campo de arco en la placa superior. Solo eleva tierra que ya existía; nunca crea nuevas islas ni mueve la costa.
-- **Divergencia continental:** depresión en el eje y flancos elevados. **Divergencia oceánica:** dorsal de menor profundidad en un campo batimétrico separado.
-- **Transformante:** deformación local acotada, sin un término de gran cordillera.
+El modelo anterior medía la longitud del límite tectónico, aunque estuviera sumergido. Su perfil gaussiano alcanzaba el máximo junto al límite y decaía antes de llegar a tierra. Una subducción extensa podía dejar solo pequeños grupos elevados en la costa. Además, 24 celdas elevadas, incluso distribuidas en varios fragmentos, bastaban para validar un sistema principal. La selección evaluaba la versión anterior del relieve y después recalculaba la versión visible.
 
-La intensidad usa la velocidad relativa de cada sistema. La anchura usa la longitud conectada, con límites globales iguales para todas las semillas. Una variación periódica pequeña modula únicamente el relieve secundario; no puede formar cordilleras lejos de los sistemas activos. El interior estable conserva llanuras, colinas y mesetas bajas. No hay cuantiles ni ajuste forzado de porcentajes de montaña.
+Se mantienen el análisis de oportunidades y los sistemas regionales de `9fec672`. El cambio se realiza en su expresión terrestre y en su medición, no aumentando globalmente la altura.
 
-`ElevationByCellId` mantiene tierra 1–100 y océano 0. La profundidad oceánica relativa sigue separada. Las cumbres desde 85 conservan la regla global de terreno infranqueable. `ContinentalElevationState` versión 5 guarda sistemas, contactos, tipos de relieve, campos regionales, placas participantes, clasificación de cordilleras y estadísticas de su extensión terrestre y elevación efectiva. El algoritmo numérico de elevación de la etapa de selección sigue siendo el anterior. Los guardados de las versiones 1 a 4 y los guardados solo de superficie siguen siendo legibles.
+## Del contacto tectónico a la cresta
 
-## Calibración de cordilleras
+`TectonicReliefSystemAnalyzer` conserva los contactos clasificados y las uniones de suturas continentales compatibles. `OrogenicMorphology` calcula distancias mediante vecinos reales de `HexTopology`: cierre este-oeste, sin unión norte-sur.
 
-En la calibración anterior, la superficie y su selección de grupos de placas no se modificaron. Una colisión o subducción puede comenzar sobre corteza continental sumergida: el campo orogénico avanza por esa misma corteza hasta la tierra ya existente. El océano conserva elevación terrestre cero. El analizador une tramos convergentes del mismo par de placas separados por una sola discontinuidad local; incluye el hexágono intermedio en el eje conectado, sin cambiar la clasificación original de sus contactos. La etapa actual sí puede seleccionar otra agrupación continental para garantizar una cordillera efectiva.
+1. El campo parte de los hexágonos del sistema tectónico. En colisión solo atraviesa corteza continental de sus placas participantes. En subducción oceánica–continental solo atraviesa corteza continental de la placa superior.
+2. La deformación puede atravesar corteza continental sumergida. La distancia a tierra se mide dentro de esa corteza; en subducción también se restringe a la placa superior. No se proyecta una cresta a través de una cuenca de corteza oceánica.
+3. La cresta continental sigue la sutura emergida o su llegada a tierra. En subducción se desplaza dos unidades de resolución hacia el interior respecto de esa llegada. Un segmento demasiado alejado de tierra no produce una cordillera terrestre.
+4. La anchura parte de la extensión del sistema, acotada entre `3 × escala` y `9 × escala`, con `escala = filas / 133`. El alcance de propagación es `2,8 × anchura`; un origen sumergido solo alcanza una cresta si la tierra está a menos de `1,5 × anchura`.
+5. Una pequeña deformación multiescala curva el contorno de distancia. Solo se cierra una discontinuidad de una celda terrestre dentro del mismo dominio. No se unen islas, sistemas incompatibles ni fronteras opuestas norte-sur.
 
-Los sistemas con suficiente intensidad y tierra alcanzada se ordenan por el área de levantamiento fuerte, velocidad y longitud. Hasta los tres sistemas dominantes reciben la etiqueta **principal** si cumplen el umbral geológico; los siguientes son **secundarios** o **menores**. Esta jerarquía solo describe el relieve que ya se calculó: no aumenta alturas ni inventa una cordillera por cuota. Una semilla sin contactos útiles puede seguir sin sistema principal.
+Se guarda el origen tectónico de cada celda de cresta. El eje del sistema puede contener segmentos submarinos; la cresta efectiva solo contiene tierra elevada. Son dos geometrías distintas y se muestran por separado.
 
-Comparación de semillas que antes tenían poca montaña, con la misma superficie y el mismo número de hexágonos terrestres:
+## Crestas, cordones, mesetas y valles
 
-| Tamaño / semilla | Montaña antes | Montaña ahora | Altura máxima antes → ahora |
-| --- | ---: | ---: | ---: |
-| Pequeño / 42 | 0 | 456 | 23 → 100 |
-| Mediano / 42 | 64 | 241 | 60 → 78 |
-| Mediano / -731 | 263 | 304 | 63 → 63 |
-| Grande / 42 | 246 | 547 | 59 → 100 |
+Desde la cresta se propaga un campo continuo por tierra elegible. El perfil transversal contiene una cresta central, cordones secundarios alrededor de `0,72 × anchura`, una depresión relativa entre ambos y estribaciones más amplias. La anchura y el desplazamiento secundario varían suavemente. Los cordones se curvan y se conectan al seguir un eje tectónico que cambia de orientación.
 
-En seis semillas adicionales por tamaño, 23 de 24 mundos tienen al menos un sistema principal; 4 de los 12 mundos grandes o enormes tienen varios. La proporción de montaña varía entre semillas y permanece por debajo del 35 % de tierra de cada mundo probado.
+La intensidad combina la convergencia media del sistema (75 %) y la del contacto de origen (25 %), con una respuesta acotada respecto de la velocidad de referencia existente. Esto evita que una pequeña caída local de intensidad corte toda la cadena. El ruido periódico en horizontal modifica altura, anchura y pasos; no coloca cordilleras fuera de la deformación tectónica.
 
-## Comprobación
+- **Colisión continental:** deformación a ambos lados de la sutura, cresta dominante, cordones secundarios y un campo de meseta más ancho. La meseta también contiene variación interna y desciende hacia los terrenos estables.
+- **Subducción oceánica–continental:** cresta en la placa superior, desplazada hacia tierra; conserva la fosa en el lado oceánico. No usa el campo amplio de meseta continental.
+- **Subducción oceánica–oceánica:** conserva el cálculo anterior de fosa y aptitud para elevar islas existentes. No crea superficie ni islas.
+- **Divergencia y transformantes:** conservan los campos anteriores de rift, dorsal y falla local. No se convierten en sistemas de colisión.
 
-### Cinturones regionales y colisión continental
+Cuando coinciden campos convergentes, domina el levantamiento más fuerte; no se suman varias cordilleras completas sobre la misma columna de corteza. Se mantienen los coeficientes de altura de cada proceso, el relieve base y la subsidencia existente. La tierra conserva elevación 1–100, el océano 0 y las cumbres infranqueables comienzan en 85. La batimetría se verifica idéntica para el mismo candidato.
 
-Cada contacto `ContinentalCollision` exige corteza continental en ambos lados y convergencia calculada por el movimiento original de las placas. Los contactos forman primero segmentos por par de placas. Dos segmentos se unen si comparten al menos una placa, sus intensidades medias son comparables (la menor alcanza el 30 % de la mayor) y sus ejes están a una distancia hexagonal máxima de dos. Una discontinuidad de una celda recibe un puente **solo en el eje del sistema**; no cambia contactos, corteza, superficie ni placas. La unión transitiva permite que una sutura recorra tres o más placas sin hacer que toda una placa sea montaña. Los contactos de subducción, divergencia y transformante mantienen sistemas separados.
+## Medición y aceptación
 
-El cinturón continental aplica plegamiento a ambos lados de la sutura, una meseta más ancha, flancos y transición hacia tierras bajas. La anchura depende de la longitud conectada y tiene un límite global. La fuerza depende de la convergencia del sistema y varía moderadamente con la compresión local ya calculada (`0,75–1,25` veces la señal). La variación secundaria preexistente evita una cresta de altura uniforme. La subducción oceánica–continental conserva su fosa oceánica y levantamiento desplazado hacia el interior terrestre; no usa esta unión de suturas continentales. Los rifts y las dorsales usan sus campos propios. Ningún proceso crea tierra ni cambia el nivel del mar.
+`OrogenicRangeMetrics` mide el relieve final, no la cantidad de cumbres blancas:
 
-La evaluación de las ocho agrupaciones posibles sigue utilizando el análisis y la elevación anteriores. Una vez elegida la agrupación, se calcula el relieve regional sobre **esa misma superficie**. Por ello los intentos elegidos, la agrupación, la corteza, las costas y los IDs de placa permanecen idénticos. `Selection` guarda por separado los conteos de sistemas principales/secundarios de evaluación y los del relieve final. Esto agrega una pasada de relieve a la generación de Continentes.
+- **Cresta continua:** un recorrido real por vecinos de cresta terrestre con elevación ≥44. Dos búsquedas en anchura obtienen un recorrido largo; se guarda la ruta, no se suman longitudes de fragmentos desconectados. Es una medida conservadora de extensión, no una solución al problema de la ruta simple más larga.
+- **Área conectada:** componente de terreno elevado asociado que contiene esa ruta.
+- **Anchura efectiva:** `1 + 4 × distancia media a las crestas` dentro del componente. Es una estimación de franja equivalente que evita inflar la anchura dividiendo toda un área ramificada por una sola rama.
+- **Prominencia:** altura media de la ruta respecto de los flancos terrestres externos del sistema. Sin flancos medibles no se atribuye prominencia.
 
-En 12 combinaciones de semillas y tamaños, 212 segmentos de colisión anteriores se agruparon en 171 sistemas regionales; 24 cinturones abarcan tres o más placas. El mayor eje conectado creció 236 aristas respecto al máximo anterior. Las mayores longitudes observadas fueron 142, 187, 503 y 519 aristas en Pequeño, Mediano, Grande y Enorme. En 28 cinturones la altura a lo largo del eje varió al menos 15 unidades; hubo 46 631 hexágonos de meseta y 75 233 de llanura terrestre en conjunto. En los 48 mundos de selección, todos conservaron al menos una cordillera principal y 17 de 24 mundos grandes/enormes tuvieron varias en el relieve final. Son medidas de las semillas probadas, no cuotas del generador.
+Para ser principal, el sistema debe ser una colisión continental o una subducción oceánica–continental, alcanzar la longitud mínima, tener área conectada suficiente, anchura efectiva de al menos `2 × escala` y prominencia media de 12 unidades. La longitud mínima es el 10 % del número de filas, redondeado hacia arriba: 14, 17, 20 y 27 aristas en Pequeño, Mediano, Grande y Enorme. El área mínima es `longitud mínima × 2 × escala`. Son umbrales de extensión regional a resolución comparable; no representan cotas en metros ni una cuota de celdas de elevación 85.
 
-Las capturas `continental-belts-*.svg` comparan, para siete configuraciones, superficie, placas y movimiento, sistemas tectónicos (ejes continentales de varias placas en morado), cordilleras, deformación y altura. Las huellas aprobadas de superficie y placas se mantienen iguales en las 12 configuraciones de regresión. El modelo continúa siendo una instantánea estática de la tectónica: no simula una historia real de colisiones ni erosión.
+Se conservan la clasificación principal/secundaria/menor y el máximo de tres sistemas dominantes. Una cadena estrecha o corta puede conservar relieve como secundaria sin justificar por sí sola la aceptación del mundo. Los mismos datos que se validan son los que se entregan al juego.
 
-Las 12 huellas históricas de `ApprovedContinentalSurfaceBaseline.txt` permanecen intactas y demuestran que los IDs de placas no cambiaron. `ApprovedContinentalSelectionBaseline.txt` fija las nuevas superficies, agrupaciones, cortezas e identidades de 12 configuraciones tras validar su calidad. Las pruebas verifican la partición de contactos en ejes conectados, determinismo, alturas, continuidad horizontal, persistencia y señales de colisiones, subducción, rifts y dorsales. Las 36 huellas de Pangea, Continentes pequeños y Archipiélagos siguen bajo sus pruebas históricas.
+## Selección, persistencia y límites
 
-Para exportar comparaciones de **superficie**, **placas y movimiento**, **sistemas clasificados**, **cordilleras principales y secundarias**, **levantamiento/subsidencia** y **altura final** de la misma semilla:
+Se mantienen ocho alternativas deterministas como máximo. No se regeneran placas ni se cambia la semilla. La selección conserva sus preferencias por varios sistemas en Grande y Enorme; si ninguna alternativa tiene una cordillera principal válida, falla de manera explícita. Véase [CONTINENTAL_SELECTION.md](CONTINENTAL_SELECTION.md).
+
+La versión 6 persiste crestas, orígenes, recorrido continuo, área, anchura y prominencia. Los guardados de las versiones 1–5 y los de solo superficie siguen siendo legibles, sin inventar crestas ausentes ni regenerar el mundo al cargar. Se conserva el cálculo previo como referencia de pruebas; el juego usa la versión nueva.
+
+El modelo sigue siendo estático. No simula millones de años de colisión, estratigrafía, erosión ni una historia paleogeográfica. Himalaya, Andes y Alpes son referencias conceptuales de morfología y proceso, no reproducciones físicas cuantitativas. No se avanzan volcanes, clima ni biomas.
+
+## Reproducción y diagnósticos
 
 ```powershell
-dotnet run --project GEvolve.Tests --no-build --no-restore -- --continental-elevation-captures
+dotnet build GEvolve.sln --no-restore
+dotnet run --project GEvolve.Tests --no-build --no-restore -- --orogenic-morphology
+dotnet run --project GEvolve.Tests --no-build --no-restore -- --all-suites
+dotnet run --project GEvolve.Game --no-build --no-restore -- --graphics-smoke
+git diff --check
 ```
 
-Este es un modelo estático de la cinemática actual. No integra millones de años de acreción, erosión o enfriamiento. Algunas semillas carecen de cordilleras altas si sus contactos fuertes ocurren principalmente en el océano. La presencia de sistemas oceánicos no implica que haya islas preexistentes cerca de todos ellos. No se activan volcanes, clima ni biomas.
+`--orogenic-morphology` comprueba 52 configuraciones: cuatro tamaños y trece semillas, incluida `-1358931540`. Reproduce los candidatos originales guardados antes de modificar el código, verifica sus hashes de superficie, grupos, corteza, identidad, placas y movimiento, comprueba determinismo, continuidad, procedencia tectónica, batimetría y persistencia. Incluye casos sintéticos para rechazar cumbres aisladas y comprobar ambos extremos del mapa.
+
+`orogenic-comparison.csv` contiene los resultados antes/después, el intento seleccionado, cambios de superficie y tiempos. Los archivos `orogenic-before-*.svg` y `orogenic-after-*.svg` comparan cinco configuraciones que cubren los cuatro tamaños y la semilla señalada. Cada SVG muestra superficie con cordilleras, placas y direcciones, sistemas, crestas, levantamiento y elevación. Su CSV asociado incluye todos los sistemas. La versión anterior no guardaba una cresta terrestre separada; ese panel se identifica como no disponible.
+
+Los archivos históricos `ApprovedContinentalSurfaceBaseline.txt`, `ApprovedContinentalSelectionBaseline.txt` y `ApprovedNonContinentalBaseline.txt` no se modifican. Cuando cambia el intento final, las pruebas informan la diferencia y reproducen exactamente el candidato histórico para comprobar el algoritmo de superficie. Las pruebas de ubicación usan además las crestas con procedencia tectónica validada; la comprobación de terrenos bajos incluye colinas de 18–29 junto a las llanuras. Se conservan los límites de cobertura y cumbres de las pruebas anteriores.

@@ -63,8 +63,8 @@ public sealed class WorldGenerationService
                     TectonicMotion = tectonicMotion,
                     ContinentalSurface = generated.State
                 };
-                // Keep the approved candidate ranking independent of the new belt geometry.
-                terrain = elevationGenerator.Generate(topology, terrain, useRegionalBelts: false);
+                // Acceptance uses the same connected terrestrial crests that will be displayed.
+                terrain = elevationGenerator.Generate(topology, terrain);
                 int principal = terrain.ContinentalElevation!.Systems.Count(system =>
                     system.MountainTier == TectonicMountainTier.Principal);
                 int secondary = terrain.ContinentalElevation.Systems.Count(system =>
@@ -103,8 +103,7 @@ public sealed class WorldGenerationService
                     Selection = new(attempts.Count, selectedAttempt,
                         opportunities.MarginCount, attempts.ToArray())
                 };
-                var finalTerrain = elevationGenerator.Generate(topology,
-                    selected.Landmass with { ContinentalSurface = surface });
+                var finalTerrain = selected.Landmass with { ContinentalSurface = surface };
                 int finalPrincipal = finalTerrain.ContinentalElevation!.Systems.Count(system =>
                     system.MountainTier == TectonicMountainTier.Principal);
                 int finalSecondary = finalTerrain.ContinentalElevation.Systems.Count(system =>

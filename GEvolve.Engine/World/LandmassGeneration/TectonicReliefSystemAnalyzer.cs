@@ -10,7 +10,7 @@ public static class TectonicReliefSystemAnalyzer
         TectonicMotionState motion, GeologicalContact[] contacts)
         => MergeContinentalCollisions(topology, AnalyzeLegacy(topology, motion, contacts));
 
-    // The selection stage uses this original partition so approved continental groups stay fixed.
+    // Retained for version 4/5 comparisons; active selection uses regional terrestrial crests.
     public static TectonicReliefSystem[] AnalyzeLegacy(HexTopology topology,
         TectonicMotionState motion, GeologicalContact[] contacts)
     {

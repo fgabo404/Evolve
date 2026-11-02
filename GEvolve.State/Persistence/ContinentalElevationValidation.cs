@@ -15,21 +15,21 @@ internal static class ContinentalElevationValidation
             !terrain.HasSurface || terrain.ContinentalGeology is not null ||
             relief.Version is not ("continental-elevation-1" or "continental-elevation-2" or
                 "continental-elevation-3" or "continental-elevation-4" or
-                "continental-elevation-5") ||
+                "continental-elevation-5" or "continental-elevation-6") ||
             motion is null || heights is null ||
             relief.Contacts is null || relief.Contacts.Length != motion.Interactions.Length ||
             relief.LandformByCellId is null || relief.LandformByCellId.Length != count ||
             relief.OceanDepthByCellId is null || relief.OceanDepthByCellId.Length != count)
             throw new InvalidDataException("Invalid continental elevation stage.");
         if (relief.Version is "continental-elevation-2" or "continental-elevation-3" or
-            "continental-elevation-4" or "continental-elevation-5")
+            "continental-elevation-4" or "continental-elevation-5" or "continental-elevation-6")
         {
             if (relief.Systems is null || relief.UpliftByCellId is null ||
                 relief.SubsidenceByCellId is null || relief.UpliftByCellId.Length != count ||
                 relief.SubsidenceByCellId.Length != count)
                 throw new InvalidDataException("Invalid regional tectonic fields.");
             if (relief.Version is "continental-elevation-3" or "continental-elevation-4" or
-                "continental-elevation-5" &&
+                "continental-elevation-5" or "continental-elevation-6" &&
                 (relief.MountainTierByCellId is null ||
                     relief.MountainTierByCellId.Length != count ||
                     relief.MountainTierByCellId.Any(value => !Enum.IsDefined((TectonicMountainTier)value))))
@@ -48,7 +48,7 @@ internal static class ContinentalElevationValidation
                     system.AxisCellIds.Any(id => id < 0 || id >= count) ||
                     !Enum.IsDefined(system.MountainTier))
                     throw new InvalidDataException("Invalid regional tectonic system.");
-                if (relief.Version is "continental-elevation-4" or "continental-elevation-5" &&
+                if (relief.Version is "continental-elevation-4" or "continental-elevation-5" or "continental-elevation-6" &&
                     (system.AffectedLandCells < 0 || system.EffectiveMountainCells < 0 ||
                      system.EffectiveMountainCells > system.AffectedLandCells ||
                      system.LandMountainAxisHexes < 0 ||
@@ -60,7 +60,7 @@ internal static class ContinentalElevationValidation
                      system.MountainTier == TectonicMountainTier.Principal &&
                          system.EffectiveMountainCells < 24))
                     throw new InvalidDataException("Invalid effective mountain statistics.");
-                if (relief.Version == "continental-elevation-5" &&
+                if (relief.Version is "continental-elevation-5" or "continental-elevation-6" &&
                     (system.ParticipatingPlateIds is null ||
                      system.ParticipatingPlateIds.Length is < 2 or > 16 ||
                      system.ParticipatingPlateIds.Distinct().Count() !=
@@ -69,6 +69,30 @@ internal static class ContinentalElevationValidation
                          !system.ParticipatingPlateIds.Contains(motion.Interactions[index].FirstPlateId) ||
                          !system.ParticipatingPlateIds.Contains(motion.Interactions[index].SecondPlateId))))
                     throw new InvalidDataException("Invalid participating plates in tectonic belt.");
+                if (relief.Version == "continental-elevation-6" &&
+                    (system.CrestCellIds is null || system.MainCrestCellIds is null ||
+                     system.CrestSourceCellIds is null ||
+                     system.CrestSourceCellIds.Length != system.CrestCellIds.Length ||
+                     system.CrestSourceCellIds.Any(id => !system.AxisCellIds.Contains(id)) ||
+                     system.CrestCellIds.Any(id => id < 0 || id >= count || terrain.SurfaceByCellId[id] != 1) ||
+                     system.CrestCellIds.Distinct().Count() != system.CrestCellIds.Length ||
+                     system.MainCrestCellIds.Any(id => !system.CrestCellIds.Contains(id) || heights[id] < 44) ||
+                     system.MainCrestCellIds.Distinct().Count() != system.MainCrestCellIds.Length ||
+                     system.ContinuousCrestLength != Math.Max(0, system.MainCrestCellIds.Length - 1) ||
+                     system.ConnectedMountainCells < 0 || system.ConnectedMountainCells > system.EffectiveMountainCells ||
+                     !double.IsFinite(system.EffectiveBeltWidth) || system.EffectiveBeltWidth < 0 ||
+                     !double.IsFinite(system.MeanCrestProminence) || system.MeanCrestProminence is < 0 or > 100))
+                    throw new InvalidDataException("Invalid terrestrial orogenic crest metrics.");
+                if (relief.Version == "continental-elevation-6" &&
+                    system.MountainTier == TectonicMountainTier.Principal)
+                {
+                    int rows = HexGridDefinitions.Get(terrain.Configuration.Size).Rows;
+                    if (system.Kind is not (GeologicalContactKind.ContinentalCollision or
+                            GeologicalContactKind.OceanContinentSubduction) ||
+                        !ContinentalOrogenySettings.MeetsPrincipalGeometry(rows, system.ContinuousCrestLength,
+                            system.ConnectedMountainCells, system.EffectiveBeltWidth, system.MeanCrestProminence))
+                        throw new InvalidDataException("Principal range lacks continuous terrestrial relief.");
+                }
             }
         }
         for (int id = 0; id < count; id++)

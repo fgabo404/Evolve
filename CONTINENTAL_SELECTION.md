@@ -1,36 +1,33 @@
-# Continentes: selección tectónica con garantía de cordillera
+# Continentes: selección mediante cordilleras terrestres continuas
 
-La cuadrícula, las 16 placas, sus vectores y sus campos de esfuerzo se calculan **una sola vez**. `OrogenicOpportunityAnalyzer` recorre los límites originales y agrupa tramos convergentes vecinos del mismo par de placas. Descarta tramos cortos y contactos dominados por cizalla; la puntuación de cada margen combina longitud e intensidad de convergencia. Las divergencias y transformantes no cuentan como oportunidad de compresión.
+La cuadrícula, las 16 placas, sus vectores y sus campos de esfuerzo se calculan una sola vez. `OrogenicOpportunityAnalyzer` mantiene su análisis anterior de márgenes convergentes; `PlateGroupSurfaceGenerator` mantiene la selección propuesta de dos a seis grupos conectados y la generación de aproximadamente 35 % de tierra. Ninguno de esos algoritmos cambia en esta etapa.
 
-`PlateGroupSurfaceGenerator` mantiene de dos a seis grupos de placas conectadas. Para cada intento determinista, combina separación entre núcleos, área de placas y potencial orogénico. La acreción de placas vecinas favorece contactos convergentes sin exigir que todos emerjan. El nivel del mar global conserva aproximadamente 35 % de tierra, grandes océanos, costas irregulares y tamaños continentales distintos. El número de intento solo cambia la selección continental; no cambia semilla, geometría, movimiento ni elevación numérica de las placas.
+`WorldGenerationService` evalúa como máximo ocho candidatos deterministas. Conserva el control de calidad de superficie: cada grupo debe tener una masa principal reconocible, al menos 1 % del mapa y 50 % de la tierra del grupo en su componente mayor.
 
-`WorldGenerationService` evalúa **como máximo ocho** agrupaciones. Rechaza un candidato si un grupo no posee una masa terrestre principal reconocible (al menos 1 % del mapa y 50 % de la tierra de ese grupo en su componente mayor). El generador orogénico existente calcula entonces el relieve. Un sistema principal exige margen convergente conectado de al menos ocho aristas, suficiente levantamiento terrestre y **al menos 24 hexágonos de montaña efectiva** (elevación 44 o mayor). Pequeño y Mediano aceptan el primer candidato válido. Grande y Enorme buscan dos sistemas principales; si no aparecen en ocho intentos, aceptan el mejor candidato con uno. Si no aparece ninguno, la generación falla con un mensaje explícito: no se altera la semilla ni se inventan montañas.
+El candidato se acepta por sus elevaciones finales de versión 6. Una cordillera principal exige una cresta terrestre continua, área elevada conectada, anchura y prominencia respecto de los flancos. La longitud del límite tectónico sumergido y una colección de cumbres aisladas no sustituyen esos requisitos. Las reglas, unidades y umbrales por tamaño están documentados en [CONTINENTAL_ELEVATION.md](CONTINENTAL_ELEVATION.md).
 
-`ContinentalSurfaceState.Selection` conserva número de candidatos evaluados, intento elegido, márgenes disponibles, cantidad de sistemas principales y secundarios y motivo de cada rechazo. Cada `TectonicReliefSystem` guarda la extensión terrestre afectada, cantidad de hexágonos montañosos, longitud del eje montañoso sobre tierra y elevación máxima y promedio. Los guardados anteriores sin estos diagnósticos siguen siendo legibles.
+Pequeño y Mediano aceptan el primer candidato válido. Grande y Enorme siguen buscando dos sistemas principales; si no aparecen dentro de ocho intentos, se conserva el mejor candidato que tenga uno. Si ninguno cumple, la generación falla explícitamente. No se cambia la semilla, no se mueven placas y no se agregan montañas para cumplir una cuota. No fue necesario aumentar los ocho intentos.
 
-La agrupación candidata sigue evaluándose con los segmentos orogénicos originales. Tras elegirla, el relieve final une suturas de colisión continental próximas incluso si atraviesan varios pares de placas, según [CONTINENTAL_ELEVATION.md](CONTINENTAL_ELEVATION.md). `FinalPrincipalSystems` y `FinalSecondarySystems` registran la clasificación del relieve final; los conteos de cada intento conservan su significado original. Esta pasada final no vuelve a seleccionar continentes ni altera sus huellas aprobadas.
+La elevación validada es la misma que recibe el juego. Se elimina la segunda pasada que antes evaluaba una versión antigua y luego recalculaba otra para mostrarla. `ContinentalSurfaceState.Selection` conserva los intentos, sus resultados y el intento elegido. `FinalPrincipalSystems` y `FinalSecondarySystems` coinciden con la evaluación elegida en la versión nueva; se conservan ambos campos para leer guardados anteriores.
 
-## Validación de 48 mundos
+## Superficies históricas y cambios de selección
 
-La tabla indica **intento elegido / agrupaciones evaluadas / cordilleras principales**. El intento inicial es 0.
+Preservar el algoritmo de superficie no implica que una validación más exigente escoja siempre el mismo intento. Las alternativas para una misma semilla siguen produciendo exactamente las superficies anteriores; únicamente puede cambiar cuál se acepta.
 
-| Semilla | Pequeño | Mediano | Grande | Enorme |
-| ---: | :---: | :---: | :---: | :---: |
-| 2026 | 0/1/2 | 0/1/1 | 0/1/2 | 0/1/3 |
-| 42 | 0/1/2 | 0/1/1 | 0/1/2 | 0/1/3 |
-| -731 | 0/1/1 | 0/1/3 | 4/5/3 | 0/1/3 |
-| 7 | 0/1/1 | 0/1/2 | 3/4/3 | 0/1/3 |
-| 99 | 0/1/3 | 0/1/1 | 0/1/3 | 0/1/2 |
-| 12345 | 0/1/2 | 0/1/3 | 1/2/2 | 1/2/2 |
-| 314159 | 0/1/3 | 0/1/2 | 4/5/3 | 0/1/3 |
-| -2026 | 0/1/3 | 0/1/1 | 0/1/3 | 1/2/2 |
-| 8675309 | 0/1/1 | 0/1/3 | 0/1/2 | 0/1/2 |
-| 0 | 0/1/2 | 0/1/1 | 1/2/2 | 4/8/1 |
-| 1 | 0/1/1 | 1/2/1 | 1/2/3 | 0/1/2 |
-| 123456789 | 0/1/2 | 0/1/2 | 1/2/2 | 0/1/2 |
+Antes de modificar el generador se registraron 52 candidatos elegidos por `9fec672` en `OrogenicInputBaseline.txt`: cuatro tamaños y trece semillas. Contienen el intento y hashes SHA-256 de superficie, placas, movimiento completo, grupos, corteza e identidad continental. Las pruebas vuelven a generar esos intentos y exigen igualdad exacta. También reproducen por separado el candidato elegido por la versión nueva.
 
-Los 48 mundos generaron al menos una cordillera principal; 23 de 24 Grandes o Enormes tienen dos o tres. Diez selecciones necesitaron un intento posterior. Enorme promedió **1,826 ms** por generación en el entorno de prueba; el caso que agotó ocho candidatos tardó **3,704 ms**. Estos tiempos dependen del equipo y son solo una referencia.
+Las huellas históricas `ApprovedContinentalSurfaceBaseline.txt` y `ApprovedContinentalSelectionBaseline.txt` permanecen intactas. Las pruebas informan cuántas selecciones finales difieren y verifican que cada candidato histórico conserva su huella. `orogenic-comparison.csv` detalla intento anterior, intento nuevo y cambio de superficie para cada mundo; no se presenta un cambio de selección como una modificación del generador de costas.
 
-La huella histórica `ApprovedContinentalSurfaceBaseline.txt` se conserva sin modificaciones y sigue comprobando los IDs de las placas. Tras validar las nuevas superficies, `ApprovedContinentalSelectionBaseline.txt` fija superficie, agrupación, corteza e identidad para cuatro tamaños y tres semillas. Entre ambas huellas, **11 de 12** superficies, agrupaciones, cortezas e identidades cambiaron por la nueva selección; **0 de 12** mapas de placas cambiaron. Las huellas de los otros tres tipos de mundo no cambian.
+Los guardados existentes no se vuelven a generar al cargar. La compatibilidad de los datos antiguos y de la geometría nueva de crestas se comprueba con guardado y lectura.
 
-La garantía es **condicional al éxito de generación**. No existe prueba de que cualquier conjunto imaginable de placas y movimientos permita una cordillera terrestre con ocho agrupaciones; esas configuraciones fallan explícitamente. No se regeneran placas, se alteran velocidades ni se crean montañas por cuota. El modelo sigue siendo estático y no incorpora volcanes, clima ni biomas.
+## Diagnósticos
+
+```powershell
+dotnet run --project GEvolve.Tests --no-build --no-restore -- --orogenic-morphology
+dotnet run --project GEvolve.Tests --no-build --no-restore -- --orogenic-attempts
+dotnet run --project GEvolve.Tests --no-build --no-restore -- --continental-selection
+```
+
+El segundo comando muestra los ocho candidatos de la semilla Enorme `-1358931540`, con longitud, anchura, área conectada, prominencia y elegibilidad de sus sistemas. Los SVG y CSV antes/después permiten revisar el relieve junto con las placas y el campo de levantamiento.
+
+La garantía continúa condicionada al éxito de generación. No se afirma que cualquier combinación imaginable de placas y movimientos admita una cordillera terrestre válida con ocho agrupaciones. La falla explícita preserva esa distinción y evita aceptar montañas pequeñas como si fueran una gran cordillera.

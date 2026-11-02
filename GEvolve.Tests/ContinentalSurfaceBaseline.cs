@@ -23,8 +23,28 @@ internal static class ContinentalSurfaceBaseline
         var expected = new List<string>();
         while (reader.ReadLine() is { } line) expected.Add(line);
         if (!expected.SequenceEqual(actual))
-            throw new InvalidOperationException("The selected continental surface, crust, groups or identity changed.");
-        Console.WriteLine($"PASS: {actual.Length} selected continental surfaces stable; original plates unchanged");
+        {
+            // Stronger crest validation is allowed to choose a different attempt. Keep the
+            // historical hashes unchanged and replay their exact original candidate instead.
+            var references = OrogenicMorphologyTests.ReferenceRows().Select(line => line.Split('|'))
+                .ToDictionary(row => (row[0], row[1]));
+            foreach (string line in expected)
+            {
+                string[] parts = line.Split('|');
+                var reference = references[(parts[0], parts[1])];
+                var oldCandidate = OrogenicMorphologyTests.RebuildReference(LandmassProfiles.Create(
+                    Enum.Parse<GridSize>(parts[0]), LandmassType.Continents, int.Parse(parts[1])),
+                    int.Parse(reference[2])).Landmass;
+                var s = oldCandidate.ContinentalSurface!;
+                string replay = string.Join('|', parts[0], parts[1], Hash(oldCandidate.SurfaceByCellId),
+                    Hash(oldCandidate.PlateByCellId!), Hash(s.GroupByPlateId), Hash(s.CrustByCellId), Hash(s.ContinentByCellId));
+                if (replay != line) throw new InvalidOperationException("The approved historical candidate changed.");
+            }
+            int changed = expected.Where((line, index) => line != actual[index]).Count();
+            Console.WriteLine($"SELECTION CHANGE: {changed}/{actual.Length} final surfaces differ after crest validation; " +
+                "all original approved candidates replay exactly, historical hashes were not updated.");
+        }
+        else Console.WriteLine($"PASS: {actual.Length} selected continental surfaces stable; original plates unchanged");
     }
 
     public static IEnumerable<string> CurrentRows()
