@@ -1,7 +1,7 @@
 "use strict";
 
 const CATALOGS = [
-  { type: "world", title: { es: "Mundo (Biomas)", en: "World (Biomes)" }, file: "../World/biomes.json" },
+  { type: "world", title: { es: "Mundo (Biomas)", en: "World (Biomes)" }, file: "../Biomas/biomes.json" },
   { type: "animals", title: { es: "Animales", en: "Animals" }, file: "../Resources/fauna.json" },
   { type: "plants", title: { es: "Plantas", en: "Plants" }, file: "../Resources/flora.json" },
   { type: "minerals", title: { es: "Minerales", en: "Minerals" }, file: "../Resources/minerals.json" },

@@ -7,7 +7,7 @@ const vm = require("node:vm");
 const wiki = path.resolve(__dirname, "..");
 const catalogs = path.resolve(wiki, "..");
 const files = {
-  world: "World/biomes.json",
+  world: "Biomas/biomes.json",
   animals: "Resources/fauna.json",
   plants: "Resources/flora.json",
   minerals: "Resources/minerals.json",

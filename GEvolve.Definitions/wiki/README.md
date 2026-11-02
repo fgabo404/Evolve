@@ -38,4 +38,4 @@ La prueba usa los JSON reales y las API nativas de Node.js. Comprueba el índice
 
 ## Nuevos catálogos de juego
 
-La Wiki consume `World/biomes.json`, `Animals/animals.json`, `Resources/flora.json` y `Minerals/minerals.json`. Mundo incluye ocho biomas principales con fichas para sus 22 subbiomas. Los enlaces funcionan en ambas direcciones: subbioma → entidad, entidad → subbioma y entidad → recurso → proceso. No se carga ningún JSON de `Old/` ni los catálogos biológicos auxiliares.
+La Wiki consume `Biomas/biomes.json`, `Animals/animals.json`, `Resources/flora.json` y `Minerals/minerals.json`. Mundo incluye ocho biomas principales con fichas para sus 22 subbiomas. Los enlaces funcionan en ambas direcciones: subbioma → entidad, entidad → subbioma y entidad → recurso → proceso. No se carga ningún JSON de `Old/` ni los catálogos biológicos auxiliares.
