@@ -120,10 +120,10 @@ public static class ScreenLayout
     private static readonly UiAction[] SizeActions =
         [UiAction.Small, UiAction.Medium, UiAction.Large, UiAction.Enormous];
     private static readonly UiAction[] TypeActions =
-        [UiAction.Continents, UiAction.Pangaea, UiAction.SmallContinents, UiAction.Archipelagos];
+        [UiAction.Pangaea, UiAction.Continents, UiAction.Archipelagos];
     private static readonly string[] SizeLabels = ["Pequeño", "Mediano", "Grande", "Enorme"];
     private static readonly string[] TypeLabels =
-        ["Continentes", "Pangea", "Continentes pequeños", "Archipiélagos"];
+        ["Pangea", "Continentes", "Archipiélagos"];
 
     public static string SizeLabel(GridSize size) => size switch
     {
@@ -136,10 +136,10 @@ public static class ScreenLayout
 
     public static string TypeLabel(LandmassType type) => type switch
     {
-        LandmassType.Continents => TypeLabels[0],
-        LandmassType.Pangaea => TypeLabels[1],
-        LandmassType.SmallContinents => TypeLabels[2],
-        LandmassType.Archipelagos => TypeLabels[3],
+        LandmassType.Pangaea => TypeLabels[0],
+        LandmassType.Continents => TypeLabels[1],
+        LandmassType.Archipelagos => TypeLabels[2],
+        LandmassType.SmallContinents => "Continentes pequeños (histórico)",
         _ => throw new ArgumentOutOfRangeException(nameof(type))
     };
 

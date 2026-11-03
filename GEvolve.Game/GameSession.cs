@@ -50,7 +50,7 @@ public sealed class GameSession
     public void ChooseType(LandmassType type)
     {
         if (Screen != GameScreen.CreateWorld) return;
-        if (!Enum.IsDefined(type)) throw new ArgumentOutOfRangeException(nameof(type));
+        if (!SelectableWorldTypes.IsSelectable(type)) throw new ArgumentOutOfRangeException(nameof(type));
         SelectedType = type;
         Error = null;
     }
@@ -112,7 +112,9 @@ public sealed class GameSession
         if (Screen != GameScreen.World || State.Landmass is null)
             throw new InvalidOperationException("Generate a world before changing its configuration.");
         _ = HexGridDefinitions.Get(size);
-        if (!Enum.IsDefined(type)) throw new ArgumentOutOfRangeException(nameof(type));
+        // A historical world may be resized with its original type; new choices must be selectable.
+        if (!SelectableWorldTypes.IsSelectable(type) && type != State.Landmass.Configuration.Type)
+            throw new ArgumentOutOfRangeException(nameof(type));
         int seed = State.Landmass.Configuration.Seed;
         SelectedSize = size;
         SelectedType = type;
@@ -132,6 +134,7 @@ public sealed class GameSession
     {
         if (Screen != GameScreen.World || State.Landmass is null)
             throw new InvalidOperationException("Generate a world before changing its type.");
+        if (!SelectableWorldTypes.IsSelectable(type)) throw new ArgumentOutOfRangeException(nameof(type));
         return BeginReconfigure(State.Landmass.Configuration.Size, type);
     }
 

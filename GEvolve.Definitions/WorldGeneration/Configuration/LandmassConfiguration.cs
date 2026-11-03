@@ -1,7 +1,8 @@
 
 namespace GEvolve.Definitions.WorldGeneration.Configuration;
 
-public enum LandmassType { Continents, Pangaea, SmallContinents, Archipelagos }
+// Persisted numeric IDs are stable; SmallContinents remains supported for historical saves.
+public enum LandmassType { Continents = 0, Pangaea = 1, SmallContinents = 2, Archipelagos = 3 }
 
 /// <summary>Legacy save shape only; new Continents maps do not use surface parameters.</summary>
 public sealed record ContinentsParameters(double TargetLandFraction, int CoreCount,

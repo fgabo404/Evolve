@@ -7,6 +7,8 @@ using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Game;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
+using GEvolve.State.Game;
+using GEvolve.State.Persistence;
 
 public static class GameTests
 {
@@ -37,10 +39,28 @@ public static class GameTests
             .Select(button => ScreenLayout.SizeFor(button.Action))
             .SequenceEqual(Enum.GetValues<GridSize>()),
             "World-size dropdown exposes four official sizes");
-        Check(ScreenLayout.DropdownOptions(GameScreen.CreateWorld, 1280, 720, UiAction.TypeSelect)
-            .Select(button => ScreenLayout.TypeFor(button.Action))
-            .SequenceEqual(Enum.GetValues<LandmassType>()),
-            "World-type dropdown exposes four distinct world types");
+        Check(SelectableWorldTypes.All.SequenceEqual(
+                new[] { LandmassType.Pangaea, LandmassType.Continents, LandmassType.Archipelagos }) &&
+            Enum.GetValues<LandmassType>().Length == 4 &&
+            (int)LandmassType.Continents == 0 &&
+            (int)LandmassType.Pangaea == 1 &&
+            (int)LandmassType.SmallContinents == 2 &&
+            (int)LandmassType.Archipelagos == 3 &&
+            !SelectableWorldTypes.IsSelectable(LandmassType.SmallContinents),
+            "Three public options and four stable persisted IDs");
+        foreach (var screen in new[] { GameScreen.CreateWorld, GameScreen.World })
+            Check(ScreenLayout.DropdownOptions(screen, 1280, 720, UiAction.TypeSelect)
+                .Select(button => ScreenLayout.TypeFor(button.Action))
+                .SequenceEqual(SelectableWorldTypes.All),
+                "Type dropdown exposes exactly three selectable types");
+        Check(ScreenLayout.TypeLabel(LandmassType.SmallContinents) ==
+                "Continentes pequeños (histórico)" &&
+            ScreenLayout.TypeLabel(LandmassType.Continents) == "Continentes",
+            "Historical worlds remain identifiable without masquerading as new options");
+        Check(Throws<ArgumentOutOfRangeException>(
+                () => session.ChooseType(LandmassType.SmallContinents)) &&
+            session.SelectedType == LandmassType.Pangaea,
+            "Cannot choose legacy SmallContinents for a new world");
         Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
             createButtons.Any(button => button.Action == UiAction.RandomSeed),
             "Editable and random seed controls");
@@ -174,6 +194,12 @@ public static class GameTests
             resizing.State.Landmass!.PlateByCellId!.SequenceEqual(oldPlates) &&
             !resizing.State.Landmass.SurfaceByCellId.SequenceEqual(oldSurface),
             "World type change regenerates land but keeps the universal tectonic plates");
+        Check(Throws<ArgumentOutOfRangeException>(
+                () => resizing.BeginChangeType(LandmassType.SmallContinents)) &&
+            Throws<ArgumentOutOfRangeException>(
+                () => resizing.BeginReconfigure(GridSize.Small, LandmassType.SmallContinents)) &&
+            resizing.State.Landmass!.Configuration.Type == LandmassType.Archipelagos,
+            "New reconfigurations cannot select the historical world type");
         var changeBoth = resizing.BeginReconfigure(GridSize.Small, LandmassType.Continents);
         Check(changeBoth.Size == GridSize.Small &&
             changeBoth.Type == LandmassType.Continents &&
@@ -188,6 +214,27 @@ public static class GameTests
             resizing.State.Landmass.TectonicMotion is not null,
             "Reconfiguration selects pending Continents with real tectonics and no surface");
 
+        // Historical generation and serialization remain supported although not selectable.
+        var historical = new WorldGenerationService().Generate(
+            LandmassProfiles.Create(GridSize.Small, LandmassType.SmallContinents, 2026));
+        string legacyPath = Path.Combine(Path.GetTempPath(), $"evolve-h05-legacy-{Guid.NewGuid():N}.json");
+        try
+        {
+            GameSaveStore.Save(legacyPath, new GameState
+            {
+                HexGrid = new HexGridState(historical.Grid.Definition),
+                Landmass = historical.Landmass
+            });
+            var loaded = GameSaveStore.Load(legacyPath).Landmass!;
+            Check(loaded.Configuration.Type == LandmassType.SmallContinents &&
+                loaded.Configuration == historical.Landmass.Configuration &&
+                loaded.SurfaceByCellId.SequenceEqual(historical.Landmass.SurfaceByCellId) &&
+                loaded.ElevationByCellId!.SequenceEqual(historical.Landmass.ElevationByCellId!) &&
+                ScreenLayout.TypeLabel(loaded.Configuration.Type).Contains("histórico"),
+                "Historical SmallContinents generation, persistence and labeling are preserved");
+        }
+        finally { if (File.Exists(legacyPath)) File.Delete(legacyPath); }
+
         foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
         foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })
         {
@@ -199,12 +246,14 @@ public static class GameTests
             foreach (var selector in new[] { UiAction.SizeSelect, UiAction.TypeSelect })
             {
                 var options = ScreenLayout.DropdownOptions(screen, width, height, selector);
-                Check(options.Count is 0 or 4, "Dropdown options exist on create and world screens");
+                Check(options.Count == (screen is GameScreen.CreateWorld or GameScreen.World
+                    ? selector == UiAction.TypeSelect ? 3 : 4 : 0),
+                    "Dropdown counts match three world types and four sizes");
                 foreach (var option in options)
                     Check(option.Bounds.X >= 0 && option.Bounds.Y >= 0 &&
                         option.Bounds.X + option.Bounds.Width <= width &&
                         option.Bounds.Y + option.Bounds.Height <= height,
-                        "All four dropdown entries fit the window at every supported resolution");
+                        "All dropdown entries fit the window at every supported resolution");
             }
         }
     }
