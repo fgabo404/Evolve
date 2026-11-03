@@ -193,6 +193,18 @@ flowchart TD
 
 **Orden de la arquitectura:** hex-grid → 16 placas universales → movimientos/esfuerzos → fragmentos y ensamblaje cortical → superficie emergida y océanos → elevaciones/geología (H06/H07) → clima e hidrología → biomas y recursos. Los tipos de mundo cambian las reglas de corteza/superficie, no la capa tectónica compartida.
 
+### H05-M1/M2/M3 — Catálogo de tres tipos seleccionables (COMPLETADO; validación aprobada)
+
+**Implementación publicada:** `feat(worldgen): expose three selectable world types with legacy compatibility` (`7ef53069a1b39956d6893bf9caf08b6544fc287d`). La auditoría revisó el diff de cinco archivos y confirmó localmente `dotnet build` y `dotnet run --project GEvolve.Tests` sin fallos después del fast-forward.
+
+- [x] `SelectableWorldTypes` ofrece exactamente **Pangaea, Continents y Archipelagos** en creación y reconfiguración ordinaria.
+- [x] IDs persistidos explícitos y estables: `Continents=0`, `Pangaea=1`, `SmallContinents=2`, `Archipelagos=3`.
+- [x] `SmallContinents` permanece como tipo histórico interno: generación, perfil, serialización, pruebas y etiqueta de visualización conservados; no seleccionable como tipo nuevo.
+- [x] `Continents` conserva el estado explícito de superficie pendiente hasta implementar corteza y masas continentales.
+- [x] Validación local de los cinco proyectos .NET 10, suite completa, **12 hashes tectónicos y 36 baselines geográficos sin cambios**.
+
+**Gate de migración del catálogo:** **APROBADO Y CERRADO**. Este cierre **no** completa H05 ni el generador de `Continents`; la siguiente fase es **H05-A — contrato cortical**, seguida de ensamblaje, clasificación de superficie, validación e integración. Los presets especiales EarthReplica/InlandSea continúan reservados para una fase futura.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.
