@@ -155,6 +155,87 @@ public static class ContinentsCorticalAssemblyTests
                     restored.CrustByCellId.SequenceEqual(result.Model.CrustByCellId),
                     "B2 links persist losslessly under shared-cortex-1");
 
+                // Experimental 4r, 5r, 6r, 8r use the SAME B1 cortex and official motion.
+                // No multiplier is persisted or adopted by the default API.
+                var variants = new List<(int Multiplier, ContinentsCorticalAssemblyResult Result)>();
+                foreach (int multiplier in new[] { 4, 5, 6, 8 })
+                {
+                    var experimentTimer = Stopwatch.StartNew();
+                    long experimentAllocationStart = GC.GetAllocatedBytesForCurrentThread();
+                    var candidate = assembly.EvaluateExperimentalRadius(
+                        topology, config, plates, motion, cortex, multiplier);
+                    long experimentAllocated = GC.GetAllocatedBytesForCurrentThread() -
+                        experimentAllocationStart;
+                    experimentTimer.Stop();
+                    SharedCorticalModelValidator.Validate(topology, candidate.Model, plates);
+                    Check(candidate.Model.CrustByCellId.SequenceEqual(crustBefore) &&
+                        candidate.Model.FragmentByCellId.SequenceEqual(fragmentBefore) &&
+                        candidate.Model.ProvinceByCellId.SequenceEqual(provinceBefore) &&
+                        candidate.Model.EmergenceAffinityByCellId.SequenceEqual(affinityBefore) &&
+                        candidate.Model.Fragments.SequenceEqual(cortex.Fragments) &&
+                        candidate.Model.Provinces.SequenceEqual(cortex.Provinces),
+                        "All radius experiments preserve identical B1 cortex and provenance");
+                    Check(candidate.Evidence.Length == candidate.Model.AssemblyLinks.Length &&
+                        candidate.Diagnostics.PairsWithNormalEvidence ==
+                            candidate.Evidence.Length + candidate.Diagnostics.RejectedByDistance,
+                        "Experimental diagnostics remain internally consistent");
+                    foreach (var evidence in candidate.Evidence)
+                    {
+                        var edge = motion.Interactions[evidence.InteractionIndex];
+                        int aToFirst = DistanceOnPlate(topology, candidate.Model, plates,
+                            evidence.FirstFragmentId, edge.FirstCellId);
+                        int bToSecond = DistanceOnPlate(topology, candidate.Model, plates,
+                            evidence.SecondFragmentId, edge.SecondCellId);
+                        int aToSecond = DistanceOnPlate(topology, candidate.Model, plates,
+                            evidence.FirstFragmentId, edge.SecondCellId);
+                        int bToFirst = DistanceOnPlate(topology, candidate.Model, plates,
+                            evidence.SecondFragmentId, edge.FirstCellId);
+                        int gap = Math.Min(Sum(aToFirst, bToSecond),
+                            Sum(aToSecond, bToFirst));
+                        Check(gap == evidence.OceanGapHexes &&
+                            gap <= candidate.Diagnostics.AcceptedGapHexes &&
+                            evidence.DirectContact == (gap == 0),
+                            "Experimental links follow real plate-local paths without third fragments");
+                        Check(evidence.Kind == CorticalAssemblyKind.Accreted
+                                ? edge.Convergence >= .5 &&
+                                    edge.Convergence > edge.Divergence &&
+                                    edge.Convergence >= .4 * edge.Shear
+                                : evidence.Kind == CorticalAssemblyKind.RiftSeparated &&
+                                    edge.Divergence >= .5 &&
+                                    edge.Divergence > edge.Convergence &&
+                                    edge.Divergence >= .4 * edge.Shear,
+                            "Every experimental link retains actual tectonic evidence");
+                    }
+                    variants.Add((multiplier, candidate));
+                    int acc = candidate.Evidence.Count(e => e.Kind == CorticalAssemblyKind.Accreted);
+                    int rifts = candidate.Evidence.Count(e => e.Kind == CorticalAssemblyKind.RiftSeparated);
+                    string gaps = candidate.Evidence.Length == 0 ? "none" :
+                        string.Join(",", candidate.Evidence.Select(e => e.OceanGapHexes).Order());
+                    Console.WriteLine($"H05-B2 RADIUS {size}/{seed} {multiplier}r: " +
+                        $"acceptedPairs={candidate.Evidence.Length}, accretions={acc}, " +
+                        $"separations={rifts}, systems={candidate.Systems.Length}, " +
+                        $"isolated={candidate.IsolatedFragments}, " +
+                        $"largestSystem={candidate.Systems.Max(x => x.FragmentIds.Length)}, " +
+                        $"gaps=[{gaps}], withinRadius={candidate.Diagnostics.PairsWithinAcceptedDistance}, " +
+                        $"rejectedDistance={candidate.Diagnostics.RejectedByDistance}, " +
+                        $"ms={experimentTimer.ElapsedMilliseconds}, " +
+                        $"MiB={experimentAllocated / 1048576.0:F1}");
+                }
+                Check(variants[0].Result.Model.AssemblyLinks.SequenceEqual(result.Model.AssemblyLinks) &&
+                    variants[0].Result.Evidence.SequenceEqual(result.Evidence) &&
+                    variants[0].Result.Diagnostics == result.Diagnostics,
+                    "Experimental 4r is bit-for-bit equivalent to the operational 4r");
+                for (int index = 1; index < variants.Count; index++)
+                {
+                    var earlier = variants[index - 1].Result;
+                    var later = variants[index].Result;
+                    Check(earlier.Model.AssemblyLinks.All(link =>
+                        later.Model.AssemblyLinks.Any(next =>
+                            next.FirstFragmentId == link.FirstFragmentId &&
+                            next.SecondFragmentId == link.SecondFragmentId)),
+                        "Increasing the radius cannot erase an eligible fragment pair");
+                }
+
                 fingerprints.Add(Convert.ToHexString(SHA256.HashData(
                     result.Model.CrustByCellId.Concat(result.Model.AssemblyLinks.SelectMany(l =>
                         new byte[] { (byte)l.FirstFragmentId, (byte)l.SecondFragmentId, (byte)l.Kind }))

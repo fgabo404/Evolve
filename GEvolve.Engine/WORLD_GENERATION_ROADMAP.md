@@ -265,6 +265,16 @@ flowchart TD
 
 **Fuera de alcance:** `WorldGenerationService`, B1, Pangaea, Archipelagos, SmallContinents, superficie, elevaciones y cambios de `shared-cortex-1`; 12 hashes tectónicos y 36 baselines geográficos protegidos. Ningún artefacto gráfico o archivo auxiliar.
 
+### H05-B2 — Comparación de radios tectónicos (IMPLEMENTADA; sin adopción de radio nuevo)
+
+- [x] Comparar **4r, 5r, 6r y 8r** con la misma corteza de B1, la misma matriz oficial de 4 tamaños × 3 semillas y contactos tectónicos reales.
+- [x] Mantener `Assemble` **invariable en 4r**. `EvaluateExperimentalRadius` admite alternativas solo como diagnóstico explícito; no altera `shared-cortex-1`, generación oficial ni perfiles.
+- [x] Confirmar mediante pruebas que todos los vínculos preservan convergencia/divergencia, gaps de caminos sobre una sola placa, sin atravesar fragmentos terceros, y que 4r reproduce exactamente el resultado operativo. Registran por alternativa: parejas, acreción, separación, sistemas, tamaño máximo, brechas, tiempo y asignaciones.
+- [ ] Ejecutar localmente `dotnet build`, `dotnet run --project GEvolve.Tests -- --continents-assembly` y suite completa. Interpretar comparativamente los resultados de los 12 escenarios.
+- [ ] Adoptar un radio solo si las distancias, interacciones normales y continuidad geológica justifican su alcance. Si no, conservar 4r y evaluar la geometría y los presupuestos B1. **H05-B2 sigue pendiente de aprobación.**
+
+**Evidencia previa:** 336 parejas posibles, 55 observadas, 42 rechazadas por distancia, 13 aceptadas; cinco escenarios con acreción y siete sin ella. No se fabrican conexiones ni se generan superficies, elevaciones o artefactos visuales. Los 12 baselines tectónicos y 36 geográficos permanecen protegidos.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.

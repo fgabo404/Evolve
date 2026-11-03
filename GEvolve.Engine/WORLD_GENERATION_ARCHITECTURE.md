@@ -97,6 +97,14 @@ La validación local aportó cinco vínculos de acreción en doce escenarios, si
 
 **La ventana extendida `2 × radio` es exclusivamente diagnóstica:** amplía la exploración de evidencia, pero todos los vínculos continúan sujetos al radio original. No cambia umbrales de convergencia/divergencia, no fuerza enlaces, no modifica el modelo cortical persistido y no conecta sistemas. Las distancias fuera de la ventana no son inferencias tectónicas negativas; se registran como no observadas. Una calibración futura solo se justificará si las métricas de los 12 escenarios muestran parejas con evidencia suficiente y brechas geológicamente defendibles. Las estadísticas no son resultados medidos hasta ejecutar localmente las pruebas.
 
+## H05-B2 — Experimento controlado de escala tectónica (4r, 5r, 6r, 8r)
+
+La línea base **operativa** permanece en `4 × TectonicMotionState.InfluenceRadiusHexes` (mínimo 2 hexágonos, redondeo hacia arriba). Los 12 escenarios ya medidos aportaron 336 parejas, 55 observadas, 42 descartadas por distancia y 13 aceptadas; cinco mundos con acreción y siete sin ella. Estos resultados son insuficientes para elegir un radio mayor sin comprobar la geología del corredor.
+
+`ContinentsCorticalAssemblyGenerator.EvaluateExperimentalRadius(..., radiusMultiplier)` evalúa únicamente los multiplicadores **4, 5, 6 y 8** sobre el mismo `SharedCorticalModel`, `HexTopology` y `TectonicMotionState` oficiales. El método público normal `Assemble` sigue utilizando **4r**; los experimentos no se integran en `WorldGenerationService` ni se persisten como configuración. Las distancias BFS se restringen a celdas de la propia placa y a corteza oceánica o del fragmento de origen, sin atravesar un tercer fragmento. Cada enlace requiere una interacción real interplaca con evidencia normal convergente/divergente que domine la cizalla. Las relaciones regionales inferidas **no demuestran contacto directo ni colisión histórica**.
+
+Las pruebas repiten los 12 escenarios para cada multiplicador, comprueban la equivalencia exacta de 4r con la API vigente, la monotonicidad de las parejas elegibles, los gaps verificados desde los fragmentos hasta el contacto sin terceros bloques, el tipo tectónico del enlace, los sistemas de acreción, su tamaño, rendimiento, memoria y la no mutación de corteza o placas. Registran estadística textual de aceptación, rifting, brechas, tamaños y contactos. **No se ha elegido un nuevo radio**: el diagnóstico se evaluará con los resultados de consola y la auditoría geológica; no se buscan cuotas de enlaces ni de sistemas corticales.
+
 ## 3. Diagrama principal — arquitectura objetivo
 
 ```mermaid

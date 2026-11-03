@@ -46,6 +46,27 @@ public sealed class ContinentsCorticalAssemblyGenerator
         LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
         TectonicMotionState motion, SharedCorticalModel cortex)
     {
+        return AssembleAtRadius(topology, configuration, plateByCellId, motion, cortex, 4);
+    }
+
+    /// <summary>
+    /// Diagnostic-only alternative. Does not change Assemble() or persist a calibration.
+    /// Allowed multipliers are 4 (current), 5, 6 and 8.
+    /// </summary>
+    public ContinentsCorticalAssemblyResult EvaluateExperimentalRadius(HexTopology topology,
+        LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
+        TectonicMotionState motion, SharedCorticalModel cortex, int radiusMultiplier)
+    {
+        if (radiusMultiplier is not (4 or 5 or 6 or 8))
+            throw new ArgumentOutOfRangeException(nameof(radiusMultiplier));
+        return AssembleAtRadius(topology, configuration, plateByCellId, motion, cortex,
+            radiusMultiplier);
+    }
+
+    private ContinentsCorticalAssemblyResult AssembleAtRadius(HexTopology topology,
+        LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
+        TectonicMotionState motion, SharedCorticalModel cortex, int radiusMultiplier)
+    {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(motion);
@@ -95,8 +116,8 @@ public sealed class ContinentsCorticalAssemblyGenerator
         // Multi-source geodesics, restricted to each tectonic plate. A candidate at a
         // boundary must have cortical material on its OWN side of that same boundary.
         // This prevents linking remote fragments merely because they share a plate ID.
-        int range = Math.Max(2, (int)Math.Ceiling(motion.InfluenceRadiusHexes * 4));
-        // Read-only audit horizon. The acceptance radius remains unchanged.
+        int range = Math.Max(2, (int)Math.Ceiling(motion.InfluenceRadiusHexes * radiusMultiplier));
+        // Keep a comparable diagnostic horizon for each alternative; it cannot authorize links.
         int diagnosticRange = checked(range * 2);
         int[][] distances = new int[fragments][];
         int[] queue = new int[count];
