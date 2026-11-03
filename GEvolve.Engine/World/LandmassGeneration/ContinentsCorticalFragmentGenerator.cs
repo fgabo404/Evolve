@@ -149,6 +149,23 @@ public sealed class ContinentsCorticalFragmentGenerator
         {
             int id = entry.Cell, fragment = entry.Fragment;
             if (fragments[id] != -1 || owned[fragment] >= budgets[fragment]) continue;
+            // A cell can be queued through an eligible contact but touch other
+            // already-owned cells across nonconvergent boundaries. The entire
+            // resulting same-fragment interface must satisfy the contact rule.
+            bool validInterface = true;
+            foreach (int neighbor in topology.Neighbors(id))
+            {
+                if (fragments[neighbor] != fragment || plates[id] == plates[neighbor])
+                    continue;
+                if (!contacts.TryGetValue(Key(id, neighbor), out var edge) ||
+                    edge.Convergence < .5 || edge.Convergence <= edge.Divergence ||
+                    edge.Convergence < .4 * edge.Shear)
+                {
+                    validInterface = false;
+                    break;
+                }
+            }
+            if (!validInterface) continue;
             crust[id] = (byte)CrustKind.Continental;
             fragments[id] = provinces[id] = fragment;
             owned[fragment]++;
