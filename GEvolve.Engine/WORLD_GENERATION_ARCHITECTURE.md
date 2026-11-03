@@ -65,6 +65,18 @@ En el futuro puede añadirse una discriminación formal `Complete / Partial / Pr
 
 Los generadores actuales **no** crean ni adjuntan `SharedCortex`. El `Continents` oficial continúa retornando `TectonicPreviewOnly=true`, `SurfaceGenerationPending=true` y sin superficie. `ContinentalCrustMap`, `ContinentalGeologyState`, `ContinentalGeologyValidation`, IDs de `LandmassType`, baselines y rutas de `SmallContinents` quedan intactos. La fase no implementa migración geológica, elevaciones ni nuevos algoritmos.
 
+## H05-B1 — Fragmentación cortical especializada de Continents (implementado; aún no integrado)
+
+`ContinentsCorticalFragmentGenerator.Generate(topology, configuration, plateByCellId, motion, attempt)` es una etapa **independiente y determinista**, no invocada todavía por `WorldGenerationService`. Recibe las 16 placas universales y todos los contactos y campos de esfuerzo de `TectonicMotionState`; rechaza interacciones inexistentes o que no coincidan exactamente con los bordes del grafo hexagonal. No genera ni sobrescribe placas ni movimiento.
+
+**Algoritmo propuesto en H05-B1:** ocho fragmentos corticales iniciales, como densidad estructural provisional relacionada con las 16 placas (NO equivalen al número de continentes emergidos). Muestreo determinista de núcleos con separación geográfica, compresión y extensión; colas de prioridad para crecimiento multicentro con cuotas de área dependientes del tamaño del mapa, sesgo por esfuerzos regionales y ruido periódico secundario. Una celda solo puede cruzar a otra placa si la arista oficial presenta convergencia dominante y cizalla compatible; la convergencia no fuerza un cruce. Las fronteras corticales no copian automáticamente las fronteras de placa. Cada fragmento posee por ahora una única provincia conexa y un núcleo válido; subdivisiones futuras no corresponden a B1. El océano cortical se representa con `CrustKind.Oceanic` e IDs `-1`. Se calculan afinidades de emergencia continuas con compresión, extensión y detalle periódico sin clasificarlas como tierra ni altura. Los vínculos entre fragmentos se registran solo cuando existen contactos interplaca reales entre sus celdas, usando la componente normal predominante.
+
+**Distinción obligatoria:** fragmentos corticales, provincias geológicas y masas terrestres emergidas son conceptos diferentes. El conteo definitivo de 2–4 masas principales de `Continents` corresponde a fases posteriores de superficie y selección, no a B1. El uso de números y cuotas aquí es una heurística de síntesis a calibrar tras evaluar los 12 escenarios oficiales, no un nuevo invariante universal.
+
+**Compatibilidad:** el resultado es un `SharedCorticalModel` de versión `shared-cortex-1`, validado por `SharedCorticalModelValidator` y convertible mediante `SharedCorticalPersistence`. El servicio oficial sigue devolviendo `SurfaceGenerationPending` para `Continents`; no adjunta corteza ni genera `SurfaceByCellId`, `ElevationByCellId` o `ContinentalGeologyState` nuevos. Pangaea, Archipelagos y SmallContinents, sus intentos y los 12 + 36 baselines aprobados permanecen intactos. H05-B2+ y H06 quedan fuera de alcance.
+
+**Pruebas:** `ContinentsCorticalFragmentTests`, registradas en la suite habitual y en `--all-suites` y accesibles mediante `--continents-cortex`, comprobarán los 4 tamaños × 3 semillas, identidad de contactos, determinismo, variación, provincias, afinidad, compatibilidad del DTO y métricas de rendimiento. Requieren ejecución local y auditoría para su aprobación.
+
 ## 3. Diagrama principal — arquitectura objetivo
 
 ```mermaid

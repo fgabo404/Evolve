@@ -6,6 +6,7 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
+if (args.Contains("--continents-cortex")) { ContinentsCorticalFragmentTests.Run(); return 0; }
 if (args.Contains("--cortical-persistence")) { SharedCorticalPersistenceTests.Run(); return 0; }
 if (args.Contains("--shared-cortex")) { SharedCorticalModelTests.Run(); return 0; }
 if (args.Contains("--continental-geology")) { ContinentalGeologyTests.Run(); return 0; }
@@ -20,7 +21,8 @@ if (args.Contains("--all-suites"))
         ("TectonicPlate", TectonicPlateTests.Run), ("StagedLandmass", StagedLandmassTests.Run),
         ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run), ("ContinentalGeology", ContinentalGeologyTests.Run),
         ("SharedCorticalModel", SharedCorticalModelTests.Run),
-        ("SharedCorticalPersistence", SharedCorticalPersistenceTests.Run)];
+        ("SharedCorticalPersistence", SharedCorticalPersistenceTests.Run),
+        ("ContinentsCorticalFragments", ContinentsCorticalFragmentTests.Run)];
     int failures = 0;
     string? requestedSuite = args.FirstOrDefault(arg => arg.StartsWith("--suite=", StringComparison.Ordinal))?[8..];
     if (requestedSuite is not null && !suites.Any(suite => suite.Name == requestedSuite))
@@ -103,4 +105,5 @@ TectonicMotionTests.Run();
 ContinentalGeologyTests.Run();
 SharedCorticalModelTests.Run();
 SharedCorticalPersistenceTests.Run();
+ContinentsCorticalFragmentTests.Run();
 return 0;

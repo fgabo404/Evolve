@@ -227,6 +227,17 @@ flowchart TD
 
 **Gate H05-A2: APROBADO Y CERRADO.** Implementación `feat(worldgen): add cortical persistence validation and generation states` (`7192288aa6b96493b188384cbe0f5aa09d9370e6`). La compilación y pruebas locales posteriores al pull pasaron. No se conecta ningún generador al modelo cortical ni se generan nuevas superficies. `Continents` permanece pendiente; los **12 hashes tectónicos y 36 baselines geográficos** siguen protegidos. **Próximo subhito: H05-B — estrategia cortical especializada de Continents (2–4 masas continentales principales)**; H05-C/D y H06 no iniciados. Precaución de mantenimiento: verificar equivalencia del cálculo de vecindad del validador de State respecto a `HexTopology` si cambia la topología oficial.
 
+### H05-B1 — Fragmentos corticales de Continents (IMPLEMENTADO; validación local y auditoría pendientes)
+
+- [x] Añadir `ContinentsCorticalFragmentGenerator` como estrategia **aislada**: consume `HexTopology`, `LandmassConfiguration`, los 16 `PlateByCellId` oficiales y `TectonicMotionState`, con semilla e intento determinista. **No se conecta a `WorldGenerationService`.**
+- [x] Distribuir núcleos corticales guiados por esfuerzos oficiales; crecimiento multi-origen de fragmentos contiguos con océano remanente, sin equiparar un fragmento a una placa ni una provincia a una masa emergida.
+- [x] Cada fragmento tiene inicialmente una provincia conectada y un núcleo válido. El cruce de límites de placa se permite únicamente por contactos convergentes reales con evidencia suficiente; convergencia no obliga a unir bloques, ni divergencia impone océanos automáticamente.
+- [x] Devolver exclusivamente `SharedCorticalModel` (`shared-cortex-1`) con afinidad de emergencia finita, vínculos canónicos de acreción/separación cuando existan contactos entre fragmentos y compatibilidad con `SharedCorticalPersistence`.
+- [x] Agregar prueba `ContinentsCorticalFragmentTests` para **4 tamaños × 3 semillas**, repetición determinista exacta, intento alterno, contactos reales, topología cortical y no mutación de placas, movimientos ni estado del pipeline. Registrar por escenario celdas continentales/oceánicas, fragmentos, provincias, cruces tectónicos, vínculos, tiempo y asignaciones.
+- [ ] Confirmar en entorno local **`dotnet build`**, `dotnet run --project GEvolve.Tests`, `--continents-cortex`, rendimiento de Enormous y auditoría arquitectónica. Revisar las métricas reales antes de calibrar heurísticas; la instrumentación no equivale a resultados medidos.
+
+**Gate H05-B1:** **implementado, no aprobado todavía**. No crea `SurfaceByCellId`, `ElevationByCellId`, relieve ni clima. `Continents` conserva `SurfaceGenerationPending`. Los 12 hashes tectónicos y 36 baselines geográficos aprobados no se modifican; H05-B2/B3/B4/B5 y H06 no iniciados.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.
