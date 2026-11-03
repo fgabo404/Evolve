@@ -176,6 +176,23 @@ flowchart TD
 
 **Archivos clave:** `PlateMotionGenerator`, `TectonicMotionGenerator`, `PlateBoundaryMap` y `GEvolve.Tests/TectonicMotionTests.cs`.
 
+### Decisión de producto H05 — Familias de mundo (02-11-2026)
+
+**Objetivo de catálogo:** reducir los tipos de generación seleccionables a **tres familias principales**:
+
+1. **Continents:** de **dos a cuatro masas terrestres continentales principales** (componentes terrestres conectados usando `HexTopology`), con océanos que las separen. Se permiten islas menores sin contarlas como masas principales. Debe resultar del ensamblaje de fragmentos de corteza, no de asignar una placa a cada continente. Los criterios de tamaño mínimo, separación oceánica y aceptación se definirán y calibrarán en H05 antes de fijar umbrales.
+2. **Pangaea:** **una sola masa terrestre conectada e irregular**, de escala supercontinental, con costas geológicamente plausibles. Mantener la topología horizontal y sus baselines hasta que cualquier cambio se apruebe explícitamente.
+3. **Archipelagos:** conjunto de islas y archipiélagos, conservando su estrategia diferenciada y las regresiones aprobadas.
+
+**Dos configuraciones especiales reservadas para una fase posterior (no implementarlas en H05):**
+
+- **EarthReplica (nombre provisional):** recreación de la distribución geográfica del mundo real; especificar después la fidelidad, los datos de referencia y si es una plantilla determinista en vez de un tipo procedural nuevo.
+- **InlandSea (nombre provisional):** gran superficie terrestre envolvente con **un mar interior central**. Definir después conexión con el océano exterior, si existe, y sus criterios topológicos.
+
+**Migración necesaria:** `SmallContinents` deja de ser una familia seleccionable objetivo. Su implementación, pruebas y baselines históricos **no se eliminan ni se reinterpretan automáticamente**: inspeccionar primero todos los consumidores del enum, perfiles, persistencia, UI, pruebas y hashes. Mantener compatibilidad transitoria o retirar el tipo mediante un cambio controlado y con evidencia. Nunca sustituir sus entradas de baseline por las de `Continents` ni afirmar que el catálogo de tres tipos ya está implementado mientras el código continúe exponiendo cuatro.
+
+**Orden de la arquitectura:** hex-grid → 16 placas universales → movimientos/esfuerzos → fragmentos y ensamblaje cortical → superficie emergida y océanos → elevaciones/geología (H06/H07) → clima e hidrología → biomas y recursos. Los tipos de mundo cambian las reglas de corteza/superficie, no la capa tectónica compartida.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.
