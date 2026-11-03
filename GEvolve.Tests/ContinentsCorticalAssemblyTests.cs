@@ -208,12 +208,12 @@ public static class ContinentsCorticalAssemblyTests
                     }
                     variants.Add((multiplier, candidate));
                     int acc = candidate.Evidence.Count(e => e.Kind == CorticalAssemblyKind.Accreted);
-                    int rifts = candidate.Evidence.Count(e => e.Kind == CorticalAssemblyKind.RiftSeparated);
+                    int experimentalRifts = candidate.Evidence.Count(e => e.Kind == CorticalAssemblyKind.RiftSeparated);
                     string gaps = candidate.Evidence.Length == 0 ? "none" :
                         string.Join(",", candidate.Evidence.Select(e => e.OceanGapHexes).Order());
                     Console.WriteLine($"H05-B2 RADIUS {size}/{seed} {multiplier}r: " +
                         $"acceptedPairs={candidate.Evidence.Length}, accretions={acc}, " +
-                        $"separations={rifts}, systems={candidate.Systems.Length}, " +
+                        $"separations={experimentalRifts}, systems={candidate.Systems.Length}, " +
                         $"isolated={candidate.IsolatedFragments}, " +
                         $"largestSystem={candidate.Systems.Max(x => x.FragmentIds.Length)}, " +
                         $"gaps=[{gaps}], withinRadius={candidate.Diagnostics.PairsWithinAcceptedDistance}, " +
