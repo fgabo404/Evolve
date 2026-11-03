@@ -18,6 +18,25 @@ public sealed class ContinentsCorticalFragmentGenerator
     public SharedCorticalModel Generate(HexTopology topology, LandmassConfiguration configuration,
         ReadOnlySpan<byte> plateByCellId, TectonicMotionState motion, int attempt = 0)
     {
+        return GenerateCore(topology, configuration, plateByCellId, motion, attempt,
+            tectonicCorrelated: false);
+    }
+
+    /// <summary>
+    /// Experimental B2 nucleus geometry only. Never called by the normal generation path.
+    /// Two independently spaced convergent-boundary pairs plus four free nuclei.
+    /// All cells and downstream growth continue through the approved B1 algorithm.
+    /// </summary>
+    public SharedCorticalModel GenerateExperimentalCorrelated(HexTopology topology,
+        LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
+        TectonicMotionState motion, int attempt = 0)
+        => GenerateCore(topology, configuration, plateByCellId, motion, attempt,
+            tectonicCorrelated: true);
+
+    private SharedCorticalModel GenerateCore(HexTopology topology,
+        LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
+        TectonicMotionState motion, int attempt, bool tectonicCorrelated)
+    {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(motion);
@@ -97,8 +116,19 @@ public sealed class ContinentsCorticalFragmentGenerator
         // it is NOT the number of emerged continents (determined in future H05-B stages).
         int fragmentCount = TectonicPlateGenerator.NumberOfPlates / 2;
         int[] cores = new int[fragmentCount];
+        // Keep the approved global nucleus selection byte-for-byte for Generate().
+        // Experimental paired anchors are chosen from existing convergent contacts,
+        // never from plate ID proximity alone. No link is pre-authorized.
+        var experimentalAnchors = tectonicCorrelated
+            ? CorrelatedAnchors(topology, plates, motion, random)
+            : Array.Empty<int>();
         for (int i = 0; i < cores.Length; i++)
         {
+            if (i < experimentalAnchors.Length)
+            {
+                cores[i] = experimentalAnchors[i];
+                continue;
+            }
             int best = -1;
             double bestScore = double.NegativeInfinity;
             for (int sample = 0; sample < CandidateSamples; sample++)
@@ -235,6 +265,81 @@ public sealed class ContinentsCorticalFragmentGenerator
                 frontier.Enqueue((neighbor, fragment, depth + 1), (priority, fragment, neighbor));
             }
         }
+    }
+
+    private static int[] CorrelatedAnchors(HexTopology topology, byte[] plates,
+        TectonicMotionState motion, DeterministicRandom random)
+    {
+        // Explicitly experimental: select two spatially separated real convergent
+        // contacts, with each core offset into its own plate by a short inland walk.
+        // Four remaining cores use the original global selection.
+        var eligible = motion.Interactions.Where(e =>
+            e.Convergence >= .5 && e.Convergence > e.Divergence &&
+            e.Convergence >= .4 * e.Shear).ToArray();
+        if (eligible.Length == 0) return [];
+
+        var chosen = new List<int>(4);
+        for (int group = 0; group < 2; group++)
+        {
+            int bestFirst = -1, bestSecond = -1;
+            double bestScore = double.NegativeInfinity;
+            // Deterministic randomized candidate sampling, capped by the approved
+            // CandidateSamples count; evaluates only actual tectonic interactions.
+            for (int sample = 0; sample < CandidateSamples; sample++)
+            {
+                var contact = eligible[random.NextInt(eligible.Length)];
+                int a = InwardCore(topology, plates, contact.FirstCellId, 3);
+                int b = InwardCore(topology, plates, contact.SecondCellId, 3);
+                if (a == b || chosen.Contains(a) || chosen.Contains(b)) continue;
+                int separation = chosen.Count == 0
+                    ? Math.Min(topology.Columns, topology.Rows)
+                    : chosen.Min(cell => Math.Min(topology.Distance(cell, a),
+                        topology.Distance(cell, b)));
+                // Keep tectonic pairs in different regions without imposing a
+                // number of final links, systems or emerged continents.
+                double score = separation +
+                    .12 * Math.Min(topology.Distance(a, b), 16) +
+                    .25 * Math.Tanh(contact.Convergence / 5.0) +
+                    random.NextDouble() * .2;
+                if (score <= bestScore) continue;
+                bestScore = score;
+                bestFirst = a;
+                bestSecond = b;
+            }
+            if (bestFirst < 0) break;
+            chosen.Add(bestFirst);
+            chosen.Add(bestSecond);
+        }
+        return chosen.ToArray();
+    }
+
+    private static int InwardCore(HexTopology topology, byte[] plates, int source, int steps)
+    {
+        // Walk only real same-plate hex neighbors. Prefer moving away from the
+        // border without hopping into another plate or fabricating any interface.
+        byte plate = plates[source];
+        int current = source;
+        var visited = new HashSet<int> { source };
+        for (int step = 0; step < steps; step++)
+        {
+            int best = current;
+            int mostInterior = -1;
+            foreach (int neighbor in topology.Neighbors(current))
+            {
+                if (plates[neighbor] != plate || visited.Contains(neighbor)) continue;
+                int localSamePlate = topology.Neighbors(neighbor).Count(n => plates[n] == plate);
+                if (localSamePlate > mostInterior ||
+                    (localSamePlate == mostInterior && neighbor < best))
+                {
+                    best = neighbor;
+                    mostInterior = localSamePlate;
+                }
+            }
+            if (best == current) break;
+            current = best;
+            visited.Add(current);
+        }
+        return current;
     }
 
     private static ulong Key(int first, int second)

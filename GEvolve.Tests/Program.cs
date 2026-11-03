@@ -6,6 +6,7 @@ using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.State.Game;
 using GEvolve.State.Persistence;
 
+if (args.Contains("--correlated-cortex")) { ContinentsCorrelatedNucleusExperimentTests.Run(); return 0; }
 if (args.Contains("--continents-assembly")) { ContinentsCorticalAssemblyTests.Run(); return 0; }
 if (args.Contains("--continents-cortex")) { ContinentsCorticalFragmentTests.Run(); return 0; }
 if (args.Contains("--cortical-persistence")) { SharedCorticalPersistenceTests.Run(); return 0; }
@@ -24,7 +25,8 @@ if (args.Contains("--all-suites"))
         ("SharedCorticalModel", SharedCorticalModelTests.Run),
         ("SharedCorticalPersistence", SharedCorticalPersistenceTests.Run),
         ("ContinentsCorticalFragments", ContinentsCorticalFragmentTests.Run),
-        ("ContinentsCorticalAssembly", ContinentsCorticalAssemblyTests.Run)];
+        ("ContinentsCorticalAssembly", ContinentsCorticalAssemblyTests.Run),
+        ("ContinentsCorrelatedNuclei", ContinentsCorrelatedNucleusExperimentTests.Run)];
     int failures = 0;
     string? requestedSuite = args.FirstOrDefault(arg => arg.StartsWith("--suite=", StringComparison.Ordinal))?[8..];
     if (requestedSuite is not null && !suites.Any(suite => suite.Name == requestedSuite))
@@ -109,4 +111,5 @@ SharedCorticalModelTests.Run();
 SharedCorticalPersistenceTests.Run();
 ContinentsCorticalFragmentTests.Run();
 ContinentsCorticalAssemblyTests.Run();
+ContinentsCorrelatedNucleusExperimentTests.Run();
 return 0;
