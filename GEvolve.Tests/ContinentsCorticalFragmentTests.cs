@@ -25,9 +25,9 @@ public static class ContinentsCorticalFragmentTests
                 var plates = official.Landmass.PlateByCellId!;
                 var motion = official.Landmass.TectonicMotion!;
                 byte[] plateSnapshot = (byte[])plates.Clone();
-                byte[] compressionSnapshot = (byte[])motion.CompressionByCellId.Clone();
-                byte[] extensionSnapshot = (byte[])motion.ExtensionByCellId.Clone();
-                byte[] shearSnapshot = (byte[])motion.ShearByCellId.Clone();
+                float[] compressionSnapshot = (float[])motion.CompressionByCellId.Clone();
+                float[] extensionSnapshot = (float[])motion.ExtensionByCellId.Clone();
+                float[] shearSnapshot = (float[])motion.ShearByCellId.Clone();
                 var timer = Stopwatch.StartNew();
                 long before = GC.GetAllocatedBytesForCurrentThread();
                 var cortex = generator.Generate(topology, config, plates, motion, attempt: 0);
