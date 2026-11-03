@@ -205,15 +205,15 @@ flowchart TD
 
 **Gate de migración del catálogo:** **APROBADO Y CERRADO**. Este cierre **no** completa H05 ni el generador de `Continents`; la siguiente fase es **H05-A — contrato cortical**, seguida de ensamblaje, clasificación de superficie, validación e integración. Los presets especiales EarthReplica/InlandSea continúan reservados para una fase futura.
 
-### H05-A1 — Contrato cortical universal (IMPLEMENTADO; validación local pendiente)
+### H05-A1 — Contrato cortical universal (APROBADO Y CERRADO)
 
 - [x] Introducir `SharedCorticalModel`, modelo cortical **no persistido**, independiente de `ContinentalCrustMap` y `ContinentalGeologyState` históricos.
 - [x] Representar corteza oceánica/continental por hexágono, fragmentos y provincias con IDs propios, núcleos continentales por descriptor, afinidad de emergencia finita y vínculos geológicos opcionales de acreción/ruptura.
 - [x] Validar referencias, núcleos, provincias conectadas por vecinos reales E/O, aristas norte/sur abiertas y enlaces canónicos sin duplicados. Ninguna regla convierte corteza en superficie ni en elevación.
 - [x] Agregar pruebas sintéticas y ejecutarlas tanto en el recorrido habitual de `GEvolve.Tests` como en `--all-suites`.
-- [ ] Confirmar compilación .NET 10, ejecución local completa y revisión arquitectónica. No aprobar H05-A1 ni completar H05 antes de ese gate.
+- [x] Confirmada compilación .NET 10, suite completa `GEvolve.Tests`, ejecución específica `--shared-cortex` y revisión del diff arquitectónico; 12 hashes tectónicos y 36 baselines geográficos conservados.
 
-**Compatibilidad:** sin conexión al orquestador, sin migración de saves, sin cambios en estrategias vigentes, 16 placas/movimientos y 12 hashes tectónicos + 36 baselines geográficos protegidos. `Continents` permanece `SurfaceGenerationPending`; H05-A2/B y H06 no iniciados.
+**Gate H05-A1: APROBADO Y CERRADO.** Implementación `feat(worldgen): introduce shared cortical model contract` (`a64552518a09ac32129350568e1dec1983a1a2c3`). Sin conexión al orquestador, sin migración de saves, sin cambios en estrategias vigentes, con 16 placas/movimientos y 12 hashes tectónicos + 36 baselines geográficos conservados. `Continents` permanece `SurfaceGenerationPending`. **Próximo subhito: H05-A2** (validación común, persistencia, versionado y estados parciales); H05-B y H06 no iniciados. Nota de auditoría no bloqueante: evitar conversiones `Span.ToArray()` innecesarias durante futuras validaciones de Enormous, y mantener explícita la distinción entre conectividad de provincias y conectividad de fragmentos.
 
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
@@ -315,7 +315,7 @@ flowchart TD
 - [ ] Generar métricas de QA: cobertura, componentes, rangos, conectividad, integridad de ríos/biomas/recursos.
 - [ ] Actualizar arquitectura, roadmap, notas de migración y evidencia de cierre.
 
-**Gate FINAL:** los cuatro tipos de mundo devuelven un `GeneratedWorld` utilizable, con todas las capas habilitadas y validadas, sin depender del renderer ni de herramientas temporales.
+**Gate FINAL:** los tres tipos principales seleccionables devuelven un `GeneratedWorld` utilizable, con todas las capas habilitadas y validadas, sin depender del renderer ni de herramientas temporales; `SmallContinents` conserva su compatibilidad histórica y pruebas de regresión.
 
 ## 4. Protocolo de entrega por hito
 
@@ -352,6 +352,6 @@ Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator
 
 ## 7. Próximo paso
 
-**H01–H04 completados y aprobados por auditoría.** El hito activo es **H05 — Corteza y masas terrestres**, en fase de diagnóstico arquitectónico. La siguiente decisión será la estrategia y los criterios de aceptación para completar `Continents` sin alterar los 12 hashes tectónicos ni los 36 baselines geográficos aprobados. **H06 aún no iniciado.**
+**H01–H04 y la migración H05-M1/M2/M3 están aprobados; H05-A1 está aprobado y cerrado.** El subhito activo pasa a ser **H05-A2 — validación común, persistencia, versionado y estados parciales** del contrato cortical para Pangaea, Continents y Archipelagos. Los tres generadores deben mantener estrategias propias; Pangaea y Archipelagos conservan sus rutas vigentes hasta aprobar sus sucesores corticales. `Continents` continúa sin superficie. Preservar los 12 hashes tectónicos y 36 baselines geográficos; `SmallContinents` permanece histórico. **H06 aún no iniciado.**
 
 Esta planificación se actualiza con evidencia de código, pruebas y commits; no sustituye la documentación de arquitectura ni declara finalizadas las implementaciones pendientes.
