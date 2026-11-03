@@ -205,6 +205,16 @@ flowchart TD
 
 **Gate de migración del catálogo:** **APROBADO Y CERRADO**. Este cierre **no** completa H05 ni el generador de `Continents`; la siguiente fase es **H05-A — contrato cortical**, seguida de ensamblaje, clasificación de superficie, validación e integración. Los presets especiales EarthReplica/InlandSea continúan reservados para una fase futura.
 
+### H05-A1 — Contrato cortical universal (IMPLEMENTADO; validación local pendiente)
+
+- [x] Introducir `SharedCorticalModel`, modelo cortical **no persistido**, independiente de `ContinentalCrustMap` y `ContinentalGeologyState` históricos.
+- [x] Representar corteza oceánica/continental por hexágono, fragmentos y provincias con IDs propios, núcleos continentales por descriptor, afinidad de emergencia finita y vínculos geológicos opcionales de acreción/ruptura.
+- [x] Validar referencias, núcleos, provincias conectadas por vecinos reales E/O, aristas norte/sur abiertas y enlaces canónicos sin duplicados. Ninguna regla convierte corteza en superficie ni en elevación.
+- [x] Agregar pruebas sintéticas y ejecutarlas tanto en el recorrido habitual de `GEvolve.Tests` como en `--all-suites`.
+- [ ] Confirmar compilación .NET 10, ejecución local completa y revisión arquitectónica. No aprobar H05-A1 ni completar H05 antes de ese gate.
+
+**Compatibilidad:** sin conexión al orquestador, sin migración de saves, sin cambios en estrategias vigentes, 16 placas/movimientos y 12 hashes tectónicos + 36 baselines geográficos protegidos. `Continents` permanece `SurfaceGenerationPending`; H05-A2/B y H06 no iniciados.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.

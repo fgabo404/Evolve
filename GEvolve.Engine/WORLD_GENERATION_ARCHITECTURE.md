@@ -37,6 +37,19 @@ public sealed record GeneratedWorld(
 
 En el futuro puede añadirse una discriminación formal `Complete / Partial / Preview / Failed`, sin ocultar el estado incompleto de algunos tipos. No debe devolverse un mapa ficticiamente completo.
 
+## H05-A1 — Contrato cortical compartido (implementado, no conectado)
+
+`SharedCorticalModel` (Engine, `LandmassGeneration`) es un **contrato estructural no persistido** preparado para Pangaea, Continents y Archipelagos. No asigna tierra, océano, alturas ni porcentajes por tipo:
+
+- `CrustByCellId: byte[]` usa `CrustKind.Oceanic=0` o `Continental=1`; el tipo cortical no es superficie.
+- `FragmentByCellId: int[]` y `ProvinceByCellId: int[]` usan `-1` en corteza oceánica y el índice del descriptor correspondiente en corteza continental. Los IDs son **independientes** de los 16 IDs tectónicos.
+- `Fragments: CorticalFragment[]` incluye `Id` y `CoreCellId`; `Provinces: CorticalProvince[]` incluye `Id`, `FragmentId` y `CoreCellId`. Las provincias son regiones conectadas según `HexTopology`; un fragmento puede abarcar varias provincias.
+- `EmergenceAffinityByCellId: float[]` es una puntuación relativa finita, **no** un valor de altura ni una clasificación de tierra/océano. Corteza continental sumergida e islas sobre corteza oceánica son estados válidos.
+- `AssemblyLinks: CorticalAssemblyLink[]` expresa relaciones geológicas opcionales `Accreted` o `RiftSeparated` entre fragmentos distintos, con pares `FirstFragmentId < SecondFragmentId` y sin duplicados. Un vínculo **no** fuerza conectividad de superficie.
+- `SharedCorticalModelValidator.Validate(topology, model, plates, surface = default)` valida longitudes, versión, valores finitos, IDs y referencias sin huérfanos, núcleos, regiones de provincia conectadas y uniones E/O; la superficie opcional solo comprueba codificación/longitud, sin imponer correspondencia con la corteza. La topología no envuelve norte/sur.
+
+**Delimitación:** `ContinentalCrustMap`, `ContinentalGeologyState` y `ContinentalGeologyValidation` permanecen sin cambios; su formato persistido y restricciones previas no se reinterpretan. El modelo nuevo no se serializa ni se añade a `LandmassState` en H05-A1. Las tres estrategias futuras decidirán sus distribuciones por separado; `SmallContinents` permanece histórico. La integración de generadores, persistencia y versionado corresponde a subfases posteriores.
+
 ## 3. Diagrama principal — arquitectura objetivo
 
 ```mermaid
