@@ -9,6 +9,17 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 public readonly record struct CorticalAssemblyEvidence(int FirstFragmentId, int SecondFragmentId,
     CorticalAssemblyKind Kind, int InteractionIndex, int OceanGapHexes, bool DirectContact);
 
+/// <summary>
+ /// Diagnostics over unordered fragment pairs. The extended window measures evidence
+ /// but NEVER authorizes a link outside AcceptedGapHexes.
+ /// </summary>
+public readonly record struct CorticalAssemblyDiagnostics(int FragmentPairs,
+    int PairsObservedNearOfficialBoundaries, int PairsWithinAcceptedDistance,
+    int PairsWithNormalEvidence, int RejectedByDistance,
+    int RejectedWithoutNormalEvidence, int UnobservedWithinDiagnosticHorizon,
+    int AcceptedGapHexes, int DiagnosticGapHexes,
+    int MinimumAcceptedEvidenceGap, int MinimumRejectedEvidenceGap);
+
 /// <summary>Derived accretion system; rift-separated pairs never merge systems.</summary>
 public readonly record struct CorticalAssemblySystem(int Id, int[] FragmentIds, byte[] PlateIds);
 
@@ -18,6 +29,7 @@ public sealed record ContinentsCorticalAssemblyResult(SharedCorticalModel Model,
 {
     public int IsolatedFragments => Systems.Count(system => system.FragmentIds.Length == 1);
     public int AssembledFragments => Model.Fragments.Length - IsolatedFragments;
+    public CorticalAssemblyDiagnostics Diagnostics { get; init; } = default!;
 }
 
 /// <summary>
@@ -84,6 +96,8 @@ public sealed class ContinentsCorticalAssemblyGenerator
         // boundary must have cortical material on its OWN side of that same boundary.
         // This prevents linking remote fragments merely because they share a plate ID.
         int range = Math.Max(2, (int)Math.Ceiling(motion.InfluenceRadiusHexes * 4));
+        // Read-only audit horizon. The acceptance radius remains unchanged.
+        int diagnosticRange = checked(range * 2);
         int[][] distances = new int[fragments][];
         int[] queue = new int[count];
         for (int fragment = 0; fragment < fragments; fragment++)
@@ -100,7 +114,7 @@ public sealed class ContinentsCorticalAssemblyGenerator
             while (head < tail)
             {
                 int id = queue[head++];
-                if (distance[id] >= range) continue;
+                if (distance[id] >= diagnosticRange) continue;
                 foreach (int neighbor in topology.Neighbors(id))
                     if (plates[id] == plates[neighbor] &&
                         distance[neighbor] == int.MaxValue &&
@@ -114,15 +128,23 @@ public sealed class ContinentsCorticalAssemblyGenerator
             distances[fragment] = distance;
         }
 
-        // Keep the strongest local evidence per unordered pair. A pair gets at
-        // most one link; neither convergence nor divergence mandates a link.
+        // Pair-level diagnostic counters are independent of the number of
+        // boundary edges: dozens of interactions for one pair count once.
+        var closestAny = new int[fragments, fragments];
+        var closestNormal = new int[fragments, fragments];
+        for (int a = 0; a < fragments; a++)
+        for (int b = 0; b < fragments; b++)
+            closestAny[a, b] = closestNormal[a, b] = int.MaxValue;
+
+        // Keep the closest justified local interaction per unordered pair.
+        // A larger observation horizon never makes a relationship acceptable.
         var best = new SortedDictionary<(int, int), (CorticalAssemblyEvidence Evidence,
             int Gap, double Intensity)>();
         for (int index = 0; index < motion.Interactions.Length; index++)
         {
             var edge = motion.Interactions[index];
-            CorticalAssemblyKind kind;
-            double strength;
+            CorticalAssemblyKind? kind = null;
+            double strength = 0;
             if (edge.Convergence >= NormalThreshold &&
                 edge.Convergence > edge.Divergence &&
                 edge.Convergence >= ShearTolerance * edge.Shear)
@@ -137,54 +159,65 @@ public sealed class ContinentsCorticalAssemblyGenerator
                 kind = CorticalAssemblyKind.RiftSeparated;
                 strength = edge.Divergence;
             }
-            else continue; // Transform/quiet contacts cannot create an assembly link.
 
-            for (int a = 0; a < fragments; a++)
-            {
-                int firstDistance = distances[a][edge.FirstCellId];
-                if (firstDistance > range) continue;
-                for (int b = 0; b < fragments; b++)
-                {
-                    if (a == b) continue;
-                    int secondDistance = distances[b][edge.SecondCellId];
-                    if (secondDistance > range) continue;
-                    int gap = firstDistance + secondDistance;
-                    // Both blocks must occupy the tectonic neighborhood of the
-                    // boundary. This is a geometric/evidence gate, not a link quota.
-                    if (gap > range) continue;
-                    var pair = (Math.Min(a, b), Math.Max(a, b));
-                    var evidence = new CorticalAssemblyEvidence(pair.Item1, pair.Item2,
-                        kind, index, gap, gap == 0);
-                    if (!best.TryGetValue(pair, out var prior) ||
-                        gap < prior.Gap ||
-                        (gap == prior.Gap && strength > prior.Intensity))
-                        best[pair] = (evidence, gap, strength);
-                }
-            }
+            ExamineSides(edge.FirstCellId, edge.SecondCellId);
+            ExamineSides(edge.SecondCellId, edge.FirstCellId);
 
-            // Evaluate the reverse orientation because fragment IDs are not
-            // necessarily aligned with the canonical first/second contact order.
-            for (int a = 0; a < fragments; a++)
+            void ExamineSides(int left, int right)
             {
-                int firstDistance = distances[a][edge.SecondCellId];
-                if (firstDistance > range) continue;
-                for (int b = 0; b < fragments; b++)
+                for (int a = 0; a < fragments; a++)
                 {
-                    if (a == b) continue;
-                    int secondDistance = distances[b][edge.FirstCellId];
-                    if (secondDistance > range) continue;
-                    int gap = firstDistance + secondDistance;
-                    if (gap > range) continue;
-                    var pair = (Math.Min(a, b), Math.Max(a, b));
-                    var evidence = new CorticalAssemblyEvidence(pair.Item1, pair.Item2,
-                        kind, index, gap, gap == 0);
-                    if (!best.TryGetValue(pair, out var prior) ||
-                        gap < prior.Gap ||
-                        (gap == prior.Gap && strength > prior.Intensity))
-                        best[pair] = (evidence, gap, strength);
+                    int d1 = distances[a][left];
+                    if (d1 > diagnosticRange) continue;
+                    for (int b = 0; b < fragments; b++)
+                    {
+                        if (a == b) continue;
+                        int d2 = distances[b][right];
+                        if (d2 > diagnosticRange) continue;
+                        int gap = d1 + d2;
+                        if (gap > diagnosticRange) continue;
+                        int first = Math.Min(a, b), second = Math.Max(a, b);
+                        if (gap < closestAny[first, second])
+                            closestAny[first, second] = gap;
+                        if (kind is null) continue;
+                        if (gap < closestNormal[first, second])
+                            closestNormal[first, second] = gap;
+                        if (gap > range) continue;
+                        var pair = (first, second);
+                        var evidence = new CorticalAssemblyEvidence(first, second,
+                            kind.Value, index, gap, gap == 0);
+                        if (!best.TryGetValue(pair, out var prior) ||
+                            gap < prior.Gap ||
+                            (gap == prior.Gap && strength > prior.Intensity))
+                            best[pair] = (evidence, gap, strength);
+                    }
                 }
             }
         }
+        int observed = 0, within = 0, withNormal = 0, tooFar = 0, noNormal = 0;
+        int closestAccepted = int.MaxValue, closestRejected = int.MaxValue;
+        for (int a = 0; a < fragments; a++)
+        for (int b = a + 1; b < fragments; b++)
+        {
+            int any = closestAny[a, b], normal = closestNormal[a, b];
+            if (any != int.MaxValue) observed++;
+            if (any <= range) within++;
+            if (normal != int.MaxValue)
+            {
+                withNormal++;
+                if (normal > range)
+                {
+                    tooFar++;
+                    closestRejected = Math.Min(closestRejected, normal);
+                }
+                else closestAccepted = Math.Min(closestAccepted, normal);
+            }
+            if (any <= range && normal > range) noNormal++;
+        }
+        int pairs = fragments * (fragments - 1) / 2;
+        var diagnostics = new CorticalAssemblyDiagnostics(pairs, observed, within,
+            withNormal, tooFar, noNormal, pairs - observed, range, diagnosticRange,
+            closestAccepted, closestRejected);
 
         var evidenceArray = best.Values.Select(value => value.Evidence).ToArray();
         var links = evidenceArray.Select(e => new CorticalAssemblyLink(e.FirstFragmentId,
@@ -192,7 +225,7 @@ public sealed class ContinentsCorticalAssemblyGenerator
         var assembled = cortex with { AssemblyLinks = links };
         SharedCorticalModelValidator.Validate(topology, assembled, plates);
         return new ContinentsCorticalAssemblyResult(assembled, evidenceArray,
-            BuildSystems(assembled, plates));
+            BuildSystems(assembled, plates)) { Diagnostics = diagnostics };
     }
 
     private static CorticalAssemblySystem[] BuildSystems(SharedCorticalModel cortex, byte[] plates)

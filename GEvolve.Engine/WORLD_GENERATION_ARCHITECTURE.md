@@ -89,6 +89,14 @@ Los generadores actuales **no** crean ni adjuntan `SharedCortex`. El `Continents
 
 **Integración y rendimiento:** `WorldGenerationService` no invoca todavía B1 o B2. No hay cambios en arrays de corteza de B1, en el tipo de superficie o en elevación. Las búsquedas por fragmento reutilizan una cola y requieren memoria temporal proporcional al número de fragmentos por cantidad de celdas, más el mapa de contactos. `ContinentsCorticalAssemblyTests` validará 4 tamaños × 3 semillas, procedencia, geometría, compatibilidad con persistencia, determinismo, tiempos y asignaciones. La validación visual se hará únicamente ejecutando Evolve, sin exportaciones de mapas; B2 permanece pendiente de validación local y auditoría.
 
+## H05-B2 — Diagnóstico de distancia y evidencia (calibración pendiente)
+
+La validación local aportó cinco vínculos de acreción en doce escenarios, siete mundos sin ensamblajes y ningún sistema con más de dos fragmentos. B1 distribuye ocho núcleos separados y limita su crecimiento por presupuestos; esto reduce el número de pares próximos. En B2 el radio de aceptación `max(2, ceil(InfluenceRadiusHexes × 4))` es otra restricción, independiente de la convergencia y de la cizalla.
+
+`CorticalAssemblyDiagnostics` presenta estadísticas por pareja de fragmentos **sin duplicados**: total de parejas, parejas observadas en las cercanías de fronteras reales, parejas dentro del radio aprobado, parejas con evidencia de movimiento normal, rechazos por distancia y por falta de evidencia normal a distancia aceptable, y parejas no observadas. La distancia se mide sobre `HexTopology` y dentro de una misma placa, atravesando solo la corteza oceánica o la propia; nunca se atraviesa un tercer fragmento ni una frontera ficticia.
+
+**La ventana extendida `2 × radio` es exclusivamente diagnóstica:** amplía la exploración de evidencia, pero todos los vínculos continúan sujetos al radio original. No cambia umbrales de convergencia/divergencia, no fuerza enlaces, no modifica el modelo cortical persistido y no conecta sistemas. Las distancias fuera de la ventana no son inferencias tectónicas negativas; se registran como no observadas. Una calibración futura solo se justificará si las métricas de los 12 escenarios muestran parejas con evidencia suficiente y brechas geológicamente defendibles. Las estadísticas no son resultados medidos hasta ejecutar localmente las pruebas.
+
 ## 3. Diagrama principal — arquitectura objetivo
 
 ```mermaid

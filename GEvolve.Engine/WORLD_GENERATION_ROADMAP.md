@@ -252,6 +252,19 @@ flowchart TD
 
 **Alcance:** sin cambios en B1 ni en los generadores de Pangaea/Archipelagos/SmallContinents; sin `SurfaceByCellId`, `ElevationByCellId`, geología de relieve ni clima. `Continents` continúa `SurfaceGenerationPending`; 12 hashes tectónicos y 36 baselines geográficos protegidos. H05-B3/B4/B5 y H06 no iniciados.
 
+### H05-B2 — Auditoría de candidatos y alcance regional (INSTRUMENTADO; calibración pendiente)
+
+**Resultados locales previos proporcionados:** cinco vínculos de acreción en 12 escenarios, siete mundos con ocho fragmentos aislados y ningún sistema de más de dos fragmentos. La comprobación de B1/B2 indica ocho núcleos muy separados, presupuesto de crecimiento cortical del 3,3–4,7 % por fragmento y un enlace admisible únicamente si una interacción tectónica real tiene evidencia normal compatible a distancia `InfluenceRadiusHexes × 4`. No se atribuye la baja conexión a una sola causa sin medir los descartes.
+
+- [x] Auditar las restricciones de B1 (distancia de núcleos, presupuestos, contacto interplaca solo convergente) y la diferencia entre fragmentos que cruzan placas y sistemas **entre fragmentos**.
+- [x] Instrumentar en `ContinentsCorticalAssemblyGenerator` contadores de parejas candidatas, alcance geográfico, evidencia normal, rechazos por distancia y por ausencia de evidencia admisible, brechas mínimas y parejas no observadas en una ventana diagnóstica adicional.
+- [x] Mantener **inalterado** el radio de aceptación `max(2, ceil(InfluenceRadiusHexes * 4))`, los umbrales normales y la exigencia de contactos oficiales. Ventana `2 × radio` solo para **medición**; no concede enlaces nuevos.
+- [x] Reforzar `ContinentsCorticalAssemblyTests` para los 4 tamaños × 3 semillas con consistencia de estadísticas, invariantes de aceptación, determinismo, máximos fragmentos por sistema y líneas de consola por escenario.
+- [ ] Ejecutar localmente compilación .NET 10, `--continents-assembly` y suite completa; recopilar cifras de los 12 escenarios y comparar descartes y gaps antes de decidir si ajustar el radio o la geometría de B1.
+- [ ] Aprobar o rechazar la calibración por evidencia tectónica, nunca por alcanzar un número deseado de enlaces. **H05-B2 no está cerrado**.
+
+**Fuera de alcance:** `WorldGenerationService`, B1, Pangaea, Archipelagos, SmallContinents, superficie, elevaciones y cambios de `shared-cortex-1`; 12 hashes tectónicos y 36 baselines geográficos protegidos. Ningún artefacto gráfico o archivo auxiliar.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.

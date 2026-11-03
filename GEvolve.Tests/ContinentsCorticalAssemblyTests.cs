@@ -58,6 +58,21 @@ public static class ContinentsCorticalAssemblyTests
                     world.Landmass.SurfaceByCellId.Length == 0 &&
                     world.Landmass.ElevationByCellId is null,
                     "Official tectonics and surface-pending state remain unchanged");
+                var audit = result.Diagnostics;
+                Check(audit.FragmentPairs == cortex.Fragments.Length *
+                        (cortex.Fragments.Length - 1) / 2 &&
+                    audit.DiagnosticGapHexes == 2 * audit.AcceptedGapHexes &&
+                    audit.PairsObservedNearOfficialBoundaries +
+                        audit.UnobservedWithinDiagnosticHorizon == audit.FragmentPairs &&
+                    audit.PairsWithNormalEvidence == result.Evidence.Length +
+                        audit.RejectedByDistance &&
+                    audit.PairsWithinAcceptedDistance <= audit.PairsObservedNearOfficialBoundaries &&
+                    audit.RejectedWithoutNormalEvidence <= audit.PairsWithinAcceptedDistance &&
+                    (result.Evidence.Length == 0 ||
+                        audit.MinimumAcceptedEvidenceGap <= audit.AcceptedGapHexes) &&
+                    (audit.RejectedByDistance == 0 ||
+                        audit.MinimumRejectedEvidenceGap > audit.AcceptedGapHexes),
+                    "Pair-level rejection diagnostics preserve the acceptance boundary");
                 Check(result.Evidence.Length == result.Model.AssemblyLinks.Length &&
                     result.Evidence.Select(e => (e.FirstFragmentId, e.SecondFragmentId)).Distinct().Count()
                         == result.Evidence.Length &&
@@ -124,9 +139,14 @@ public static class ContinentsCorticalAssemblyTests
                         Check(result.Systems.Single(s => s.FragmentIds.Contains(link.FirstFragmentId)).Id !=
                             result.Systems.Single(s => s.FragmentIds.Contains(link.SecondFragmentId)).Id,
                             "Rifting cannot assemble regional systems");
+                Check(result.Systems.All(system =>
+                    system.PlateIds.SequenceEqual(system.PlateIds.Order()) &&
+                    system.FragmentIds.Length >= 1),
+                    "Derived system labels have stable sorted plate provenance");
                 var repeat = assembly.Assemble(topology, config, plates, motion, cortex);
                 Check(result.Model.AssemblyLinks.SequenceEqual(repeat.Model.AssemblyLinks) &&
                     result.Evidence.SequenceEqual(repeat.Evidence) &&
+                    result.Diagnostics == repeat.Diagnostics &&
                     JsonSerializer.Serialize(result.Systems) == JsonSerializer.Serialize(repeat.Systems),
                     "B2 evidence, links and systems are exactly deterministic");
                 var persisted = SharedCorticalPersistence.ToState(result.Model);
@@ -148,6 +168,15 @@ public static class ContinentsCorticalAssemblyTests
                     $"divergentContacts={divergentUsed.Count}, multiPlateSystems=" +
                     $"{result.Systems.Count(s => s.PlateIds.Length > 1)}, " +
                     $"cortex={cortex.CrustByCellId.Count(c => c == 1) * 100.0 / topology.Count:F1}%, " +
+                    $"pairs={audit.FragmentPairs}, observed={audit.PairsObservedNearOfficialBoundaries}, " +
+                    $"within={audit.PairsWithinAcceptedDistance}, tectonicCandidates={audit.PairsWithNormalEvidence}, " +
+                    $"rejectedDistance={audit.RejectedByDistance}, " +
+                    $"rejectedNoNormal={audit.RejectedWithoutNormalEvidence}, " +
+                    $"outsideHorizon={audit.UnobservedWithinDiagnosticHorizon}, " +
+                    $"radius={audit.AcceptedGapHexes}/{audit.DiagnosticGapHexes}, " +
+                    $"minAcceptedGap={audit.MinimumAcceptedEvidenceGap}, " +
+                    $"minRejectedGap={audit.MinimumRejectedEvidenceGap}, " +
+                    $"largestSystem={result.Systems.Max(system => system.FragmentIds.Length)}, " +
                     $"ms={stopwatch.ElapsedMilliseconds}, MiB={allocated / 1048576.0:F1}");
             }
             Check(fingerprints.Count == 3, "Different seeds must produce distinct cortical configurations");
