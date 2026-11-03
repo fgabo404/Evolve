@@ -2,7 +2,7 @@
 
 > **Rama de trabajo:** `worldgenerator`  
 > **Documento rector:** [WORLD_GENERATION_ARCHITECTURE.md](WORLD_GENERATION_ARCHITECTURE.md)  
-> **Estado:** planificación; ningún hito se considera completado por el simple hecho de existir una clase.
+> **Estado actual:** H01–H04 completados y cerrados por auditoría; H05 en auditoría arquitectónica inicial, sin implementación aprobada. H06–H13 pendientes de sus respectivos gates. Ningún hito se considera completado por el simple hecho de existir una clase.
 > **Objetivo final:** producir un mundo hexagonal determinista, coherente, persistible y consumible por la simulación y el renderer, para todos los tipos de mapa admitidos.
 
 ## Reglas del roadmap
@@ -51,13 +51,13 @@ flowchart TD
 
 ## 2. Matriz de avance
 
-| Hito | Resultado verificable | Estado inicial |
+| Hito | Resultado verificable | Estado actual |
 |---|---|---|
-| 01 — Orquestador | API de entrada única y resultados explícitos | H01-A aprobado; H01-B pendiente |
-| 02 — Grid | Topología determinista y seam E/O validado | Base existente; pendiente de gate |
-| 03 — Placas | Partición conectada para todo tipo y tamaño | Base existente; pendiente de gate |
-| 04 — Movimiento | Velocidades, interacciones y campos de esfuerzo | Base existente; pendiente de gate |
-| 05 — Masas terrestres | Cuatro estrategias coherentes, incluido Continents | Incompleto |
+| 01 — Orquestador | API de entrada única y resultados explícitos | **Completado y aprobado** |
+| 02 — Grid | Topología determinista y seam E/O validado | **Completado y aprobado** |
+| 03 — Placas | Partición conectada para todo tipo y tamaño | **Completado y aprobado** |
+| 04 — Movimiento | Velocidades, interacciones y campos de esfuerzo | **Completado y aprobado** |
+| 05 — Masas terrestres | Cuatro estrategias coherentes, incluido Continents | **Auditoría inicial en curso; implementación pendiente** |
 | 06 — Elevación | Terreno 1–100 y mar 0 con batimetría separada | Parcial |
 | 07 — Geología | Orogenia, arcos, volcanes, fallas y dorsales integrados | Parcial / por conectar |
 | 08 — Temperatura | Campo térmico por celda en pipeline único | Implementación previa; por integrar |
@@ -67,7 +67,7 @@ flowchart TD
 | 12 — Recursos | Flora, fauna y minerales por reglas y geología | Por realizar / auditar |
 | 13 — Cierre | Mundo completo, persistencia, perfilado y revisión | Por realizar |
 
-**Nota:** el estado inicial describe el código revisado al planificar; actualizar tras inspeccionar commits posteriores.
+**Nota:** los estados reflejan los cierres documentales publicados hasta H04. Las implementaciones parciales de fases posteriores no implican aprobación del gate; `Continents` sigue pendiente de superficie.
 
 ## 3. Hitos y criterios de aceptación
 
@@ -139,7 +139,7 @@ flowchart TD
 - [x] Medir la construcción de **Enormous** (tiempo, asignaciones, memoria retenida y GC) como **diagnóstico dependiente del hardware**, sin convertir las mediciones en umbrales de aceptación.
 - [x] Registrar evidencia local: **`dotnet build` de .NET 10 sin errores ni advertencias**, suite completa **`dotnet run --project GEvolve.Tests` aprobada**, equivalencia **H01-A**, **12 baselines tectónicos** y **36 geográficos** intactos. `Continents` continúa explícitamente **pendiente de superficie**.
 
-**Gate H02:** **APROBADO Y CERRADO** por auditoría. No se modifican dimensiones, algoritmos, semillas, perfiles ni baselines con este cierre documental. **H03 no iniciado.**
+**Gate H02:** **APROBADO Y CERRADO** por auditoría. No se modificaron dimensiones, algoritmos, semillas, perfiles ni baselines con este cierre documental.
 
 **Archivos clave:** `GEvolve.Engine/Grid/HexGrid.cs`, `GEvolve.Engine/World/LandmassGeneration/Shared/HexTopology.cs`, `GEvolve.Definitions/WorldGeneration/Configuration/HexGridDefinition.cs` y `GEvolve.Tests/GridTests.cs`.
 
@@ -155,7 +155,7 @@ flowchart TD
 - [x] Confirmar validación local posterior al rebase: `git rev-parse HEAD` devolvió `0298640243f781506f5c03876282737aed0ef50f`; `dotnet build` compiló correctamente los cinco proyectos .NET 10; `dotnet run --project GEvolve.Tests` finalizó con la suite completa aprobada, equivalencia H01-A, H02, **12 baselines tectónicos** y **36 baselines geográficos** intactos.
 - [x] Mantener `Continents` **pendiente de superficie** en todos los tamaños y semillas; su previsualización tectónica no constituye una superficie oceánica generada.
 
-**Gate H03:** **APROBADO Y CERRADO** por auditoría. La generación universal de placas y sus invariantes están comprobados; **H04 no iniciado**.
+**Gate H03:** **APROBADO Y CERRADO** por auditoría. La generación universal de placas y sus invariantes están comprobados.
 
 **Archivo clave:** `Tectonics/TectonicPlateGenerator.cs`. Evidencia en `GEvolve.Tests/TectonicPlateTests.cs`.
 
@@ -172,11 +172,14 @@ flowchart TD
 - [x] Confirmar `dotnet build` en .NET 10 y la suite completa `GEvolve.Tests` aprobados localmente; **12 hashes tectónicos** y **36 baselines geográficos** intactos.
 - [x] Mantener separadas la generación de placas/movimiento y la generación de superficie; `Continents` conserva `SurfaceGenerationPending` y carece de superficie terminada.
 
-**Gate H04:** **APROBADO Y CERRADO** por auditoría arquitectónica. Esfuerzos reproducibles y coherentes con fronteras y vecindad hexagonal; sin intensidades negativas ni valores no finitos. **H05 no iniciado.**
+**Gate H04:** **APROBADO Y CERRADO** por auditoría arquitectónica. Esfuerzos reproducibles y coherentes con fronteras y vecindad hexagonal; sin intensidades negativas ni valores no finitos.
 
 **Archivos clave:** `PlateMotionGenerator`, `TectonicMotionGenerator`, `PlateBoundaryMap` y `GEvolve.Tests/TectonicMotionTests.cs`.
 
-### H05 — Corteza y masas terrestres
+### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
+
+**Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.
+
 
 - [ ] Auditar `Pangaea`, `SmallContinents`, `Archipelagos` y `Continents`.
 - [ ] Completar `Continents` desde corteza/ensamblaje tectónico, sin equiparar placas con continentes.
@@ -310,6 +313,6 @@ Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator
 
 ## 7. Próximo paso
 
-**H01 cerrado y aprobado.** El siguiente hito es H02, que no se inicia en este commit documental.
+**H01–H04 completados y aprobados por auditoría.** El hito activo es **H05 — Corteza y masas terrestres**, en fase de diagnóstico arquitectónico. La siguiente decisión será la estrategia y los criterios de aceptación para completar `Continents` sin alterar los 12 hashes tectónicos ni los 36 baselines geográficos aprobados. **H06 aún no iniciado.**
 
-Esta planificación se puede refinar cuando cada hito descubra restricciones reales de código. No sustituye la documentación de arquitectura ni representa implementaciones ya realizadas.
+Esta planificación se actualiza con evidencia de código, pruebas y commits; no sustituye la documentación de arquitectura ni declara finalizadas las implementaciones pendientes.
