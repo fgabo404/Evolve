@@ -215,7 +215,7 @@ flowchart TD
 
 **Gate H05-A1: APROBADO Y CERRADO.** Implementación `feat(worldgen): introduce shared cortical model contract` (`a64552518a09ac32129350568e1dec1983a1a2c3`). Sin conexión al orquestador, sin migración de saves, sin cambios en estrategias vigentes, con 16 placas/movimientos y 12 hashes tectónicos + 36 baselines geográficos conservados. `Continents` permanece `SurfaceGenerationPending`. **Próximo subhito: H05-A2** (validación común, persistencia, versionado y estados parciales); H05-B y H06 no iniciados. Nota de auditoría no bloqueante: evitar conversiones `Span.ToArray()` innecesarias durante futuras validaciones de Enormous, y mantener explícita la distinción entre conectividad de provincias y conectividad de fragmentos.
 
-### H05-A2 — Validación, persistencia y estados corticales (IMPLEMENTADO; validación local pendiente)
+### H05-A2 — Validación, persistencia y estados corticales (APROBADO Y CERRADO)
 
 - [x] Mantener la versión **`shared-cortex-1`** como único contrato soportado; rechazar versiones desconocidas, sin conversiones automáticas.
 - [x] Eliminar copias `ReadOnlySpan.ToArray()` evitables del validador de Engine y reutilizar buffers de visitas con marcas por provincia.
@@ -223,9 +223,9 @@ flowchart TD
 - [x] Conservar `ContinentalGeologyState`, `ContinentalCrustMap`, sus validadores y todos los campos históricos sin reinterpretarlos; partidas sin `SharedCortex` continúan válidas.
 - [x] Distinguir `TectonicsOnly`, `CortexAvailable` y `SurfaceAvailable` por propiedad derivada `GenerationStage` no persistida; `Ready` queda reservado para las etapas futuras y **nunca se infiere de disponer de superficie**.
 - [x] Incorporar casos sintéticos de persistencia y carga exacta, versiones incompatibles, datos corruptos, independencia respecto a superficie, tres tipos seleccionables y continuidad E/O sin envoltura N/S.
-- [ ] Confirmar **compilación .NET 10**, suite `GEvolve.Tests`, pruebas `--cortical-persistence` y auditoría arquitectónica.
+- [x] Confirmadas **compilación .NET 10**, suite completa `GEvolve.Tests`, pruebas específicas `--cortical-persistence` y auditoría arquitectónica del diff publicado; preservados 12 hashes tectónicos y 36 baselines geográficos.
 
-**Gate H05-A2:** **implementado, pendiente de aprobación**. No se conecta ningún generador al modelo cortical ni se generan nuevas superficies. `Continents` permanece pendiente de superficie; los **12 hashes tectónicos y 36 baselines geográficos** siguen protegidos. H05-B/C/D y H06 no iniciados.
+**Gate H05-A2: APROBADO Y CERRADO.** Implementación `feat(worldgen): add cortical persistence validation and generation states` (`7192288aa6b96493b188384cbe0f5aa09d9370e6`). La compilación y pruebas locales posteriores al pull pasaron. No se conecta ningún generador al modelo cortical ni se generan nuevas superficies. `Continents` permanece pendiente; los **12 hashes tectónicos y 36 baselines geográficos** siguen protegidos. **Próximo subhito: H05-B — estrategia cortical especializada de Continents (2–4 masas continentales principales)**; H05-C/D y H06 no iniciados. Precaución de mantenimiento: verificar equivalencia del cálculo de vecindad del validador de State respecto a `HexTopology` si cambia la topología oficial.
 
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
@@ -364,6 +364,6 @@ Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator
 
 ## 7. Próximo paso
 
-**H01–H04 y la migración H05-M1/M2/M3 están aprobados; H05-A1 está aprobado y cerrado.** El subhito activo pasa a ser **H05-A2 — validación común, persistencia, versionado y estados parciales** del contrato cortical para Pangaea, Continents y Archipelagos. Los tres generadores deben mantener estrategias propias; Pangaea y Archipelagos conservan sus rutas vigentes hasta aprobar sus sucesores corticales. `Continents` continúa sin superficie. Preservar los 12 hashes tectónicos y 36 baselines geográficos; `SmallContinents` permanece histórico. **H06 aún no iniciado.**
+**H01–H04, H05-M1/M2/M3, H05-A1 y H05-A2 están aprobados y cerrados.** El siguiente subhito es **H05-B — estrategia cortical de Continents**, con 2–4 masas continentales principales. La capa cortical y la tectónica son comunes, pero las estrategias de Pangaea y Archipelagos permanecen independientes. Los tres generadores deben mantener estrategias propias; Pangaea y Archipelagos conservan sus rutas vigentes hasta aprobar sus sucesores corticales. `Continents` continúa sin superficie. Preservar los 12 hashes tectónicos y 36 baselines geográficos; `SmallContinents` permanece histórico. **H06 aún no iniciado.**
 
 Esta planificación se actualiza con evidencia de código, pruebas y commits; no sustituye la documentación de arquitectura ni declara finalizadas las implementaciones pendientes.
