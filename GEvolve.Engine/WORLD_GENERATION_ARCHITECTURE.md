@@ -50,6 +50,21 @@ En el futuro puede añadirse una discriminación formal `Complete / Partial / Pr
 
 **Delimitación:** `ContinentalCrustMap`, `ContinentalGeologyState` y `ContinentalGeologyValidation` permanecen sin cambios; su formato persistido y restricciones previas no se reinterpretan. El modelo nuevo no se serializa ni se añade a `LandmassState` en H05-A1. Las tres estrategias futuras decidirán sus distribuciones por separado; `SmallContinents` permanece histórico. La integración de generadores, persistencia y versionado corresponde a subfases posteriores.
 
+## H05-A2 — Persistencia cortical y estados parciales (implementado; por validar)
+
+`SharedCorticalModel` continúa como contrato de Engine. Por la dependencia unidireccional **Engine → State**, se introduce `SharedCorticalState` (State) como DTO persistible, con los mismos arrays y descriptores semánticos; `SharedCorticalPersistence.ToState/FromState` convierte **explícitamente y con copias exactas**, sin derivar corteza de `ContinentalGeologyState` histórico. `LandmassState.SharedCortex` es opcional; la ausencia de la propiedad en JSON anterior deja `null` y no dispara regeneración.
+
+**Versión:** únicamente `shared-cortex-1`; no se reinterpreta ni convierte silenciosamente una versión desconocida. `GameSaveStore` mantiene formato de save 2 y valida el DTO con `SharedCorticalStateValidator` durante save y load: dimensiones oficiales, tipos 0/1, referencias por celda, descriptor/núcleo, afinidad finita, provincias conexas, enlaces ordenados/canónicos sin duplicados. La conectividad se calcula con vecindad hexagonal odd-q equivalente a `HexTopology`: unión horizontal E/O, N/S abiertas. La conectividad por provincia no implica conectividad por fragmento ni por superficie emergida. El validador universal **no** exige morfologías ni proporciones según tipo.
+
+`TectonicPreviewOnly` mantiene su semántica histórica de solo tectónica (sin corteza). Un estado cortical sin superficie tiene `SharedCortex != null`, `TectonicPreviewOnly=false`, `SurfaceGenerationPending=true`, `SurfaceByCellId=[]` y datos tectónicos presentes. `LandmassState.GenerationStage` es una propiedad **derivada no persistida**:
+
+- `TectonicsOnly`: tectónica o preview pendiente, sin superficie cortical nueva;
+- `CortexAvailable`: corteza validada, superficie pendiente;
+- `SurfaceAvailable`: superficie clasificada; no supone relieve/clima/biomas listos;
+- `Ready`: reservado para una futura regla explícita de completitud; no se emite en H05-A2.
+
+Los generadores actuales **no** crean ni adjuntan `SharedCortex`. El `Continents` oficial continúa retornando `TectonicPreviewOnly=true`, `SurfaceGenerationPending=true` y sin superficie. `ContinentalCrustMap`, `ContinentalGeologyState`, `ContinentalGeologyValidation`, IDs de `LandmassType`, baselines y rutas de `SmallContinents` quedan intactos. La fase no implementa migración geológica, elevaciones ni nuevos algoritmos.
+
 ## 3. Diagrama principal — arquitectura objetivo
 
 ```mermaid

@@ -33,6 +33,18 @@ public sealed record SharedCorticalModel(string Version, byte[] CrustByCellId,
 /// <summary>Checks structural references and province topology, without choosing a world profile.</summary>
 public static class SharedCorticalModelValidator
 {
+    private static bool ContainsInvalidPlate(ReadOnlySpan<byte> ids)
+    {
+        foreach (byte id in ids) if (id >= 16) return true;
+        return false;
+    }
+
+    private static bool ContainsInvalidSurface(ReadOnlySpan<byte> ids)
+    {
+        foreach (byte id in ids) if (id is not (0 or 1)) return true;
+        return false;
+    }
+
     public static void Validate(HexTopology topology, SharedCorticalModel model,
         ReadOnlySpan<byte> plateByCellId, ReadOnlySpan<byte> surfaceByCellId = default)
     {
@@ -46,9 +58,9 @@ public static class SharedCorticalModelValidator
             model.EmergenceAffinityByCellId is null || model.EmergenceAffinityByCellId.Length != count ||
             model.Fragments is null || model.Provinces is null || model.AssemblyLinks is null ||
             plateByCellId.Length != count ||
-            plateByCellId.ToArray().Any(plate => plate >= 16) ||
+            ContainsInvalidPlate(plateByCellId) ||
             (!surfaceByCellId.IsEmpty && (surfaceByCellId.Length != count ||
-                surfaceByCellId.ToArray().Any(value => value is not (0 or 1)))))
+                ContainsInvalidSurface(surfaceByCellId))))
             throw new ArgumentException("Invalid cortical model dimensions, version or plate/surface input.");
 
         var fragmentCounts = new int[model.Fragments.Length];
@@ -94,19 +106,20 @@ public static class SharedCorticalModelValidator
         }
 
         // An individual province is connected by actual cylinder topology (E/W wraps, N/S does not).
-        var visited = new bool[count];
+        var visited = new int[count];
         var queue = new int[count];
         for (int province = 0; province < provinceCounts.Length; province++)
         {
             int head = 0, tail = 0, core = model.Provinces[province].CoreCellId;
+            int stamp = province + 1;
             queue[tail++] = core;
-            visited[core] = true;
+            visited[core] = stamp;
             while (head < tail)
             {
                 foreach (int neighbor in topology.Neighbors(queue[head++]))
-                    if (!visited[neighbor] && model.ProvinceByCellId[neighbor] == province)
+                    if (visited[neighbor] != stamp && model.ProvinceByCellId[neighbor] == province)
                     {
-                        visited[neighbor] = true;
+                        visited[neighbor] = stamp;
                         queue[tail++] = neighbor;
                     }
             }

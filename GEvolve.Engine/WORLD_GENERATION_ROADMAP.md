@@ -215,6 +215,18 @@ flowchart TD
 
 **Gate H05-A1: APROBADO Y CERRADO.** Implementación `feat(worldgen): introduce shared cortical model contract` (`a64552518a09ac32129350568e1dec1983a1a2c3`). Sin conexión al orquestador, sin migración de saves, sin cambios en estrategias vigentes, con 16 placas/movimientos y 12 hashes tectónicos + 36 baselines geográficos conservados. `Continents` permanece `SurfaceGenerationPending`. **Próximo subhito: H05-A2** (validación común, persistencia, versionado y estados parciales); H05-B y H06 no iniciados. Nota de auditoría no bloqueante: evitar conversiones `Span.ToArray()` innecesarias durante futuras validaciones de Enormous, y mantener explícita la distinción entre conectividad de provincias y conectividad de fragmentos.
 
+### H05-A2 — Validación, persistencia y estados corticales (IMPLEMENTADO; validación local pendiente)
+
+- [x] Mantener la versión **`shared-cortex-1`** como único contrato soportado; rechazar versiones desconocidas, sin conversiones automáticas.
+- [x] Eliminar copias `ReadOnlySpan.ToArray()` evitables del validador de Engine y reutilizar buffers de visitas con marcas por provincia.
+- [x] Persistir opcionalmente `SharedCorticalState` en `LandmassState.SharedCortex` mediante los saves JSON existentes, con conversión explícita `SharedCorticalPersistence` y validación de entrada/salida en State.
+- [x] Conservar `ContinentalGeologyState`, `ContinentalCrustMap`, sus validadores y todos los campos históricos sin reinterpretarlos; partidas sin `SharedCortex` continúan válidas.
+- [x] Distinguir `TectonicsOnly`, `CortexAvailable` y `SurfaceAvailable` por propiedad derivada `GenerationStage` no persistida; `Ready` queda reservado para las etapas futuras y **nunca se infiere de disponer de superficie**.
+- [x] Incorporar casos sintéticos de persistencia y carga exacta, versiones incompatibles, datos corruptos, independencia respecto a superficie, tres tipos seleccionables y continuidad E/O sin envoltura N/S.
+- [ ] Confirmar **compilación .NET 10**, suite `GEvolve.Tests`, pruebas `--cortical-persistence` y auditoría arquitectónica.
+
+**Gate H05-A2:** **implementado, pendiente de aprobación**. No se conecta ningún generador al modelo cortical ni se generan nuevas superficies. `Continents` permanece pendiente de superficie; los **12 hashes tectónicos y 36 baselines geográficos** siguen protegidos. H05-B/C/D y H06 no iniciados.
+
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.
