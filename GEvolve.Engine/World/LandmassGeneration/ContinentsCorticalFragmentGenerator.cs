@@ -327,7 +327,12 @@ public sealed class ContinentsCorticalFragmentGenerator
             foreach (int neighbor in topology.Neighbors(current))
             {
                 if (plates[neighbor] != plate || visited.Contains(neighbor)) continue;
-                int localSamePlate = topology.Neighbors(neighbor).Count(n => plates[n] == plate);
+                int localSamePlate = 0;
+                foreach (int adjacent in topology.Neighbors(neighbor))
+                {
+                    if (plates[adjacent] == plate)
+                        localSamePlate++;
+                }
                 if (localSamePlate > mostInterior ||
                     (localSamePlate == mostInterior && neighbor < best))
                 {
