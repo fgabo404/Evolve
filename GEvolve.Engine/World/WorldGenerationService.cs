@@ -9,7 +9,7 @@ namespace GEvolve.Engine.World;
 
 /// <summary>
 /// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
-/// Continents currently stops after stage 01 with no surface.
+/// Ordinary Continents generation stops after stage 01; its surface preview is explicit.
 /// Temperature, precipitation and biome classification remain shared future stages.
 /// </summary>
 public sealed class WorldGenerationService
@@ -94,6 +94,32 @@ public sealed class WorldGenerationService
             $"Stage 02 {configuration.Type} did not meet the profile after four attempts " +
             $"(land={last?.LandFraction:P1}, components={last?.ComponentCount}, " +
             $"dominant={last?.DominantLandShare:P1}).");
+    }
+
+    /// <summary>Explicit H05-B3 preview: surface available, relief/climate/biomes still absent.</summary>
+    public GeneratedWorld GenerateContinentsSurfacePreview(LandmassConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        Validate(configuration);
+        if (configuration.Type != LandmassType.Continents)
+            throw new ArgumentException("Surface preview is restricted to Continents.", nameof(configuration));
+        // Reuse the ordinary official tectonics without changing its pending-surface contract.
+        var tectonics = Generate(configuration);
+        var topology = new HexTopology(tectonics.Grid);
+        var plates = tectonics.Landmass.PlateByCellId!;
+        var motion = tectonics.Landmass.TectonicMotion!;
+        var cortex = new ContinentsCorticalFragmentGenerator().Generate(topology, configuration, plates, motion);
+        var assembly = new ContinentsCorticalAssemblyGenerator().Assemble(topology, configuration, plates, motion, cortex);
+        byte[] surface = new ContinentsSurfaceGenerator().Generate(topology, configuration, plates, motion, assembly);
+        var terrain = new LandmassState(configuration, surface, 0)
+        {
+            PlateByCellId = plates,
+            TectonicMotion = motion,
+            SharedCortex = SharedCorticalPersistence.ToState(assembly.Model),
+            TectonicPreviewOnly = false,
+            SurfaceGenerationPending = false
+        };
+        return new GeneratedWorld(tectonics.Grid, terrain, LandmassAnalysis.Analyze(topology, surface));
     }
 
     /// <summary>Stage 01 alone, independent of the selected map type.</summary>

@@ -9,7 +9,7 @@ public enum UiAction
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
-    StressCompression, StressExtension, StressShear, ToggleGeology
+    StressCompression, StressExtension, StressShear, ToggleGeology, PreviewContinentsSurface
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -21,7 +21,8 @@ public readonly record struct UiButton(UiAction Action, string Text, UiRect Boun
 /// <summary>Posiciones adaptables compartidas por dibujo y detección de clics.</summary>
 public static class ScreenLayout
 {
-    public static IReadOnlyList<UiButton> Buttons(GameScreen screen, int width, int height)
+    public static IReadOnlyList<UiButton> Buttons(GameScreen screen, int width, int height,
+        bool preliminaryContinents = false)
     {
         float center = width / 2f;
         float menuWidth = MathF.Min(360, MathF.Max(180, width - 32));
@@ -79,7 +80,9 @@ public static class ScreenLayout
             return [
                 new(UiAction.SizeSelect, "Tamaño", new(12, Y(0,146), 261, controlHeight)),
                 new(UiAction.TypeSelect, "Tipo de mundo", new(12, Y(1,192), 261, controlHeight)),
-                new(UiAction.ToggleSurface, "CAPA 02: SUPERFICIE", new(12, Y(2,248), 261, controlHeight)),
+                new(preliminaryContinents ? UiAction.PreviewContinentsSurface : UiAction.ToggleSurface,
+                    preliminaryContinents ? "SUPERFICIE PRELIMINAR" : "CAPA 02: SUPERFICIE",
+                    new(12, Y(2,248), 261, controlHeight)),
                 new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, Y(3,290), 261, controlHeight)),
                 new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, Y(4,332), 261, controlHeight)),
                 new(UiAction.StressCompression, "ESFUERZO: COMPRESIÓN", new(12, Y(5,374), 261, controlHeight)),

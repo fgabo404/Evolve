@@ -115,6 +115,20 @@ Las pruebas repiten los 12 escenarios para cada multiplicador, comprueban la equ
 
 **Estado: H05-B2 APROBADO Y CERRADO.** El usuario confirmó compilación, pruebas específicas y suite completa del commit `70ac5fbe9c5766e5fb86cadbc0536626956f5c5b`; el auditor aprobó la geometría correlacionada predeterminada con radio 4r, ocho fragmentos y ocho provincias, enlaces con evidencia tectónica real y geometría B1 original conservada para regresión. Los 12 escenarios suman 22 acreciones y 11 separaciones, con acreción en 11/12 mundos; no se fuerza acreción en Enormous/2026. `WorldGenerationService` aún no invoca B1/B2; los baselines históricos y `shared-cortex-1` permanecen intactos. La siguiente etapa es H05-B3, todavía no iniciada. Sin superficie, elevación, renderer ni exportaciones.
 
+## H05-B3 — Superficie continental preliminar (implementada; pendiente de validación)
+
+`WorldGenerationService.GenerateContinentsSurfacePreview(LandmassConfiguration)` es una entrada explícita, exclusiva de `Continents`, en el único orquestador. Compone tectónica oficial → núcleos correlacionados B1 → ensamblaje B2 **4r** → `ContinentsSurfaceGenerator`. `Generate(...)` conserva la preview tectónica pendiente; las rutas históricas no cambian. Las notas anteriores sobre etapas corticales no integradas describen su estado al cerrar B2; esta entrada es la primera integración.
+
+**Emergencia provisional:** `continents-surface-preview-1` devuelve `byte[N]` (0 océano, 1 tierra). Reutiliza la afinidad cortical existente, sin agregar otro ruido ni recalcular compresión/extensión. Para distancia hexagonal `d` a corteza oceánica y `r = InfluenceRadiusHexes`, calcula `i = clamp((d - 1) / max(1, ceil(r)), 0, 1)` y potencial `afinidad + 0.12*i - 0.22*(1-i)`. El nivel marino fijo es **0.38**, adimensional, común a todos los tamaños y semillas; no son elevaciones.
+
+Cada enlace validado aporta, solo a su propio fragmento y lado tectónico, hasta **+0.10** por acreción o **−0.18** por separación, con caída lineal según distancia al contacto y alcance máximo `max(2, ceil(4r))`. Se usan máximos por signo, evitando sumar por cantidad de enlaces. Las búsquedas comprueban la arista real, el gap y el tipo de evidencia; no atraviesan terceros fragmentos ni otra placa. Los sistemas no pintan puentes oceánicos. Solo emerge corteza continental cuyo potencial final supera el nivel marino; la corteza oceánica permanece sumergida. Islas volcánicas sobre corteza oceánica quedan fuera de B3. No se impone cantidad de continentes ni porcentaje de tierra.
+
+**Estado y persistencia:** `SurfaceAvailable`, `SharedCortex` y superficie completas, ambos flags de preview tectónica/pendiente en `false`; elevación, pendientes, clima y biomas ausentes. No es `Ready`. Se conserva formato de save 2 y `shared-cortex-1`; save/load almacena los arrays sin regenerar capas ni evidencia. La versión de emergencia identifica el algoritmo, sin introducir un formato persistido nuevo.
+
+**Primera visualización:** crear `Continents` y pulsar **SUPERFICIE PRELIMINAR** conserva tamaño y semilla. Tierra verde, océano azul, aviso de elevaciones/clima pendientes y vistas tectónicas existentes sobre la misma cuadrícula. La regeneración y el cambio de tamaño mantienen la preview; otros tipos conservan su ruta habitual.
+
+**Validación pendiente del usuario:** `--continents-surface` y suite completa incluyen cuatro tamaños × semillas 2026, 42 y −731: determinismo completo, entradas inmutables, cobertura 0/1, tierra/océano y corteza sumergida, contactos controlados con evidencia real, BFS independiente, costura E/O, polos abiertos, persistencia y colores sin capas futuras. Informan proporción terrestre, componentes, tamaños principales, continuidad oceánica, corteza sumergida, tiempo y asignaciones sin umbrales de hardware. La naturalidad de costas y continuidad oceánica requieren revisión visual; el objetivo posterior de 2–4 grandes continentes no es una cuota de esta fase. H05-B3 no está aprobado ni cerrado; H05-B4/B5 no iniciados.
+
 ## 3. Diagrama principal — arquitectura objetivo
 
 ```mermaid
@@ -190,7 +204,7 @@ flowchart TD
 2. `TectonicPlateGenerator` genera **16 placas**, universales respecto al tipo de mundo para el mismo tamaño y semilla. La partición se realiza mediante crecimiento conectado ponderado en un grafo hexagonal, con ruido multiescala periódico horizontalmente.
 3. `TectonicMotionGenerator` proyecta velocidades relativas sobre normal y tangente y calcula convergencia, divergencia y cizalla; propaga esfuerzos mediante una envolvente gaussiana.
 4. `Pangaea`, `SmallContinents` y `Archipelagos` tienen rutas implementadas para superficie/elevación y validaciones morfológicas.
-5. **`Continents` no genera superficie en ese servicio**; devuelve preview de tectónica con `SurfaceGenerationPending`. Nunca confundir sus ceros con océanos reales.
+5. **`Generate` con `Continents` conserva `SurfaceGenerationPending`**. La entrada explícita `GenerateContinentsSurfacePreview` produce superficie preliminar sin relieve/clima; véase H05-B3. La ausencia de superficie nunca significa océano real.
 6. `ContinentalReliefGenerator` contiene lógica geológica avanzada, pero la presencia del archivo no equivale a estar integrado en la ruta principal.
 7. `LandmassGenerationService` y su generador Pangaea anterior fueron retirados. `WorldGenerationService` no ejecuta todavía temperatura, precipitación ni clasificación de biomas; las pruebas ambientales componen esos generadores especializados explícitamente.
 8. `SmallContinentsGenerator` y `ArchipelagosGenerator` implementan `IPlateAwareLandmassGenerator` y exigen placas universales válidas. Se retiraron `ILandmassGenerator` y las sobrecargas de superficie sin placas.
@@ -460,7 +474,7 @@ public interface IPlateAwareLandmassGenerator
 | Complete [OBJETIVO] | Todas las capas habilitadas por el pipeline están materializadas | Arrays válidos y dependencias satisfechas |
 | Partial [OBJETIVO] | Generación deliberadamente incompleta | Razón explícita y campos disponibles |
 | Preview [ACTUAL] | Inspección de placas/movimiento sin superficie real | `TectonicPreviewOnly` |
-| Pending [ACTUAL] | Tipo `Continents` aún sin superficie en `WorldGenerationService` | `SurfaceGenerationPending` |
+| Pending [ACTUAL] | `Generate` con `Continents`, sin solicitar la preview H05-B3 | `SurfaceGenerationPending` |
 | Failed [OBJETIVO] | No se pudo satisfacer el contrato | Excepción/error; no confundir con mapa vacío |
 
 **Precisión:** la tabla de estados es conceptual; no existe una enumeración con esos nombres en `worldgenerator`.
@@ -537,7 +551,7 @@ Las categorías de interacción incluyen convergencia, divergencia, transformant
 Pangaea          -> PangaeaFromPlatesGenerator
 SmallContinents  -> SmallContinentsGenerator + PlateAwareElevationGenerator
 Archipelagos     -> ArchipelagosGenerator + PlateAwareElevationGenerator
-Continents       -> Preview tectónica, sin superficie en el servicio publicado
+Continents       -> Generate: preview tectónica pendiente; GenerateContinentsSurfacePreview: superficie H05-B3 sin relieve
 ```
 
 El servicio repite como máximo cuatro intentos de generación y usa `LandmassAnalysis` / `MeetsProfile` para validar propiedades morfológicas. **No interpretar estos criterios como una garantía de realismo tectónico**. Revisar que la validación de perfil ocurre después de las operaciones que puedan cambiar superficie.

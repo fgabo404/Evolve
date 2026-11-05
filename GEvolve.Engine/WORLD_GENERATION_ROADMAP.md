@@ -290,7 +290,19 @@ flowchart TD
 
 **Compatibilidad:** `WorldGenerationService` todavía no invoca la etapa cortical de `Continents`; el radio operativo sigue en **4r**. Sin cambios en Pangaea, Archipelagos, SmallContinents, IDs, contratos persistidos ni en los 12 hashes tectónicos y 36 geográficos. Sin H05-B3, mapas exportados ni renderer nuevo.
 
-### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
+### H05-B3 — Superficie continental preliminar visible (IMPLEMENTADA; validación pendiente)
+
+- [x] Añadir `ContinentsSurfaceGenerator`: afinidad cortical, transición costera y evidencia local de acreción/separación; nivel marino provisional fijo 0.38, sin nuevo ruido ni cuotas de tierra/continentes.
+- [x] Integrar mediante `WorldGenerationService.GenerateContinentsSurfacePreview` explícito: tectónica → B1 correlacionado → B2 4r → superficie. `Generate(Continents)` conserva su estado pendiente y los otros tipos no cambian.
+- [x] Persistir superficie y corteza con contratos existentes, sin generar relieve, clima ni biomas y sin regenerar al cargar.
+- [x] Incorporar **SUPERFICIE PRELIMINAR** dentro de Evolve, con colores tierra/océano, tamaño/semilla y aviso de capas pendientes; mantener vistas tectónicas.
+- [x] Escribir `ContinentsSurfaceTests`, `--continents-surface` y registro en suite completa: 12 escenarios, determinismo, no mutación, tierra/corteza sumergida, contratos inválidos, contactos reales controlados, BFS, seam, persistencia y paleta sin relieve.
+- [ ] Usuario: compilar y ejecutar pruebas específicas y suite completa; confirmar las regresiones históricas sin actualizar baselines.
+- [ ] Usuario/auditor: revisar masas, costas, corredores y océanos dentro de Evolve. Las métricas textuales incluyen componentes, proporciones, corteza sumergida, tiempo y asignaciones; no sustituyen aprobación visual.
+
+**Gate H05-B3: ABIERTO.** Implementación autorizada, pendiente de validación técnica y visual. No se afirma que ya cumpla la distribución final de 2–4 grandes continentes. B1/B2, ocho fragmentos/provincias, 16 placas, 4r y baselines permanecen protegidos. H05-B4/B5 y H06 no iniciados. Las notas anteriores de no integración corresponden al cierre histórico de B2.
+
+### H05 — Corteza y masas terrestres (plan global; ver estado de subhitos)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.
 
@@ -427,6 +439,6 @@ Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator
 
 ## 7. Próximo paso
 
-**H01–H04, H05-M1/M2/M3, H05-A1/A2 y H05-B1/B2 están aprobados y cerrados.** La siguiente etapa es **H05-B3, aún no iniciada y sujeta a nueva autorización**. La capa cortical y la tectónica son comunes, pero las estrategias de Pangaea y Archipelagos permanecen independientes. Los tres generadores deben mantener estrategias propias; Pangaea y Archipelagos conservan sus rutas vigentes hasta aprobar sus sucesores corticales. `Continents` continúa sin superficie. Preservar los 12 hashes tectónicos y 36 baselines geográficos; `SmallContinents` permanece histórico. **H06 aún no iniciado.**
+**H01–H04, H05-M1/M2/M3, H05-A1/A2 y H05-B1/B2 están aprobados y cerrados. H05-B3 está implementado, pendiente de validación técnica y visual del usuario y auditoría.** `Continents` ofrece superficie preliminar mediante entrada explícita; su `Generate` ordinario conserva el estado pendiente. Pangaea y Archipelagos conservan estrategias independientes y rutas vigentes; `SmallContinents` permanece histórico. Los 12 hashes tectónicos y 36 baselines geográficos no se modifican. **H05-B4/B5 y H06 no iniciados.**
 
 Esta planificación se actualiza con evidencia de código, pruebas y commits; no sustituye la documentación de arquitectura ni declara finalizadas las implementaciones pendientes.
