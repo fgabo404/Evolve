@@ -306,6 +306,19 @@ flowchart TD
 
 **Gate H05-B3: ABIERTO.** Implementación autorizada, pendiente de validación técnica y visual. No se afirma que ya cumpla la distribución final de 2–4 grandes continentes. B1/B2, ocho fragmentos/provincias, 16 placas, 4r y baselines permanecen protegidos. H05-B4/B5 y H06 no iniciados. Las notas anteriores de no integración corresponden al cierre histórico de B2.
 
+### H05-C1 — Formación cortical multiescala experimental (IMPLEMENTADA; pendiente de validación)
+
+- [x] Autorizar la alternativa C1 tras rechazo geográfico de B3 y falta de cambio material en A/B (94/705450 celdas). A permanece operativa; no se adopta B regional ni se sigue calibrando.
+- [x] Implementar nueve candidatos (tres por K=2,3,4), ocho orígenes y presupuesto cortical A repartido 80/20 con oportunidades heterogéneas.
+- [x] Añadir difusión amortiguada anisotrópica, conductancias recíprocas, PCG con residuo real y trazas contiguas; déficits y fallos numéricos explícitos.
+- [x] Exportar corteza experimental `shared-cortex-1`, recalcular B2 a 4r y reutilizar B3 a 0.38; sin rifting completo ni C2.
+- [x] Clasificar principales ≥3%, dominancia ≥60%, ambiguas 1–3%, cuellos, soporte cortical, contactos y océanos sin corregir las máscaras para pasar.
+- [x] Incorporar selector A/C en Evolve con cortezas propias, persistencia A y estado experimental visible; preparar `--multiscale-cortex` y suite completa.
+- [ ] Usuario: compilar, ejecutar las pruebas y medir coste/memoria; confirmar 12 hashes tectónicos y 36 baselines históricos intactos.
+- [ ] Auditor: evaluar los 12 mundos y los motivos de rechazo/revisión; verificar 2–4 continentes finales, formas, diversidad y limitaciones de B3. No hay garantía previa de candidato válido.
+
+**Gate C1: ABIERTO.** Implementación experimental pendiente de evidencia técnica y visual. No cambia B1/B2/B3 operativos, placas, perfiles ni persistencia. No cierra H05-B3 ni inicia C2, relieve, clima o biomas.
+
 ### H05 — Corteza y masas terrestres (plan global; ver estado de subhitos)
 
 **Estado:** iniciado el diagnóstico arquitectónico de los cuatro tipos de mundo. Los tres generadores con superficie terminada conservan sus baselines oficiales; `Continents` permanece en `SurfaceGenerationPending`. La fase de implementación requiere revisar el informe de auditoría y aprobar un plan por subhitos. No se autoriza cambiar algoritmos ni hashes por el simple hecho de iniciar H05.

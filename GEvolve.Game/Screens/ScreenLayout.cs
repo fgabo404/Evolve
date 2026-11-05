@@ -10,7 +10,7 @@ public enum UiAction
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
     StressCompression, StressExtension, StressShear, ToggleGeology, PreviewContinentsSurface,
-    SurfaceLocalized, SurfaceRegional
+    SurfaceLocalized, SurfaceRegional, GeometryCurrent, GeometryMultiscale
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -23,7 +23,7 @@ public readonly record struct UiButton(UiAction Action, string Text, UiRect Boun
 public static class ScreenLayout
 {
     public static IReadOnlyList<UiButton> Buttons(GameScreen screen, int width, int height,
-        bool preliminaryContinents = false, bool surfaceComparison = false)
+        bool preliminaryContinents = false, bool surfaceComparison = false, bool geometryComparison = false)
     {
         float center = width / 2f;
         float menuWidth = MathF.Min(360, MathF.Max(180, width - 32));
@@ -84,13 +84,15 @@ public static class ScreenLayout
                 new(preliminaryContinents ? UiAction.PreviewContinentsSurface : UiAction.ToggleSurface,
                     preliminaryContinents ? "SUPERFICIE PRELIMINAR" : "CAPA 02: SUPERFICIE",
                     new(12, Y(2,248), 261, controlHeight)),
-                new(UiAction.ToggleGrayscale, "VER ALTURAS", new(12, Y(3,290), 261, controlHeight)),
+                new(geometryComparison ? UiAction.GeometryCurrent : UiAction.ToggleGrayscale,
+                    geometryComparison ? "A — CORTEZA ACTUAL" : "VER ALTURAS", new(12, Y(3,290), 261, controlHeight)),
                 new(UiAction.ToggleTectonic, "CAPA 01: PLACAS", new(12, Y(4,332), 261, controlHeight)),
                 new(UiAction.StressCompression, "ESFUERZO: COMPRESIÓN", new(12, Y(5,374), 261, controlHeight)),
                 new(UiAction.StressExtension, "ESFUERZO: EXTENSIÓN", new(12, Y(6,416), 261, controlHeight)),
                 new(UiAction.StressShear, "ESFUERZO: CIZALLA", new(12, Y(7,458), 261, controlHeight)),
-                new(UiAction.ToggleGeology, "RELIEVE: GEOLOGÍA", new(12, Y(8,500), 261, controlHeight)),
-                ..(surfaceComparison ? new UiButton[] {
+                new(geometryComparison ? UiAction.GeometryMultiscale : UiAction.ToggleGeology,
+                    geometryComparison ? "C — MULTIESCALA" : "RELIEVE: GEOLOGÍA", new(12, Y(8,500), 261, controlHeight)),
+                ..(surfaceComparison && !geometryComparison ? new UiButton[] {
                     new(UiAction.SurfaceLocalized, "A — LOCALIZADA", new(12, Y(9,542), 126, controlHeight)),
                     new(UiAction.SurfaceRegional, "B — REGIONAL", new(144, Y(9,542), 129, controlHeight)) } : []),
                 new(UiAction.Regenerate, "Regenerar mundo",

@@ -141,6 +141,40 @@ public sealed class WorldGenerationService
             comparison, assembly);
     }
 
+    /// <summary>Explicit C1 experiment. A remains official even if every C candidate is rejected.</summary>
+    public (GeneratedWorld Reference, C1ExperimentResult Experiment) CompareContinentsGeometryPreview(LandmassConfiguration configuration)
+    {
+        var reference = BuildContinentsSurfacePreview(configuration, false);
+        var world = reference.Reference; var topology = new HexTopology(world.Grid);
+        var summaries = new List<C1CandidateSummary>(); C1EvaluatedCandidate? selected = null;
+        foreach (var candidate in new ContinentsMultiscaleCorticalGenerator().GenerateCandidates(topology, configuration,
+            world.Landmass.PlateByCellId!, world.Landmass.TectonicMotion!, reference.Assembly.Model))
+        {
+            if (candidate.Model is null)
+            {
+                summaries.Add(new(candidate.Ordinal, candidate.PlannedDomains, candidate.CorticalBudget,
+                    candidate.Solvers, candidate.Deficits, null, candidate.Failure));
+                continue;
+            }
+            var assembly = new ContinentsCorticalAssemblyGenerator().Assemble(topology, configuration,
+                world.Landmass.PlateByCellId!, world.Landmass.TectonicMotion!, candidate.Model);
+            var surface = new ContinentsSurfaceGenerator().Generate(topology, configuration,
+                world.Landmass.PlateByCellId!, world.Landmass.TectonicMotion!, assembly);
+            var terrain = world.Landmass with { SurfaceByCellId = surface, SharedCortex = SharedCorticalPersistence.ToState(assembly.Model) };
+            var geography = C1GeographicEvaluation.Evaluate(topology, terrain, candidate, assembly);
+            summaries.Add(new(candidate.Ordinal, candidate.PlannedDomains, candidate.CorticalBudget,
+                candidate.Solvers, candidate.Deficits, geography, candidate.Failure));
+            var evaluated = new C1EvaluatedCandidate(candidate, assembly, terrain, geography);
+            // Keep only one safe geometry; reports retain every candidate's outcome.
+            if (selected is null || Rank(evaluated) < Rank(selected)) selected = evaluated;
+        }
+        return (world, new(summaries.ToArray(), selected,
+            world.Statistics!.ComponentSizes.Count(area => area * 100 >= topology.Count * 3)));
+
+        static int Rank(C1EvaluatedCandidate candidate) => (candidate.Geography.Status switch
+        { C1GeographicStatus.Accepted => 0, C1GeographicStatus.ReviewRequired => 1, _ => 2 }) * 100 + candidate.Formation.Ordinal;
+    }
+
     /// <summary>Stage 01 alone, independent of the selected map type.</summary>
     public GeneratedWorld GeneratePlatePreview(LandmassConfiguration configuration)
     {

@@ -5,10 +5,10 @@ Esta página orienta la siguiente sesión; la [arquitectura](../GEvolve.Engine/W
 ## Estado y siguiente decisión
 
 - **Rama de trabajo:** `worldgenerator`. No modificar `master` ni `develop` por inferencia.
-- **Objetivo técnico activo:** comparación experimental H05-B3 A localizada/B regional implementada; pendiente de ejecución local y auditoría. A conserva la condición operativa.
+- **Objetivo técnico activo:** H05-C1 experimental implementado: formación multiescala y comparación A/C. Pendiente de compilación, suite y evaluación visual del usuario. A permanece operativa/persistible.
 - **Último hito aprobado:** H05-B2 está aprobado y cerrado tras compilación, pruebas específicas, suite completa y auditoría confirmadas por el usuario. H05-A1/A2 y H05-B1 también están cerrados.
-- **Siguiente etapa:** validar H05-B3; H05-B4/B5 y H06 no autorizados ni iniciados. B1 original permanece para regresión.
-- **Próxima acción concreta:** recibir compilación, `--regional-emergence`, suite completa y evaluación A/B dentro del juego. La referencia anterior `5ca16fb9760867e9f448022b13c42f1da03595c6` pasó compilación y suites según el usuario, pero sigue visualmente en calibración.
+- **Siguiente etapa:** validar C1 dentro de H05-B3, que sigue abierto; no adoptar C ni iniciar C2, H05-B4/B5 o H06. B1/B2/B3 son referencias operativas intactas.
+- **Próxima acción concreta:** recibir compilación, `--multiscale-cortex`, suite completa y evaluación A/C. El usuario confirmó la batería A/B de `93b13380015310dc843854f3160ddc4ea5a7c0e7`; B no fue adoptada: solo cambió 94/705450 celdas y no resolvió los bloques.
 
 ## Contratos que condicionan cambios futuros
 
@@ -18,4 +18,4 @@ El radio operativo de ensamblaje es **4r**; 5r, 6r y 8r siguen siendo diagnósti
 
 ## Problema abierto y forma de trabajo
 
-La configuración aprobada conserva núcleos correlacionados, 4r, ocho fragmentos/provincias y nivel marino 0.38. B distribuye los aportes de A sobre contactos verificados del mismo segmento, conservando presupuestos por fragmento/signo sin sumar esfuerzos nuevos. `CompareContinentsSurfacePreview` comparte las entradas; `GameSession.DisplayLandmass` permite mostrar B, pero `State.Landmass` y la persistencia conservan A. No hay cuotas de continentes ni ruido cosmético. H05-B3 sigue abierto; el usuario ejecuta compilaciones/pruebas y valida visualmente dentro de Evolve.
+La referencia A conserva B1 correlacionado, B2 4r y B3 0.38. C1 prueba ocho orígenes jerárquicos, K=2,3,4 con tres candidatos por K, presupuesto cortical A 80/20, campos anisotrópicos y trazas contiguas. Sus criterios provisionales son 2–4 principales ≥3% del mapa, dominancia ≥60% y revisión separada de masas 1–3%, cuellos y conexiones sin soporte. Los criterios no pintan ni eliminan tierra. `CompareContinentsGeometryPreview` comparte la tectónica y recalcula B2/B3 sobre C; `DisplayLandmass` muestra C con su corteza propia, mientras `State.Landmass` guarda A. Un rechazo geográfico es un resultado legítimo, no una aprobación ni una excusa para forzar conexiones. C1 no tiene rifting físico completo ni emergencia C2. El usuario ejecuta todas las validaciones.

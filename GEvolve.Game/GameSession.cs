@@ -24,7 +24,35 @@ public sealed class GameSession
     private LandmassState? _regionalSurface;
     public bool HasSurfaceComparison => _regionalSurface is not null;
     public bool IsRegionalSurface { get; private set; }
-    public LandmassState? DisplayLandmass => IsRegionalSurface ? _regionalSurface : State.Landmass;
+    public C1ExperimentResult? GeometryExperiment { get; private set; }
+    public bool IsMultiscaleGeometry { get; private set; }
+    public LandmassState? DisplayLandmass => IsMultiscaleGeometry ? GeometryExperiment!.Selected!.Terrain :
+        IsRegionalSurface ? _regionalSurface : State.Landmass;
+
+    public void AttachGeometryComparison(C1ExperimentResult experiment)
+    {
+        ArgumentNullException.ThrowIfNull(experiment);
+        if (Screen != GameScreen.World || State.Landmass is not { HasSurface: true, SharedCortex: not null } official ||
+            official.Configuration.Type != LandmassType.Continents)
+            throw new InvalidOperationException("C1 requires the official A surface first.");
+        if (experiment.Selected is { } selected &&
+            (selected.Terrain.Configuration != official.Configuration || !selected.Terrain.HasSurface ||
+             selected.Terrain.SurfaceByCellId.Length != official.SurfaceByCellId.Length || selected.Terrain.SharedCortex is null ||
+             selected.Terrain.ElevationByCellId is not null || selected.Terrain.Climate is not null || selected.Terrain.Biomes is not null ||
+             !ReferenceEquals(selected.Terrain.PlateByCellId, official.PlateByCellId) ||
+             !ReferenceEquals(selected.Terrain.TectonicMotion, official.TectonicMotion)))
+            throw new ArgumentException("C1 must share the same official tectonics and configuration.", nameof(experiment));
+        GeometryExperiment = experiment; IsMultiscaleGeometry = false;
+        _regionalSurface = null; IsRegionalSurface = false;
+    }
+
+    public LandmassState SelectGeometryVariant(bool multiscale)
+    {
+        if (Screen != GameScreen.World || GeometryExperiment is null || multiscale && GeometryExperiment.Selected is null)
+            throw new InvalidOperationException("No safely inspectable C1 geometry is available.");
+        IsMultiscaleGeometry = multiscale; IsRegionalSurface = false;
+        return DisplayLandmass!;
+    }
 
     /// <summary>Session-only B. State.Landmass always remains the official persistible A.</summary>
     public void AttachSurfaceComparison(ContinentsSurfaceComparison comparison)
@@ -36,6 +64,7 @@ public sealed class GameSession
             comparison.RegionalSurface.Length != terrain.SurfaceByCellId.Length ||
             comparison.RegionalSurface.Any(value => value is not (0 or 1)))
             throw new ArgumentException("Comparison must describe the official Continents surface.", nameof(comparison));
+        GeometryExperiment = null; IsMultiscaleGeometry = false;
         _regionalSurface = terrain with { SurfaceByCellId = comparison.RegionalSurface };
         IsRegionalSurface = false;
     }
@@ -45,6 +74,7 @@ public sealed class GameSession
         if (Screen != GameScreen.World || !HasSurfaceComparison)
             throw new InvalidOperationException("Generate a surface comparison before selecting a variant.");
         IsRegionalSurface = regional;
+        IsMultiscaleGeometry = false;
         return DisplayLandmass!;
     }
     public string? Error { get; private set; }
@@ -175,6 +205,7 @@ public sealed class GameSession
         Grid = result.Grid;
         State.HexGrid = new HexGridState(result.Grid.Definition);
         State.Landmass = result.Landmass;
+        GeometryExperiment = null; IsMultiscaleGeometry = false;
         _regionalSurface = null;
         IsRegionalSurface = false;
         SelectedCell = null;
@@ -210,6 +241,7 @@ public sealed class GameSession
 
     public void ReturnToMenu()
     {
+        GeometryExperiment = null; IsMultiscaleGeometry = false;
         _regionalSurface = null;
         IsRegionalSurface = false;
         Grid = null;
@@ -222,6 +254,7 @@ public sealed class GameSession
 
     public void GenerationFailed(string message)
     {
+        GeometryExperiment = null; IsMultiscaleGeometry = false;
         _regionalSurface = null;
         IsRegionalSurface = false;
         Grid = null;

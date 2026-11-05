@@ -33,7 +33,7 @@ internal sealed class EvolveWindow : GameWindow
     private Vector2 _lastPointer;
     private bool _dirty = true;
     private readonly bool _graphicsSmoke;
-    private Task<(GeneratedWorld World, ContinentsSurfaceComparison? Comparison)>? _pendingGeneration;
+    private Task<(GeneratedWorld World, C1ExperimentResult? Experiment)>? _pendingGeneration;
     private bool _seedFocused;
     // A real, overlayed dropdown instead of four always-visible buttons.
     private UiAction? _openDropdown;
@@ -96,9 +96,9 @@ internal sealed class EvolveWindow : GameWindow
             {
                 try
                 {
-                    var (result, comparison) = completed.GetAwaiter().GetResult();
+                    var (result, experiment) = completed.GetAwaiter().GetResult();
                     _session.CompleteGeneration(result);
-                    if (comparison is not null) _session.AttachSurfaceComparison(comparison);
+                    if (experiment is not null) _session.AttachGeometryComparison(experiment);
                     var preparation = Stopwatch.StartNew();
                     _gridRenderer?.Dispose();
                     _gridRenderer = new HexGridRenderer(result.Grid, result.Landmass);
@@ -462,7 +462,7 @@ internal sealed class EvolveWindow : GameWindow
         if (_session.State.Landmass is { } worldInfo)
         {
             string kind = IsPreliminarySurface
-                ? "SUPERFICIE PRELIMINAR " + (_session.IsRegionalSurface ? "B" : "A") :
+                ? "SUPERFICIE PRELIMINAR " + (_session.IsMultiscaleGeometry ? "C" : _session.IsRegionalSurface ? "B" : "A") :
                 worldInfo.SurfaceGenerationPending ? "CONTINENTES: PENDIENTE" :
                 worldInfo.TectonicPreviewOnly ? "PLACAS TECTÓNICAS" :
                 worldInfo.Configuration.Type switch
@@ -476,15 +476,28 @@ internal sealed class EvolveWindow : GameWindow
             _ui.Rect(12, MapCamera2D.TopBarHeight + 12, infoWidth, 63,
                 new Vector4(.06f, .13f, .20f, .91f));
             _ui.Text($"CAPA: {kind}", 22, MapCamera2D.TopBarHeight + 22,
-                1.6f, White, centered: false);
+                IsPreliminarySurface ? 1.4f : 1.6f, White, centered: false);
             string seedLabel = $"SEMILLA: {worldInfo.Configuration.Seed}";
             if (IsPreliminarySurface)
                 seedLabel += $"  {_session.Grid!.Definition.Columns}x{_session.Grid.Definition.Rows}";
             _ui.Text(seedLabel, 22, MapCamera2D.TopBarHeight + 48,
                 IsPreliminarySurface ? 1.2f : 1.8f, Accent, centered: false);
             if (IsPreliminarySurface)
+            {
                 _ui.Text("ELEVACIONES Y CLIMA PENDIENTES", 300,
                     MapCamera2D.TopBarHeight + 22, 1.2f, Muted, centered: false);
+                if (_session.GeometryExperiment is { } experiment)
+                {
+                    int main = _session.IsMultiscaleGeometry ? experiment.Selected!.Geography.MainAreas.Length : experiment.ReferenceMainCount;
+                    string status = experiment.Selected?.Geography.Status switch
+                    {
+                        C1GeographicStatus.Accepted => "ACEPTADO EXP.", C1GeographicStatus.ReviewRequired => "REVISION",
+                        C1GeographicStatus.Rejected => "RECHAZADO", _ => "RECHAZADO SIN C SEGURA"
+                    };
+                    _ui.Text($"PRINCIPALES {(_session.IsMultiscaleGeometry ? "C" : "A")}: {main} C1: {status}",
+                        300, MapCamera2D.TopBarHeight + 43, 1f, Muted, centered: false);
+                }
+            }
         }
         if (_session.SelectedCell is { } cell && _session.DisplayLandmass is { } landmass)
         {
@@ -588,6 +601,8 @@ internal sealed class EvolveWindow : GameWindow
                 button.Action == UiAction.PreviewContinentsSurface && _viewMode == MapViewMode.Surface ||
                 button.Action == UiAction.SurfaceLocalized && !_session.IsRegionalSurface ||
                 button.Action == UiAction.SurfaceRegional && _session.IsRegionalSurface ||
+                button.Action == UiAction.GeometryCurrent && !_session.IsMultiscaleGeometry ||
+                button.Action == UiAction.GeometryMultiscale && _session.IsMultiscaleGeometry ||
                 button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
                 button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared ||
                 button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall ||
@@ -711,7 +726,8 @@ internal sealed class EvolveWindow : GameWindow
             _session.State.Landmass?.SurfaceGenerationPending == true;
         foreach (var button in ScreenLayout.Buttons(_session.Screen, ClientSize.X, ClientSize.Y,
             _session.State.Landmass?.Configuration.Type == LandmassType.Continents,
-            IsPreliminarySurface && _session.HasSurfaceComparison))
+            IsPreliminarySurface && _session.HasSurfaceComparison,
+            IsPreliminarySurface && _session.GeometryExperiment is not null))
             if ((!pending || button.Action is not (UiAction.ToggleSurface or UiAction.ToggleGrayscale or
                     UiAction.ToggleInfrared or UiAction.ToggleRainfall or UiAction.ToggleGeology)) &&
                 (!IsPreliminarySurface || button.Action is not (UiAction.ToggleGrayscale or
@@ -845,6 +861,15 @@ internal sealed class EvolveWindow : GameWindow
                     _viewMode = MapViewMode.Surface;
                 }
                 break;
+            case UiAction.GeometryCurrent:
+            case UiAction.GeometryMultiscale:
+                if (_session.Screen == GameScreen.World && _session.GeometryExperiment is { } geometry &&
+                    (action == UiAction.GeometryCurrent || geometry.Selected is not null))
+                {
+                    _gridRenderer!.SetGeometryPreview(_session.SelectGeometryVariant(action == UiAction.GeometryMultiscale));
+                    _viewMode = MapViewMode.Surface;
+                }
+                break;
             case UiAction.ToggleSurface:
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.TectonicPreviewOnly == false)
@@ -934,13 +959,13 @@ internal sealed class EvolveWindow : GameWindow
                     : regenerate ? _session.BeginRegeneration() : _session.BeginGeneration();
             _openDropdown = null;
             _generationStarted = Stopwatch.GetTimestamp();
-            _pendingGeneration = Task.Run<(GeneratedWorld, ContinentsSurfaceComparison?)>(() =>
+            _pendingGeneration = Task.Run<(GeneratedWorld, C1ExperimentResult?)>(() =>
             {
                 var service = new WorldGenerationService();
                 if (useSurfacePreview && configuration.Type == LandmassType.Continents)
                 {
-                    var comparison = service.CompareContinentsSurfacePreview(configuration);
-                    return (comparison.Reference, comparison.Comparison);
+                    var comparison = service.CompareContinentsGeometryPreview(configuration);
+                    return (comparison.Reference, comparison.Experiment);
                 }
                 return (service.Generate(configuration), null);
             });

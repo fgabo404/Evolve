@@ -83,6 +83,19 @@ public sealed class HexGridRenderer : IDisposable
         _cameraVersion = -1;
     }
 
+    /// <summary>C1 has different cortex and surface, but exactly the same tectonics and grid.</summary>
+    public void SetGeometryPreview(LandmassState terrain)
+    {
+        if (!terrain.HasSurface || terrain.SharedCortex is null || _landmass.SharedCortex is null ||
+            terrain.Configuration != _landmass.Configuration || terrain.SurfaceByCellId.Length != _grid.Cells.Count ||
+            terrain.ElevationByCellId is not null || terrain.Climate is not null || terrain.Biomes is not null ||
+            _landmass.ElevationByCellId is not null ||
+            !ReferenceEquals(terrain.PlateByCellId, _landmass.PlateByCellId) ||
+            !ReferenceEquals(terrain.TectonicMotion, _landmass.TectonicMotion))
+            throw new ArgumentException("Geometry preview requires shared official tectonics and no later layers.", nameof(terrain));
+        _landmass = terrain; _cameraVersion = -1;
+    }
+
     public HexGridRenderer(HexGrid grid, LandmassState landmass)
     {
         if ((landmass.SurfaceGenerationPending ? landmass.SurfaceByCellId.Length != 0 :

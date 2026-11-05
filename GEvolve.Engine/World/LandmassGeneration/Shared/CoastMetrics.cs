@@ -1,7 +1,7 @@
-using GEvolve.Engine.World.LandmassGeneration.Shared;
+namespace GEvolve.Engine.World.LandmassGeneration.Shared;
 
 /// <summary>Diagnostics in unit-radius hex geometry. No acceptance quotas.</summary>
-internal sealed record CoastMetrics(int[] Areas, int[] Labels, int Coast, int OpenEdges,
+public sealed record CoastMetrics(int[] Areas, int[] Labels, int Coast, int OpenEdges,
     int[] Orientations, double NormalizedCoast, double MeanCompactness, double MaxCompactness,
     int ClippedMasses, int ExactStraightMax, double DigitalStraightMax)
 {
