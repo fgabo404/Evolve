@@ -5,10 +5,10 @@ Esta página orienta la siguiente sesión; la [arquitectura](../GEvolve.Engine/W
 ## Estado y siguiente decisión
 
 - **Rama de trabajo:** `worldgenerator`. No modificar `master` ni `develop` por inferencia.
-- **Objetivo técnico activo:** H05-B3 implementado con superficie preliminar explícita dentro de Evolve; pendiente de ejecución local y auditoría técnica/visual.
+- **Objetivo técnico activo:** comparación experimental H05-B3 A localizada/B regional implementada; pendiente de ejecución local y auditoría. A conserva la condición operativa.
 - **Último hito aprobado:** H05-B2 está aprobado y cerrado tras compilación, pruebas específicas, suite completa y auditoría confirmadas por el usuario. H05-A1/A2 y H05-B1 también están cerrados.
 - **Siguiente etapa:** validar H05-B3; H05-B4/B5 y H06 no autorizados ni iniciados. B1 original permanece para regresión.
-- **Próxima acción concreta:** recibir compilación, `--continents-surface`, suite completa y evaluación visual del usuario; no cerrar H05-B3 por inferencia.
+- **Próxima acción concreta:** recibir compilación, `--regional-emergence`, suite completa y evaluación A/B dentro del juego. La referencia anterior `5ca16fb9760867e9f448022b13c42f1da03595c6` pasó compilación y suites según el usuario, pero sigue visualmente en calibración.
 
 ## Contratos que condicionan cambios futuros
 
@@ -18,4 +18,4 @@ El radio operativo de ensamblaje es **4r**; 5r, 6r y 8r siguen siendo diagnósti
 
 ## Problema abierto y forma de trabajo
 
-La configuración aprobada conserva núcleos correlacionados, 4r, ocho fragmentos y ocho provincias, con enlaces tectónicos reales y sin acreción obligatoria. B3 usa afinidad existente, transición costera y efectos locales acotados, con nivel marino provisional 0.38; no impone 2–4 continentes ni hace emerger toda la corteza. Su calibración visual está pendiente. El usuario ejecuta compilaciones y pruebas; Codex revisa estáticamente y no afirma resultados nuevos sin salida aportada.
+La configuración aprobada conserva núcleos correlacionados, 4r, ocho fragmentos/provincias y nivel marino 0.38. B distribuye los aportes de A sobre contactos verificados del mismo segmento, conservando presupuestos por fragmento/signo sin sumar esfuerzos nuevos. `CompareContinentsSurfacePreview` comparte las entradas; `GameSession.DisplayLandmass` permite mostrar B, pero `State.Landmass` y la persistencia conservan A. No hay cuotas de continentes ni ruido cosmético. H05-B3 sigue abierto; el usuario ejecuta compilaciones/pruebas y valida visualmente dentro de Evolve.

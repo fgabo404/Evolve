@@ -9,7 +9,8 @@ public enum UiAction
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
-    StressCompression, StressExtension, StressShear, ToggleGeology, PreviewContinentsSurface
+    StressCompression, StressExtension, StressShear, ToggleGeology, PreviewContinentsSurface,
+    SurfaceLocalized, SurfaceRegional
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -22,7 +23,7 @@ public readonly record struct UiButton(UiAction Action, string Text, UiRect Boun
 public static class ScreenLayout
 {
     public static IReadOnlyList<UiButton> Buttons(GameScreen screen, int width, int height,
-        bool preliminaryContinents = false)
+        bool preliminaryContinents = false, bool surfaceComparison = false)
     {
         float center = width / 2f;
         float menuWidth = MathF.Min(360, MathF.Max(180, width - 32));
@@ -89,6 +90,9 @@ public static class ScreenLayout
                 new(UiAction.StressExtension, "ESFUERZO: EXTENSIÓN", new(12, Y(6,416), 261, controlHeight)),
                 new(UiAction.StressShear, "ESFUERZO: CIZALLA", new(12, Y(7,458), 261, controlHeight)),
                 new(UiAction.ToggleGeology, "RELIEVE: GEOLOGÍA", new(12, Y(8,500), 261, controlHeight)),
+                ..(surfaceComparison ? new UiButton[] {
+                    new(UiAction.SurfaceLocalized, "A — LOCALIZADA", new(12, Y(9,542), 126, controlHeight)),
+                    new(UiAction.SurfaceRegional, "B — REGIONAL", new(144, Y(9,542), 129, controlHeight)) } : []),
                 new(UiAction.Regenerate, "Regenerar mundo",
                 new(MathF.Max(8, width - 390), 11, MathF.Min(190, width - 16), 36)),
                 new(UiAction.Back, "Menú principal",

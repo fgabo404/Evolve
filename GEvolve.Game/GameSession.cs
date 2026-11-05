@@ -21,6 +21,32 @@ public sealed class GameSession
     public HexGrid? Grid { get; private set; }
     public GridCell? SelectedCell { get; private set; }
     public GameState State { get; } = new();
+    private LandmassState? _regionalSurface;
+    public bool HasSurfaceComparison => _regionalSurface is not null;
+    public bool IsRegionalSurface { get; private set; }
+    public LandmassState? DisplayLandmass => IsRegionalSurface ? _regionalSurface : State.Landmass;
+
+    /// <summary>Session-only B. State.Landmass always remains the official persistible A.</summary>
+    public void AttachSurfaceComparison(ContinentsSurfaceComparison comparison)
+    {
+        ArgumentNullException.ThrowIfNull(comparison);
+        if (Screen != GameScreen.World || State.Landmass is not { HasSurface: true, SharedCortex: not null } terrain ||
+            terrain.Configuration.Type != LandmassType.Continents ||
+            !comparison.LocalizedSurface.SequenceEqual(terrain.SurfaceByCellId) ||
+            comparison.RegionalSurface.Length != terrain.SurfaceByCellId.Length ||
+            comparison.RegionalSurface.Any(value => value is not (0 or 1)))
+            throw new ArgumentException("Comparison must describe the official Continents surface.", nameof(comparison));
+        _regionalSurface = terrain with { SurfaceByCellId = comparison.RegionalSurface };
+        IsRegionalSurface = false;
+    }
+
+    public LandmassState SelectSurfaceVariant(bool regional)
+    {
+        if (Screen != GameScreen.World || !HasSurfaceComparison)
+            throw new InvalidOperationException("Generate a surface comparison before selecting a variant.");
+        IsRegionalSurface = regional;
+        return DisplayLandmass!;
+    }
     public string? Error { get; private set; }
 
     public void OpenCreateWorld()
@@ -149,6 +175,8 @@ public sealed class GameSession
         Grid = result.Grid;
         State.HexGrid = new HexGridState(result.Grid.Definition);
         State.Landmass = result.Landmass;
+        _regionalSurface = null;
+        IsRegionalSurface = false;
         SelectedCell = null;
         Error = null;
         Screen = GameScreen.World;
@@ -182,6 +210,8 @@ public sealed class GameSession
 
     public void ReturnToMenu()
     {
+        _regionalSurface = null;
+        IsRegionalSurface = false;
         Grid = null;
         State.HexGrid = null;
         State.Landmass = null;
@@ -192,6 +222,8 @@ public sealed class GameSession
 
     public void GenerationFailed(string message)
     {
+        _regionalSurface = null;
+        IsRegionalSurface = false;
         Grid = null;
         State.HexGrid = null;
         State.Landmass = null;

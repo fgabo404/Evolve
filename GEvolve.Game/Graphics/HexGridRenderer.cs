@@ -56,7 +56,7 @@ public sealed class HexGridRenderer : IDisposable
         """;
 
     private readonly HexGrid _grid;
-    private readonly LandmassState _landmass;
+    private LandmassState _landmass;
     private readonly HexTopology? _plateTopology;
     public PlateBoundaryMap? PlateBoundaries { get; }
     private readonly ShaderProgram _shader;
@@ -69,6 +69,19 @@ public sealed class HexGridRenderer : IDisposable
     private MapViewMode _viewMode;
 
     public int VisibleInstanceCount => _instanceCount;
+
+    /// <summary>Replace only the displayed surface; keep topology, GPU resources and camera.</summary>
+    public void SetSurfacePreview(LandmassState terrain)
+    {
+        if (!terrain.HasSurface || terrain.Configuration != _landmass.Configuration ||
+            terrain.SurfaceByCellId.Length != _grid.Cells.Count ||
+            !ReferenceEquals(terrain.PlateByCellId, _landmass.PlateByCellId) ||
+            !ReferenceEquals(terrain.TectonicMotion, _landmass.TectonicMotion) ||
+            !ReferenceEquals(terrain.SharedCortex, _landmass.SharedCortex))
+            throw new ArgumentException("Preview must share the existing official world inputs.", nameof(terrain));
+        _landmass = terrain;
+        _cameraVersion = -1;
+    }
 
     public HexGridRenderer(HexGrid grid, LandmassState landmass)
     {

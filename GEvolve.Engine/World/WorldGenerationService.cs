@@ -98,6 +98,20 @@ public sealed class WorldGenerationService
 
     /// <summary>Explicit H05-B3 preview: surface available, relief/climate/biomes still absent.</summary>
     public GeneratedWorld GenerateContinentsSurfacePreview(LandmassConfiguration configuration)
+        => BuildContinentsSurfacePreview(configuration, false).Reference;
+
+    /// <summary>Session-only A/B comparison. Reference remains the persistible operational A.</summary>
+    public (GeneratedWorld Reference, ContinentsSurfaceComparison Comparison,
+        ContinentsCorticalAssemblyResult Assembly) CompareContinentsSurfacePreview(LandmassConfiguration configuration)
+    {
+        var result = BuildContinentsSurfacePreview(configuration, true);
+        return (result.Reference, result.Comparison ??
+            throw new InvalidOperationException("Regional comparison was not calculated."), result.Assembly);
+    }
+
+    private (GeneratedWorld Reference, ContinentsSurfaceComparison? Comparison,
+        ContinentsCorticalAssemblyResult Assembly) BuildContinentsSurfacePreview(
+        LandmassConfiguration configuration, bool compare)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         Validate(configuration);
@@ -110,7 +124,10 @@ public sealed class WorldGenerationService
         var motion = tectonics.Landmass.TectonicMotion!;
         var cortex = new ContinentsCorticalFragmentGenerator().Generate(topology, configuration, plates, motion);
         var assembly = new ContinentsCorticalAssemblyGenerator().Assemble(topology, configuration, plates, motion, cortex);
-        byte[] surface = new ContinentsSurfaceGenerator().Generate(topology, configuration, plates, motion, assembly);
+        var generator = new ContinentsSurfaceGenerator();
+        ContinentsSurfaceComparison? comparison = compare
+            ? generator.CompareRegional(topology, configuration, plates, motion, assembly) : null;
+        byte[] surface = comparison?.LocalizedSurface ?? generator.Generate(topology, configuration, plates, motion, assembly);
         var terrain = new LandmassState(configuration, surface, 0)
         {
             PlateByCellId = plates,
@@ -119,7 +136,9 @@ public sealed class WorldGenerationService
             TectonicPreviewOnly = false,
             SurfaceGenerationPending = false
         };
-        return new GeneratedWorld(tectonics.Grid, terrain, LandmassAnalysis.Analyze(topology, surface));
+        // Ordinary preview does not calculate B or retain experiment diagnostics.
+        return (new GeneratedWorld(tectonics.Grid, terrain, LandmassAnalysis.Analyze(topology, surface)),
+            comparison, assembly);
     }
 
     /// <summary>Stage 01 alone, independent of the selected map type.</summary>

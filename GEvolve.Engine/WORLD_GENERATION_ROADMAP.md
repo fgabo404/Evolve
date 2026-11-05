@@ -297,7 +297,11 @@ flowchart TD
 - [x] Persistir superficie y corteza con contratos existentes, sin generar relieve, clima ni biomas y sin regenerar al cargar.
 - [x] Incorporar **SUPERFICIE PRELIMINAR** dentro de Evolve, con colores tierra/océano, tamaño/semilla y aviso de capas pendientes; mantener vistas tectónicas.
 - [x] Escribir `ContinentsSurfaceTests`, `--continents-surface` y registro en suite completa: 12 escenarios, determinismo, no mutación, tierra/corteza sumergida, contratos inválidos, contactos reales controlados, BFS, seam, persistencia y paleta sin relieve.
-- [ ] Usuario: compilar y ejecutar pruebas específicas y suite completa; confirmar las regresiones históricas sin actualizar baselines.
+- [x] Usuario: confirmó compilación y pruebas específicas/completas tras `5ca16fb9760867e9f448022b13c42f1da03595c6`; referencia A validada técnicamente, sin cierre visual.
+- [x] Implementar comparación experimental A/B con entradas compartidas generadas una vez, fuentes regionales verificadas del mismo segmento, presupuestos por fragmento/signo y selector dentro del juego; A sigue operativa y persistible.
+- [x] Preparar `--regional-emergence`, fuentes esperadas con BFS independiente, invariantes y métricas de costa/compactación/orientación/áreas, contactos, cambios y presupuestos.
+- [ ] Usuario: ejecutar la comparación nueva y suite completa; verificar 12 hashes tectónicos y 36 baselines históricos sin actualizarlos.
+- [ ] Auditor: comparar A/B por escenario y valorar si las facetas y áreas heredadas requieren revisar B1 posteriormente, sin modificar B1/B2 en este experimento.
 - [ ] Usuario/auditor: revisar masas, costas, corredores y océanos dentro de Evolve. Las métricas textuales incluyen componentes, proporciones, corteza sumergida, tiempo y asignaciones; no sustituyen aprobación visual.
 
 **Gate H05-B3: ABIERTO.** Implementación autorizada, pendiente de validación técnica y visual. No se afirma que ya cumpla la distribución final de 2–4 grandes continentes. B1/B2, ocho fragmentos/provincias, 16 placas, 4r y baselines permanecen protegidos. H05-B4/B5 y H06 no iniciados. Las notas anteriores de no integración corresponden al cierre histórico de B2.

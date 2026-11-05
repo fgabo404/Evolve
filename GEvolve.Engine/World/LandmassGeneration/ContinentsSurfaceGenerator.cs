@@ -19,6 +19,16 @@ public sealed class ContinentsSurfaceGenerator
     public byte[] Generate(HexTopology topology, LandmassConfiguration configuration,
         ReadOnlySpan<byte> plateByCellId, TectonicMotionState motion,
         ContinentsCorticalAssemblyResult assembly)
+        => GenerateCore(topology, configuration, plateByCellId, motion, assembly, false).LocalizedSurface;
+
+    public ContinentsSurfaceComparison CompareRegional(HexTopology topology, LandmassConfiguration configuration,
+        ReadOnlySpan<byte> plateByCellId, TectonicMotionState motion,
+        ContinentsCorticalAssemblyResult assembly)
+        => GenerateCore(topology, configuration, plateByCellId, motion, assembly, true);
+
+    private ContinentsSurfaceComparison GenerateCore(HexTopology topology, LandmassConfiguration configuration,
+        ReadOnlySpan<byte> plateByCellId, TectonicMotionState motion,
+        ContinentsCorticalAssemblyResult assembly, bool compare)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -111,13 +121,24 @@ public sealed class ContinentsSurfaceGenerator
             VisitSide(forward <= reverse ? edge.SecondCellId : edge.FirstCellId, second, true, evidence.Kind);
         }
 
-        var surface = new byte[count];
-        for (int id = 0; id < count; id++)
-            // Oceanic volcanism is outside B3. Systems never paint oceanic corridors as land.
-            if (cortex.CrustByCellId[id] == (byte)CrustKind.Continental &&
-                potential[id] + uplift[id] - subsidence[id] > SeaLevel)
-                surface[id] = 1;
-        return surface;
+        byte[] surface = Classify(uplift, subsidence);
+        if (!compare)
+            return new(surface, surface, potential, uplift, subsidence, uplift, subsidence, [], []);
+        var regional = RegionalEmergenceExperiment.Distribute(topology, plates, motion, assembly,
+            range, uplift, subsidence, AccretionBonus, SeparationPenalty);
+        return new(surface, Classify(regional.Uplift, regional.Subsidence), potential,
+            uplift, subsidence, regional.Uplift, regional.Subsidence, regional.Sources, regional.Budgets);
+
+        byte[] Classify(double[] positive, double[] negative)
+        {
+            var result = new byte[count];
+            for (int id = 0; id < count; id++)
+                // Oceanic volcanism is outside B3. Systems never paint oceanic corridors as land.
+                if (cortex.CrustByCellId[id] == (byte)CrustKind.Continental &&
+                    potential[id] + positive[id] - negative[id] > SeaLevel)
+                    result[id] = 1;
+            return result;
+        }
 
         int VisitSide(int source, int fragment, bool apply, CorticalAssemblyKind kind)
         {
