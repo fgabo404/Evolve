@@ -5,10 +5,10 @@ Esta página orienta la siguiente sesión; la [arquitectura](../GEvolve.Engine/W
 ## Estado y siguiente decisión
 
 - **Rama de trabajo:** `worldgenerator`. No modificar `master` ni `develop` por inferencia.
-- **Objetivo técnico activo:** validar la adopción de núcleos correlacionados como valor predeterminado de `ContinentsCorticalFragmentGenerator.Generate`, conservando el ensamblaje B2 a 4r.
-- **Últimos hitos aprobados:** H05-A1, H05-A2 y H05-B1 están aprobados y cerrados. El roadmap también registra los hitos anteriores cerrados.
-- **Hito pendiente:** H05-B2 permanece abierto hasta validar localmente el nuevo valor predeterminado y auditar el diff. H05-B3/B4/B5 y H06 no han comenzado. La selección B1 original se conserva para regresión.
-- **Próxima acción concreta:** el usuario ejecuta compilación, `--correlated-cortex`, `--continents-assembly` y suite completa; después, el auditor revisa los resultados de la adopción antes de cerrar H05-B2.
+- **Objetivo técnico activo:** preparar el alcance de H05-B3 cuando el usuario lo autorice, partiendo del ensamblaje cortical aprobado a 4r.
+- **Último hito aprobado:** H05-B2 está aprobado y cerrado tras compilación, pruebas específicas, suite completa y auditoría confirmadas por el usuario. H05-A1/A2 y H05-B1 también están cerrados.
+- **Siguiente etapa:** H05-B3, aún no iniciada; H05-B4/B5 y H06 tampoco han comenzado. La selección B1 original se conserva para regresión.
+- **Próxima acción concreta:** esperar la autorización y el alcance de H05-B3; consultar entonces su tramo del roadmap antes de implementar.
 
 ## Contratos que condicionan cambios futuros
 
@@ -18,4 +18,4 @@ El radio operativo de ensamblaje es **4r**; 5r, 6r y 8r siguen siendo diagnósti
 
 ## Problema abierto y forma de trabajo
 
-La decisión arquitectónica adopta la geometría correlacionada solo en el generador cortical, sin forzar enlaces en escenarios que carezcan de evidencia tectónica suficiente. El estado del servicio oficial y la superficie no cambian. Falta validar localmente el nuevo valor predeterminado y revisar el diff antes de cerrar H05-B2. El usuario ejecuta compilaciones y pruebas; Codex revisa estáticamente y no afirma resultados nuevos sin salida aportada.
+La configuración aprobada conserva núcleos correlacionados, radio 4r, ocho fragmentos y ocho provincias, con enlaces sustentados por tectónica real y sin forzar acreción en todos los mundos. La validación de H05-B2 está cerrada; la integración al servicio oficial y la superficie siguen pendientes. El usuario ejecuta compilaciones y pruebas; Codex revisa estáticamente y no afirma resultados nuevos sin salida aportada.
