@@ -26,9 +26,14 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                 var motion = official.Landmass.TectonicMotion!;
                 byte[] platesBefore = (byte[])plates.Clone();
                 string motionBefore = JsonSerializer.Serialize(motion);
-                var unchanged = b1.Generate(topology, configuration, plates, motion);
-                var regularRepeat = b1.Generate(topology, configuration, plates, motion);
-                Check(Identical(unchanged, regularRepeat), "Approved B1 output is deterministic");
+                var original = b1.GenerateOriginalGeometry(topology, configuration, plates, motion);
+                var originalRepeat = b1.GenerateOriginalGeometry(
+                    topology, configuration, plates, motion);
+                Check(Identical(original, originalRepeat),
+                    "Historical B1 geometry remains deterministic");
+                Check(Identical(original, SharedCorticalPersistence.FromState(
+                    SharedCorticalPersistence.ToState(original))),
+                    "Historical B1 geometry retains exact v1 persistence");
 
                 long startAllocated = GC.GetAllocatedBytesForCurrentThread();
                 var fragmentTimer = Stopwatch.StartNew();
@@ -37,21 +42,23 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                 fragmentTimer.Stop();
                 long fragmentAllocated = GC.GetAllocatedBytesForCurrentThread() - startAllocated;
                 SharedCorticalModelValidator.Validate(topology, correlated, plates);
-                Check(correlated.Fragments.Length == unchanged.Fragments.Length &&
-                    correlated.Provinces.Length == unchanged.Provinces.Length &&
+                Check(correlated.Fragments.Length == original.Fragments.Length &&
+                    correlated.Provinces.Length == original.Provinces.Length &&
                     correlated.CrustByCellId.Length == topology.Count,
-                    "Experimental geometry preserves the shared cortex contract");
-                Check(!correlated.FragmentByCellId.SequenceEqual(unchanged.FragmentByCellId),
-                    "The experimental nucleus geometry must differ from approved B1");
+                    "Correlated geometry preserves the shared cortex contract");
+                Check(!correlated.FragmentByCellId.SequenceEqual(original.FragmentByCellId),
+                    "Correlated nucleus geometry differs from historical B1");
                 var correlatedRepeat = b1.GenerateExperimentalCorrelated(
                     topology, configuration, plates, motion);
                 Check(Identical(correlated, correlatedRepeat),
                     "Correlated geometry remains deterministically reproducible");
+                Check(Identical(b1.Generate(topology, configuration, plates, motion), correlated),
+                    "Default Generate exactly matches the correlated strategy");
                 var save = SharedCorticalPersistence.ToState(correlated);
                 Check(Identical(correlated, SharedCorticalPersistence.FromState(save)),
-                    "Experimental cortex has exact v1 persistence representation");
+                    "Correlated cortex has exact v1 persistence representation");
 
-                // Each experimental paired nucleus is traceable to at least one actual
+                // Each correlated paired nucleus is traceable to at least one actual
                 // convergent edge: the selection never uses mere plate-ID similarity.
                 for (int pair = 0; pair < 2; pair++)
                 {
@@ -68,7 +75,7 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                             plates[second] == edge.FirstPlateId &&
                             topology.Distance(first, edge.SecondCellId) <= 3 &&
                             topology.Distance(second, edge.FirstCellId) <= 3))),
-                        "Paired experimental nuclei require real nearby convergence");
+                        "Paired correlated nuclei require real nearby convergence");
                 }
 
                 var centerDistances = new List<int>();
@@ -78,11 +85,11 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                             correlated.Fragments[a].CoreCellId,
                             correlated.Fragments[b].CoreCellId));
                 var originalDistances = new List<int>();
-                for (int a = 0; a < unchanged.Fragments.Length; a++)
-                    for (int b = a + 1; b < unchanged.Fragments.Length; b++)
+                for (int a = 0; a < original.Fragments.Length; a++)
+                    for (int b = a + 1; b < original.Fragments.Length; b++)
                         originalDistances.Add(topology.Distance(
-                            unchanged.Fragments[a].CoreCellId,
-                            unchanged.Fragments[b].CoreCellId));
+                            original.Fragments[a].CoreCellId,
+                            original.Fragments[b].CoreCellId));
                 // Report distribution rather than hiding a cluster by looking only at
                 // the number of regional assembly links. These are core/area diagnostics,
                 // not invented morphological acceptance thresholds.
@@ -104,14 +111,14 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                     var oldTimer = Stopwatch.StartNew();
                     long oldStart = GC.GetAllocatedBytesForCurrentThread();
                     var baseline = b2.EvaluateExperimentalRadius(topology, configuration,
-                        plates, motion, unchanged, radius);
+                        plates, motion, original, radius);
                     long oldAllocated = GC.GetAllocatedBytesForCurrentThread() - oldStart;
                     oldTimer.Stop();
 
                     if (radius == 4)
                     {
                         var operational = b2.Assemble(topology, configuration,
-                            plates, motion, unchanged);
+                            plates, motion, original);
                         Check(baseline.Model.AssemblyLinks.SequenceEqual(
                                 operational.Model.AssemblyLinks) &&
                             baseline.Evidence.SequenceEqual(operational.Evidence) &&
@@ -127,9 +134,9 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                     Check(oldTimer.ElapsedMilliseconds < 120000 &&
                         newTimer.ElapsedMilliseconds < 120000 &&
                         oldAllocated < 500_000_000 && newAllocated < 500_000_000,
-                        "Both experimental geometries remain within the test resource budget");
+                        "Both nucleus geometries remain within the test resource budget");
 
-                    Check(baseline.Model.CrustByCellId.SequenceEqual(unchanged.CrustByCellId) &&
+                    Check(baseline.Model.CrustByCellId.SequenceEqual(original.CrustByCellId) &&
                         alternative.Model.CrustByCellId.SequenceEqual(correlated.CrustByCellId) &&
                         alternative.Model.FragmentByCellId.SequenceEqual(correlated.FragmentByCellId) &&
                         alternative.Model.ProvinceByCellId.SequenceEqual(correlated.ProvinceByCellId),
@@ -172,7 +179,7 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                         JsonSerializer.Serialize(alternative.Systems) ==
                             JsonSerializer.Serialize(repeat.Systems),
                         "Experimental assembly is deterministic");
-                    PrintRow(size, seed, radius, "approved", unchanged, baseline,
+                    PrintRow(size, seed, radius, "original", original, baseline,
                         originalDistances, oldTimer.ElapsedMilliseconds,
                         oldAllocated, topology);
                     PrintRow(size, seed, radius, "correlated", correlated, alternative,
@@ -188,21 +195,21 @@ public static class ContinentsCorrelatedNucleusExperimentTests
                     "No tectonic motion, plate, official generation or surface was changed");
                 Check(fragmentTimer.ElapsedMilliseconds < 120000 &&
                     fragmentAllocated < 500_000_000,
-                    "Experimental B1 memory and time remain bounded");
+                    "Correlated cortex memory and time remain bounded");
                 Console.WriteLine($"H05-B2 DISTRIBUTION {size}/{seed}: " +
-                    $"approvedMinCoreGap={originalDistances.Min()}, " +
-                    $"experimentalMinCoreGap={centerDistances.Min()}, " +
-                    $"approvedMeanCoreGap={originalDistances.Average():F1}, " +
-                    $"experimentalMeanCoreGap={centerDistances.Average():F1}, " +
+                    $"originalMinCoreGap={originalDistances.Min()}, " +
+                    $"correlatedMinCoreGap={centerDistances.Min()}, " +
+                    $"originalMeanCoreGap={originalDistances.Average():F1}, " +
+                    $"correlatedMeanCoreGap={centerDistances.Average():F1}, " +
                     $"coreSectors=[{string.Join(",", coreSectors)}], " +
                     $"corticalSectors=[{string.Join(",", cellSectors)}], " +
-                    $"experimentalB1Ms={fragmentTimer.ElapsedMilliseconds}, " +
-                    $"experimentalB1MiB={fragmentAllocated / 1048576.0:F1}");
+                    $"correlatedB1Ms={fragmentTimer.ElapsedMilliseconds}, " +
+                    $"correlatedB1MiB={fragmentAllocated / 1048576.0:F1}");
                 signatures.Add(Convert.ToHexString(SHA256.HashData(correlated.CrustByCellId)));
             }
             Check(signatures.Count == 3, "Seed variation remains present for each size");
         }
-        Console.WriteLine("PASS: H05-B2 correlated nucleus geometry comparison, no operational changes");
+        Console.WriteLine("PASS: H05-B2 default correlated geometry and historical B1 comparison");
     }
 
     private static int Sector(int id, HexTopology topology)

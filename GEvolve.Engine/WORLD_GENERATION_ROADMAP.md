@@ -275,18 +275,18 @@ flowchart TD
 
 **Evidencia previa:** 336 parejas posibles, 55 observadas, 42 rechazadas por distancia, 13 aceptadas; cinco escenarios con acreción y siete sin ella. No se fabrican conexiones ni se generan superficies, elevaciones o artefactos visuales. Los 12 baselines tectónicos y 36 geográficos permanecen protegidos.
 
-### H05-B2 — Experimento de distribución cortical correlacionada (IMPLEMENTADO; PENDIENTE DE DECISIÓN)
+### H05-B2 — Adopción de distribución cortical correlacionada (IMPLEMENTADA EN GENERADOR; PENDIENTE DE VALIDACIÓN)
 
 **Resultados aportados, geometría B1 aprobada:** en 12 escenarios, 4r = 5 acreciones/8 separaciones (5 mundos con acreción); 5r = 7/11 (5 mundos); 6r = 13/17 (6 mundos); 8r = 23/31 (10 mundos). No adoptar 6r u 8r por contar más enlaces.
 
 - [x] Auditar los ocho núcleos B1: máximo de separación global favorecido por la puntuación; la compresión/extensión aportan sesgo moderado y los presupuestos individuales limitan crecimiento.
-- [x] Añadir **solo** `GenerateExperimentalCorrelated` al generador B1: dos parejas ubicadas a ambos lados de contactos convergentes reales, regionalmente separadas entre sí; cuatro núcleos restantes independientes. Reutiliza íntegramente la lógica B1 después de definir núcleos.
+- [x] Seleccionar por defecto en `Generate` dos parejas de núcleos respaldadas por contactos convergentes reales y separadas regionalmente, más cuatro núcleos dispersos. Conservar `GenerateOriginalGeometry` para la selección B1 histórica y `GenerateExperimentalCorrelated` como entrada correlacionada explícita; reutilizar íntegramente el crecimiento B1.
 - [x] Añadir `ContinentsCorrelatedNucleusExperimentTests`: 4 tamaños × 3 semillas × 2 geometrías × 2 radios (4r, 6r). Registrar por consola enlaces, acreción, separación, sistemas y máximos, gaps tectónicos, cobertura por ocho sectores, distancia mínima/media entre núcleos, tiempo y memoria.
-- [x] Proteger con pruebas el `Generate` aprobado (selección anterior), `Assemble` 4r, 16 placas, `SharedCorticalModel`, provincias, serialización, determinismo y ausencia de superficie/elevación; no admitir vínculos sin contacto oficial.
-- [ ] Ejecutar en entorno local .NET 10: `dotnet build`, `dotnet run --project GEvolve.Tests -- --correlated-cortex`, `dotnet run --project GEvolve.Tests`, y comparar las métricas de los 12 escenarios.
-- [ ] Auditar distribución espacial y geología: aprobar, ajustar o descartar la alternativa **antes** de cambiar B1 operativo o radio B2. **H05-B2 continúa abierto.**
+- [x] Proteger por separado la selección B1 histórica, la equivalencia completa de `Generate` con la selección correlacionada, `Assemble` 4r, 16 placas, provincias, persistencia, determinismo y ausencia de superficie/elevación; no admitir vínculos sin contacto oficial.
+- [x] Revisar la distribución previa: a 4r, 22 acreciones y 11 separaciones en 12 mundos; 24/33 vínculos directos; núcleos en 5–7 sectores y corteza en los ocho. Enormous/2026 conserva cero acreciones a 4r sin forzar enlaces.
+- [ ] Validar localmente la adopción con `dotnet build`, `--correlated-cortex`, `--continents-assembly` y suite completa; realizar auditoría final del diff y resultados. **H05-B2 continúa abierto.**
 
-**Compatibilidad:** `WorldGenerationService` no invoca el nuevo método experimental; el radio operativo sigue en **4r**. Sin cambios en Pangaea, Archipelagos, SmallContinents, IDs, contratos persistidos ni en los 12 hashes tectónicos y 36 geográficos. Sin H05-B3, mapas exportados ni renderer nuevo.
+**Compatibilidad:** `WorldGenerationService` todavía no invoca la etapa cortical de `Continents`; el radio operativo sigue en **4r**. Sin cambios en Pangaea, Archipelagos, SmallContinents, IDs, contratos persistidos ni en los 12 hashes tectónicos y 36 geográficos. Sin H05-B3, mapas exportados ni renderer nuevo.
 
 ### H05 — Corteza y masas terrestres (AUDITORÍA INICIAL; implementación pendiente)
 

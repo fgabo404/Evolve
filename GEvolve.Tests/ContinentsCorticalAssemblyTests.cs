@@ -34,6 +34,8 @@ public static class ContinentsCorticalAssemblyTests
                         edge.SecondCellId % topology.Columns) == topology.Columns - 1))
                     Check(topology.Neighbors(seam.FirstCellId).Contains(seam.SecondCellId),
                         "Official east/west seam contacts remain real hexagonal neighbors");
+                // Exercise 4r assembly with the current default cortex; the comparison
+                // suite separately retains the historical nucleus geometry.
                 var cortex = fragments.Generate(topology, config, plates, motion);
                 var crustBefore = (byte[])cortex.CrustByCellId.Clone();
                 var fragmentBefore = (int[])cortex.FragmentByCellId.Clone();

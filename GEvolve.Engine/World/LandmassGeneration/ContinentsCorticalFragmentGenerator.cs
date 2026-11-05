@@ -15,18 +15,24 @@ public sealed class ContinentsCorticalFragmentGenerator
     private const int Stream = 0x43524631; // Independent from plate/motion/surface RNG.
     private const int CandidateSamples = 160;
 
+    /// <summary>Default correlated nuclei with the shared B1 cortical growth.</summary>
     public SharedCorticalModel Generate(HexTopology topology, LandmassConfiguration configuration,
         ReadOnlySpan<byte> plateByCellId, TectonicMotionState motion, int attempt = 0)
     {
         return GenerateCore(topology, configuration, plateByCellId, motion, attempt,
-            tectonicCorrelated: false);
+            tectonicCorrelated: true);
     }
 
     /// <summary>
-    /// Experimental B2 nucleus geometry only. Never called by the normal generation path.
-    /// Two independently spaced convergent-boundary pairs plus four free nuclei.
-    /// All cells and downstream growth continue through the approved B1 algorithm.
+    /// Historical B1 nucleus geometry, retained explicitly for regression comparisons.
     /// </summary>
+    public SharedCorticalModel GenerateOriginalGeometry(HexTopology topology,
+        LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
+        TectonicMotionState motion, int attempt = 0)
+        => GenerateCore(topology, configuration, plateByCellId, motion, attempt,
+            tectonicCorrelated: false);
+
+    /// <summary>Explicit correlated geometry; equivalent to Generate for the same inputs.</summary>
     public SharedCorticalModel GenerateExperimentalCorrelated(HexTopology topology,
         LandmassConfiguration configuration, ReadOnlySpan<byte> plateByCellId,
         TectonicMotionState motion, int attempt = 0)
@@ -116,8 +122,8 @@ public sealed class ContinentsCorticalFragmentGenerator
         // it is NOT the number of emerged continents (determined in future H05-B stages).
         int fragmentCount = TectonicPlateGenerator.NumberOfPlates / 2;
         int[] cores = new int[fragmentCount];
-        // Keep the approved global nucleus selection byte-for-byte for Generate().
-        // Experimental paired anchors are chosen from existing convergent contacts,
+        // Keep the historical global nucleus selection in GenerateOriginalGeometry().
+        // Correlated paired anchors are chosen from existing convergent contacts,
         // never from plate ID proximity alone. No link is pre-authorized.
         var experimentalAnchors = tectonicCorrelated
             ? CorrelatedAnchors(topology, plates, motion, random)

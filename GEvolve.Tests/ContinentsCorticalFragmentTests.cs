@@ -30,6 +30,8 @@ public static class ContinentsCorticalFragmentTests
                 float[] shearSnapshot = (float[])motion.ShearByCellId.Clone();
                 var timer = Stopwatch.StartNew();
                 long before = GC.GetAllocatedBytesForCurrentThread();
+                // Shared B1 growth contracts apply to the current default geometry.
+                // The historical nucleus selection is checked in the comparison suite.
                 var cortex = generator.Generate(topology, config, plates, motion, attempt: 0);
                 long bytes = GC.GetAllocatedBytesForCurrentThread() - before;
                 timer.Stop();
@@ -97,7 +99,7 @@ public static class ContinentsCorticalFragmentTests
                 Check(timer.ElapsedMilliseconds < 120000 &&
                     bytes < 500_000_000,
                     "Cortical generation remains bounded in runtime and allocated bytes");
-                Console.WriteLine($"PASS: H05-B1 {size}/{seed}: fragments={cortex.Fragments.Length}, " +
+                Console.WriteLine($"PASS: H05 cortical default {size}/{seed}: fragments={cortex.Fragments.Length}, " +
                     $"provinces={cortex.Provinces.Length}, continental={continentalCells}, oceanic={oceanicCells}, " +
                     $"multi-fragment plates={mixedPlates}, convergent crossings={crossed}, " +
                     $"links={cortex.AssemblyLinks.Length}, time={timer.ElapsedMilliseconds} ms, " +
