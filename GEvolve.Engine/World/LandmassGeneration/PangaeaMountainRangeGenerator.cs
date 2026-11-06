@@ -23,6 +23,11 @@ public sealed class PangaeaMountainRangeGenerator
     public LandmassState Apply(HexTopology topology, LandmassState terrain,
         Action<PangaeaElevationDiagnostics>? captureElevations, ReadOnlyMemory<byte> previousBase,
         ReadOnlyMemory<byte> priorCalibrationBase)
+        => Apply(topology, terrain, captureElevations, previousBase, priorCalibrationBase, null);
+
+    public LandmassState Apply(HexTopology topology, LandmassState terrain,
+        Action<PangaeaElevationDiagnostics>? captureElevations, ReadOnlyMemory<byte> previousBase,
+        ReadOnlyMemory<byte> priorCalibrationBase, Action<PangaeaMountainRangeAudit>? captureAudit)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(terrain);
@@ -34,18 +39,32 @@ public sealed class PangaeaMountainRangeGenerator
             throw new ArgumentException("Complete Pangaea terrain and official H04 motion are required.", nameof(terrain));
 
         int count = topology.Count;
+        List<MountainContactAudit>? contactAudit = captureAudit is null ? null : [];
+        List<MountainCandidateAudit>? candidateAudit = captureAudit is null ? null : [];
         var strength = new float[count];
         var pair = new int[count];
         Array.Fill(pair, -1);
         // Require an emergent contact on both sides, appreciable convergence,
         // and convergence at least comparable to tangential shear.
+        int interactionIndex = -1;
         foreach (var edge in motion.Interactions)
         {
+            interactionIndex++;
             if (edge.Kind is not (PlateInteractionKind.Convergent or PlateInteractionKind.Mixed) ||
                 edge.Convergence < 1 || edge.Convergence < edge.Shear * .65 ||
                 terrain.SurfaceByCellId[edge.FirstCellId] != 1 ||
                 terrain.SurfaceByCellId[edge.SecondCellId] != 1)
+            {
+                // Reasons describe the existing first-failed predicate; they do not select contacts.
+                contactAudit?.Add(new(interactionIndex,
+                    edge.Kind is not (PlateInteractionKind.Convergent or PlateInteractionKind.Mixed)
+                        ? MountainContactDecision.KindNotConvergent
+                        : edge.Convergence < 1 ? MountainContactDecision.ConvergenceBelowOne
+                        : edge.Convergence < edge.Shear * .65 ? MountainContactDecision.ShearDominates
+                        : MountainContactDecision.NotBothLand));
                 continue;
+            }
+            contactAudit?.Add(new(interactionIndex, MountainContactDecision.Eligible));
             int key = Math.Min(edge.FirstPlateId, edge.SecondPlateId) * 16 +
                 Math.Max(edge.FirstPlateId, edge.SecondPlateId);
             foreach (int id in new[] { edge.FirstCellId, edge.SecondCellId })
@@ -83,7 +102,11 @@ public sealed class PangaeaMountainRangeGenerator
                         queue.Enqueue(neighbor);
                     }
             }
-            if (component.Count < minimumLength) continue;
+            if (component.Count < minimumLength)
+            {
+                RecordCandidate(component, null, null, null, MountainCandidateDecision.ComponentBelowMinimum);
+                continue;
+            }
             // Two graph sweeps find a long, naturally bending axis. Each step is
             // a real hex edge, including edges across the horizontal seam.
             int endA = Farthest(component.Min(), pair[start]);
@@ -91,7 +114,12 @@ public sealed class PangaeaMountainRangeGenerator
             var axis = new List<int>();
             for (int id = endB; id != -1; id = parent[id]) axis.Add(id);
             axis.Reverse();
-            if (axis.Count < minimumLength) continue;
+            if (axis.Count < minimumLength)
+            {
+                RecordCandidate(component, axis, null, null, MountainCandidateDecision.AxisBelowMinimum);
+                continue;
+            }
+            int[]? proposedAuditAxis = candidateAudit is null ? null : axis.ToArray();
             int endpoints = 0, branches = 0, edgeCount = 0;
             double meanX = 0, meanY = 0, xx = 0, yy = 0, xy = 0;
             int originX = start % topology.Columns;
@@ -121,7 +149,14 @@ public sealed class PangaeaMountainRangeGenerator
             // Large open arcs survive even if their covariance is nearly round.
             bool compact = axis.Count < topology.Rows * .12 && elongation < 2 ||
                 axis.Count < topology.Rows * .20 && elongation < 1.35 && endpoints <= 2;
-            if (compact) continue;
+            if (compact)
+            {
+                RecordCandidate(component, axis, null, null,
+                    axis.Count < topology.Rows * .12 && elongation < 2
+                        ? MountainCandidateDecision.CompactShort : MountainCandidateDecision.CompactRoundFewEndpoints,
+                    elongation, endpoints, cycles, branches);
+                continue;
+            }
 
             // Shift selected interior axis cells at most one hex into the nearby
             // compression field. Keep each replacement adjacent to both neighbors.
@@ -174,6 +209,8 @@ public sealed class PangaeaMountainRangeGenerator
                 (byte)(key / 16), (byte)(key % 16), mean / axis.Count,
                 elongation, endpoints, cycles, branches);
             ranges.Add(mountain);
+            RecordCandidate(component, proposedAuditAxis, axis, widths, MountainCandidateDecision.Selected,
+                elongation, endpoints, cycles, branches);
             longitudinal[axis[0]] = profile;
             foreach (int id in axis) usedAxis[id] = true;
         }
@@ -244,6 +281,17 @@ public sealed class PangaeaMountainRangeGenerator
         for (int i = 0; i < ranges.Count; i++)
             ranges[i] = ranges[i] with { AffectedCells = affected[i] };
         captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best, previousBase, priorCalibrationBase));
+        if (captureAudit is not null)
+        {
+            var byStart = ranges.ToDictionary(range => range.AxisCellIds[0]);
+            var candidates = candidateAudit!.Select(candidate =>
+            {
+                if (candidate.Decision != MountainCandidateDecision.Selected) return candidate;
+                var selected = byStart[candidate.FinalAxisCellIds[0]];
+                return candidate with { SelectedRangeId = selected.Id, AffectedCells = selected.AffectedCells };
+            }).ToArray();
+            captureAudit(new(contactAudit!.ToArray(), candidates, minimumLength));
+        }
         return terrain with { ElevationByCellId = final,
             PangaeaMountainRanges = new(Version, ranges.ToArray(), owner) };
 
@@ -269,6 +317,17 @@ public sealed class PangaeaMountainRangeGenerator
                     }
             }
             return farthest;
+        }
+
+        void RecordCandidate(List<int> cells, IEnumerable<int>? proposed, IEnumerable<int>? selected,
+            byte[]? widths, MountainCandidateDecision decision, float? elongation = null,
+            int? endpoints = null, int? cycles = null, int? branches = null)
+        {
+            if (candidateAudit is null) return;
+            int key = pair[cells[0]];
+            candidateAudit.Add(new(candidateAudit.Count + 1, (byte)(key / 16), (byte)(key % 16),
+                cells.ToArray(), proposed?.ToArray() ?? [], selected?.ToArray() ?? [],
+                widths?.ToArray() ?? [], decision, elongation, endpoints, cycles, branches));
         }
     }
 

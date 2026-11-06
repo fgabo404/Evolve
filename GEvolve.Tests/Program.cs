@@ -10,6 +10,7 @@ if (args.Contains("--continental-geology")) { ContinentalGeologyTests.Run(); ret
 if (args.Contains("--tectonic-motion")) { TectonicMotionTests.Run(); return 0; }
 if (args.Contains("--mountain-ranges")) { PangaeaMountainRangeTests.Run(); return 0; }
 if (args.Contains("--pangaea-elevations")) { PangaeaElevationTests.Run(); return 0; }
+if (args.Contains("--pangaea-tectonic-audit")) { PangaeaTectonicAuditTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [

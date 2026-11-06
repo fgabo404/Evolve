@@ -23,6 +23,11 @@ public sealed class WorldGenerationService
         => Generate(LandmassProfiles.Create(size, worldType, seed));
 
     public GeneratedWorld Generate(LandmassConfiguration configuration)
+        => Generate(configuration, null);
+
+    /// <summary>Optional read-only selection evidence; no extra random stream or generation strategy.</summary>
+    public GeneratedWorld Generate(LandmassConfiguration configuration,
+        Action<PangaeaMountainRangeAudit>? captureMountainAudit)
     {
         Validate(configuration);
         HexGrid grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
@@ -94,7 +99,7 @@ public sealed class WorldGenerationService
                 terrain = _mountainRanges.Apply(topology, terrain,
                     diagnostics => elevationDiagnostics = diagnostics,
                     elevationSources?.PreviousBaseByCellId ?? default,
-                    elevationSources?.PriorCalibrationBaseByCellId ?? default);
+                    elevationSources?.PriorCalibrationBaseByCellId ?? default, captureMountainAudit);
             if (elevationDiagnostics is not null) elevationDiagnostics.Sources = elevationSources;
             return new GeneratedWorld(grid, terrain, last
                 ?? throw new InvalidOperationException("Landmass statistics were not calculated."))

@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
-    [string]$Label = 'P03-A4'
+    [string]$Label = 'P03-A4',
+    [ValidateSet('Worldgen', 'TectonicAudit')]
+    [string]$ValidationSet = 'Worldgen'
 )
 
 # Run from the repository root. This script never commits, pushes, deletes reports,
@@ -97,6 +99,12 @@ $steps = @(
     @{ Name = 'mountain-ranges'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--mountain-ranges') },
     @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
 )
+if ($ValidationSet -eq 'TectonicAudit') {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'tectonic-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-tectonic-audit') }
+    )
+}
 $results = @()
 $buildFailed = $false
 foreach ($step in $steps) {
@@ -140,6 +148,8 @@ $summary.Add('- Finished UTC: ' + [DateTime]::UtcNow.ToString('o'))
 $summary.Add('- Branch: `' + $branch + '`')
 $summary.Add('- Validated commit: `' + $validatedSha + '` - ' + $validatedSubject)
 $summary.Add('- .NET SDK: `' + $sdk + '`')
+$summary.Add('- Validation set: `' + $ValidationSet + '`')
+$summary.Add('- PowerShell: ' + $PSVersionTable.PSVersion.ToString() + '; OS: ' + [Environment]::OSVersion.VersionString + '; 64-bit OS: ' + [Environment]::Is64BitOperatingSystem)
 $summary.Add('- Tracked source differs from validated HEAD: ' + $sourceDirty)
 $summary.Add('- The report/script changes are operational and excluded from the tracked-source comparison.')
 $summary.Add('')
@@ -170,13 +180,14 @@ $warnings = @($results | ForEach-Object { $_.Text -split '\r?\n' } | Where-Objec
 if ($warnings.Count -eq 0) { $summary.Add('No warning lines were emitted.') }
 else { $summary.Add('```text'); foreach ($warning in $warnings) { $summary.Add($warning) }; $summary.Add('```') }
 $summary.Add('')
-$summary.Add('## P03-A.4 elevation, mountain and regression evidence')
-$diagnostic = ($results | Where-Object { $_.Name -eq 'pangaea-elevations' }).Text
+$summary.Add('## Actual diagnostic and regression evidence')
+$diagnosticName = if ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } else { 'pangaea-elevations' }
+$diagnostic = ($results | Where-Object { $_.Name -eq $diagnosticName }).Text
 $excerpts = @($diagnostic -split '\r?\n' | Where-Object {
-    $_ -match '^P03-A\.4 |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.4 FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
+    $_ -match '^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_PASS:|^P03-A\.4 |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.4 FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
 })
-if ($excerpts.Count -eq 0) { $summary.Add('No P03-A.4 diagnostic records were reached/emitted. No metrics are invented.') }
-else { $summary.Add('Selected actual records; full distributions, prominence and H04 metrics are in pangaea-elevations.log.'); $summary.Add('```text'); foreach ($line in $excerpts) { $summary.Add($line) }; $summary.Add('```') }
+if ($excerpts.Count -eq 0) { $summary.Add('No diagnostic records were reached/emitted. No metrics are invented.') }
+else { $summary.Add('Selected actual records; full decisions, distributions, prominence and H04 metrics are in ' + $diagnosticName + '.log.'); $summary.Add('```text'); foreach ($line in $excerpts) { $summary.Add($line) }; $summary.Add('```') }
 $mountainRecords = @((($results | Where-Object { $_.Name -eq 'mountain-ranges' }).Text -split '\r?\n') | Where-Object { $_ -match '^P03-A |^PASS:' })
 if ($mountainRecords.Count -gt 0) { $summary.Add('```text'); foreach ($line in $mountainRecords) { $summary.Add($line) }; $summary.Add('```') }
 $regressions = @((($results | Where-Object { $_.Name -eq 'all-suites' }).Text -split '\r?\n') | Where-Object { $_ -match '^SUITE (PASS|FAIL):|BASELINE MISMATCH|baseline.*differ' } | Select-Object -Unique)
@@ -194,7 +205,7 @@ $summary.Add('The Game entry point creates EvolveWindow and calls window.Run(); 
 $summary.Add('')
 $summary.Add('From the repository root, repeat this exact script snapshot:')
 $summary.Add('```powershell')
-$summary.Add('.\GEvolve.Tests\ValidationReports\' + $runId + '\commands.ps1')
+$summary.Add('.\GEvolve.Tests\ValidationReports\' + $runId + '\commands.ps1 -ValidationSet ' + $ValidationSet + ' -Label ' + $Label)
 $summary.Add('```')
 $summary.Add('Each invocation creates a new UTC directory. Individual native exit codes are in each log and the table; this script exits 1 if any validation failed, otherwise 0.')
 [IO.File]::WriteAllText((Join-Path $reportDirectory 'SUMMARY.md'), ($summary -join "`r`n"), $utf8)

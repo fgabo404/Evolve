@@ -10,6 +10,14 @@ Windows PowerShell 5.1 or PowerShell 7 and the project's .NET SDK are sufficient
 
 The script runs `dotnet build`, then the elevation, mountain and complete suites in that order. Build failure skips the three dependent commands. Suite failures do not prevent later suites from running. Each UTC execution directory contains four complete logs, `SUMMARY.md` and the exact `commands.ps1` snapshot. Each native exit code and elapsed duration is preserved. The script's aggregate exit code is 1 on any failure, 0 otherwise.
 
+For the targeted P03-A.5 audit (only the five requested Large seeds), use:
+
+```powershell
+.\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet TectonicAudit -Label P03-A5
+```
+
+This set runs build and `dotnet run --project GEvolve.Tests -- --pangaea-tectonic-audit`, saving `build.log`, `tectonic-audit.log`, `SUMMARY.md` and the script snapshot. Repeating a snapshot requires the validation-set/label arguments shown in its summary. The audit compares complete persisted geography with tracing enabled and disabled; historical reports and snapshots are never overwritten. Human findings are published separately as `REPORT.md` after reading the actual results.
+
 Each stream is drained asynchronously and preserved in its own labeled section; this prevents deadlocks and makes no claim about ordering between stdout and stderr. Local repository/user/temp paths and recognizable credentials are replaced by explicit privacy markers. All remaining output, including failures, is retained. Review the resulting files for other sensitive information before any Git publication. The script never pushes, commits, deletes reports, changes generation code or runs the interactive game.
 
 Summaries distinguish reported suite totals from individual assertions, whose count is not emitted by this console test harness. Missing diagnostic metrics stay absent. The validated SHA identifies the source before the operational report commit; tracked source changes outside this reports directory are flagged. Untracked files are not certified by that SHA. A report is execution evidence, not architectural or visual approval.
