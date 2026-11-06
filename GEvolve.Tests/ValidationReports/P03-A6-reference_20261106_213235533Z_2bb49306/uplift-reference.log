@@ -1,0 +1,7 @@
+Command: dotnet run --project GEvolve.Tests -- --pangaea-uplift-reference
+Started UTC: 2026-11-06T21:32:37.2623316Z
+Status: SKIPPED
+Native exit code: N/A
+Duration seconds: 0.000
+
+SKIPPED: dotnet build failed; dependent validation was not started.

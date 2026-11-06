@@ -3,6 +3,10 @@
 > **Rama de referencia:** `worldgenerator` (desarrollo) · **Base estable:** `master` · **Estado:** diseño objetivo + contrato vigente en `worldgenerator`.
 > **Alcance:** motor `GEvolve.Engine`. Este documento NO afirma que las etapas planificadas estén implementadas.
 
+## Alcance autorizado P03-A.6 — 6 de noviembre de 2026
+
+La calibración detallada en [PANGAEA_ROADMAP.md](PANGAEA_ROADMAP.md) modifica exclusivamente la composición vertical de las cordilleras existentes de Pangea. Conserva BASE P03-A.4, superficie, topología, placas/H04 y toda la geometría e influencia de los sistemas. No altera otros generadores ni introduce contratos persistibles nuevos. Engine calcula la envolvente y expone comparaciones temporales; State conserva los datos finales con el esquema previo; Game consume las mismas vistas sin cambios de representación. Los saves no se recalculan. Esta autorización acota la excepción de elevación a la prioridad de conservación descrita abajo; no implica aprobación visual de P03-A ni ejecución de P03-A.7.
+
 ## Decisión de limpieza H05 — 5 de noviembre de 2026
 
 **H05 experimental retirado del árbol operativo.** Se preservan en el historial Git los hitos H05-A1/A2, B1/B2/B3, la comparación regional A/B y la formación multiescala C1. La referencia de respaldo `backup/worldgenerator-pre-h05-cleanup-20261105` conserva el estado inmediatamente anterior a esta limpieza, sin reescribir historial.

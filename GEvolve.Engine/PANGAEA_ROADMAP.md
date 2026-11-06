@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-06:** P03-A.2 diagnóstico validado localmente; P03-A.3 rechazado visualmente. P03-A.4 con validación técnica publicada y regresiones históricas de elevación pendientes. P03-A.5 auditado en cinco semillas Large sin cambiar generación. P03-A no aprobado; revisión visual pendiente.
+> **Estado al 2026-11-06:** P03-A.5 auditado; P03-A.6 implementado, pendiente de validación visual y aprobación del usuario. La comparación técnica protege BASE y geometría P03-A.4 en 20 casos. P03-A no aprobado; regresiones históricas de elevación pendientes. P03-A.7 planificado, sin ejecutar.
 
 ## Objetivo
 
@@ -176,6 +176,26 @@ Instrumentación publicada en `test(worldgen): trace Pangaea tectonic mountain s
 **Siguiente paso recomendado, sin implementarlo:** comparar FINAL/RELIEVE/SUPERFICIE al mismo zoom. No relajar selección ni imponer cuotas. Si se autoriza P03-A.6 sobre alturas, ensayar únicamente composición vertical dentro de corredores existentes con envolvente dependiente de convergencia y continuidad, contrastando prominencia y pendientes; si el defecto se limita a superficie, tratar primero su representación sub85 por separado.
 
 **Validaciones anteriores:** la [ejecución P03-A.4](../GEvolve.Tests/ValidationReports/P03-A4_20261106_140522345Z_f747ba65/SUMMARY.md) reemplaza el pendiente técnico de la sección anterior: build, elevaciones y cordilleras PASS; suite general FAIL (13 suites PASS, dos fallos de baselines históricos de elevación). No se corrigieron fallos ni actualizaron baselines. Se mantiene pendiente la aceptación visual y global por el usuario.
+
+### P03-A.6 — Calibración tectónica de la elevación de cordilleras
+
+**Estado:** implementado, pendiente de validación visual y aprobación del usuario. Commit `feat(worldgen): calibrate tectonic mountain uplift in Pangaea`, SHA `ab7c78914e0153ba946f7d5be5b6c17dc6c66ae7`. [Informe completo](../GEvolve.Tests/ValidationReports/P03-A6_20261106_213733272Z_a40eedf0/REPORT.md), [resumen de ejecución](../GEvolve.Tests/ValidationReports/P03-A6_20261106_213733272Z_a40eedf0/SUMMARY.md) y [comparación numérica](../GEvolve.Tests/ValidationReports/P03-A6_20261106_213733272Z_a40eedf0/pangaea-uplift.log).
+
+**Único cambio de generación:** envolvente vertical dentro de los corredores ya existentes. Con continuidad `C=L/(L+0.08*filas)` y convergencia efectiva `c=sqrt(mediaSistema*mediaLocalSuavizada)`, la cresta objetivo es `94*sqrt(C)*(1-exp(-c/2))`. Se mezcla con BASE mediante `(0.6+0.4*perfilLongitudinal)*perfilTransversalAnterior`; el aporte anterior se conserva cuando es mayor y los corredores superpuestos usan máximo, no suma. El objetivo no es un mínimo universal ni fija 85 a los ejes. El suavizado longitudinal usa sumas prefijas y no consume RNG.
+
+Se mantienen los filtros y la propagación previa como autoridad exclusiva de influencia/propietarios. La referencia capturada **antes de editar el generador** en `3c95bc7ca7afee362ab732efceb8fe86536aabc5` verifica por hashes los 20 casos: cuatro tamaños × 2026/42/−731, cinco Large de P03-A.5 y referencias Large/−234020843, Large/−690013300, Enormous/1697481406. BASE, superficie, placas, H04 completo, intentos, sistemas, IDs, parejas, clasificación, ejes, anchuras y propietarios permanecen idénticos. `AffectedCells` refleja el nuevo incremento real. No se alteran paleta, shader, catálogos ni otros generadores; los baselines históricos no se actualizan.
+
+`AdditiveFinalByCellId` conserva la comparación P03-A.4 en la misma pasada, sin volver a generar mundos ni ofrecer estrategias alternativas al jugador. El esquema `pangaea-ranges-2` y sus lectores anteriores permanecen intactos; la composición se identifica solo en diagnósticos como `tectonic-envelope-1`. Los saves existentes conservan sus alturas almacenadas.
+
+**Resultados destacados:** altura media de ejes desfavorables 53.02→71.47, 52.03→63.28 y 54.53→75.94; no aumenta su blanco. Las favorables pasan 60.59→70.56 y 83.29→85.73; en la segunda el blanco aumenta 629→645 y el mayor componente ≥85, 113→160, pendiente de evaluación visual. La pendiente media de corredor aumenta en varias semillas, por lo que no se interpreta una mejora numérica como aprobación morfológica. El informe conserva mínimos/máximos/percentiles, ganancias, prominencias, bandas, componentes, regiones y tiempos reales.
+
+**Validación del 2026-11-06:** build PASS (0 errores/advertencias), elevaciones PASS, cordilleras PASS, auditoría tectónica PASS y comparación vertical de 20 casos PASS. Suite general **FAIL: 14 suites PASS, 2 FAIL** (`TectonicMotion`, cuatro escenarios, y `ContinentalGeology`, doce escenarios, por hashes históricos de elevación). Sin discrepancias reportadas de superficie, placas ni intentos; no se modifican baselines ni validadores. No se declara aprobada la suite general ni P03-A.
+
+Repetir desde la raíz con `powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet TectonicCalibration -Label P03-A6`. La tarea autoriza expresamente ejecución .NET, como excepción a las reglas ordinarias; no se ejecuta el juego gráfico.
+
+### P03-A.7 — Auditoría integral de la arquitectura y generación de Pangea
+
+**Planificado; no ejecutado.** Revisará topología hexagonal, superficie y costas, 16 placas, H04 e interacciones, BASE, cordilleras, FINAL, persistencia, rendimiento, determinismo, integración de capas y representación visual. Requiere su siguiente alcance autorizado. P03-A continúa pendiente de aprobación del usuario; no iniciar P03-B.
 
 ## Arquitectura protegida y dependencias
 
