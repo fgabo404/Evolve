@@ -1,0 +1,233 @@
+Command: dotnet run --project GEvolve.Tests -- --mountain-ranges
+Started UTC: 2026-11-06T14:06:08.4935656Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 38.659
+
+=== STDOUT (complete) ===
+P03-A.1 Small/2026: land=10650, raised=1663 (15.62%), gain mean=5.55, max=24, largest >=85=12->20
+  >=75 549->704 (+155), >=85 33->99 (+66), >=95 4->4 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P10/P12: axis=21, affected=163, width=3/3.4/4, convergence=10.5/10.6, elongation=2.33, endpoints=0, cycles=29, branches=16
+  range 2 P2/P12: axis=20, affected=102, width=2/3.0/4, convergence=4.1/6.0, elongation=5.29, endpoints=0, cycles=18, branches=14
+  range 3 P5/P12: axis=23, affected=190, width=2/3.1/4, convergence=11.2/11.2, elongation=3.14, endpoints=1, cycles=30, branches=16
+  range 4 P12/P15: axis=7, affected=42, width=2/2.9/4, convergence=3.6/3.6, elongation=2.00, endpoints=0, cycles=8, branches=5
+  range 5 P4/P12: axis=65, affected=329, width=2/2.8/4, convergence=5.0/8.4, elongation=13.31, endpoints=0, cycles=116, branches=100
+  range 6 P5/P12: axis=16, affected=163, width=4/4.0/4, convergence=11.2/11.2, elongation=5.31, endpoints=2, cycles=12, branches=6
+  range 7 P5/P15: axis=15, affected=63, width=2/3.1/4, convergence=9.6/9.6, elongation=5.41, endpoints=1, cycles=6, branches=0
+  range 8 P11/P12: axis=31, affected=207, width=2/3.1/4, convergence=5.5/6.5, elongation=4.70, endpoints=0, cycles=51, branches=38
+  range 9 P13/P15: axis=18, affected=74, width=2/2.1/3, convergence=7.2/7.2, elongation=2.79, endpoints=0, cycles=18, branches=14
+  range 10 P5/P13: axis=18, affected=129, width=2/3.7/4, convergence=2.3/2.3, elongation=4.46, endpoints=0, cycles=30, branches=22
+  range 11 P5/P13: axis=16, affected=93, width=2/2.8/3, convergence=2.3/2.3, elongation=4.28, endpoints=1, cycles=22, branches=14
+  range 12 P5/P13: axis=8, affected=54, width=3/3.0/3, convergence=2.3/2.3, elongation=2.61, endpoints=1, cycles=8, branches=6
+  range 13 P0/P7: axis=10, affected=54, width=2/2.1/3, convergence=10.4/10.4, elongation=3.27, endpoints=0, cycles=18, branches=13
+P03-A Small/2026: 13 ranges, 268 axis cells, 2 ms P03-A, 304 ms total
+P03-A.1 Small/42: land=11486, raised=1089 (9.48%), gain mean=5.79, max=24, largest >=85=187->187
+  >=75 648->665 (+17), >=85 187->193 (+6), >=95 35->35 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P9/P14: axis=32, affected=273, width=3/3.9/4, convergence=5.6/5.6, elongation=4.53, endpoints=0, cycles=54, branches=38
+  range 2 P12/P14: axis=17, affected=144, width=3/3.5/4, convergence=3.7/3.7, elongation=5.28, endpoints=2, cycles=14, branches=10
+  range 3 P12/P14: axis=10, affected=63, width=2/2.6/3, convergence=3.7/3.7, elongation=3.87, endpoints=1, cycles=4, branches=0
+  range 4 P12/P14: axis=8, affected=67, width=2/3.2/4, convergence=3.7/3.7, elongation=2.61, endpoints=1, cycles=8, branches=6
+  range 5 P12/P15: axis=29, affected=252, width=2/3.3/4, convergence=3.4/4.0, elongation=4.97, endpoints=0, cycles=53, branches=38
+  range 6 P3/P15: axis=7, affected=58, width=3/3.3/4, convergence=6.6/6.6, elongation=2.01, endpoints=0, cycles=12, branches=5
+  range 7 P3/P12: axis=32, affected=232, width=2/2.8/4, convergence=9.3/9.4, elongation=4.92, endpoints=0, cycles=65, branches=43
+P03-A Small/42: 7 ranges, 135 axis cells, 1 ms P03-A, 212 ms total
+P03-A.1 Small/-731: land=10640, raised=1919 (18.04%), gain mean=5.15, max=25, largest >=85=66->82
+  >=75 574->615 (+41), >=85 78->170 (+92), >=95 11->11 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P4/P14: axis=25, affected=142, width=2/3.1/4, convergence=2.6/2.7, elongation=3.43, endpoints=1, cycles=47, branches=35
+  range 2 P5/P14: axis=16, affected=134, width=2/3.4/4, convergence=4.9/6.3, elongation=3.09, endpoints=1, cycles=29, branches=19
+  range 3 P11/P14: axis=11, affected=71, width=3/3.8/4, convergence=3.7/3.7, elongation=3.58, endpoints=2, cycles=10, branches=8
+  range 4 P9/P11: axis=9, affected=28, width=3/3.4/4, convergence=1.3/1.3, elongation=2.19, endpoints=0, cycles=17, branches=12
+  range 5 P5/P14: axis=26, affected=151, width=3/3.4/4, convergence=5.1/6.3, elongation=3.46, endpoints=0, cycles=50, branches=31
+  range 6 P9/P14: axis=35, affected=287, width=3/3.5/4, convergence=3.5/3.7, elongation=4.17, endpoints=0, cycles=72, branches=49
+  range 7 P5/P12: axis=31, affected=189, width=2/3.1/4, convergence=5.8/6.3, elongation=3.87, endpoints=0, cycles=61, branches=41
+  range 8 P11/P14: axis=12, affected=85, width=2/3.3/4, convergence=3.7/3.7, elongation=4.15, endpoints=1, cycles=12, branches=8
+  range 9 P5/P12: axis=7, affected=47, width=2/3.1/4, convergence=6.3/6.3, elongation=2.27, endpoints=0, cycles=12, branches=6
+  range 10 P10/P11: axis=15, affected=91, width=4/4.0/4, convergence=5.5/5.5, elongation=4.86, endpoints=0, cycles=28, branches=20
+  range 11 P6/P12: axis=9, affected=67, width=3/3.4/4, convergence=2.7/2.7, elongation=3.16, endpoints=0, cycles=14, branches=12
+  range 12 P6/P11: axis=12, affected=92, width=4/4.0/4, convergence=4.9/5.1, elongation=3.84, endpoints=0, cycles=22, branches=16
+  range 13 P10/P11: axis=9, affected=41, width=4/4.0/4, convergence=5.4/5.5, elongation=2.71, endpoints=0, cycles=15, branches=9
+  range 14 P10/P11: axis=14, affected=57, width=2/2.6/4, convergence=4.2/4.2, elongation=4.58, endpoints=0, cycles=16, branches=12
+  range 15 P1/P10: axis=9, affected=86, width=3/3.2/4, convergence=6.3/8.1, elongation=2.49, endpoints=1, cycles=12, branches=9
+  range 16 P1/P10: axis=32, affected=261, width=2/3.3/4, convergence=5.8/5.8, elongation=8.56, endpoints=2, cycles=8, branches=6
+  range 17 P1/P11: axis=21, affected=90, width=3/3.3/4, convergence=2.4/2.6, elongation=3.37, endpoints=0, cycles=41, branches=30
+P03-A Small/-731: 17 ranges, 293 axis cells, 1 ms P03-A, 198 ms total
+P03-A.1 Medium/2026: land=16700, raised=2535 (15.18%), gain mean=5.12, max=21, largest >=85=48->103
+  >=75 1075->1223 (+148), >=85 60->343 (+283), >=95 7->7 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P2/P14: axis=42, affected=352, width=3/4.3/5, convergence=1.7/1.8, elongation=6.86, endpoints=0, cycles=88, branches=64
+  range 2 P5/P12: axis=10, affected=72, width=4/4.6/5, convergence=8.5/11.2, elongation=3.15, endpoints=0, cycles=12, branches=8
+  range 3 P5/P12: axis=29, affected=182, width=4/4.7/6, convergence=7.3/11.2, elongation=7.09, endpoints=2, cycles=26, branches=18
+  range 4 P7/P14: axis=26, affected=241, width=3/3.7/5, convergence=6.8/6.8, elongation=5.72, endpoints=0, cycles=46, branches=34
+  range 5 P5/P12: axis=43, affected=284, width=3/4.9/6, convergence=9.7/11.2, elongation=2.29, endpoints=0, cycles=84, branches=63
+  range 6 P5/P7: axis=8, affected=78, width=4/4.6/5, convergence=8.7/8.7, elongation=2.80, endpoints=1, cycles=4, branches=2
+  range 7 P5/P7: axis=14, affected=98, width=3/4.1/5, convergence=8.7/8.7, elongation=3.59, endpoints=1, cycles=18, branches=13
+  range 8 P12/P15: axis=15, affected=154, width=4/4.7/5, convergence=3.0/3.6, elongation=2.30, endpoints=0, cycles=32, branches=23
+  range 9 P6/P7: axis=19, affected=114, width=3/3.8/5, convergence=5.8/6.6, elongation=5.27, endpoints=0, cycles=36, branches=24
+  range 10 P0/P7: axis=27, affected=258, width=3/5.1/6, convergence=10.4/10.4, elongation=7.52, endpoints=0, cycles=44, branches=30
+  range 11 P9/P12: axis=13, affected=50, width=4/4.3/5, convergence=4.1/4.3, elongation=4.87, endpoints=0, cycles=24, branches=21
+  range 12 P0/P9: axis=21, affected=123, width=3/4.2/5, convergence=3.4/3.8, elongation=3.95, endpoints=0, cycles=36, branches=27
+  range 13 P4/P12: axis=16, affected=121, width=4/4.1/5, convergence=5.4/8.4, elongation=3.52, endpoints=2, cycles=16, branches=10
+  range 14 P0/P6: axis=9, affected=64, width=4/4.6/6, convergence=5.5/6.0, elongation=2.61, endpoints=0, cycles=16, branches=11
+  range 15 P9/P12: axis=18, affected=70, width=3/4.1/5, convergence=3.6/4.3, elongation=4.57, endpoints=0, cycles=36, branches=22
+  range 16 P8/P13: axis=37, affected=274, width=3/3.4/5, convergence=4.5/4.5, elongation=6.77, endpoints=0, cycles=62, branches=40
+P03-A Medium/2026: 16 ranges, 347 axis cells, 2 ms P03-A, 345 ms total
+P03-A.1 Medium/42: land=16700, raised=676 (4.05%), gain mean=3.67, max=15, largest >=85=118->146
+  >=75 943->974 (+31), >=85 199->233 (+34), >=95 21->21 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P12/P15: axis=22, affected=247, width=4/5.2/6, convergence=2.8/4.0, elongation=6.00, endpoints=2, cycles=14, branches=6
+  range 2 P12/P14: axis=14, affected=166, width=3/4.5/6, convergence=3.2/3.7, elongation=3.45, endpoints=0, cycles=18, branches=11
+  range 3 P0/P14: axis=25, affected=263, width=3/4.8/6, convergence=8.0/8.7, elongation=3.31, endpoints=1, cycles=47, branches=33
+P03-A Medium/42: 3 ranges, 61 axis cells, 1 ms P03-A, 547 ms total
+P03-A.1 Medium/-731: land=17048, raised=1422 (8.34%), gain mean=6.07, max=23, largest >=85=77->88
+  >=75 931->971 (+40), >=85 79->101 (+22), >=95 13->13 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P6/P11: axis=22, affected=202, width=3/4.8/6, convergence=4.6/5.1, elongation=2.21, endpoints=1, cycles=27, branches=17
+  range 2 P6/P11: axis=30, affected=225, width=3/4.5/6, convergence=4.6/5.1, elongation=5.08, endpoints=0, cycles=50, branches=37
+  range 3 P6/P9: axis=11, affected=91, width=3/3.1/4, convergence=5.6/5.6, elongation=3.61, endpoints=1, cycles=14, branches=12
+  range 4 P11/P15: axis=56, affected=485, width=3/4.1/5, convergence=7.2/7.6, elongation=2.68, endpoints=1, cycles=93, branches=65
+  range 5 P6/P15: axis=15, affected=123, width=3/4.4/5, convergence=4.4/4.4, elongation=4.28, endpoints=0, cycles=27, branches=17
+  range 6 P0/P11: axis=37, affected=296, width=3/3.7/5, convergence=3.6/4.2, elongation=6.64, endpoints=1, cycles=69, branches=46
+P03-A Medium/-731: 6 ranges, 171 axis cells, 3 ms P03-A, 545 ms total
+P03-A.1 Large/2026: land=27543, raised=1923 (6.98%), gain mean=4.62, max=20, largest >=85=40->65
+  >=75 1391->1492 (+101), >=85 102->183 (+81), >=95 19->19 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P11/P13: axis=68, affected=768, width=3/5.4/7, convergence=3.9/4.2, elongation=4.46, endpoints=2, cycles=123, branches=79
+  range 2 P3/P13: axis=15, affected=239, width=6/6.4/7, convergence=4.2/6.4, elongation=4.31, endpoints=1, cycles=24, branches=18
+  range 3 P5/P13: axis=59, affected=607, width=4/5.3/7, convergence=2.1/2.3, elongation=5.07, endpoints=1, cycles=113, branches=85
+  range 4 P3/P13: axis=11, affected=153, width=3/5.0/7, convergence=3.7/3.7, elongation=3.62, endpoints=1, cycles=10, branches=6
+  range 5 P0/P4: axis=15, affected=156, width=4/5.6/7, convergence=10.0/10.0, elongation=3.51, endpoints=0, cycles=26, branches=16
+P03-A Large/2026: 5 ranges, 168 axis cells, 2 ms P03-A, 820 ms total
+P03-A.1 Large/42: land=24000, raised=4076 (16.98%), gain mean=5.25, max=24, largest >=85=70->253
+  >=75 1099->1407 (+308), >=85 179->475 (+296), >=95 20->20 (+0), 100 inherited=3, reached by P03-A=0
+  range 1 P1/P14: axis=15, affected=186, width=5/5.7/6, convergence=6.0/6.1, elongation=5.11, endpoints=0, cycles=12, branches=4
+  range 2 P1/P3: axis=13, affected=145, width=5/6.2/7, convergence=3.0/3.0, elongation=3.79, endpoints=0, cycles=24, branches=17
+  range 3 P3/P11: axis=19, affected=247, width=5/5.5/7, convergence=4.2/4.2, elongation=6.14, endpoints=1, cycles=18, branches=12
+  range 4 P9/P14: axis=54, affected=721, width=3/6.0/7, convergence=5.6/5.6, elongation=9.47, endpoints=0, cycles=94, branches=69
+  range 5 P3/P9: axis=17, affected=165, width=4/5.5/7, convergence=12.0/12.0, elongation=5.78, endpoints=1, cycles=10, branches=2
+  range 6 P11/P14: axis=96, affected=968, width=3/4.8/7, convergence=4.2/4.8, elongation=2.98, endpoints=1, cycles=174, branches=125
+  range 7 P3/P10: axis=20, affected=285, width=5/6.0/7, convergence=5.0/5.8, elongation=2.08, endpoints=1, cycles=35, branches=26
+  range 8 P3/P11: axis=23, affected=262, width=3/5.1/6, convergence=4.2/4.2, elongation=6.08, endpoints=1, cycles=24, branches=12
+  range 9 P4/P6: axis=30, affected=331, width=4/5.1/7, convergence=6.0/6.2, elongation=4.90, endpoints=0, cycles=58, branches=43
+  range 10 P11/P14: axis=26, affected=348, width=3/5.4/7, convergence=4.3/4.8, elongation=4.19, endpoints=0, cycles=55, branches=37
+  range 11 P5/P11: axis=11, affected=97, width=3/4.0/5, convergence=4.5/4.5, elongation=3.94, endpoints=0, cycles=20, branches=16
+  range 12 P5/P12: axis=10, affected=161, width=4/5.9/7, convergence=5.7/5.7, elongation=3.54, endpoints=1, cycles=8, branches=4
+  range 13 P5/P12: axis=12, affected=160, width=4/4.3/5, convergence=5.7/5.7, elongation=3.71, endpoints=0, cycles=22, branches=13
+P03-A Large/42: 13 ranges, 346 axis cells, 3 ms P03-A, 816 ms total
+P03-A.1 Large/-731: land=24000, raised=4274 (17.81%), gain mean=5.51, max=25, largest >=85=57->66
+  >=75 1437->1634 (+197), >=85 109->170 (+61), >=95 18->18 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P5/P6: axis=28, affected=308, width=3/5.2/7, convergence=4.4/4.7, elongation=5.77, endpoints=0, cycles=50, branches=34
+  range 2 P5/P6: axis=20, affected=259, width=4/5.6/7, convergence=4.3/4.7, elongation=3.84, endpoints=1, cycles=26, branches=16
+  range 3 P2/P5: axis=11, affected=166, width=4/4.7/6, convergence=9.6/9.6, elongation=3.87, endpoints=0, cycles=14, branches=10
+  range 4 P2/P6: axis=16, affected=126, width=4/4.4/5, convergence=4.9/4.9, elongation=3.84, endpoints=2, cycles=24, branches=15
+  range 5 P2/P5: axis=69, affected=674, width=4/4.9/7, convergence=8.8/9.6, elongation=10.02, endpoints=0, cycles=139, branches=103
+  range 6 P5/P14: axis=65, affected=763, width=3/5.6/7, convergence=5.1/6.3, elongation=5.45, endpoints=1, cycles=113, branches=81
+  range 7 P5/P9: axis=24, affected=357, width=4/5.8/7, convergence=5.9/6.1, elongation=2.70, endpoints=1, cycles=43, branches=33
+  range 8 P1/P5: axis=21, affected=309, width=4/5.6/7, convergence=2.9/2.9, elongation=6.68, endpoints=1, cycles=32, branches=29
+  range 9 P1/P14: axis=11, affected=118, width=4/4.5/5, convergence=2.2/2.2, elongation=3.68, endpoints=2, cycles=6, branches=4
+  range 10 P5/P14: axis=23, affected=241, width=5/6.0/7, convergence=6.3/6.3, elongation=7.02, endpoints=0, cycles=43, branches=34
+  range 11 P2/P14: axis=15, affected=157, width=4/5.4/7, convergence=3.7/3.7, elongation=4.58, endpoints=0, cycles=25, branches=16
+  range 12 P1/P14: axis=16, affected=134, width=3/4.1/6, convergence=2.6/3.4, elongation=3.68, endpoints=1, cycles=26, branches=16
+  range 13 P5/P14: axis=44, affected=429, width=3/4.8/6, convergence=5.9/6.3, elongation=3.97, endpoints=1, cycles=83, branches=53
+  range 14 P1/P5: axis=20, affected=233, width=5/5.2/6, convergence=2.9/2.9, elongation=4.55, endpoints=1, cycles=30, branches=22
+P03-A Large/-731: 14 ranges, 383 axis cells, 5 ms P03-A, 799 ms total
+P03-A.1 Enormous/2026: land=42720, raised=2957 (6.92%), gain mean=5.66, max=22, largest >=85=240->573
+  >=75 2479->2818 (+339), >=85 260->635 (+375), >=95 17->17 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P0/P13: axis=23, affected=506, width=9/9.3/10, convergence=4.6/4.6, elongation=5.96, endpoints=0, cycles=44, branches=27
+  range 2 P10/P13: axis=79, affected=926, width=5/6.0/8, convergence=5.5/5.9, elongation=1.65, endpoints=2, cycles=129, branches=103
+  range 3 P3/P13: axis=67, affected=851, width=5/6.9/8, convergence=5.5/6.4, elongation=4.55, endpoints=0, cycles=140, branches=106
+  range 4 P0/P13: axis=40, affected=674, width=6/8.1/10, convergence=4.6/4.6, elongation=6.69, endpoints=1, cycles=66, branches=40
+P03-A Enormous/2026: 4 ranges, 209 axis cells, 5 ms P03-A, 1540 ms total
+P03-A.1 Enormous/42: land=42721, raised=4420 (10.35%), gain mean=5.08, max=24, largest >=85=25->109
+  >=75 1859->2316 (+457), >=85 64->584 (+520), >=95 5->5 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P0/P12: axis=41, affected=620, width=5/8.2/10, convergence=6.0/8.0, elongation=11.19, endpoints=1, cycles=52, branches=38
+  range 2 P0/P8: axis=57, affected=513, width=5/6.6/9, convergence=12.9/12.9, elongation=6.99, endpoints=1, cycles=104, branches=76
+  range 3 P0/P12: axis=17, affected=412, width=7/8.4/10, convergence=5.9/5.9, elongation=5.34, endpoints=1, cycles=14, branches=8
+  range 4 P0/P8: axis=23, affected=266, width=5/6.9/9, convergence=12.9/12.9, elongation=5.33, endpoints=1, cycles=36, branches=22
+  range 5 P12/P14: axis=20, affected=422, width=5/8.8/10, convergence=3.0/3.0, elongation=7.10, endpoints=1, cycles=16, branches=6
+  range 6 P0/P4: axis=33, affected=414, width=5/6.9/9, convergence=6.1/6.1, elongation=5.01, endpoints=0, cycles=54, branches=34
+  range 7 P12/P14: axis=27, affected=533, width=7/7.8/9, convergence=3.1/3.7, elongation=5.76, endpoints=2, cycles=32, branches=24
+  range 8 P9/P12: axis=18, affected=271, width=7/8.9/10, convergence=1.6/1.6, elongation=5.83, endpoints=1, cycles=16, branches=8
+  range 9 P9/P12: axis=19, affected=188, width=5/6.2/9, convergence=1.8/2.6, elongation=4.30, endpoints=0, cycles=28, branches=18
+  range 10 P5/P12: axis=72, affected=639, width=5/7.3/9, convergence=5.7/5.7, elongation=3.42, endpoints=1, cycles=96, branches=69
+  range 11 P12/P15: axis=17, affected=142, width=5/7.2/10, convergence=4.0/4.0, elongation=6.39, endpoints=0, cycles=31, branches=29
+P03-A Enormous/42: 11 ranges, 344 axis cells, 7 ms P03-A, 1691 ms total
+P03-A.1 Enormous/-731: land=42720, raised=3220 (7.54%), gain mean=4.22, max=16, largest >=85=11->72
+  >=75 2327->2400 (+73), >=85 22->85 (+63), >=95 4->4 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P0/P6: axis=27, affected=268, width=6/8.3/10, convergence=2.7/2.8, elongation=3.00, endpoints=0, cycles=52, branches=36
+  range 2 P6/P12: axis=13, affected=313, width=8/8.9/10, convergence=4.3/4.3, elongation=4.93, endpoints=2, cycles=2, branches=0
+  range 3 P5/P12: axis=20, affected=274, width=5/6.9/9, convergence=5.2/6.3, elongation=4.56, endpoints=0, cycles=26, branches=15
+  range 4 P5/P8: axis=38, affected=643, width=5/7.1/9, convergence=4.8/6.9, elongation=4.12, endpoints=1, cycles=54, branches=40
+  range 5 P5/P7: axis=33, affected=559, width=5/7.3/9, convergence=5.4/5.4, elongation=6.99, endpoints=1, cycles=40, branches=28
+  range 6 P1/P5: axis=83, affected=1163, width=5/7.8/10, convergence=2.9/2.9, elongation=7.41, endpoints=0, cycles=127, branches=85
+P03-A Enormous/-731: 6 ranges, 214 axis cells, 5 ms P03-A, 1591 ms total
+P03-A.1 Enormous/1510325998: land=42799, raised=7734 (18.07%), gain mean=5.71, max=25, largest >=85=187->288
+  >=75 2241->2435 (+194), >=85 198->392 (+194), >=95 36->36 (+0), 100 inherited=4, reached by P03-A=0
+  range 1 P0/P10: axis=15, affected=242, width=7/8.6/10, convergence=3.0/3.7, elongation=4.53, endpoints=1, cycles=16, branches=8
+  range 2 P0/P9: axis=96, affected=984, width=5/7.6/9, convergence=4.0/4.3, elongation=10.54, endpoints=1, cycles=173, branches=110
+  range 3 P2/P6: axis=13, affected=174, width=5/6.4/10, convergence=4.5/4.5, elongation=4.76, endpoints=1, cycles=6, branches=0
+  range 4 P4/P6: axis=14, affected=175, width=9/9.6/10, convergence=6.8/6.8, elongation=4.76, endpoints=1, cycles=8, branches=4
+  range 5 P0/P12: axis=13, affected=111, width=6/7.6/8, convergence=4.9/5.4, elongation=3.28, endpoints=1, cycles=16, branches=11
+  range 6 P0/P6: axis=15, affected=381, width=6/9.0/10, convergence=6.1/6.1, elongation=3.58, endpoints=1, cycles=16, branches=12
+  range 7 P0/P12: axis=30, affected=428, width=6/7.6/10, convergence=4.7/5.4, elongation=6.64, endpoints=2, cycles=40, branches=30
+  range 8 P0/P8: axis=38, affected=666, width=5/8.2/10, convergence=4.8/4.8, elongation=9.29, endpoints=0, cycles=68, branches=54
+  range 9 P5/P6: axis=71, affected=1112, width=5/7.8/10, convergence=5.5/5.9, elongation=3.20, endpoints=0, cycles=144, branches=100
+  range 10 P6/P8: axis=34, affected=547, width=5/6.5/9, convergence=8.3/9.5, elongation=7.13, endpoints=1, cycles=56, branches=34
+  range 11 P8/P12: axis=34, affected=310, width=7/8.1/9, convergence=8.6/9.4, elongation=7.98, endpoints=0, cycles=66, branches=51
+  range 12 P4/P8: axis=90, affected=941, width=5/8.1/10, convergence=3.3/3.6, elongation=13.94, endpoints=0, cycles=180, branches=135
+  range 13 P8/P15: axis=18, affected=176, width=5/7.2/8, convergence=5.6/5.6, elongation=4.09, endpoints=0, cycles=36, branches=22
+  range 14 P4/P13: axis=33, affected=394, width=5/7.0/10, convergence=5.8/6.6, elongation=2.61, endpoints=1, cycles=61, branches=51
+  range 15 P4/P8: axis=17, affected=164, width=9/9.0/9, convergence=3.1/3.6, elongation=2.29, endpoints=1, cycles=21, branches=13
+  range 16 P4/P5: axis=18, affected=344, width=7/8.6/10, convergence=4.0/4.0, elongation=4.61, endpoints=1, cycles=14, branches=8
+  range 17 P8/P11: axis=13, affected=95, width=5/5.3/6, convergence=6.2/6.2, elongation=4.20, endpoints=1, cycles=10, branches=4
+  range 18 P1/P4: axis=14, affected=301, width=6/7.9/10, convergence=5.1/5.1, elongation=4.15, endpoints=0, cycles=26, branches=16
+  range 19 P1/P4: axis=16, affected=189, width=6/6.6/7, convergence=5.1/5.1, elongation=3.75, endpoints=1, cycles=22, branches=14
+P03-A.1 Enormous/-251942972: land=43123, raised=2340 (5.43%), gain mean=5.02, max=23, largest >=85=87->87
+  >=75 2443->2547 (+104), >=85 123->196 (+73), >=95 21->21 (+0), 100 inherited=3, reached by P03-A=0
+  range 1 P3/P15: axis=27, affected=475, width=5/8.2/10, convergence=3.3/3.5, elongation=2.05, endpoints=0, cycles=53, branches=49
+  range 2 P6/P15: axis=58, affected=805, width=5/6.5/8, convergence=3.8/3.9, elongation=1.95, endpoints=0, cycles=104, branches=80
+  range 3 P9/P15: axis=36, affected=608, width=5/7.1/9, convergence=3.9/3.9, elongation=3.77, endpoints=1, cycles=65, branches=56
+  range 4 P0/P15: axis=28, affected=452, width=5/8.1/10, convergence=3.5/3.5, elongation=8.96, endpoints=1, cycles=28, branches=20
+P03-A.1 Enormous/1697481406: land=42720, raised=10014 (23.44%), gain mean=4.96, max=23, largest >=85=62->238
+  >=75 1913->2676 (+763), >=85 93->475 (+382), >=95 6->6 (+0), 100 inherited=2, reached by P03-A=0
+  range 1 P3/P13: axis=55, affected=641, width=5/6.2/10, convergence=7.6/9.2, elongation=8.23, endpoints=0, cycles=104, branches=73
+  range 2 P1/P8: axis=26, affected=312, width=5/7.0/10, convergence=2.4/2.4, elongation=3.68, endpoints=0, cycles=46, branches=34
+  range 3 P1/P13: axis=47, affected=711, width=5/6.6/10, convergence=4.1/4.1, elongation=10.28, endpoints=0, cycles=92, branches=78
+  range 4 P8/P13: axis=15, affected=177, width=5/7.6/10, convergence=3.4/4.0, elongation=5.26, endpoints=1, cycles=14, branches=8
+  range 5 P3/P9: axis=22, affected=421, width=6/7.8/9, convergence=6.9/6.9, elongation=6.56, endpoints=2, cycles=20, branches=14
+  range 6 P1/P14: axis=28, affected=373, width=6/7.1/8, convergence=3.1/3.1, elongation=8.07, endpoints=2, cycles=8, branches=4
+  range 7 P9/P14: axis=53, affected=552, width=5/6.5/9, convergence=1.3/1.5, elongation=3.23, endpoints=1, cycles=101, branches=69
+  range 8 P3/P11: axis=56, affected=925, width=6/7.8/10, convergence=5.1/6.2, elongation=9.21, endpoints=1, cycles=98, branches=74
+  range 9 P1/P13: axis=13, affected=233, width=6/6.7/7, convergence=4.1/4.1, elongation=3.59, endpoints=2, cycles=6, branches=4
+  range 10 P11/P13: axis=50, affected=824, width=8/8.7/10, convergence=7.7/7.7, elongation=6.11, endpoints=2, cycles=56, branches=36
+  range 11 P13/P14: axis=22, affected=350, width=7/8.1/10, convergence=1.9/1.9, elongation=5.35, endpoints=1, cycles=32, branches=22
+  range 12 P3/P9: axis=17, affected=253, width=5/6.6/9, convergence=6.9/6.9, elongation=5.18, endpoints=1, cycles=18, branches=12
+  range 13 P3/P11: axis=23, affected=315, width=5/7.5/10, convergence=5.5/6.2, elongation=4.67, endpoints=0, cycles=40, branches=28
+  range 14 P3/P7: axis=23, affected=410, width=6/7.0/9, convergence=4.9/5.0, elongation=6.48, endpoints=0, cycles=44, branches=28
+  range 15 P13/P14: axis=13, affected=172, width=5/6.6/8, convergence=1.9/1.9, elongation=4.28, endpoints=1, cycles=6, branches=4
+  range 16 P9/P11: axis=147, affected=2212, width=6/7.5/10, convergence=7.7/7.8, elongation=4.77, endpoints=0, cycles=252, branches=173
+  range 17 P9/P10: axis=69, affected=912, width=6/7.6/10, convergence=1.7/2.0, elongation=4.03, endpoints=2, cycles=127, branches=91
+  range 18 P9/P10: axis=17, affected=221, width=5/6.2/9, convergence=2.0/2.0, elongation=4.96, endpoints=2, cycles=18, branches=16
+P03-A.1 Enormous/1567286827: land=43290, raised=3616 (8.35%), gain mean=3.27, max=15, largest >=85=78->149
+  >=75 2049->2116 (+67), >=85 126->260 (+134), >=95 12->12 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P0/P14: axis=21, affected=286, width=5/6.3/7, convergence=11.4/14.9, elongation=5.15, endpoints=0, cycles=36, branches=22
+  range 2 P6/P14: axis=39, affected=578, width=5/7.7/10, convergence=3.4/3.4, elongation=8.31, endpoints=1, cycles=74, branches=57
+  range 3 P0/P14: axis=27, affected=361, width=5/6.6/9, convergence=9.6/9.6, elongation=8.27, endpoints=1, cycles=22, branches=14
+  range 4 P4/P6: axis=15, affected=370, width=7/8.0/10, convergence=7.0/7.0, elongation=4.87, endpoints=1, cycles=14, branches=8
+  range 5 P4/P11: axis=25, affected=448, width=7/8.1/10, convergence=6.2/6.2, elongation=5.69, endpoints=0, cycles=40, branches=28
+  range 6 P4/P7: axis=13, affected=179, width=5/6.4/8, convergence=1.6/1.6, elongation=4.14, endpoints=1, cycles=14, branches=12
+  range 7 P4/P7: axis=44, affected=601, width=5/8.3/10, convergence=1.6/1.6, elongation=5.01, endpoints=1, cycles=80, branches=55
+  range 8 P4/P7: axis=32, affected=463, width=7/8.5/10, convergence=1.6/1.6, elongation=5.39, endpoints=2, cycles=42, branches=28
+  range 9 P4/P7: axis=24, affected=330, width=6/7.3/10, convergence=1.6/1.6, elongation=6.97, endpoints=1, cycles=26, branches=14
+P03-A.1 Enormous/418579367: land=43092, raised=7399 (17.17%), gain mean=4.50, max=24, largest >=85=173->264
+  >=75 2055->2213 (+158), >=85 296->455 (+159), >=95 49->49 (+0), 100 inherited=1, reached by P03-A=0
+  range 1 P12/P13: axis=54, affected=648, width=5/6.1/9, convergence=1.5/1.9, elongation=10.16, endpoints=1, cycles=88, branches=60
+  range 2 P12/P13: axis=28, affected=340, width=5/7.3/9, convergence=1.4/1.4, elongation=8.72, endpoints=1, cycles=24, branches=12
+  range 3 P6/P12: axis=18, affected=376, width=6/9.2/10, convergence=7.4/7.4, elongation=4.97, endpoints=1, cycles=22, branches=16
+  range 4 P5/P12: axis=74, affected=1246, width=7/8.6/10, convergence=8.0/8.0, elongation=4.46, endpoints=0, cycles=150, branches=107
+  range 5 P6/P12: axis=57, affected=989, width=7/7.8/10, convergence=7.1/7.4, elongation=4.50, endpoints=1, cycles=102, branches=73
+  range 6 P12/P13: axis=43, affected=543, width=6/8.6/10, convergence=1.8/1.9, elongation=5.19, endpoints=0, cycles=87, branches=58
+  range 7 P12/P13: axis=38, affected=455, width=5/6.6/10, convergence=1.8/1.9, elongation=3.77, endpoints=1, cycles=71, branches=47
+  range 8 P12/P15: axis=77, affected=1105, width=5/7.3/10, convergence=8.3/8.8, elongation=3.15, endpoints=0, cycles=133, branches=87
+  range 9 P12/P13: axis=51, affected=457, width=5/7.6/10, convergence=1.7/1.9, elongation=8.23, endpoints=1, cycles=100, branches=65
+  range 10 P3/P9: axis=17, affected=222, width=5/5.9/8, convergence=1.1/1.1, elongation=5.22, endpoints=1, cycles=18, branches=14
+  range 11 P1/P12: axis=19, affected=348, width=8/9.2/10, convergence=3.9/4.1, elongation=4.59, endpoints=1, cycles=32, branches=21
+  range 12 P10/P12: axis=15, affected=215, width=6/6.7/7, convergence=5.0/6.2, elongation=3.20, endpoints=0, cycles=27, branches=22
+  range 13 P1/P13: axis=22, affected=455, width=8/9.5/10, convergence=4.5/4.5, elongation=3.71, endpoints=0, cycles=38, branches=27
+
+=== STDERR (complete) ===
