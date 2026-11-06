@@ -2,7 +2,7 @@
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$Label = 'P03-A4',
-    [ValidateSet('Worldgen', 'TectonicAudit')]
+    [ValidateSet('Worldgen', 'TectonicAudit', 'UpliftReference', 'TectonicCalibration')]
     [string]$ValidationSet = 'Worldgen'
 )
 
@@ -106,6 +106,22 @@ if ($ValidationSet -eq 'TectonicAudit') {
     )
 }
 $results = @()
+if ($ValidationSet -eq 'UpliftReference') {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'uplift-reference'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-uplift-reference') }
+    )
+}
+if ($ValidationSet -eq 'TectonicCalibration') {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'pangaea-elevations'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-elevations') },
+        @{ Name = 'mountain-ranges'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--mountain-ranges') },
+        @{ Name = 'tectonic-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-tectonic-audit') },
+        @{ Name = 'pangaea-uplift'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-uplift') },
+        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
+    )
+}
 $buildFailed = $false
 foreach ($step in $steps) {
     $command = 'dotnet ' + ($step.Arguments -join ' ')
