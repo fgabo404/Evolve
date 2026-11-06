@@ -8,6 +8,7 @@ using GEvolve.Engine.World.BiomeGeneration;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.State.Game;
+using GEvolve.Game.Graphics;
 
 public static class PangaeaTectonicAuditTests
 {
@@ -179,6 +180,17 @@ public static class PangaeaTectonicAuditTests
         var finalHigh75 = Enumerable.Range(0, topology.Count).Where(id => terrain.IsLand(id) && final[id] >= 75).ToArray();
         var white = Enumerable.Range(0, topology.Count).Where(id => terrain.IsLand(id) && final[id] >= 85).ToArray();
         var convCells = convIndices.SelectMany(i => new[] { motion.Interactions[i].FirstCellId, motion.Interactions[i].SecondCellId }).Distinct().ToArray();
+        var nonWhiteLand = Enumerable.Range(0, topology.Count).Where(id => terrain.IsLand(id) && final[id] < 85).ToArray();
+        var surfaceColors = nonWhiteLand.Select(id => MapViewColors.ForCell(terrain, id, MapViewMode.Biomes)).Distinct().ToArray();
+        int axisBelow85 = axisCells.Count(id => final[id] < 85);
+        Check(axisCells.All(id => BiomeClassifier.GetCell(terrain, id).Elevation == final[id] &&
+            MapViewColors.ForCell(terrain, id, MapViewMode.ElevationFinal, fields) == new System.Numerics.Vector3(final[id] / 100f)),
+            "Surface and diagnostic height consumers differ from final world data");
+        int axisUniformLandColor = surfaceColors.Length != 1 ? 0 : axisCells.Count(id => final[id] < 85 &&
+            MapViewColors.ForCell(terrain, id, MapViewMode.Biomes) == surfaceColors[0]);
+        Console.WriteLine($"AUDIT_SURFACE seed={seed} biomesPresent={terrain.Biomes is not null} " +
+            $"nonWhiteLandColors={surfaceColors.Length} axisBelow85={axisBelow85}/{axisCells.Length} " +
+            $"axisInUniformLandColor={axisUniformLandColor}");
         Console.WriteLine($"AUDIT_COUNTS seed={seed} reference={reference} land={land} convergentLand={convIndices.Length} " +
             $"eligible={eligible.Count(v => v)} candidates={audit.Candidates.Length} accepted={selected.Length} " +
             $"axes={axisCells.Length} influence={topology.Count - influence[0]} meanAxisFinal={AxisMean(v => v.MeanFinal):F3} " +
@@ -219,6 +231,13 @@ public static class PangaeaTectonicAuditTests
                 AxisWhitePercent = Percent(visible.Sum(v => v.Axis85), axisCells.Length),
                 MeanCorridorSlope = ranges.RangeByCellId.Count(id => id > 0) == 0 ? 0 :
                     Enumerable.Range(0, topology.Count).Where(id => ranges.RangeByCellId[id] > 0).Average(id => slopes[id])
+            },
+            Rendering = new
+            {
+                BiomesPresent = terrain.Biomes is not null, NonWhiteLandColors = surfaceColors.Length,
+                AxisBelow85 = axisBelow85, AxisUniformLandColor = axisUniformLandColor,
+                AxisUniformLandColorPercent = Percent(axisUniformLandColor, axisCells.Length),
+                FinalHeightConsumersMatch = true
             },
             Relief = new
             {

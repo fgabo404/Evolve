@@ -184,7 +184,7 @@ $summary.Add('## Actual diagnostic and regression evidence')
 $diagnosticName = if ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } else { 'pangaea-elevations' }
 $diagnostic = ($results | Where-Object { $_.Name -eq $diagnosticName }).Text
 $excerpts = @($diagnostic -split '\r?\n' | Where-Object {
-    $_ -match '^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_PASS:|^P03-A\.4 |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.4 FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
+    $_ -match '^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.4 |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.4 FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
 })
 if ($excerpts.Count -eq 0) { $summary.Add('No diagnostic records were reached/emitted. No metrics are invented.') }
 else { $summary.Add('Selected actual records; full decisions, distributions, prominence and H04 metrics are in ' + $diagnosticName + '.log.'); $summary.Add('```text'); foreach ($line in $excerpts) { $summary.Add($line) }; $summary.Add('```') }
