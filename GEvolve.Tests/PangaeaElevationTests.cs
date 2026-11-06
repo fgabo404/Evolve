@@ -255,8 +255,9 @@ public static class PangaeaElevationTests
         var selected = session.SelectAt(FlatHexGeometry.Center(new GridAddress(20, 20)));
         Check(selected is not null && ReferenceEquals(session.PangaeaElevations, world.PangaeaElevations),
             "A session consumes diagnostics from the same generated world");
+        var selectedCell = selected ?? throw new InvalidOperationException("The session did not select a grid cell");
         foreach (var mode in new[] { MapViewMode.ElevationBase, MapViewMode.ElevationContribution, MapViewMode.ElevationFinal })
-            _ = MapViewColors.ForCell(world.Landmass, selected!.Id, mode, session.PangaeaElevations);
+            _ = MapViewColors.ForCell(world.Landmass, selectedCell.Id, mode, session.PangaeaElevations);
         Check(session.SelectedCell == selected && ReferenceEquals(session.State.Landmass, world.Landmass),
             "Diagnostic views preserve selection and world state");
         session.ReturnToMenu();
