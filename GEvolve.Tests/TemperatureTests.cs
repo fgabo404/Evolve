@@ -105,6 +105,9 @@ public static class TemperatureTests
                         Check(color == TectonicStressPalette.ForValue(value, mode),
                             "Stress views show tectonic values even on summits");
                     }
+                    else if (mode == MapViewMode.Geology && terrain.PangaeaMountainRanges is not null)
+                        Check(color != Vector3.One,
+                            "Pangaea geology view marks mountain influence and axes without summit whiteout");
                     else if (mode != MapViewMode.Tectonic && terrain.IsImpassableSummit(id))
                         Check(color == Vector3.One, "Summits stay white in terrain views");
                 }

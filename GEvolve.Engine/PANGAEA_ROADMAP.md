@@ -93,7 +93,15 @@ Muestras vistas en Evolve: **Enormous 400×267**, semillas **1510325998**, **-25
 
 **Pruebas locales reportadas:** compilación correcta; suite `--mountain-ranges` aprobada en 12 escenarios; suite general falló en `TemperatureTests` («Summits stay white in terrain views») y en comparaciones históricas de hashes de elevación de Pangea (4 escenarios en `TectonicMotionTests`, 12 en `ContinentalGeologyTests`). No cambiar baselines antes de aprobar la nueva topografía. La precipitación sigue extremadamente seca (~94,79% de celdas terrestres), asunto independiente para P07.
 
-**Próximo paso recomendado:** una sola calibración acotada dentro de P03-A: clasificar ejes lineales vs. compactos/cíclicos, mejorar variabilidad de anchura e intensidad y conservar las grandes cadenas regionales. Diagnosticar en separado el fallo de cumbres de la suite de temperatura. Volver a ejecutar pruebas y comparar visualmente las mismas tres semillas. **No iniciar P03-B ni declarar cierre.**
+**Próximo paso recomendado:** validar local y visualmente P03-A.1 en los mismos casos, sin iniciar P03-B ni declarar cierre.
+
+### P03-A.1 — Calibración implementada; aprobación pendiente
+
+Commit previsto: `refactor(worldgen): calibrate Pangaea mountain range morphology and uplift` (SHA en la entrega). La prueba específica informa, por tamaño y semilla, alturas originales y finales en 75/85/95/100, celdas realmente elevadas, incremento medio y máximo, componente alta más grande y fracción terrestre afectada. Por sistema registra pareja de placas, longitud, celdas elevadas, anchuras, convergencia media y máxima, elongación, extremos, ciclos y ramificación. Estos contadores aún no tienen resultados locales reportados; no se atribuyen a P03-A alturas que ya existían en P02.
+
+El clasificador combina longitud y elongación para excluir contactos compactos, incluidos anillos pequeños, sin descartar arcos regionales extensos. Los ejes pueden desplazarse un hexágono hacia compresión interior conservando conectividad, tierra y proximidad a la frontera. Los anchos e intensidades varían mediante anclas regionales interpoladas, sin periodicidad sinusoidal ni ruido por celda. La propagación reemplaza una primera llegada débil cuando encuentra una influencia local mayor. El aporte nuevo se limita a 94; las alturas originales superiores se conservan. Los guardados `pangaea-ranges-1` siguen admitidos; la salida nueva usa `pangaea-ranges-2`.
+
+El fallo de `TemperatureTests` procedía de la expectativa de blanco para todas las vistas de terreno: la vista diagnóstica de cordilleras colorea deliberadamente también las cumbres. Se corrigió solo esa expectativa; el umbral, la paleta, el shader y la temperatura permanecen intactos. Los baselines históricos de elevación siguen sin actualizar. Validar compilación, suite P03-A, suite general, persistencia, tiempos y revisión en Evolve de Enormous para semillas `1510325998`, `-251942972`, `1697481406`, `1567286827` y `418579367`, además de las cuatro resoluciones y semillas oficiales.
 
 ## Arquitectura protegida y dependencias
 

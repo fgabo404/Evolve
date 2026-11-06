@@ -7,7 +7,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// <summary>Builds land-only mountain axes from connected, convergent H04 contacts.</summary>
 public sealed class PangaeaMountainRangeGenerator
 {
-    public const string Version = "pangaea-ranges-1";
+    public const string Version = "pangaea-ranges-2";
 
     public LandmassState Apply(HexTopology topology, LandmassState terrain)
     {
@@ -51,6 +51,8 @@ public sealed class PangaeaMountainRangeGenerator
         int search = 0;
         var queue = new Queue<int>();
         var ranges = new List<PangaeaMountainRange>();
+        var longitudinal = new Dictionary<int, double[]>();
+        var usedAxis = new bool[count];
         int minimumLength = Math.Max(7, topology.Rows / 20);
         for (int start = 0; start < count; start++)
         {
@@ -77,54 +79,146 @@ public sealed class PangaeaMountainRangeGenerator
             for (int id = endB; id != -1; id = parent[id]) axis.Add(id);
             axis.Reverse();
             if (axis.Count < minimumLength) continue;
+            int endpoints = 0, branches = 0, edgeCount = 0;
+            double meanX = 0, meanY = 0, xx = 0, yy = 0, xy = 0;
+            int originX = start % topology.Columns;
+            foreach (int id in component)
+            {
+                int degree = 0;
+                foreach (int neighbor in topology.Neighbors(id))
+                    if (pair[neighbor] == pair[start]) degree++;
+                if (degree <= 1) endpoints++;
+                if (degree >= 4) branches++;
+                edgeCount += degree;
+                int x = id % topology.Columns - originX;
+                if (x > topology.Columns / 2) x -= topology.Columns;
+                if (x < -topology.Columns / 2) x += topology.Columns;
+                double px = x * 1.5, py = id / topology.Columns * Math.Sqrt(3);
+                meanX += px; meanY += py;
+                xx += px * px; yy += py * py; xy += px * py;
+            }
+            meanX /= component.Count; meanY /= component.Count;
+            xx = xx / component.Count - meanX * meanX;
+            yy = yy / component.Count - meanY * meanY;
+            xy = xy / component.Count - meanX * meanY;
+            double trace = xx + yy, discriminant = Math.Sqrt((xx - yy) * (xx - yy) + 4 * xy * xy);
+            float elongation = (float)Math.Sqrt((trace + discriminant + 2) /
+                Math.Max(1, trace - discriminant + 2));
+            int cycles = Math.Max(0, edgeCount / 2 - component.Count + 1);
+            // Large open arcs survive even if their covariance is nearly round.
+            bool compact = axis.Count < topology.Rows * .12 && elongation < 2 ||
+                axis.Count < topology.Rows * .20 && elongation < 1.35 && endpoints <= 2;
+            if (compact) continue;
+
+            // Shift selected interior axis cells at most one hex into the nearby
+            // compression field. Keep each replacement adjacent to both neighbors.
+            var occupied = new HashSet<int>(axis);
+            for (int i = 1; i < axis.Count - 1; i++)
+            {
+                int old = axis[i], replacement = old;
+                foreach (int candidate in topology.Neighbors(axis[i - 1]))
+                    if (candidate != old && !occupied.Contains(candidate) && !usedAxis[candidate] &&
+                        topology.Neighbors(candidate).Contains(axis[i + 1]) &&
+                        terrain.SurfaceByCellId[candidate] == 1 &&
+                        motion.DistanceToBoundaryByCellId[candidate] is > 0 and <= 2 &&
+                        motion.DistanceToBoundaryByCellId[candidate] >
+                            motion.DistanceToBoundaryByCellId[old] &&
+                        motion.CompressionByCellId[candidate] >= strength[old] * .5f)
+                    { replacement = candidate; break; }
+                if (replacement == old) continue;
+                occupied.Remove(old); occupied.Add(replacement);
+                strength[replacement] = Math.Max(strength[replacement], strength[old]);
+                axis[i] = replacement;
+            }
             int baseWidth = Math.Max(3, (int)Math.Round(topology.Rows * .025));
             var widths = new byte[axis.Count];
-            float peak = 0;
+            float peak = 0, mean = 0;
+            int span = Math.Max(6, axis.Count / 6);
+            var random = new DeterministicRandom(terrain.Configuration.Seed,
+                unchecked((uint)(0x52414E47 + component.Min())));
+            int anchorCount = axis.Count / span + 2;
+            var widthAnchors = new double[anchorCount];
+            var heightAnchors = new double[anchorCount];
+            for (int a = 0; a < anchorCount; a++)
+            {
+                widthAnchors[a] = .65 + random.NextDouble() * .85;
+                heightAnchors[a] = .35 + random.NextDouble() * .65;
+            }
+            var profile = new double[axis.Count];
             for (int i = 0; i < axis.Count; i++)
             {
                 peak = Math.Max(peak, strength[axis[i]]);
-                widths[i] = (byte)Math.Clamp((int)Math.Round(baseWidth +
-                    1.2 * Math.Sin(i * .22 + axis[0] * .01)), 2, 12);
+                mean += strength[axis[i]];
+                int section = i / span;
+                double t = (double)(i % span) / span;
+                t = t * t * (3 - 2 * t);
+                double widthFactor = widthAnchors[section] * (1 - t) + widthAnchors[section + 1] * t;
+                profile[i] = heightAnchors[section] * (1 - t) + heightAnchors[section + 1] * t;
+                widths[i] = (byte)Math.Clamp((int)Math.Round(baseWidth * widthFactor), 2, 12);
             }
-            ranges.Add(new(0, axis.ToArray(), widths, peak));
+            int key = pair[start];
+            var mountain = new PangaeaMountainRange(0, axis.ToArray(), widths, peak,
+                (byte)(key / 16), (byte)(key % 16), mean / axis.Count,
+                elongation, endpoints, cycles, branches);
+            ranges.Add(mountain);
+            longitudinal[axis[0]] = profile;
+            foreach (int id in axis) usedAxis[id] = true;
         }
 
         ranges.Sort((a, b) => a.AxisCellIds.Min().CompareTo(b.AxisCellIds.Min()));
         var owner = new ushort[count];
         var best = new double[count];
         var final = (byte[])original.Clone();
-        var influenceStamp = new int[count];
+        var localBest = new double[count];
+        var touched = new List<int>();
         for (int index = 0; index < ranges.Count; index++)
         {
             var range = ranges[index] with { Id = index + 1 };
             ranges[index] = range;
-            var frontier = new Queue<(int Cell, int Axis, int Distance)>();
+            var frontier = new PriorityQueue<(int Cell, int Axis, int Distance, double Uplift), double>();
+            var profile = longitudinal[range.AxisCellIds[0]];
+            double scale = range.AxisCellIds.Length >= topology.Rows * .20 ? 1 : .65;
             for (int i = 0; i < range.AxisCellIds.Length; i++)
             {
                 int cell = range.AxisCellIds[i];
-                influenceStamp[cell] = index + 1;
-                frontier.Enqueue((cell, i, 0));
+                double uplift = Uplift(i, 0);
+                if (uplift <= localBest[cell]) continue;
+                if (localBest[cell] == 0) touched.Add(cell);
+                localBest[cell] = uplift;
+                frontier.Enqueue((cell, i, 0, uplift), -uplift);
             }
-            while (frontier.TryDequeue(out var step))
+            while (frontier.TryDequeue(out var step, out _))
             {
-                int width = range.WidthByAxisCell[step.Axis];
-                double taper = Math.Pow(1 - (double)step.Distance / (width + 1), 2);
-                double intensity = Math.Clamp(strength[range.AxisCellIds[step.Axis]] / 4, .35, 1);
-                double uplift = 27 * intensity * taper;
-                if (uplift > best[step.Cell])
+                if (step.Uplift < localBest[step.Cell]) continue;
+                if (step.Uplift > best[step.Cell])
                 {
-                    best[step.Cell] = uplift;
+                    best[step.Cell] = step.Uplift;
                     owner[step.Cell] = checked((ushort)range.Id);
-                    final[step.Cell] = (byte)Math.Clamp(
-                        Math.Max(original[step.Cell], (int)Math.Round(original[step.Cell] + uplift)), 1, 100);
+                    // Existing high terrain is preserved; new uplift cannot create
+                    // broad saturated plateaus at the top of the 1..100 scale.
+                    final[step.Cell] = (byte)Math.Max(original[step.Cell],
+                        Math.Min(94, (int)Math.Round(original[step.Cell] + step.Uplift)));
                 }
-                if (step.Distance >= width) continue;
+                if (step.Distance >= range.WidthByAxisCell[step.Axis]) continue;
                 foreach (int neighbor in topology.Neighbors(step.Cell))
-                    if (terrain.SurfaceByCellId[neighbor] == 1 && influenceStamp[neighbor] != index + 1)
+                    if (terrain.SurfaceByCellId[neighbor] == 1)
                     {
-                        influenceStamp[neighbor] = index + 1;
-                        frontier.Enqueue((neighbor, step.Axis, step.Distance + 1));
+                        double next = Uplift(step.Axis, step.Distance + 1);
+                        if (next <= localBest[neighbor]) continue;
+                        if (localBest[neighbor] == 0) touched.Add(neighbor);
+                        localBest[neighbor] = next;
+                        frontier.Enqueue((neighbor, step.Axis, step.Distance + 1, next), -next);
                     }
+            }
+            foreach (int id in touched) localBest[id] = 0;
+            touched.Clear();
+
+            double Uplift(int axisIndex, int steps)
+            {
+                double width = range.WidthByAxisCell[axisIndex];
+                double taper = Math.Pow(1 - steps / (width + 1), 2);
+                double intensity = Math.Clamp(strength[range.AxisCellIds[axisIndex]] / 4, .35, 1);
+                return 25 * scale * intensity * profile[axisIndex] * taper;
             }
         }
         // Axes have distinct eligible cells. Keep their own identity even where
@@ -132,6 +226,11 @@ public sealed class PangaeaMountainRangeGenerator
         foreach (var range in ranges)
             foreach (int id in range.AxisCellIds)
                 owner[id] = checked((ushort)range.Id);
+        var affected = new int[ranges.Count];
+        for (int id = 0; id < count; id++)
+            if (owner[id] != 0 && final[id] > original[id]) affected[owner[id] - 1]++;
+        for (int i = 0; i < ranges.Count; i++)
+            ranges[i] = ranges[i] with { AffectedCells = affected[i] };
         return terrain with { ElevationByCellId = final,
             PangaeaMountainRanges = new(Version, ranges.ToArray(), owner) };
 

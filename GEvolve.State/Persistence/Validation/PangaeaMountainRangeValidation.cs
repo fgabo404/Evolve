@@ -11,7 +11,7 @@ internal static class PangaeaMountainRangeValidation
         int count = terrain.SurfaceByCellId.Length;
         if (terrain.Configuration.Type != LandmassType.Pangaea || !terrain.HasSurface ||
             terrain.ElevationByCellId is null || terrain.TectonicMotion is null ||
-            state.Version != "pangaea-ranges-1" || state.Ranges is null ||
+            state.Version is not ("pangaea-ranges-1" or "pangaea-ranges-2") || state.Ranges is null ||
             state.RangeByCellId is null || state.RangeByCellId.Length != count ||
             state.Ranges.Length > ushort.MaxValue ||
             state.RangeByCellId.Any(value => value > state.Ranges.Length))
@@ -27,7 +27,14 @@ internal static class PangaeaMountainRangeValidation
                 range.WidthByAxisCell.Any(width => width is < 2 or > 12) ||
                 range.AxisCellIds.Any(id => (uint)id >= (uint)count ||
                     terrain.SurfaceByCellId[id] != 1 || state.RangeByCellId[id] != range.Id) ||
-                range.AxisCellIds.Distinct().Count() != range.AxisCellIds.Length)
+                range.AxisCellIds.Distinct().Count() != range.AxisCellIds.Length ||
+                state.Version == "pangaea-ranges-2" &&
+                (range.FirstPlateId >= 16 || range.SecondPlateId >= 16 ||
+                 range.FirstPlateId >= range.SecondPlateId ||
+                 !float.IsFinite(range.MeanConvergence) || range.MeanConvergence < 1 ||
+                 !float.IsFinite(range.Elongation) || range.Elongation < 1 ||
+                 range.ContactEndpoints < 0 || range.ContactCycles < 0 ||
+                 range.BranchingCells < 0 || range.AffectedCells < 0))
                 throw new InvalidDataException("Invalid Pangaea mountain range geometry.");
         }
         for (int id = 0; id < count; id++)
