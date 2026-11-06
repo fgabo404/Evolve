@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-05:** P03-A.2 diagnóstico validado localmente. P03-A.3 rechazado visualmente como resultado final. P03-A.4 implementado, pendiente de validación local y visual; P03-A no aprobado.
+> **Estado al 2026-11-06:** P03-A.2 diagnóstico validado localmente; P03-A.3 rechazado visualmente. P03-A.4 con validación técnica publicada y regresiones históricas de elevación pendientes. P03-A.5 auditado en cinco semillas Large sin cambiar generación. P03-A no aprobado; revisión visual pendiente.
 
 ## Objetivo
 
@@ -162,6 +162,20 @@ La componente principal de 1324918567 ya existía en BASE y abarcaba alturas 85�
 Se registran sistemas detectados y serializados, ejes, cobertura de influencia frente a celdas realmente elevadas, bandas <40/40–60/61–75/76–84/85–94/95–100 dentro y fuera de corredores, alturas de ejes, pendiente media del corredor y conectividad ≥61/≥75/≥85. La prominencia se define como diferencia del eje frente a sus vecinos terrestres inmediatos y frente al entorno exterior de la influencia (media ponderada por aristas); son indicadores locales, no prominencia física de una cumbre en metros. La relación tectónica se informa con compresión H04 media y cercanía a contactos convergentes en el radio oficial de influencia. Se mantienen estadísticas de fuentes aproximadas de BASE, hashes de las tres versiones, recortes, diferencias entre vecinos y forma de componentes extremas. Las huellas históricas no se actualizan ni se eliminan aserciones.
 
 **Pendiente:** compilación, suite de elevaciones, suite de cordilleras, suite general y revisión visual de los mismos mundos con BASE/APORTE/FINAL, RELIEVE: CORDILLERAS y PLACAS. Las nuevas pruebas protegen la banda extrema de BASE P03-A.3 y la geometría de sistemas en las tres versiones; no exigen una prominencia mínima ni un número arbitrario de montañas. Se esperan hombros y elevaciones intermedias más continuos alrededor de los sistemas existentes en las cuatro semillas desfavorables; no se promete cubrir regiones tectónicamente vacías. Riesgos: exceso de relieve moderado, variación de contraste de crestas y expansión de componentes ≥85 en FINAL por el aporte ya existente. Las cifras nuevas y la mejora visual siguen sin confirmar hasta la ejecución del usuario.
+
+### P03-A.5 — Auditoría tectónica y distribución de cordilleras
+
+**Estado:** diagnóstico implementado y ejecutado, no aprobación de P03-A. No se implementa P03-A.6. La autorización específica de esta auditoría permite ejecutar compilación y pruebas, como excepción a la regla ordinaria de ejecución reservada al usuario.
+
+Instrumentación publicada en `test(worldgen): trace Pangaea tectonic mountain selection` (`7ebd325fbd44e38b611a0c797ccc5770118f1a4a`) y ampliada en `test(worldgen): quantify sub-summit mountain visibility` (`74db94f6a4bc4f848245bb0bcf0e882aa71d7b1d`). La traza opcional registra las decisiones existentes y no forma parte de State ni de los guardados. No cambia filtros, RNG, superficie, tectónica, ejes, anchuras, alturas, paleta ni shader.
+
+**Evidencia del 2026-11-06:** [informe y respuestas](../GEvolve.Tests/ValidationReports/P03-A5_20261106_143813456Z_ed0d8bb9/REPORT.md), [resumen y entorno](../GEvolve.Tests/ValidationReports/P03-A5_20261106_143813456Z_ed0d8bb9/SUMMARY.md), [log numérico completo](../GEvolve.Tests/ValidationReports/P03-A5_20261106_143813456Z_ed0d8bb9/tectonic-audit.log). Sobre el segundo commit: `dotnet build` PASS (0 errores/advertencias) y `dotnet run --project GEvolve.Tests -- --pangaea-tectonic-audit` PASS. Las cinco semillas solicitadas en Large conservan exactamente el estado generado con/sin traza, incluidos sistemas persistibles, BASE, aporte, superficie y H04. No se ejecutó el juego gráfico ni se extrapola a otros tamaños.
+
+**Conclusiones medidas:** 143 componentes candidatos, 41 seleccionados; los 102 rechazos son por componente/eje corto, ninguno por filtros compactos tras superar longitud. No hay mayor descarte sistemático en las desfavorables. `-1979952984` tiene escasez convergente; las otras dos desfavorables conservan convergencia y longitud de eje comparables a una favorable. Sus ejes tienen FINAL media 52–55 frente a 61/83 de las favorables; BASE y su coincidencia espacial son relevantes. Sin biomas, 79–87 % de sus ejes recibe el mismo color terrestre sub85 que el terreno ordinario en superficie. Ese hecho no basta para explicar todas las etiquetas visuales: también ocurre en una favorable. El informe distingue hechos, limitaciones e hipótesis y conserva las nueve regiones por semilla.
+
+**Siguiente paso recomendado, sin implementarlo:** comparar FINAL/RELIEVE/SUPERFICIE al mismo zoom. No relajar selección ni imponer cuotas. Si se autoriza P03-A.6 sobre alturas, ensayar únicamente composición vertical dentro de corredores existentes con envolvente dependiente de convergencia y continuidad, contrastando prominencia y pendientes; si el defecto se limita a superficie, tratar primero su representación sub85 por separado.
+
+**Validaciones anteriores:** la [ejecución P03-A.4](../GEvolve.Tests/ValidationReports/P03-A4_20261106_140522345Z_f747ba65/SUMMARY.md) reemplaza el pendiente técnico de la sección anterior: build, elevaciones y cordilleras PASS; suite general FAIL (13 suites PASS, dos fallos de baselines históricos de elevación). No se corrigieron fallos ni actualizaron baselines. Se mantiene pendiente la aceptación visual y global por el usuario.
 
 ## Arquitectura protegida y dependencias
 

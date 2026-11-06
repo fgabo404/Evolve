@@ -1,0 +1,22 @@
+Command: dotnet build
+Started UTC: 2026-11-06T14:38:13.6781386Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 5.543
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  GEvolve.Definitions -> <REPO>\GEvolve.Definitions\bin\Debug\net10.0\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.State\bin\Debug\net10.0\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Engine\bin\Debug\net10.0\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Game\bin\Debug\net10.0\GEvolve.Game.dll
+  GEvolve.Tests -> <REPO>\GEvolve.Tests\bin\Debug\net10.0\GEvolve.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.20
+
+=== STDERR (complete) ===

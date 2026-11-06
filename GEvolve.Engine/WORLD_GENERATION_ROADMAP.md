@@ -351,6 +351,6 @@ Los commits de hitos se realizan en `worldgenerator`. Los merges `worldgenerator
 
 ## 7. Próximo paso
 
-**H01–H04 completados y aprobados por auditoría.** El trabajo activo vuelve a **Pangea**, para completar y validar sus capas compartidas antes de adaptar el pipeline a `Continents` y demás tipos. El seguimiento detallado de P03-A y los hitos de Pangea está en [PANGAEA_ROADMAP.md](PANGAEA_ROADMAP.md); P03-A está implementado y pendiente de validación local y visual. Los experimentos H05 de corteza y superficie de Continents están retirados del código operativo y disponibles solo en el historial. **H06 aún no iniciado.**
+**H01–H04 completados y aprobados por auditoría.** El trabajo activo vuelve a **Pangea**, para completar y validar sus capas compartidas antes de adaptar el pipeline a `Continents` y demás tipos. El seguimiento detallado de P03-A y los hitos de Pangea está en [PANGAEA_ROADMAP.md](PANGAEA_ROADMAP.md); P03-A.5 cuenta con auditoría diagnóstica ejecutada en cinco semillas Large sin cambiar generación. P03-A sigue sin aprobación: revisión visual y regresiones históricas de elevación pendientes. Los experimentos H05 de corteza y superficie de Continents están retirados del código operativo y disponibles solo en el historial. **H06 aún no iniciado.**
 
 Esta planificación se actualiza con evidencia de código, pruebas y commits; no sustituye la documentación de arquitectura ni declara finalizadas las implementaciones pendientes.
