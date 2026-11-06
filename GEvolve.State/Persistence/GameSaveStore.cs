@@ -47,6 +47,7 @@ public static class GameSaveStore
                 state.HexGrid.Definition.Rows)))
             throw new InvalidDataException("Invalid landmass save data.");
         TectonicMotionValidation.Validate(landmass);
+        PangaeaMountainRangeValidation.Validate(landmass);
         ContinentalGeologyValidation.Validate(landmass);
         if (landmass.SlopeByCellId is { } slopes &&
             (landmass.ElevationByCellId is null || slopes.Length != landmass.SurfaceByCellId.Length ||

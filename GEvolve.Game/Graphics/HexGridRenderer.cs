@@ -250,6 +250,32 @@ public sealed class HexGridRenderer : IDisposable
         }
     }
 
+    public void DrawPangaeaMountainRanges(UiRenderer ui, MapCamera2D camera)
+    {
+        if (_landmass.PangaeaMountainRanges is not { } state) return;
+        int columns = _grid.Definition.Columns;
+        var visible = camera.VisibleRange();
+        foreach (var mountain in state.Ranges)
+        for (int i = 1; i < mountain.AxisCellIds.Length; i++)
+        {
+            int previous = mountain.AxisCellIds[i - 1], current = mountain.AxisCellIds[i];
+            int x = previous % columns, nextX = current % columns;
+            int step = nextX - x;
+            if (step > columns / 2) nextX -= columns;
+            if (step < -columns / 2) nextX += columns;
+            int row = previous / columns, nextRow = current / columns;
+            for (int copy = (int)Math.Floor((visible.FirstColumn - Math.Max(x, nextX)) / (double)columns);
+                 Math.Min(x, nextX) + copy * columns <= visible.LastColumn; copy++)
+            {
+                var a = camera.WorldToScreen(FlatHexGeometry.Center(new(x + copy * columns, row)));
+                var b = camera.WorldToScreen(FlatHexGeometry.Center(new(nextX + copy * columns, nextRow)));
+                if (Math.Max(a.Y, b.Y) < MapCamera2D.TopBarHeight ||
+                    Math.Min(a.Y, b.Y) > camera.ViewHeight) continue;
+                ui.Line(a, b, 2, new(1f, .86f, .38f, 1f));
+            }
+        }
+    }
+
     private void UpdateVisible(MapCamera2D camera)
     {
         VisibleHexRange range = camera.VisibleRange();

@@ -278,7 +278,8 @@ internal sealed class EvolveWindow : GameWindow
             var selected = _session.SelectedCell;
             int cameraVersion = _camera.Version;
             var action = viewActions[_smokeViewStep];
-            var expectedMode = action == UiAction.ToggleGeology && terrain?.ContinentalGeology is not null
+            var expectedMode = action == UiAction.ToggleGeology &&
+                (terrain?.ContinentalGeology is not null || terrain?.PangaeaMountainRanges is not null)
                 ? MapViewMode.Geology
                 : action == UiAction.StressCompression ? MapViewMode.Compression
                 : action == UiAction.StressExtension ? MapViewMode.Extension
@@ -400,7 +401,11 @@ internal sealed class EvolveWindow : GameWindow
             _gridRenderer.DrawPlateBoundaries(_ui, _camera);
             _gridRenderer.DrawPlateMotions(_ui, _camera);
         }
-        if (_viewMode == MapViewMode.Geology) _gridRenderer.DrawContinentalGeology(_ui, _camera);
+        if (_viewMode == MapViewMode.Geology)
+        {
+            _gridRenderer.DrawContinentalGeology(_ui, _camera);
+            _gridRenderer.DrawPangaeaMountainRanges(_ui, _camera);
+        }
 
         if (_session.SelectedCell is { } selected)
         {
@@ -537,6 +542,12 @@ internal sealed class EvolveWindow : GameWindow
                 if (volcano is not null) geologicalInfo += $"  VOLCÁN: {volcano.Kind} P{volcano.SubductingPlateId}->P{volcano.OverridingPlateId}";
                 lines = [.. lines, geologicalInfo];
             }
+            if (landmass.PangaeaMountainRanges is { } mountainState &&
+                mountainState.RangeByCellId[cell.Id] is ushort rangeId && rangeId != 0)
+            {
+                var mountain = mountainState.Ranges[rangeId - 1];
+                lines = [.. lines, $"CORDILLERA {mountain.Id}: EJE {mountain.AxisCellIds.Length} HEX, CONVERGENCIA {mountain.PeakConvergence:F1} CM/AÑO"];
+            }
             int maxLength = lines.Max(line => line.Length);
             float pixel = MathF.Min(1.6f, (ClientSize.X - 48) / (6f * maxLength));
             float labelWidth = maxLength * 6 * pixel;
@@ -623,6 +634,9 @@ internal sealed class EvolveWindow : GameWindow
                     : button.Action == UiAction.ToggleInfrared
                         ? _session.State.Landmass?.Climate is null ? "CLIMA PENDIENTE"
                             : _viewMode == MapViewMode.Infrared ? "VER BIOMAS" : button.Text
+                    : button.Action == UiAction.ToggleGeology &&
+                      _session.State.Landmass?.PangaeaMountainRanges is not null
+                        ? "RELIEVE: CORDILLERAS"
                         : button.Text;
                 _ui.Text(text, r.X + r.Width / 2,
                     r.Y + (r.Height - 7 * pixel) / 2, pixel, White);
@@ -826,7 +840,9 @@ internal sealed class EvolveWindow : GameWindow
                     };
                 break;
             case UiAction.ToggleGeology:
-                if (_session.Screen == GameScreen.World && _session.State.Landmass?.ContinentalGeology is not null)
+                if (_session.Screen == GameScreen.World &&
+                    (_session.State.Landmass?.ContinentalGeology is not null ||
+                     _session.State.Landmass?.PangaeaMountainRanges is not null))
                     _viewMode = _viewMode == MapViewMode.Geology ? MapViewMode.Biomes : MapViewMode.Geology;
                 break;
             case UiAction.ToggleGrayscale:

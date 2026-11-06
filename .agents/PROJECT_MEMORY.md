@@ -4,7 +4,7 @@ Consulta primero [arquitectura](../GEvolve.Engine/WORLD_GENERATION_ARCHITECTURE.
 
 ## Prioridad y estado
 
-- **Rama:** `worldgenerator`. La limpieza H05 fue solicitada por el usuario; aprobación de compilación y suite local aún pendiente.
+- **Rama:** `worldgeneration_pangea`. La limpieza H05 fue validada por el usuario; P03-A está implementado y pendiente de compilación, suite, rendimiento y revisión visual locales. El seguimiento oficial está en `GEvolve.Engine/PANGAEA_ROADMAP.md`.
 - **Prioridad inmediata:** continuar exclusivamente con Pangea, completando sus capas con la geometría actual sin recalibrarla durante la limpieza. Tras aprobación, adaptar las capas comunes a los demás tipos.
 - **H01–H04:** conservar topología flat-top, cuatro tamaños, costura E/O y bordes N/S abiertos, 16 placas, movimientos, contactos y esfuerzos tectónicos. Preservar baselines tectónicos y geográficos.
 - **H05 de Continents:** experimentos de corteza A1/A2/B1/B2/B3, ensayos regionales A/B y C1 retirados del código operativo. Historial disponible y respaldo `backup/worldgenerator-pre-h05-cleanup-20261105`; no reintroducir código por compatibilidad sin autorización.

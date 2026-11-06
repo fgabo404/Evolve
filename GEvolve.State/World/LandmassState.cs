@@ -11,6 +11,7 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public byte[]? SlopeByCellId { get; init; }
     public byte[]? PlateByCellId { get; init; }
     public TectonicMotionState? TectonicMotion { get; init; }
+    public PangaeaMountainRangeState? PangaeaMountainRanges { get; init; }
     public ContinentalGeologyState? ContinentalGeology { get; init; }
     /// <summary>Continentes conserva sus placas y movimiento; la superficie aún no existe.</summary>
     public bool SurfaceGenerationPending { get; init; }

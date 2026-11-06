@@ -15,6 +15,11 @@ public static class MapViewColors
         return mode switch
     {
         MapViewMode.Geology when terrain.ContinentalGeology is not null => ContinentalGeologyPalette.ForCell(terrain, id),
+        MapViewMode.Geology when terrain.PangaeaMountainRanges is { } ranges =>
+            !terrain.IsLand(id) ? new Vector3(.08f, .17f, .30f) :
+            ranges.RangeByCellId[id] == 0 ? new Vector3(.30f, .34f, .30f) :
+            new Vector3(.60f, .38f, .17f) +
+                new Vector3(terrain.ElevationByCellId![id] / 300f),
         MapViewMode.Compression when terrain.TectonicMotion is { } motion =>
             TectonicStressPalette.ForValue(motion.CompressionByCellId[id], mode),
         MapViewMode.Extension when terrain.TectonicMotion is { } motion =>

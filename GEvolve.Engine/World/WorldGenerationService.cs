@@ -16,6 +16,7 @@ public sealed class WorldGenerationService
 {
     private readonly PangaeaFromPlatesGenerator _pangaea = new();
     private readonly PlateAwareElevationGenerator _relief = new();
+    private readonly PangaeaMountainRangeGenerator _mountainRanges = new();
 
     /// <summary>Generates a world using the official profile for the selected size, type and seed.</summary>
     public GeneratedWorld Generate(GridSize size, LandmassType worldType, int seed = 2026)
@@ -86,6 +87,8 @@ public sealed class WorldGenerationService
                 TectonicMotion = tectonicMotion,
                 ElevationByCellId = elevation
             };
+            if (configuration.Type == LandmassType.Pangaea)
+                terrain = _mountainRanges.Apply(topology, terrain);
             return new GeneratedWorld(grid, terrain, last
                 ?? throw new InvalidOperationException("Landmass statistics were not calculated."));
         }

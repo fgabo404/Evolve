@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-05:** planificación publicada; P03-A encargado a Codex, **sin implementación ni validación confirmadas en esta rama**.
+> **Estado al 2026-11-05:** P03-A implementado; pendiente de compilación, suite, revisión visual y rendimiento locales.
 
 ## Objetivo
 
@@ -31,7 +31,7 @@ No marcar `[x]` por el solo hecho de crear una clase o publicar un commit. Para 
 |---|---|---|---|
 | P01 | Cuadrícula, 16 placas, límites y movimiento tectónico | **Base funcional aprobada** | H01–H04; conservar hashes y topología |
 | P02 | Superficie actual de Pangea, costas y masa conectada | **Base funcional aprobada** | 36 baselines históricos y geometría valorada por usuario; no cambiar |
-| P03 | Accidentes geográficos terrestres | **En desarrollo** | Iniciar únicamente P03-A |
+| P03 | Accidentes geográficos terrestres | **En desarrollo** | P03-A implementado; validación y aprobación pendientes |
 | P04 | Accidentes submarinos y batimetría | Pendiente | Plataformas, taludes, llanuras abisales, dorsales, fosas |
 | P05 | Consolidar elevaciones y pendientes | Pendiente | Tierra 1–100, océano 0 en contrato actual; profundidad separada |
 | P06 | Temperatura sobre geografía definitiva | **Base funcional; integración/calibración pendiente** | Conservar módulos y validar latitud/altura/mar |
@@ -45,7 +45,7 @@ No marcar `[x]` por el solo hecho de crear una clase o publicar un commit. Para 
 
 | Subhito | Resultado esperado | Estado |
 |---|---|---|
-| **P03-A — Cordilleras** | Sistemas montañosos regionales continuos, ejes conectados, anchuras y alturas variables, coherentes con evidencia convergente de H04 | **En desarrollo — Codex** |
+| **P03-A — Cordilleras** | Sistemas montañosos regionales continuos, ejes conectados, anchuras y alturas variables, coherentes con evidencia convergente de H04 | **Implementado / pendiente de validación** |
 | P03-B — Montañas aisladas | Macizos y cumbres diferenciables de cordilleras | Pendiente |
 | P03-C — Mesetas y colinas | Relieve elevado amplio y ondulaciones regionales | Pendiente |
 | P03-D — Valles y cuencas | Depresiones coherentes con el relieve circundante | Pendiente |
@@ -73,7 +73,13 @@ No marcar `[x]` por el solo hecho de crear una clase o publicar un commit. Para 
 | Fecha | Hito | Estado / decisión | Commit | Evidencia |
 |---|---|---|---|---|
 | 2026-11-05 | Base | Limpieza H05 validada; retomamos Pangea | `a58d5689c17f1fea045066c10a400dbbe9a35976` | Build, suite y 36 baselines aprobados por usuario |
-| 2026-11-05 | P03-A | Trabajo encargado a Codex; sin aprobación todavía | — | Pendiente de publicación, pruebas y capturas |
+| 2026-11-05 | P03-A | Implementado; sin aprobación todavía | `feat(worldgen): add tectonic mountain range systems to Pangaea` (SHA en la entrega) | Pendientes build, suite P03-A, suite general, hashes de elevación, tiempos e inspección visual en Evolve |
+
+### Entrega P03-A pendiente de validación
+
+Los ejes se extraen de contactos H04 convergentes o mixtos con convergencia de al menos 1 cm/año, dominante frente a la cizalla y con tierra a ambos lados. Se agrupan por par de placas y vecindad hexagonal; los componentes cortos se descartan. Cada sistema conserva ID, eje ordenado, anchura local e intensidad. El levantamiento se propaga localmente sobre tierra, se atenúa hacia las laderas y se suma al relieve inicial sin renormalizar el mapa ni alterar la superficie. El modo de geología muestra las áreas y ejes de Pangea.
+
+Limitaciones: H04 no identifica corteza continental ni la frontera causante del máximo de compresión por celda; las cordilleras son sistemas favorecidos por convergencia, no colisiones continentales certificadas. La selección de ejes y su aspecto requieren revisión visual y medición de rendimiento local. Se esperan cambios en hashes de elevación de Pangea; los baselines históricos permanecen intactos hasta aprobación explícita. Los guardados anteriores sin metadatos de cordilleras siguen admitidos.
 
 ## Arquitectura protegida y dependencias
 
