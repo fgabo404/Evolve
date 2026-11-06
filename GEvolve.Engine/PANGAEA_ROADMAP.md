@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-05:** P03-A implementado; pendiente de compilación, suite, revisión visual y rendimiento locales.
+> **Estado al 2026-11-05:** P03-A implementado, compilación y suite específica aprobadas localmente; auditoría visual requiere calibración y la suite general registra fallos. No aprobado.
 
 ## Objetivo
 
@@ -73,13 +73,27 @@ No marcar `[x]` por el solo hecho de crear una clase o publicar un commit. Para 
 | Fecha | Hito | Estado / decisión | Commit | Evidencia |
 |---|---|---|---|---|
 | 2026-11-05 | Base | Limpieza H05 validada; retomamos Pangea | `a58d5689c17f1fea045066c10a400dbbe9a35976` | Build, suite y 36 baselines aprobados por usuario |
-| 2026-11-05 | P03-A | Implementado; sin aprobación todavía | `feat(worldgen): add tectonic mountain range systems to Pangaea` (SHA en la entrega) | Pendientes build, suite P03-A, suite general, hashes de elevación, tiempos e inspección visual en Evolve |
+| 2026-11-05 | P03-A | Implementado; **ajustes pendientes tras revisión visual** | `feat(worldgen): add tectonic mountain range systems to Pangaea` (`c2f222cbfa0922d8626c71d10460657b94261cad`) | Build PASS; suite específica 12/12 PASS; P03-A 0–2 ms reportados; suite general con fallo de cumbres blancas y hashes de elevación anteriores; revisión visual de tres semillas no aprobada |
 
 ### Entrega P03-A pendiente de validación
 
 Los ejes se extraen de contactos H04 convergentes o mixtos con convergencia de al menos 1 cm/año, dominante frente a la cizalla y con tierra a ambos lados. Se agrupan por par de placas y vecindad hexagonal; los componentes cortos se descartan. Cada sistema conserva ID, eje ordenado, anchura local e intensidad. El levantamiento se propaga localmente sobre tierra, se atenúa hacia las laderas y se suma al relieve inicial sin renormalizar el mapa ni alterar la superficie. El modo de geología muestra las áreas y ejes de Pangea.
 
 Limitaciones: H04 no identifica corteza continental ni la frontera causante del máximo de compresión por celda; las cordilleras son sistemas favorecidos por convergencia, no colisiones continentales certificadas. La selección de ejes y su aspecto requieren revisión visual y medición de rendimiento local. Se esperan cambios en hashes de elevación de Pangea; los baselines históricos permanecen intactos hasta aprobación explícita. Los guardados anteriores sin metadatos de cordilleras siguen admitidos.
+
+### Auditoría visual preliminar y diagnóstico técnico — 2026-11-05
+
+Muestras vistas en Evolve: **Enormous 400×267**, semillas **1510325998**, **-251942972** y **1697481406**. La tercera muestra presenta sistemas largos, conectados y prometedores; otras presentan cadenas pequeñas y anillos compactos. No extrapolar frecuencias a todas las semillas.
+
+**Fortalezas:** formación regional conectada, uso de contactos convergentes H04, preservación de la silueta de Pangea, coste específico muy bajo (0–2 ms reportados, limitado por resolución del cronómetro).
+
+**Problemas por revisar antes de aprobar:** (1) ejes compactos o cerrados convertidos en cordilleras o anillos; (2) cadenas que siguen con demasiada fidelidad el perímetro costero, especialmente en la semilla 1697481406; (3) bandas de anchura visualmente regular y crestas excesivamente blancas; (4) sistemas secundarios con escala mal clasificada. **No filtrar todos los sistemas cortos sin auditar: la tercera semilla demuestra utilidad de variación regional.**
+
+**Causas plausibles confirmadas por inspección de código:** eje extraído mediante dos barridos del grafo, que no modelan explícitamente circularidad/ramificación; anchura definida por seno periódico `baseWidth + 1.2*sin(...)`; levantamiento `27*intensity*taper` con intensidad acotada y elevación recortada a 100. Son mecanismos capaces de explicar los patrones, pero falta medición por celdas para confirmar cuántas alturas saturan.
+
+**Pruebas locales reportadas:** compilación correcta; suite `--mountain-ranges` aprobada en 12 escenarios; suite general falló en `TemperatureTests` («Summits stay white in terrain views») y en comparaciones históricas de hashes de elevación de Pangea (4 escenarios en `TectonicMotionTests`, 12 en `ContinentalGeologyTests`). No cambiar baselines antes de aprobar la nueva topografía. La precipitación sigue extremadamente seca (~94,79% de celdas terrestres), asunto independiente para P07.
+
+**Próximo paso recomendado:** una sola calibración acotada dentro de P03-A: clasificar ejes lineales vs. compactos/cíclicos, mejorar variabilidad de anchura e intensidad y conservar las grandes cadenas regionales. Diagnosticar en separado el fallo de cumbres de la suite de temperatura. Volver a ejecutar pruebas y comparar visualmente las mismas tres semillas. **No iniciar P03-B ni declarar cierre.**
 
 ## Arquitectura protegida y dependencias
 
