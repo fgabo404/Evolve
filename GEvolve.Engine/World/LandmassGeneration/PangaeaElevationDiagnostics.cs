@@ -7,9 +7,13 @@ public sealed class PangaeaElevationDiagnostics
     public ReadOnlyMemory<byte> ContributionByCellId { get; }
     public ReadOnlyMemory<byte> FinalByCellId { get; }
     public ReadOnlyMemory<bool> CompositionLimitedByCellId { get; }
+    public ReadOnlyMemory<byte> PreviousBaseByCellId { get; }
+    public ReadOnlyMemory<byte> PreviousFinalByCellId { get; }
+    public int PreviousCompositionLimitedCells { get; }
     public PangaeaElevationSources? Sources { get; internal set; }
 
-    internal PangaeaElevationDiagnostics(byte[] initial, byte[] final, double[] requested)
+    internal PangaeaElevationDiagnostics(byte[] initial, byte[] final, double[] requested,
+        ReadOnlyMemory<byte> previousBase = default)
     {
         var contribution = new byte[initial.Length];
         var limited = new bool[initial.Length];
@@ -23,6 +27,25 @@ public sealed class PangaeaElevationDiagnostics
         FinalByCellId = final;
         ContributionByCellId = contribution;
         CompositionLimitedByCellId = limited;
+        if (!previousBase.IsEmpty)
+        {
+            if (previousBase.Length != initial.Length)
+                throw new ArgumentException("Previous base dimensions differ from the current world.", nameof(previousBase));
+            var previousFinal = new byte[initial.Length];
+            int clipped = 0;
+            for (int id = 0; id < initial.Length; id++)
+            {
+                byte height = previousBase.Span[id];
+                // The same already generated uplift field and composition are used
+                // for both bases. No plates, surface or ranges are regenerated.
+                previousFinal[id] = height == 0 ? (byte)0 :
+                    PangaeaMountainRangeGenerator.ComposeElevation(height, requested[id]);
+                if (requested[id] > 0 && previousFinal[id] < Math.Round(height + requested[id])) clipped++;
+            }
+            PreviousBaseByCellId = previousBase;
+            PreviousFinalByCellId = previousFinal;
+            PreviousCompositionLimitedCells = clipped;
+        }
     }
 }
 
@@ -32,6 +55,9 @@ public sealed record PangaeaElevationSources(double[] Quantiles, double[] Potent
     double MeanApproximationHigh, double MeanNoiseHigh,
     double MeanApproximationOther, double MeanNoiseOther)
 {
+    public PangaeaElevationSources? Previous { get; init; }
+    public ReadOnlyMemory<byte> PreviousBaseByCellId { get; init; }
+    public double CalibrationMilliseconds { get; init; }
     internal static PangaeaElevationSources Measure(byte[] surface, byte[] elevation,
         double[] potential, double[] uplift, double[] quantiles, double[] anchors, double[] levels)
     {

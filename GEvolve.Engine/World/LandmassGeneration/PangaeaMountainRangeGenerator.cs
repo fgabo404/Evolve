@@ -14,6 +14,10 @@ public sealed class PangaeaMountainRangeGenerator
 
     public LandmassState Apply(HexTopology topology, LandmassState terrain,
         Action<PangaeaElevationDiagnostics>? captureElevations)
+        => Apply(topology, terrain, captureElevations, default);
+
+    public LandmassState Apply(HexTopology topology, LandmassState terrain,
+        Action<PangaeaElevationDiagnostics>? captureElevations, ReadOnlyMemory<byte> previousBase)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(terrain);
@@ -200,8 +204,7 @@ public sealed class PangaeaMountainRangeGenerator
                     owner[step.Cell] = checked((ushort)range.Id);
                     // Existing high terrain is preserved; new uplift cannot create
                     // broad saturated plateaus at the top of the 1..100 scale.
-                    final[step.Cell] = (byte)Math.Max(original[step.Cell],
-                        Math.Min(94, (int)Math.Round(original[step.Cell] + step.Uplift)));
+                    final[step.Cell] = ComposeElevation(original[step.Cell], step.Uplift);
                 }
                 if (step.Distance >= range.WidthByAxisCell[step.Axis]) continue;
                 foreach (int neighbor in topology.Neighbors(step.Cell))
@@ -235,7 +238,7 @@ public sealed class PangaeaMountainRangeGenerator
             if (owner[id] != 0 && final[id] > original[id]) affected[owner[id] - 1]++;
         for (int i = 0; i < ranges.Count; i++)
             ranges[i] = ranges[i] with { AffectedCells = affected[i] };
-        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best));
+        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best, previousBase));
         return terrain with { ElevationByCellId = final,
             PangaeaMountainRanges = new(Version, ranges.ToArray(), owner) };
 
@@ -263,4 +266,7 @@ public sealed class PangaeaMountainRangeGenerator
             return farthest;
         }
     }
+
+    internal static byte ComposeElevation(byte original, double uplift) =>
+        (byte)Math.Max(original, Math.Min(94, (int)Math.Round(original + uplift)));
 }

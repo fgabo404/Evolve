@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-05:** P03-A.2 instrumentación y vistas implementadas, pendientes de validación local y visual. Recalibración numérica pendiente de evidencia; P03-A no aprobado.
+> **Estado al 2026-11-05:** P03-A.2 diagnóstico validado localmente. P03-A.3 calibración del relieve inicial implementada, pendiente de validación local y aprobación visual; P03-A no aprobado.
 
 ## Objetivo
 
@@ -105,9 +105,9 @@ El fallo de `TemperatureTests` procedía de la expectativa de blanco para todas 
 
 ### P03-A.2 — Diagnóstico y calibración de elevaciones terrestres
 
-**Estado: Implementado / pendiente de validación local y visual**, limitado a instrumentación y vistas por instrucción posterior del usuario. **No se modificaron las fórmulas de elevación ni la geometría de las cordilleras.** La eventual recalibración numérica requiere los resultados locales y una atribución demostrada; no se declara resuelto el problema de las manchas blancas. La consolidación definitiva de alturas y pendientes sigue reservada a P05.
+**Estado: Diagnóstico validado localmente**, según compilación y pruebas específicas confirmadas por el usuario tras la corrección nullable. P03-A.2 no modificó las fórmulas de elevación ni la geometría de las cordilleras. Sus resultados autorizan la calibración acotada P03-A.3; no constituyen aprobación de P03-A. La consolidación definitiva de alturas y pendientes sigue reservada a P05.
 
-Commit solicitado: `refactor(worldgen): diagnose and calibrate Pangaea terrestrial elevations` (SHA en la entrega). El usuario decidió conservar la geometría actual de cordilleras y priorizar la distribución de alturas. No hay salida cuantitativa disponible para las nuevas muestras; la inspección visual por sí sola no autoriza atribuir el problema al campo inicial o al aporte de P03-A.
+Implementación: `refactor(worldgen): diagnose and calibrate Pangaea terrestrial elevations` (`c9bcda8645ac53ef5a28593b4ab7ef5394dab15a`), corregida por `fix(tests): correct nullable GridCell access in Pangaea elevation diagnostics` (`515e74e5c02a96625c3ed4e48b296cdde6360a70`). El usuario decidió conservar la geometría actual de cordilleras y priorizar la distribución de alturas.
 
 **Hechos comprobados en código:** el blanco de las vistas habituales empieza en 85, no en 100; la paleta y el shader ocultan diferencias dentro de 85–100. El potencial inicial es `2.5 * uplift aproximado + 1.3 * ruido regional + 0.45 * ruido fino`; sus cuantiles 0/0.34/0.78/0.955/1 se interpolan a 0/15/50/80/100 y la tierra se recorta a 1–100. Ese uplift utiliza los vectores históricos locales de Pangea, distintos del movimiento H04. P03-A combina influencias mediante el **máximo**, sin sumar sistemas superpuestos, y limita su composición a 94 conservando alturas heredadas superiores. Por tanto, puede crear celdas blancas sin crear nuevas celdas de altura 100. La extensión y procedencia de las concentraciones siguen pendientes de medición.
 
@@ -115,7 +115,30 @@ Commit solicitado: `refactor(worldgen): diagnose and calibrate Pangaea terrestri
 
 **En Evolve:** el botón de alturas de Pangea recorre `ALTURAS: BASE` → `ALTURAS: APORTE CORDILLERAS` → `ALTURAS: FINAL`. BASE y FINAL muestran niveles numéricos 1–100 sin el reemplazo por blanco desde 85; APORTE usa escala +0 a +25. Superficie y cámara son compartidas; la selección muestra los tres valores y el zoom etiqueta el campo activo. La vista de superficie habitual conserva la clasificación de cumbres. Los campos diagnósticos viven solo en el resultado de Engine y en la sesión, fuera de `LandmassState`, del formato de guardado y de cualquier exportación de mapas. Un mundo cargado sin esa captura conserva sus vistas históricas; no se regenera para fabricar el campo base.
 
-**Matriz pendiente:** cuatro tamaños × semillas 2026/42/−731; Enormous con 1324918567, 418579367, 1697481406 y 1242668747; Large con −234020843 y −690013300. Comprobar compilación, suite específica, suite general, persistencia y modos gráficos. La suite nueva protege los hashes de superficie, placas, intento y elevación base anteriores a P03-A y comprueba que activar la captura no cambia ejes, IDs, anchuras ni resultado final. La ejecución, las cifras de distribución y el impacto de rendimiento quedan pendientes del usuario.
+**Matriz de diagnóstico:** cuatro tamaños × semillas 2026/42/−731; Enormous con 1324918567, 418579367, 1697481406 y 1242668747; Large con −234020843 y −690013300. El usuario confirmó que compilación y suite específica funcionan; la suite general conserva diferencias de hashes históricos de elevación. No se cambian esas huellas sin aprobación. Los seis casos se mantienen para comparar la calibración siguiente.
+
+### P03-A.3 — Calibración del relieve inicial de Pangea
+
+**Estado: Implementado, pendiente de validación local y aprobación visual.** Commit solicitado: `refactor(worldgen): calibrate Pangaea base elevation distribution` (SHA en la entrega). P03-B y P05 no se inician.
+
+**Evidencia de P03-A.2 aportada por el usuario (Enormous):**
+
+| Semilla | BASE ≥85 | FINAL ≥85 | Mayor componente BASE | Mayor componente FINAL |
+|---|---:|---:|---:|---:|
+| 1324918567 | 876 | 988 | 568 | 568 |
+| 418579367 | 764 | 947 | 282 | 319 |
+| 1242668747 | 472 | 712 | 472 | 571 |
+| 1697481406 | 674 | 1257 | No aportado | No aportado |
+
+La componente principal de 1324918567 ya existía en BASE y abarcaba alturas 85–93. En varios casos se informó correlación con ruido regional >0.90, menor para la tectónica aproximada. El mecanismo verificable es la transformación monótona de un único potencial: sus superniveles conservan los máximos espaciales amplios del ruido dominante. La última banda de la transferencia lleva el tramo entre el cuantil 0.955 y el máximo a 80–100; no exige prominencia local ni proximidad tectónica para elevar una zona regional entera. El blanco desde 85 oculta las diferencias restantes, pero no causa la concentración numérica. La correlación por sí sola no se presenta como prueba causal.
+
+**Cambio conceptual único: estructurar la banda superior de la envolvente regional.** La selección de tierra/océano termina antes de cualquier modificación. Se conservan los cuantiles originales como envolvente y como referencia comparativa. Las alturas 1–60 permanecen idénticas. Para H>60 se calcula `p=(H−60)*(0.25+0.75*max(d²,u))`, donde `d` es el detalle ya existente (frecuencia base 15, con sus octavas históricas) normalizado al rango terrestre, y `u` el levantamiento aproximado existente normalizado por su máximo terrestre. Se convierte solo esa banda mediante `H'=60+40*p/max(p)`, con redondeo al nivel entero. El nivel 60 protege zonas bajas y medias; el suelo 0.25 conserva la estructura regional, el detalle cuadrático concentra crestas suaves, y el máximo permite que la presión existente sostenga una región alta sin exigir un máximo de ruido simultáneo. La normalización de esta banda conserva cumbres de 100; no fija una cuota de montañas ni escala toda la tierra por un factor constante. No se añade ruido, RNG, simulación ni máscara de aceptación por semilla.
+
+**Identidad y contratos:** `PangaeaFromPlatesGenerator.Version` pasa a `pangaea-from-plates-2`. Configuraciones persistidas y formato de guardado no cambian; las partidas existentes conservan sus alturas almacenadas. Regenerar una semilla con esta versión cambia las elevaciones de Pangea. No cambian máscara, intentos, placas o H04. El generador de cordilleras mantiene selección, ejes, IDs, clasificación, anchuras, intensidad y aporte solicitado; únicamente se extrae su composición vertical sin alterar la fórmula para aplicarla también a la BASE anterior. El aporte efectivo puede variar por la diferencia de altura base y el mismo límite de 94. `AffectedCells` puede variar porque cuenta elevaciones efectivamente incrementadas, no identidad geométrica.
+
+**Comparación local:** la misma generación conserva BASE anterior, BASE calibrada, FINAL anterior y FINAL calibrada. FINAL anterior se compone con el mismo campo de levantamiento ya generado, sin otro mundo ni otra búsqueda de cordilleras en producción. La suite `--pangaea-elevations` informa las distribuciones de ambos estados, sus aportes, componentes ≥85, diferencias entre vecinos terrestres y perímetro/raíz del área de la mayor componente, además del coste de la calibración. Reproduce como referencia estricta los conteos anteriores aportados por el usuario y mantiene los hashes históricos en la BASE anterior; no los sustituye por huellas nuevas. Las vistas BASE/APORTE/FINAL y la paleta tradicional se conservan.
+
+**Validación pendiente:** build, suite de elevaciones, suite de cordilleras y suite general; cuatro tamaños y semillas técnicas; revisión visual de los seis casos anteriores, especialmente Enormous/1697481406 y Large/−234020843, −690013300. Las pruebas verifican alturas válidas, océano 0, conservación de 1–60 y de cumbres 100, máscaras/placas/intentos históricos y equivalencia exacta de geometría de cordilleras entre ambas bases. No se impone una reducción universal de componentes extremas. Riesgos por evaluar: dependencia del máximo de prominencia terrestre, posible traslado de algunas cumbres dentro de regiones elevadas y aumento de contraste local. No se declaran medidas nuevas de calidad ni rendimiento sin ejecución del usuario.
 
 ## Arquitectura protegida y dependencias
 

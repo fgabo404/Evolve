@@ -16,7 +16,7 @@ public static class PangaeaElevationTests
     private sealed record FieldStatistics(int Count, int Min, int Max, double Mean, double Median,
         int[] Percentiles, int[] Bands, int Zeros, int Above75, int Above85, int Above95,
         int Exactly100, int[] HighComponents, int InheritedComponents, int CreatedComponents,
-        int MixedComponents, string LargestComponentDetails);
+        int MixedComponents, string LargestComponentDetails, double MeanLandStep, int MaximumLandStep);
 
     public static void Run()
     {
@@ -37,6 +37,7 @@ public static class PangaeaElevationTests
             (GridSize.Enormous, 1697481406), (GridSize.Enormous, 1242668747),
             (GridSize.Large, -234020843), (GridSize.Large, -690013300)
         });
+        bool calibrationChangedHeights = false;
         foreach (var (size, seed) in cases)
         {
             var timer = Stopwatch.StartNew();
@@ -47,22 +48,33 @@ public static class PangaeaElevationTests
             var topology = new HexTopology(world.Grid);
             byte[] initial = fields.BaseByCellId.ToArray(), delta = fields.ContributionByCellId.ToArray();
             byte[] final = fields.FinalByCellId.ToArray();
+            byte[] previousBase = fields.PreviousBaseByCellId.ToArray();
+            byte[] previousFinal = fields.PreviousFinalByCellId.ToArray();
+            Check(previousBase.Length == topology.Count && previousFinal.Length == topology.Count,
+                "Before/after fields are captured in the same world generation");
+            calibrationChangedHeights |= !initial.SequenceEqual(previousBase);
             if (baselines.TryGetValue((size, seed), out var baseline))
             {
                 string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
                 Check(terrain.DeterministicAttempt == int.Parse(baseline[3]) &&
-                    Hash(terrain.SurfaceByCellId) == baseline[4] && Hash(initial) == baseline[5] &&
+                    Hash(terrain.SurfaceByCellId) == baseline[4] && Hash(previousBase) == baseline[5] &&
                     Hash(terrain.PlateByCellId!) == baseline[6],
-                    "Official pre-P03-A surface, base elevation, plates and attempt are unchanged");
+                    "Official surface, plates and attempt are unchanged; the previous base retains its historical hash");
             }
             Check(final.SequenceEqual(terrain.ElevationByCellId!) && initial.Length == topology.Count &&
                 delta.Length == topology.Count, "Diagnostic fields align with the generated world");
             for (int id = 0; id < topology.Count; id++)
+            {
                 Check(terrain.IsLand(id)
                     ? initial[id] is >= 1 and <= 100 && final[id] is >= 1 and <= 100 &&
                       initial[id] + delta[id] == final[id]
                     : initial[id] == 0 && delta[id] == 0 && final[id] == 0,
                     "Base plus contribution equals final; ocean remains zero");
+                if (previousBase[id] <= 60)
+                    Check(initial[id] == previousBase[id], "Low and middle regional relief stays unchanged");
+            }
+            Check(initial.Max() == 100 && final.Max() == 100,
+                "Calibrated base and final retain height-100 summits");
 
             // Reapply only the mountain phase to the captured base: no second world
             // or reconstruction of the original surface is needed for attribution.
@@ -79,7 +91,34 @@ public static class PangaeaElevationTests
                     pair.First.WidthByAxisCell.SequenceEqual(pair.Second.WidthByAxisCell)),
                 "Diagnostic capture preserves heights, range identity, axes and widths");
 
-            Console.WriteLine($"P03-A.2 {size}/{seed}: generation={timer.Elapsed.TotalMilliseconds:F3} ms");
+            var priorTerrain = new PangaeaMountainRangeGenerator().Apply(topology,
+                baseTerrain with { ElevationByCellId = previousBase });
+            Check(priorTerrain.ElevationByCellId!.SequenceEqual(previousFinal),
+                "The captured previous final uses exactly the unchanged mountain contribution and composition");
+            var priorRanges = priorTerrain.PangaeaMountainRanges!;
+            var currentRanges = terrain.PangaeaMountainRanges!;
+            Check(priorRanges.Ranges.Length == currentRanges.Ranges.Length &&
+                priorRanges.RangeByCellId.SequenceEqual(currentRanges.RangeByCellId) &&
+                priorRanges.Ranges.Zip(currentRanges.Ranges).All(pair =>
+                    pair.First.Id == pair.Second.Id && pair.First.AxisCellIds.SequenceEqual(pair.Second.AxisCellIds) &&
+                    pair.First.WidthByAxisCell.SequenceEqual(pair.Second.WidthByAxisCell) &&
+                    pair.First.FirstPlateId == pair.Second.FirstPlateId && pair.First.SecondPlateId == pair.Second.SecondPlateId &&
+                    pair.First.PeakConvergence == pair.Second.PeakConvergence &&
+                    pair.First.MeanConvergence == pair.Second.MeanConvergence &&
+                    pair.First.Elongation == pair.Second.Elongation &&
+                    pair.First.ContactEndpoints == pair.Second.ContactEndpoints &&
+                    pair.First.ContactCycles == pair.Second.ContactCycles &&
+                    pair.First.BranchingCells == pair.Second.BranchingCells),
+                "Base calibration preserves mountain IDs, axes, widths, classification and intensity");
+
+            Console.WriteLine($"P03-A.3 {size}/{seed}: generation={timer.Elapsed.TotalMilliseconds:F3} ms");
+            var previousBaseStats = Measure(topology, terrain.SurfaceByCellId, previousBase);
+            var previousFinalStats = Measure(topology, terrain.SurfaceByCellId, previousFinal, previousBase);
+            Print("BASE ANTERIOR P03-A.2", previousBaseStats);
+            Print("FINAL ANTERIOR P03-A.2", previousFinalStats);
+            byte[] previousDelta = previousFinal.Zip(previousBase).Select(pair => (byte)(pair.First - pair.Second)).ToArray();
+            Print("APORTE ANTERIOR P03-A.2", Measure(topology, terrain.SurfaceByCellId, previousDelta));
+            VerifyReportedPreviousResults(size, seed, previousBaseStats, previousFinalStats);
             Print("BASE", Measure(topology, terrain.SurfaceByCellId, initial));
             Print("APORTE", Measure(topology, terrain.SurfaceByCellId, delta));
             Print("FINAL", Measure(topology, terrain.SurfaceByCellId, final, initial));
@@ -95,15 +134,25 @@ public static class PangaeaElevationTests
                 $"gain affected mean={(raised == 0 ? 0 : (double)total / raised):F3}, max={delta.Max()}, " +
                 $"composition limited={limited}, reached94 by clipping={reached94}, " +
                 $"extreme inherited={inheritedHigh}, created={createdHigh}");
+            int previousRaised = previousDelta.Count(value => value > 0);
+            Console.WriteLine($"  PREVIOUS raised={previousRaised}/{land} ({previousRaised * 100.0 / land:F3}%), " +
+                $"gain affected mean={(previousRaised == 0 ? 0 : previousDelta.Sum(value => (int)value) / (double)previousRaised):F3}, " +
+                $"max={previousDelta.Max()}, composition limited={fields.PreviousCompositionLimitedCells}");
             var sources = fields.Sources ?? throw new Exception("Missing base-source diagnostics");
-            Console.WriteLine($"  BASE potential anchors={string.Join(",", sources.PotentialAnchors.Select(v => v.ToString("F5")))}, " +
+            Console.WriteLine($"  REGIONAL envelope anchors={string.Join(",", sources.PotentialAnchors.Select(v => v.ToString("F5")))}, " +
                 $"quantiles={string.Join(",", sources.Quantiles)}, levels={string.Join(",", sources.ElevationAnchors)}");
             Console.WriteLine($"  BASE correlations: approximate tectonics={sources.ApproximationCorrelation:F4}, " +
                 $"regional noise={sources.NoiseCorrelation:F4}; >=85 means approx/noise=" +
                 $"{sources.MeanApproximationHigh:F4}/{sources.MeanNoiseHigh:F4}; " +
                 $"other={sources.MeanApproximationOther:F4}/{sources.MeanNoiseOther:F4}");
+            var previousSources = sources.Previous ?? throw new Exception("Missing previous source statistics");
+            Console.WriteLine($"  PREVIOUS BASE correlations: approximate tectonics={previousSources.ApproximationCorrelation:F4}, " +
+                $"regional noise={previousSources.NoiseCorrelation:F4}; calibration={sources.CalibrationMilliseconds:F3} ms; " +
+                $"version={PangaeaFromPlatesGenerator.Version}");
             Console.WriteLine($"  SHA256 base={Convert.ToHexString(SHA256.HashData(initial))}, " +
                 $"final={Convert.ToHexString(SHA256.HashData(final))}");
+            Console.WriteLine($"  SHA256 previous base={Convert.ToHexString(SHA256.HashData(previousBase))}, " +
+                $"previous final={Convert.ToHexString(SHA256.HashData(previousFinal))}");
             VerifyViews(terrain, fields);
             if (size == GridSize.Small && seed == 2026)
             {
@@ -111,9 +160,30 @@ public static class PangaeaElevationTests
                 VerifySession(world);
             }
         }
+        Check(calibrationChangedHeights, "The calibration changes upper relief in the regression matrix");
         foreach (var type in new[] { LandmassType.Archipelagos, LandmassType.SmallContinents, LandmassType.Continents })
             Check(new WorldGenerationService().Generate(GridSize.Small, type, 2026).PangaeaElevations is null,
                 "Pangaea diagnostics are absent for other world types");
+    }
+
+    private static void VerifyReportedPreviousResults(GridSize size, int seed,
+        FieldStatistics previousBase, FieldStatistics previousFinal)
+    {
+        if (size != GridSize.Enormous) return;
+        // User-supplied P03-A.2 measurements, not new elevation acceptance quotas.
+        (int Base, int Final, int? LargestBase, int? LargestFinal)? reported = seed switch
+        {
+            1324918567 => (876, 988, 568, 568),
+            418579367 => (764, 947, 282, 319),
+            1242668747 => (472, 712, 472, 571),
+            1697481406 => (674, 1257, null, null),
+            _ => null
+        };
+        if (reported is not { } reference) return;
+        Check(previousBase.Above85 == reference.Base && previousFinal.Above85 == reference.Final &&
+            (reference.LargestBase is null || previousBase.HighComponents[0] == reference.LargestBase) &&
+            (reference.LargestFinal is null || previousFinal.HighComponents[0] == reference.LargestFinal),
+            "The comparison baseline reproduces the user's measured P03-A.2 concentrations");
     }
 
     private static FieldStatistics Measure(HexTopology topology, byte[] surface, byte[] values,
@@ -121,8 +191,19 @@ public static class PangaeaElevationTests
     {
         var histogram = new int[101];
         int count = 0, total = 0;
+        int landEdges = 0, summedSteps = 0, maximumStep = 0;
         for (int id = 0; id < topology.Count; id++)
-            if (surface[id] == 1) { histogram[values[id]]++; count++; total += values[id]; }
+        {
+            if (surface[id] != 1) continue;
+            histogram[values[id]]++; count++; total += values[id];
+            foreach (int next in topology.Neighbors(id))
+                if (next > id && surface[next] == 1)
+                {
+                    int difference = Math.Abs(values[id] - values[next]);
+                    landEdges++; summedSteps += difference;
+                    maximumStep = Math.Max(maximumStep, difference);
+                }
+        }
         int AtRank(int rank)
         {
             int cumulative = 0;
@@ -142,7 +223,7 @@ public static class PangaeaElevationTests
         for (int id = 0; id < topology.Count; id++)
         {
             if (seen[id] || surface[id] == 0 || values[id] < 85) continue;
-            int size = 0, priorHigh = 0, sum = 0, minimum = 100, maximum = 0;
+            int size = 0, priorHigh = 0, sum = 0, minimum = 100, maximum = 0, perimeter = 0;
             seen[id] = true; queue.Enqueue(id);
             while (queue.TryDequeue(out int current))
             {
@@ -151,15 +232,20 @@ public static class PangaeaElevationTests
                 minimum = Math.Min(minimum, values[current]);
                 maximum = Math.Max(maximum, values[current]);
                 if (original is not null && original[current] >= 85) priorHigh++;
+                perimeter += 6 - topology.Neighbors(current).Length;
                 foreach (int next in topology.Neighbors(current))
-                    if (!seen[next] && surface[next] == 1 && values[next] >= 85)
+                {
+                    if (surface[next] == 0 || values[next] < 85) { perimeter++; continue; }
+                    if (!seen[next])
                     { seen[next] = true; queue.Enqueue(next); }
+                }
             }
             sizes.Add(size);
             if (size > largest)
             {
                 largest = size;
-                largestDetails = $"size={size}, min/max/mean={minimum}/{maximum}/{(double)sum / size:F3}" +
+                largestDetails = $"size={size}, min/max/mean={minimum}/{maximum}/{(double)sum / size:F3}, " +
+                    $"perimeter={perimeter}, perimeter/sqrt(area)={perimeter / Math.Sqrt(size):F3}" +
                     (original is null ? "" : $", inherited={priorHigh}, created={size - priorHigh}");
             }
             if (original is not null)
@@ -174,7 +260,8 @@ public static class PangaeaElevationTests
             (AtRank((count - 1) / 2) + AtRank(count / 2)) / 2.0,
             new[] { .10, .25, .50, .75, .90, .95, .99 }.Select(Quantile).ToArray(),
             bands, histogram[0], histogram.Skip(75).Sum(), histogram.Skip(85).Sum(),
-            histogram.Skip(95).Sum(), histogram[100], sizes.ToArray(), inherited, created, mixed, largestDetails);
+            histogram.Skip(95).Sum(), histogram[100], sizes.ToArray(), inherited, created, mixed, largestDetails,
+            landEdges == 0 ? 0 : (double)summedSteps / landEdges, maximumStep);
     }
 
     private static void Print(string name, FieldStatistics stats)
@@ -184,12 +271,13 @@ public static class PangaeaElevationTests
         Console.WriteLine($"    land bands 1-20/21-40/41-60/61-80/81-100=" +
             string.Join("/", stats.Bands.Select(n => $"{n * 100.0 / stats.Count:F3}%")) +
             $", zero={stats.Zeros}, >=75/85/95={stats.Above75}/{stats.Above85}/{stats.Above95}, 100={stats.Exactly100}");
-        if (name != "APORTE")
+        if (!name.StartsWith("APORTE", StringComparison.Ordinal))
             Console.WriteLine($"    traditional white (>=85)={stats.Above85}; white below100=" +
                 $"{stats.Above85 - stats.Exactly100}; largest white component: {stats.LargestComponentDetails}");
         Console.WriteLine($"    >=85 components={stats.HighComponents.Length}, " +
             $"sizes=[{string.Join(",", stats.HighComponents)}], " +
             $"inherited/created/mixed={stats.InheritedComponents}/{stats.CreatedComponents}/{stats.MixedComponents}");
+        Console.WriteLine($"    real land-neighbor height difference: mean={stats.MeanLandStep:F3}, max={stats.MaximumLandStep}");
     }
 
     private static void VerifyStatistics()

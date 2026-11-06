@@ -92,7 +92,8 @@ public sealed class WorldGenerationService
             };
             if (configuration.Type == LandmassType.Pangaea)
                 terrain = _mountainRanges.Apply(topology, terrain,
-                    diagnostics => elevationDiagnostics = diagnostics);
+                    diagnostics => elevationDiagnostics = diagnostics,
+                    elevationSources?.PreviousBaseByCellId ?? default);
             if (elevationDiagnostics is not null) elevationDiagnostics.Sources = elevationSources;
             return new GeneratedWorld(grid, terrain, last
                 ?? throw new InvalidOperationException("Landmass statistics were not calculated."))

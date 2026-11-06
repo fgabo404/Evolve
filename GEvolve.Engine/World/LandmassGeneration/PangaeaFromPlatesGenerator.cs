@@ -10,7 +10,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// </summary>
 public sealed class PangaeaFromPlatesGenerator
 {
-    public const string Version = "pangaea-from-plates-1";
+    public const string Version = "pangaea-from-plates-2";
 
     public (byte[] Surface, byte[] Elevation) Generate(
         HexTopology topology, LandmassConfiguration configuration, byte[] plates, int attempt = 0)
@@ -189,13 +189,15 @@ public sealed class PangaeaFromPlatesGenerator
             uplift=next;
         }
         var potential=new double[count];
+        var localDetail=new double[count];
         var sorted=new List<double>();
         for(int id=0;id<count;id++)
         {
             int x=id%width,y=id/width;
+            localDetail[id]=PeriodicNoise.Sample(x,y,width,height,15,configuration.Seed+attempt*2011+2053);
             potential[id]=2.5*uplift[id]+
                 1.3*PeriodicNoise.Sample(x,y,width,height,5,configuration.Seed+attempt*2011+1009)+
-                .45*PeriodicNoise.Sample(x,y,width,height,15,configuration.Seed+attempt*2011+2053);
+                .45*localDetail[id];
             if(surface[id]==1)sorted.Add(potential[id]);
         }
         sorted.Sort();
@@ -223,8 +225,64 @@ public sealed class PangaeaFromPlatesGenerator
                 (int)Math.Round(level[section]+fraction*
                     (level[section+1]-level[section])),1,100);
         }
-        captureSources?.Invoke(PangaeaElevationSources.Measure(surface, elevation,
-            potential, uplift, quantile, anchors, level));
-        return (surface, elevation);
+        long calibrationStarted = System.Diagnostics.Stopwatch.GetTimestamp();
+        byte[] calibrated = ShapeUpperRelief(surface, elevation, localDetail, uplift);
+        double calibrationMilliseconds = System.Diagnostics.Stopwatch.GetElapsedTime(calibrationStarted).TotalMilliseconds;
+        if (captureSources is not null)
+            captureSources(PangaeaElevationSources.Measure(surface, calibrated,
+                potential, uplift, quantile, anchors, level) with
+            {
+                Previous = PangaeaElevationSources.Measure(surface, elevation,
+                    potential, uplift, quantile, anchors, level),
+                PreviousBaseByCellId = elevation,
+                CalibrationMilliseconds = calibrationMilliseconds
+            });
+        return (surface, calibrated);
+    }
+
+    /// <summary>
+    /// Preserve low/middle relief; structure the upper regional envelope with the
+    /// already sampled local detail and pressure, instead of broad noise alone.
+    /// No new noise, RNG, land classification or tectonic field is introduced.
+    /// </summary>
+    private static byte[] ShapeUpperRelief(byte[] surface, byte[] regional,
+        double[] detail, double[] uplift)
+    {
+        const int shoulder = 60;
+        double minimumDetail = double.PositiveInfinity, maximumDetail = double.NegativeInfinity;
+        double maximumUplift = 0;
+        for (int id = 0; id < surface.Length; id++)
+        {
+            if (surface[id] != 1) continue;
+            minimumDetail = Math.Min(minimumDetail, detail[id]);
+            maximumDetail = Math.Max(maximumDetail, detail[id]);
+            maximumUplift = Math.Max(maximumUplift, uplift[id]);
+        }
+        double detailSpan = maximumDetail - minimumDetail;
+        double Support(int id)
+        {
+            double local = detailSpan > 1e-12 ? (detail[id] - minimumDetail) / detailSpan : 0;
+            double pressure = maximumUplift > 1e-12 ? uplift[id] / maximumUplift : 0;
+            // A quarter of the regional envelope remains even without a local
+            // crest. Squared detail localizes crests; pressure can also support them.
+            return .25 + .75 * Math.Max(local * local, pressure);
+        }
+        double maximumProminence = 0;
+        for (int id = 0; id < surface.Length; id++)
+            if (surface[id] == 1 && regional[id] > shoulder)
+                maximumProminence = Math.Max(maximumProminence,
+                    (regional[id] - shoulder) * Support(id));
+        var result = (byte[])regional.Clone();
+        if (maximumProminence <= 1e-12) return result;
+        for (int id = 0; id < surface.Length; id++)
+        {
+            if (surface[id] != 1 || regional[id] <= shoulder) continue;
+            double prominence = (regional[id] - shoulder) * Support(id);
+            // Scale only this structured upper band to its observed maximum.
+            // There is still a height-100 summit; no quota of high land is imposed.
+            result[id] = (byte)Math.Clamp((int)Math.Round(shoulder +
+                (100 - shoulder) * prominence / maximumProminence), shoulder, 100);
+        }
+        return result;
     }
 }
