@@ -4,7 +4,7 @@ Consulta primero [arquitectura](../GEvolve.Engine/WORLD_GENERATION_ARCHITECTURE.
 
 ## Prioridad y estado
 
-- **Rama:** `worldgeneration_pangea`. La limpieza H05 fue validada por el usuario; P03-A está implementado y pendiente de compilación, suite, rendimiento y revisión visual locales. El seguimiento oficial está en `GEvolve.Engine/PANGAEA_ROADMAP.md`.
+- **Rama:** `worldgeneration_pangea`. P03-A.2 añade captura y vistas BASE/APORTE/FINAL, pendientes de validación local y visual. El usuario conserva la geometría actual de cordilleras y exige evidencia antes de recalibrar alturas. El seguimiento oficial está en `GEvolve.Engine/PANGAEA_ROADMAP.md`; P03-A sigue sin aprobación.
 - **Prioridad inmediata:** continuar exclusivamente con Pangea, completando sus capas con la geometría actual sin recalibrarla durante la limpieza. Tras aprobación, adaptar las capas comunes a los demás tipos.
 - **H01–H04:** conservar topología flat-top, cuatro tamaños, costura E/O y bordes N/S abiertos, 16 placas, movimientos, contactos y esfuerzos tectónicos. Preservar baselines tectónicos y geográficos.
 - **H05 de Continents:** experimentos de corteza A1/A2/B1/B2/B3, ensayos regionales A/B y C1 retirados del código operativo. Historial disponible y respaldo `backup/worldgenerator-pre-h05-cleanup-20261105`; no reintroducir código por compatibilidad sin autorización.

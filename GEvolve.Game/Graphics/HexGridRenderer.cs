@@ -2,6 +2,7 @@ using GEvolve.Engine.Grid;
 using GEvolve.State.Game;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.Tectonics;
+using GEvolve.Engine.World.LandmassGeneration;
 using System.Numerics;
 using OpenTK.Graphics.OpenGL4;
 
@@ -57,6 +58,7 @@ public sealed class HexGridRenderer : IDisposable
 
     private readonly HexGrid _grid;
     private readonly LandmassState _landmass;
+    private readonly PangaeaElevationDiagnostics? _elevationDiagnostics;
     private readonly HexTopology? _plateTopology;
     public PlateBoundaryMap? PlateBoundaries { get; }
     private readonly ShaderProgram _shader;
@@ -70,7 +72,10 @@ public sealed class HexGridRenderer : IDisposable
 
     public int VisibleInstanceCount => _instanceCount;
 
-    public HexGridRenderer(HexGrid grid, LandmassState landmass)
+    public HexGridRenderer(HexGrid grid, LandmassState landmass) : this(grid, landmass, null) { }
+
+    public HexGridRenderer(HexGrid grid, LandmassState landmass,
+        PangaeaElevationDiagnostics? elevationDiagnostics)
     {
         if ((landmass.SurfaceGenerationPending ? landmass.SurfaceByCellId.Length != 0 :
                 landmass.SurfaceByCellId.Length != grid.Cells.Count) ||
@@ -78,6 +83,7 @@ public sealed class HexGridRenderer : IDisposable
             throw new ArgumentException("Landmass state differs from the grid.", nameof(landmass));
         _grid = grid;
         _landmass = landmass;
+        _elevationDiagnostics = elevationDiagnostics;
         if (landmass.PlateByCellId is not null)
         {
             _plateTopology = new HexTopology(grid);
@@ -290,7 +296,8 @@ public sealed class HexGridRenderer : IDisposable
             int wrapped = ((column % columns) + columns) % columns;
             _instances[index++] = center.X;
             _instances[index++] = center.Y;
-            var color = MapViewColors.ForCell(_landmass, row * columns + wrapped, _viewMode);
+            var color = MapViewColors.ForCell(_landmass, row * columns + wrapped, _viewMode,
+                _elevationDiagnostics);
             _instances[index++] = color.X;
             _instances[index++] = color.Y;
             _instances[index++] = color.Z;

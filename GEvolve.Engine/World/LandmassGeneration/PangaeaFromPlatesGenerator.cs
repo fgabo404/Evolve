@@ -14,6 +14,11 @@ public sealed class PangaeaFromPlatesGenerator
 
     public (byte[] Surface, byte[] Elevation) Generate(
         HexTopology topology, LandmassConfiguration configuration, byte[] plates, int attempt = 0)
+        => Generate(topology, configuration, plates, attempt, null);
+
+    public (byte[] Surface, byte[] Elevation) Generate(
+        HexTopology topology, LandmassConfiguration configuration, byte[] plates, int attempt,
+        Action<PangaeaElevationSources>? captureSources)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -218,6 +223,8 @@ public sealed class PangaeaFromPlatesGenerator
                 (int)Math.Round(level[section]+fraction*
                     (level[section+1]-level[section])),1,100);
         }
+        captureSources?.Invoke(PangaeaElevationSources.Measure(surface, elevation,
+            potential, uplift, quantile, anchors, level));
         return (surface, elevation);
     }
 }

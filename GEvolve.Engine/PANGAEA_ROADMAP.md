@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-05:** P03-A implementado, compilación y suite específica aprobadas localmente; auditoría visual requiere calibración y la suite general registra fallos. No aprobado.
+> **Estado al 2026-11-05:** P03-A.2 instrumentación y vistas implementadas, pendientes de validación local y visual. Recalibración numérica pendiente de evidencia; P03-A no aprobado.
 
 ## Objetivo
 
@@ -97,11 +97,25 @@ Muestras vistas en Evolve: **Enormous 400×267**, semillas **1510325998**, **-25
 
 ### P03-A.1 — Calibración implementada; aprobación pendiente
 
-Commit previsto: `refactor(worldgen): calibrate Pangaea mountain range morphology and uplift` (SHA en la entrega). La prueba específica informa, por tamaño y semilla, alturas originales y finales en 75/85/95/100, celdas realmente elevadas, incremento medio y máximo, componente alta más grande y fracción terrestre afectada. Por sistema registra pareja de placas, longitud, celdas elevadas, anchuras, convergencia media y máxima, elongación, extremos, ciclos y ramificación. Estos contadores aún no tienen resultados locales reportados; no se atribuyen a P03-A alturas que ya existían en P02.
+Implementación publicada: `refactor(worldgen): calibrate Pangaea mountain range morphology and uplift` (`7c4ad519f30fb006d90c4681b7ca50ea41d5d47f`). La prueba específica informa, por tamaño y semilla, alturas originales y finales en 75/85/95/100, celdas realmente elevadas, incremento medio y máximo, componente alta más grande y fracción terrestre afectada. Por sistema registra pareja de placas, longitud, celdas elevadas, anchuras, convergencia media y máxima, elongación, extremos, ciclos y ramificación. Estos contadores aún no tienen resultados locales reportados; no se atribuyen a P03-A alturas que ya existían en P02.
 
 El clasificador combina longitud y elongación para excluir contactos compactos, incluidos anillos pequeños, sin descartar arcos regionales extensos. Los ejes pueden desplazarse un hexágono hacia compresión interior conservando conectividad, tierra y proximidad a la frontera. Los anchos e intensidades varían mediante anclas regionales interpoladas, sin periodicidad sinusoidal ni ruido por celda. La propagación reemplaza una primera llegada débil cuando encuentra una influencia local mayor. El aporte nuevo se limita a 94; las alturas originales superiores se conservan. Los guardados `pangaea-ranges-1` siguen admitidos; la salida nueva usa `pangaea-ranges-2`.
 
 El fallo de `TemperatureTests` procedía de la expectativa de blanco para todas las vistas de terreno: la vista diagnóstica de cordilleras colorea deliberadamente también las cumbres. Se corrigió solo esa expectativa; el umbral, la paleta, el shader y la temperatura permanecen intactos. Los baselines históricos de elevación siguen sin actualizar. Validar compilación, suite P03-A, suite general, persistencia, tiempos y revisión en Evolve de Enormous para semillas `1510325998`, `-251942972`, `1697481406`, `1567286827` y `418579367`, además de las cuatro resoluciones y semillas oficiales.
+
+### P03-A.2 — Diagnóstico y calibración de elevaciones terrestres
+
+**Estado: Implementado / pendiente de validación local y visual**, limitado a instrumentación y vistas por instrucción posterior del usuario. **No se modificaron las fórmulas de elevación ni la geometría de las cordilleras.** La eventual recalibración numérica requiere los resultados locales y una atribución demostrada; no se declara resuelto el problema de las manchas blancas. La consolidación definitiva de alturas y pendientes sigue reservada a P05.
+
+Commit solicitado: `refactor(worldgen): diagnose and calibrate Pangaea terrestrial elevations` (SHA en la entrega). El usuario decidió conservar la geometría actual de cordilleras y priorizar la distribución de alturas. No hay salida cuantitativa disponible para las nuevas muestras; la inspección visual por sí sola no autoriza atribuir el problema al campo inicial o al aporte de P03-A.
+
+**Hechos comprobados en código:** el blanco de las vistas habituales empieza en 85, no en 100; la paleta y el shader ocultan diferencias dentro de 85–100. El potencial inicial es `2.5 * uplift aproximado + 1.3 * ruido regional + 0.45 * ruido fino`; sus cuantiles 0/0.34/0.78/0.955/1 se interpolan a 0/15/50/80/100 y la tierra se recorta a 1–100. Ese uplift utiliza los vectores históricos locales de Pangea, distintos del movimiento H04. P03-A combina influencias mediante el **máximo**, sin sumar sistemas superpuestos, y limita su composición a 94 conservando alturas heredadas superiores. Por tanto, puede crear celdas blancas sin crear nuevas celdas de altura 100. La extensión y procedencia de las concentraciones siguen pendientes de medición.
+
+**Evidencia disponible para recopilar:** `dotnet run --project GEvolve.Tests -- --pangaea-elevations`. Captura BASE, APORTE y FINAL durante una sola generación por escenario. Informa mínimo/máximo/media/mediana, P10/P25/P50/P75/P90/P95/P99 (cuantil por posición redondeada), bandas 1–20/21–40/41–60/61–80/81–100, ceros del aporte, umbrales 75/85/95/100, componentes extremas conectadas por `HexTopology`, tamaños y composición heredada/nueva/mixta, fracción elevada, aporte medio/máximo y recorte efectivo. Para la mayor componente blanca muestra rango y media reales de alturas. Registra anclas del potencial, correlaciones y medias de la contribución tectónica aproximada y el ruido agregado; una correlación no certifica causalidad. Los hashes históricos no se actualizan.
+
+**En Evolve:** el botón de alturas de Pangea recorre `ALTURAS: BASE` → `ALTURAS: APORTE CORDILLERAS` → `ALTURAS: FINAL`. BASE y FINAL muestran niveles numéricos 1–100 sin el reemplazo por blanco desde 85; APORTE usa escala +0 a +25. Superficie y cámara son compartidas; la selección muestra los tres valores y el zoom etiqueta el campo activo. La vista de superficie habitual conserva la clasificación de cumbres. Los campos diagnósticos viven solo en el resultado de Engine y en la sesión, fuera de `LandmassState`, del formato de guardado y de cualquier exportación de mapas. Un mundo cargado sin esa captura conserva sus vistas históricas; no se regenera para fabricar el campo base.
+
+**Matriz pendiente:** cuatro tamaños × semillas 2026/42/−731; Enormous con 1324918567, 418579367, 1697481406 y 1242668747; Large con −234020843 y −690013300. Comprobar compilación, suite específica, suite general, persistencia y modos gráficos. La suite nueva protege los hashes de superficie, placas, intento y elevación base anteriores a P03-A y comprueba que activar la captura no cambia ejes, IDs, anchuras ni resultado final. La ejecución, las cifras de distribución y el impacto de rendimiento quedan pendientes del usuario.
 
 ## Arquitectura protegida y dependencias
 

@@ -10,6 +10,10 @@ public sealed class PangaeaMountainRangeGenerator
     public const string Version = "pangaea-ranges-2";
 
     public LandmassState Apply(HexTopology topology, LandmassState terrain)
+        => Apply(topology, terrain, null);
+
+    public LandmassState Apply(HexTopology topology, LandmassState terrain,
+        Action<PangaeaElevationDiagnostics>? captureElevations)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(terrain);
@@ -231,6 +235,7 @@ public sealed class PangaeaMountainRangeGenerator
             if (owner[id] != 0 && final[id] > original[id]) affected[owner[id] - 1]++;
         for (int i = 0; i < ranges.Count; i++)
             ranges[i] = ranges[i] with { AffectedCells = affected[i] };
+        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best));
         return terrain with { ElevationByCellId = final,
             PangaeaMountainRanges = new(Version, ranges.ToArray(), owner) };
 

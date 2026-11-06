@@ -97,7 +97,7 @@ internal sealed class EvolveWindow : GameWindow
                     _session.CompleteGeneration(result);
                     var preparation = Stopwatch.StartNew();
                     _gridRenderer?.Dispose();
-                    _gridRenderer = new HexGridRenderer(result.Grid, result.Landmass);
+                    _gridRenderer = new HexGridRenderer(result.Grid, result.Landmass, result.PangaeaElevations);
                     _viewMode = result.Landmass.TectonicPreviewOnly
                         ? MapViewMode.Tectonic : MapViewMode.Biomes;
                     preparation.Stop();
@@ -173,6 +173,8 @@ internal sealed class EvolveWindow : GameWindow
             if (_viewMode == MapViewMode.Elevation && terrain.ElevationByCellId is { } levels)
                 biome = $"height {levels[id]}";
             if (terrain.IsImpassableSummit(id)) biome = "impassable summit";
+            if (PangaeaElevationViews.IsDiagnostic(_viewMode) && _session.PangaeaElevations is { } fields)
+                biome = $"{_viewMode} {PangaeaElevationViews.Value(fields, id, _viewMode)}";
             if (_viewMode == MapViewMode.Infrared)
                 biome = $"thermal {terrain.Climate!.CurrentCelsius(id):F0}";
             if (_viewMode == MapViewMode.Rainfall)
@@ -215,7 +217,7 @@ internal sealed class EvolveWindow : GameWindow
                 terrain.IsImpassableSummit(id) &&
                 (pixels[0] != 255 || pixels[1] != 255 || pixels[2] != 255))
                 throw new InvalidOperationException($"Summit {id} is not pure white.");
-            Vector3 expected = MapViewColors.ForCell(terrain, id, _viewMode) * 255;
+            Vector3 expected = MapViewColors.ForCell(terrain, id, _viewMode, _session.PangaeaElevations) * 255;
             if (Math.Abs(pixels[0] - expected.X) > 2 || Math.Abs(pixels[1] - expected.Y) > 2 ||
                 Math.Abs(pixels[2] - expected.Z) > 2)
                 throw new InvalidOperationException($"Rendered biome color mismatch: {biome}, cell {id}.");
@@ -265,7 +267,7 @@ internal sealed class EvolveWindow : GameWindow
             UiAction.StressShear, UiAction.ToggleTectonic]
         : [
             UiAction.ToggleTectonic, UiAction.ToggleSurface,
-            UiAction.ToggleGrayscale, UiAction.ToggleSurface,
+            UiAction.ToggleGrayscale, UiAction.ToggleGrayscale, UiAction.ToggleGrayscale, UiAction.ToggleSurface,
             UiAction.ToggleTectonic, UiAction.StressCompression, UiAction.StressExtension,
             UiAction.StressShear, UiAction.ToggleGeology, UiAction.ToggleSurface
         ];
@@ -295,7 +297,7 @@ internal sealed class EvolveWindow : GameWindow
                 : action == UiAction.ToggleInfrared && terrain?.Climate is not null
                 ? _viewMode == MapViewMode.Infrared ? MapViewMode.Biomes : MapViewMode.Infrared
                 : action == UiAction.ToggleGrayscale && terrain?.ElevationByCellId is not null
-                    ? _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation
+                    ? PangaeaElevationViews.Next(_viewMode, _session.PangaeaElevations is not null)
                     : _viewMode;
             var button = WorldButtons()
                 .Single(item => item.Action == action);
@@ -454,10 +456,15 @@ internal sealed class EvolveWindow : GameWindow
                 Vector2 position=_camera.WorldToScreen(center);
                 if(position.Y < MapCamera2D.TopBarHeight+10 || position.Y > ClientSize.Y-10 ||
                     position.X<10 || position.X>ClientSize.X-10)continue;
-                _ui.Text(elevations[row*cols+wrapped].ToString(),position.X,position.Y-5,
-                    1.3f, _viewMode != MapViewMode.Infrared &&
-                        _session.State.Landmass.IsImpassableSummit(row * cols + wrapped)
-                        ? new Vector4(.08f, .08f, .08f, 1) : White);
+                int id = row * cols + wrapped;
+                byte shownHeight = PangaeaElevationViews.IsDiagnostic(_viewMode) &&
+                    _session.PangaeaElevations is { } diagnostic
+                    ? PangaeaElevationViews.Value(diagnostic, id, _viewMode) : elevations[id];
+                bool darkText = PangaeaElevationViews.IsDiagnostic(_viewMode)
+                    ? shownHeight >= (_viewMode == MapViewMode.ElevationContribution ? 13 : 60)
+                    : _viewMode != MapViewMode.Infrared && _session.State.Landmass.IsImpassableSummit(id);
+                _ui.Text(shownHeight.ToString(),position.X,position.Y-5,
+                    1.3f, darkText ? new Vector4(.08f, .08f, .08f, 1) : White);
             }
         }
         if (_session.State.Landmass is { } worldInfo)
@@ -471,6 +478,9 @@ internal sealed class EvolveWindow : GameWindow
                     LandmassType.SmallContinents => "CONTINENTES PEQUEÑOS",
                     _ => "ARCHIPIÉLAGOS"
                 };
+            if (PangaeaElevationViews.IsDiagnostic(_viewMode))
+                kind = _viewMode == MapViewMode.ElevationContribution ? "APORTE +0 A +25" :
+                    _viewMode == MapViewMode.ElevationBase ? "BASE 1 A 100" : "FINAL 1 A 100";
             float infoWidth = MathF.Min(270, ClientSize.X - 24);
             _ui.Rect(12, MapCamera2D.TopBarHeight + 12, infoWidth, 63,
                 new Vector4(.06f, .13f, .20f, .91f));
@@ -504,6 +514,9 @@ internal sealed class EvolveWindow : GameWindow
             var environment = BiomeClassifier.GetCell(landmass, cell.Id);
             string height = environment.Elevation?.ToString() ?? "PENDIENTE";
             string details = $"ALT: {height}  LAT: {environment.Latitude:F1}";
+            if (_session.PangaeaElevations is { } elevationFields)
+                details = $"BASE: {elevationFields.BaseByCellId.Span[cell.Id]}  " +
+                    $"APORTE: +{elevationFields.ContributionByCellId.Span[cell.Id]}  FINAL: {height}  LAT: {environment.Latitude:F1}";
             details += $"  PEND: {environment.Slope?.ToString() ?? "PENDIENTE"} NIV/HEX";
             if (environment.IsImpassableSummit) details += "  CUMBRE INFRANQUEABLE";
             string temperature = landmass.Climate is { } climate
@@ -584,7 +597,8 @@ internal sealed class EvolveWindow : GameWindow
                 button.Action == _openDropdown ||
                 button.Action == UiAction.SeedField && _seedFocused ||
                 button.Action == UiAction.ToggleSurface && _viewMode == MapViewMode.Biomes ||
-                button.Action == UiAction.ToggleGrayscale && _viewMode == MapViewMode.Elevation ||
+                button.Action == UiAction.ToggleGrayscale &&
+                    (_viewMode == MapViewMode.Elevation || PangaeaElevationViews.IsDiagnostic(_viewMode)) ||
                 button.Action == UiAction.ToggleInfrared && _viewMode == MapViewMode.Infrared ||
                 button.Action == UiAction.ToggleRainfall && _viewMode == MapViewMode.Rainfall ||
                 button.Action == UiAction.ToggleTectonic && _viewMode == MapViewMode.Tectonic ||
@@ -629,7 +643,8 @@ internal sealed class EvolveWindow : GameWindow
                     typeAction || button.Action == UiAction.RandomSeed ?
                         MathF.Min(2.1f, (r.Width - 16) / (button.Text.Length * 6f)) : 2.5f;
                 string text = button.Action == UiAction.ToggleGrayscale
-                    ? _session.State.Landmass?.ElevationByCellId is null ? "Alturas pendientes"
+                    ? _session.PangaeaElevations is not null ? PangaeaElevationViews.Label(_viewMode)
+                        : _session.State.Landmass?.ElevationByCellId is null ? "Alturas pendientes"
                         : _viewMode == MapViewMode.Elevation ? "Ver colores" : button.Text
                     : button.Action == UiAction.ToggleInfrared
                         ? _session.State.Landmass?.Climate is null ? "CLIMA PENDIENTE"
@@ -638,6 +653,7 @@ internal sealed class EvolveWindow : GameWindow
                       _session.State.Landmass?.PangaeaMountainRanges is not null
                         ? "RELIEVE: CORDILLERAS"
                         : button.Text;
+                pixel = MathF.Min(pixel, (r.Width - 16) / (text.Length * 6f));
                 _ui.Text(text, r.X + r.Width / 2,
                     r.Y + (r.Height - 7 * pixel) / 2, pixel, White);
             }
@@ -848,7 +864,7 @@ internal sealed class EvolveWindow : GameWindow
             case UiAction.ToggleGrayscale:
                 if (_session.Screen == GameScreen.World &&
                     _session.State.Landmass?.ElevationByCellId is not null)
-                    _viewMode = _viewMode == MapViewMode.Elevation ? MapViewMode.Biomes : MapViewMode.Elevation;
+                    _viewMode = PangaeaElevationViews.Next(_viewMode, _session.PangaeaElevations is not null);
                 break;
             case UiAction.ToggleTectonic:
                 if (_session.Screen == GameScreen.World &&

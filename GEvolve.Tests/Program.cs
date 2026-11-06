@@ -9,6 +9,7 @@ using GEvolve.State.Persistence;
 if (args.Contains("--continental-geology")) { ContinentalGeologyTests.Run(); return 0; }
 if (args.Contains("--tectonic-motion")) { TectonicMotionTests.Run(); return 0; }
 if (args.Contains("--mountain-ranges")) { PangaeaMountainRangeTests.Run(); return 0; }
+if (args.Contains("--pangaea-elevations")) { PangaeaElevationTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [
@@ -18,7 +19,7 @@ if (args.Contains("--all-suites"))
         ("Precipitation", PrecipitationTests.Run), ("PlateBoundary", PlateBoundaryTests.Run),
         ("TectonicPlate", TectonicPlateTests.Run), ("StagedLandmass", StagedLandmassTests.Run),
         ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run), ("ContinentalGeology", ContinentalGeologyTests.Run),
-        ("PangaeaMountainRanges", PangaeaMountainRangeTests.Run)];
+        ("PangaeaMountainRanges", PangaeaMountainRangeTests.Run), ("PangaeaElevations", PangaeaElevationTests.Run)];
     int failures = 0;
     string? requestedSuite = args.FirstOrDefault(arg => arg.StartsWith("--suite=", StringComparison.Ordinal))?[8..];
     if (requestedSuite is not null && !suites.Any(suite => suite.Name == requestedSuite))
@@ -100,4 +101,5 @@ GameTests.Run();
 TectonicMotionTests.Run();
 ContinentalGeologyTests.Run();
 PangaeaMountainRangeTests.Run();
+PangaeaElevationTests.Run();
 return 0;

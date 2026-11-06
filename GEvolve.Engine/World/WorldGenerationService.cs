@@ -57,10 +57,13 @@ public sealed class WorldGenerationService
         LandmassStatistics? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
+            PangaeaElevationSources? elevationSources = null;
+            PangaeaElevationDiagnostics? elevationDiagnostics = null;
             byte[] surface;
             byte[] elevation;
             if (configuration.Type == LandmassType.Pangaea)
-                (surface, elevation) = _pangaea.Generate(topology, configuration, plates, attempt);
+                (surface, elevation) = _pangaea.Generate(topology, configuration, plates, attempt,
+                    sources => elevationSources = sources);
             else
             {
                 // Each existing land generator preserves its distinct distribution:
@@ -88,9 +91,12 @@ public sealed class WorldGenerationService
                 ElevationByCellId = elevation
             };
             if (configuration.Type == LandmassType.Pangaea)
-                terrain = _mountainRanges.Apply(topology, terrain);
+                terrain = _mountainRanges.Apply(topology, terrain,
+                    diagnostics => elevationDiagnostics = diagnostics);
+            if (elevationDiagnostics is not null) elevationDiagnostics.Sources = elevationSources;
             return new GeneratedWorld(grid, terrain, last
-                ?? throw new InvalidOperationException("Landmass statistics were not calculated."));
+                ?? throw new InvalidOperationException("Landmass statistics were not calculated."))
+                { PangaeaElevations = elevationDiagnostics };
         }
 
         throw new InvalidOperationException(

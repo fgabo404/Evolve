@@ -21,6 +21,7 @@ public sealed class GameSession
     public HexGrid? Grid { get; private set; }
     public GridCell? SelectedCell { get; private set; }
     public GameState State { get; } = new();
+    public PangaeaElevationDiagnostics? PangaeaElevations { get; private set; }
     public string? Error { get; private set; }
 
     public void OpenCreateWorld()
@@ -149,6 +150,7 @@ public sealed class GameSession
         Grid = result.Grid;
         State.HexGrid = new HexGridState(result.Grid.Definition);
         State.Landmass = result.Landmass;
+        PangaeaElevations = result.PangaeaElevations;
         SelectedCell = null;
         Error = null;
         Screen = GameScreen.World;
@@ -182,6 +184,7 @@ public sealed class GameSession
 
     public void ReturnToMenu()
     {
+        PangaeaElevations = null;
         Grid = null;
         State.HexGrid = null;
         State.Landmass = null;
@@ -192,6 +195,7 @@ public sealed class GameSession
 
     public void GenerationFailed(string message)
     {
+        PangaeaElevations = null;
         Grid = null;
         State.HexGrid = null;
         State.Landmass = null;
