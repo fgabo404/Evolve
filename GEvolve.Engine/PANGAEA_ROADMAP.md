@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-05:** P03-A.2 diagnóstico validado localmente. P03-A.3 calibración del relieve inicial implementada, pendiente de validación local y aprobación visual; P03-A no aprobado.
+> **Estado al 2026-11-05:** P03-A.2 diagnóstico validado localmente. P03-A.3 rechazado visualmente como resultado final. P03-A.4 implementado, pendiente de validación local y visual; P03-A no aprobado.
 
 ## Objetivo
 
@@ -119,7 +119,7 @@ Implementación: `refactor(worldgen): diagnose and calibrate Pangaea terrestrial
 
 ### P03-A.3 — Calibración del relieve inicial de Pangea
 
-**Estado: Implementado, pendiente de validación local y aprobación visual.** Commit solicitado: `refactor(worldgen): calibrate Pangaea base elevation distribution` (SHA en la entrega). P03-B y P05 no se inician.
+**Estado: Implementado, rechazado visualmente por el usuario como resultado final.** Commit: `refactor(worldgen): calibrate Pangaea base elevation distribution` (`e0bfae2de8c56a36d8987c56c3ddb71b88288975`). La reducción de concentraciones extremas fue útil, pero cuatro mundos Large se percibieron pobres en relieve montañoso. P03-B y P05 no se inician.
 
 **Evidencia de P03-A.2 aportada por el usuario (Enormous):**
 
@@ -139,6 +139,29 @@ La componente principal de 1324918567 ya existía en BASE y abarcaba alturas 85�
 **Comparación local:** la misma generación conserva BASE anterior, BASE calibrada, FINAL anterior y FINAL calibrada. FINAL anterior se compone con el mismo campo de levantamiento ya generado, sin otro mundo ni otra búsqueda de cordilleras en producción. La suite `--pangaea-elevations` informa las distribuciones de ambos estados, sus aportes, componentes ≥85, diferencias entre vecinos terrestres y perímetro/raíz del área de la mayor componente, además del coste de la calibración. Reproduce como referencia estricta los conteos anteriores aportados por el usuario y mantiene los hashes históricos en la BASE anterior; no los sustituye por huellas nuevas. Las vistas BASE/APORTE/FINAL y la paleta tradicional se conservan.
 
 **Validación pendiente:** build, suite de elevaciones, suite de cordilleras y suite general; cuatro tamaños y semillas técnicas; revisión visual de los seis casos anteriores, especialmente Enormous/1697481406 y Large/−234020843, −690013300. Las pruebas verifican alturas válidas, océano 0, conservación de 1–60 y de cumbres 100, máscaras/placas/intentos históricos y equivalencia exacta de geometría de cordilleras entre ambas bases. No se impone una reducción universal de componentes extremas. Riesgos por evaluar: dependencia del máximo de prominencia terrestre, posible traslado de algunas cumbres dentro de regiones elevadas y aumento de contraste local. No se declaran medidas nuevas de calidad ni rendimiento sin ejecución del usuario.
+
+### P03-A.4 — Recuperación del relieve montañoso y equilibrio de alturas
+
+**Estado: Implementado, pendiente de validación local y visual.** Commit solicitado: `refactor(worldgen): restore Pangaea mountain relief balance` (SHA en la entrega). Se mantiene P03-A.1 implementado sin aprobación global, P03-A.2 técnicamente validado, P03-A.3 rechazado visualmente y P03-A sin aprobación. No se inicia P03-B ni la consolidación P05.
+
+**Auditoría del cambio P03-A.2 → P03-A.3:**
+
+1. **Sistemas tectónicos:** la selección y agrupación no cambiaron y no consumen la elevación BASE. No hay un mecanismo en P03-A.3 que reduzca sistemas; la comparación local verificará conteos, IDs, geometría y serialización en las mismas semillas. Un número bajo observado puede ser anterior a esa calibración y no autoriza alterar selección ni imponer cuotas.
+2. **Ejes y anchuras:** las fórmulas de geometría permanecen idénticas. El diff de P03-A.3 en el generador de cordilleras solo añadió captura comparativa y extrajo la misma composición vertical, sin cambiarla. Se comprueba igualdad exacta entre las tres bases.
+3. **Alturas de cresta:** sí pueden cambiar. La composición sigue siendo `max(BASE, min(94, round(BASE+aporte)))`. Reducir BASE reduce FINAL salvo donde el recorte ya domina; una cordillera puede perder color blanco o prominencia sin perder su eje.
+4. **Relieve intermedio:** 1–60 permaneció idéntico; P03-A.3 pudo contraer 61–84 hacia 60 según el soporte local y el máximo de prominencia mundial. Su corrección alcanzaba alturas moderadas, además de concentraciones ≥85. Esta es la dependencia que se corrige, no la selección tectónica.
+5. **Extensiones anteriores:** las carencias en 1–60 son anteriores porque esa banda no cambió. La extensión precisa de las áreas 61–84 y su relación con cordilleras se medirá por caso; no se atribuyen todas las áreas poco estructuradas a P03-A.3.
+6. **Efecto visual:** el umbral blanco sigue en 85. La pérdida visual puede combinar descenso numérico de crestas y cruce de ese umbral; no existe evidencia para asignar porcentajes a cada efecto. La vista de superficie consulta la elevación FINAL y su condición de cumbre; las vistas diagnósticas siguen mostrando valores reales.
+
+**Cambio conceptual único:** recuperar las alturas regionales moderadas que P03-A.3 redujo, sin retroceder su banda extrema. Sea H2 la envolvente regional anterior y H3 la altura estructurada de P03-A.3. Si H2>H3, `t=clamp((H2−75)/10,0,1)` y `H4=round(H3+(1−t²*(3−2t))*(H2−H3))`; en los demás casos H4=H3. Hasta 75 se recupera toda la pérdida; entre 75 y 85 la recuperación se desvanece suavemente. Las alturas nuevas nunca bajan respecto a H3; sus celdas BASE ≥85 conservan exactamente máscara y valor, incluidas cumbres 100. No se impone una proporción de montañas ni se añaden sistemas o ruido. Los límites 75 y 85 corresponden a la franja elevada observable y al contrato de cumbres; no son cuotas de aceptación. FINAL puede ampliar cumbres alrededor de cordilleras existentes al recibir una BASE moderada más alta, por lo que su concentración aún requiere revisión.
+
+`PangaeaFromPlatesGenerator.Version` pasa a `pangaea-from-plates-3`. La superficie termina antes de estas operaciones y no cambia. Placas, H04, perfiles, intentos, ejes, IDs, anchuras, clasificación y aporte solicitado de P03-A quedan intactos. El formato de guardado no cambia ni se reinterpretan partidas: se conservan sus alturas almacenadas. La fórmula de P03-A.3 permanece como paso de estructuración de una sola implementación operativa; su captura intermedia y la referencia P03-A.2 son diagnósticos temporales, no estrategias seleccionables ni mundos candidatos.
+
+**Comparación reproducible:** `dotnet run --project GEvolve.Tests -- --pangaea-elevations` usa cuatro tamaños × 2026/42/−731; Large/689804754, 1195510322, 1443340172, −185224545; referencias Large/−234020843, −690013300 y Enormous/1697481406; y los casos Enormous/1324918567, 418579367, 1242668747. Una generación captura BASE y FINAL P03-A.2, P03-A.3 y actuales, componiendo todas con el mismo campo de levantamiento. Las pruebas reaplican solo la fase de cordilleras a las bases capturadas para verificar esa equivalencia; el juego no vuelve a generar mundos ni cordilleras para comparar.
+
+Se registran sistemas detectados y serializados, ejes, cobertura de influencia frente a celdas realmente elevadas, bandas <40/40–60/61–75/76–84/85–94/95–100 dentro y fuera de corredores, alturas de ejes, pendiente media del corredor y conectividad ≥61/≥75/≥85. La prominencia se define como diferencia del eje frente a sus vecinos terrestres inmediatos y frente al entorno exterior de la influencia (media ponderada por aristas); son indicadores locales, no prominencia física de una cumbre en metros. La relación tectónica se informa con compresión H04 media y cercanía a contactos convergentes en el radio oficial de influencia. Se mantienen estadísticas de fuentes aproximadas de BASE, hashes de las tres versiones, recortes, diferencias entre vecinos y forma de componentes extremas. Las huellas históricas no se actualizan ni se eliminan aserciones.
+
+**Pendiente:** compilación, suite de elevaciones, suite de cordilleras, suite general y revisión visual de los mismos mundos con BASE/APORTE/FINAL, RELIEVE: CORDILLERAS y PLACAS. Las nuevas pruebas protegen la banda extrema de BASE P03-A.3 y la geometría de sistemas en las tres versiones; no exigen una prominencia mínima ni un número arbitrario de montañas. Se esperan hombros y elevaciones intermedias más continuos alrededor de los sistemas existentes en las cuatro semillas desfavorables; no se promete cubrir regiones tectónicamente vacías. Riesgos: exceso de relieve moderado, variación de contraste de crestas y expansión de componentes ≥85 en FINAL por el aporte ya existente. Las cifras nuevas y la mejora visual siguen sin confirmar hasta la ejecución del usuario.
 
 ## Arquitectura protegida y dependencias
 

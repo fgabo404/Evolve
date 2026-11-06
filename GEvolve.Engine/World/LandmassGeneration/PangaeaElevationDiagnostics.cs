@@ -10,10 +10,13 @@ public sealed class PangaeaElevationDiagnostics
     public ReadOnlyMemory<byte> PreviousBaseByCellId { get; }
     public ReadOnlyMemory<byte> PreviousFinalByCellId { get; }
     public int PreviousCompositionLimitedCells { get; }
+    public ReadOnlyMemory<byte> PriorCalibrationBaseByCellId { get; }
+    public ReadOnlyMemory<byte> PriorCalibrationFinalByCellId { get; }
+    public int PriorCalibrationCompositionLimitedCells { get; }
     public PangaeaElevationSources? Sources { get; internal set; }
 
     internal PangaeaElevationDiagnostics(byte[] initial, byte[] final, double[] requested,
-        ReadOnlyMemory<byte> previousBase = default)
+        ReadOnlyMemory<byte> previousBase = default, ReadOnlyMemory<byte> priorCalibrationBase = default)
     {
         var contribution = new byte[initial.Length];
         var limited = new bool[initial.Length];
@@ -31,21 +34,34 @@ public sealed class PangaeaElevationDiagnostics
         {
             if (previousBase.Length != initial.Length)
                 throw new ArgumentException("Previous base dimensions differ from the current world.", nameof(previousBase));
-            var previousFinal = new byte[initial.Length];
-            int clipped = 0;
-            for (int id = 0; id < initial.Length; id++)
-            {
-                byte height = previousBase.Span[id];
-                // The same already generated uplift field and composition are used
-                // for both bases. No plates, surface or ranges are regenerated.
-                previousFinal[id] = height == 0 ? (byte)0 :
-                    PangaeaMountainRangeGenerator.ComposeElevation(height, requested[id]);
-                if (requested[id] > 0 && previousFinal[id] < Math.Round(height + requested[id])) clipped++;
-            }
+            var comparison = ComposeComparison(previousBase, requested);
             PreviousBaseByCellId = previousBase;
-            PreviousFinalByCellId = previousFinal;
-            PreviousCompositionLimitedCells = clipped;
+            PreviousFinalByCellId = comparison.Final;
+            PreviousCompositionLimitedCells = comparison.Clipped;
         }
+        if (!priorCalibrationBase.IsEmpty)
+        {
+            if (priorCalibrationBase.Length != initial.Length)
+                throw new ArgumentException("Prior calibration dimensions differ from the current world.", nameof(priorCalibrationBase));
+            var comparison = ComposeComparison(priorCalibrationBase, requested);
+            PriorCalibrationBaseByCellId = priorCalibrationBase;
+            PriorCalibrationFinalByCellId = comparison.Final;
+            PriorCalibrationCompositionLimitedCells = comparison.Clipped;
+        }
+    }
+
+    private static (byte[] Final, int Clipped) ComposeComparison(ReadOnlyMemory<byte> initial, double[] requested)
+    {
+        var final = new byte[initial.Length];
+        int clipped = 0;
+        for (int id = 0; id < initial.Length; id++)
+        {
+            byte height = initial.Span[id];
+            // Reuse the one generated uplift field; no surface or ranges are regenerated.
+            final[id] = height == 0 ? (byte)0 : PangaeaMountainRangeGenerator.ComposeElevation(height, requested[id]);
+            if (requested[id] > 0 && final[id] < Math.Round(height + requested[id])) clipped++;
+        }
+        return (final, clipped);
     }
 }
 
@@ -57,6 +73,8 @@ public sealed record PangaeaElevationSources(double[] Quantiles, double[] Potent
 {
     public PangaeaElevationSources? Previous { get; init; }
     public ReadOnlyMemory<byte> PreviousBaseByCellId { get; init; }
+    public PangaeaElevationSources? PriorCalibration { get; init; }
+    public ReadOnlyMemory<byte> PriorCalibrationBaseByCellId { get; init; }
     public double CalibrationMilliseconds { get; init; }
     internal static PangaeaElevationSources Measure(byte[] surface, byte[] elevation,
         double[] potential, double[] uplift, double[] quantiles, double[] anchors, double[] levels)

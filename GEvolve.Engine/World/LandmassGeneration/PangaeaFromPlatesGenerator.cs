@@ -10,7 +10,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 /// </summary>
 public sealed class PangaeaFromPlatesGenerator
 {
-    public const string Version = "pangaea-from-plates-2";
+    public const string Version = "pangaea-from-plates-3";
 
     public (byte[] Surface, byte[] Elevation) Generate(
         HexTopology topology, LandmassConfiguration configuration, byte[] plates, int attempt = 0)
@@ -227,6 +227,8 @@ public sealed class PangaeaFromPlatesGenerator
         }
         long calibrationStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         byte[] calibrated = ShapeUpperRelief(surface, elevation, localDetail, uplift);
+        byte[] priorCalibration = captureSources is null ? [] : (byte[])calibrated.Clone();
+        RecoverRegionalShoulders(elevation, calibrated);
         double calibrationMilliseconds = System.Diagnostics.Stopwatch.GetElapsedTime(calibrationStarted).TotalMilliseconds;
         if (captureSources is not null)
             captureSources(PangaeaElevationSources.Measure(surface, calibrated,
@@ -235,9 +237,29 @@ public sealed class PangaeaFromPlatesGenerator
                 Previous = PangaeaElevationSources.Measure(surface, elevation,
                     potential, uplift, quantile, anchors, level),
                 PreviousBaseByCellId = elevation,
+                PriorCalibration = PangaeaElevationSources.Measure(surface, priorCalibration,
+                    potential, uplift, quantile, anchors, level),
+                PriorCalibrationBaseByCellId = priorCalibration,
                 CalibrationMilliseconds = calibrationMilliseconds
             });
         return (surface, calibrated);
+    }
+
+    /// <summary>
+    /// Recover only regional height that P03-A.3 removed. Fully retain recovery
+    /// through 75, taper it to zero at 85, and never lower a structured summit.
+    /// Thus P03-A.3's complete >=85 base mask and heights remain identical.
+    /// </summary>
+    private static void RecoverRegionalShoulders(byte[] regional, byte[] structured)
+    {
+        for (int id = 0; id < regional.Length; id++)
+        {
+            if (regional[id] <= structured[id]) continue;
+            double t = Math.Clamp((regional[id] - 75) / 10.0, 0, 1);
+            double recovery = 1 - t * t * (3 - 2 * t);
+            structured[id] = (byte)Math.Round(structured[id] +
+                recovery * (regional[id] - structured[id]));
+        }
     }
 
     /// <summary>

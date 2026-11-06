@@ -6,6 +6,7 @@ using GEvolve.Engine.Grid;
 using GEvolve.Engine.World;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
+using GEvolve.Engine.World.BiomeGeneration;
 using GEvolve.Game.Graphics;
 using GEvolve.Game;
 using GEvolve.State.Game;
@@ -35,9 +36,12 @@ public static class PangaeaElevationTests
         {
             (GridSize.Enormous, 1324918567), (GridSize.Enormous, 418579367),
             (GridSize.Enormous, 1697481406), (GridSize.Enormous, 1242668747),
-            (GridSize.Large, -234020843), (GridSize.Large, -690013300)
+            (GridSize.Large, -234020843), (GridSize.Large, -690013300),
+            (GridSize.Large, 689804754), (GridSize.Large, 1195510322),
+            (GridSize.Large, 1443340172), (GridSize.Large, -185224545)
         });
         bool calibrationChangedHeights = false;
+        bool regionalRecoveryChangedHeights = false;
         foreach (var (size, seed) in cases)
         {
             var timer = Stopwatch.StartNew();
@@ -50,9 +54,14 @@ public static class PangaeaElevationTests
             byte[] final = fields.FinalByCellId.ToArray();
             byte[] previousBase = fields.PreviousBaseByCellId.ToArray();
             byte[] previousFinal = fields.PreviousFinalByCellId.ToArray();
+            byte[] priorCalibrationBase = fields.PriorCalibrationBaseByCellId.ToArray();
+            byte[] priorCalibrationFinal = fields.PriorCalibrationFinalByCellId.ToArray();
             Check(previousBase.Length == topology.Count && previousFinal.Length == topology.Count,
                 "Before/after fields are captured in the same world generation");
+            Check(priorCalibrationBase.Length == topology.Count && priorCalibrationFinal.Length == topology.Count,
+                "P03-A.3 comparison fields are captured without a second world");
             calibrationChangedHeights |= !initial.SequenceEqual(previousBase);
+            regionalRecoveryChangedHeights |= !initial.SequenceEqual(priorCalibrationBase);
             if (baselines.TryGetValue((size, seed), out var baseline))
             {
                 string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
@@ -72,6 +81,16 @@ public static class PangaeaElevationTests
                     "Base plus contribution equals final; ocean remains zero");
                 if (previousBase[id] <= 60)
                     Check(initial[id] == previousBase[id], "Low and middle regional relief stays unchanged");
+                Check(initial[id] >= priorCalibrationBase[id] && final[id] >= priorCalibrationFinal[id],
+                    "Recovery never removes existing structured relief or lowers a mountain crest");
+                Check((initial[id] >= 85) == (priorCalibrationBase[id] >= 85) &&
+                    (initial[id] < 85 || initial[id] == priorCalibrationBase[id]),
+                    "P03-A.3 extreme base cells and their heights remain exactly unchanged");
+                if (previousBase[id] <= 75)
+                    Check(initial[id] >= previousBase[id], "Moderate regional height lost in P03-A.3 is recovered");
+                if (final[id] >= 85 && priorCalibrationFinal[id] < 85)
+                    Check(terrain.PangaeaMountainRanges!.RangeByCellId[id] != 0,
+                        "New extreme final heights stay within the unchanged mountain influence");
             }
             Check(initial.Max() == 100 && final.Max() == 100,
                 "Calibrated base and final retain height-100 summits");
@@ -97,21 +116,17 @@ public static class PangaeaElevationTests
                 "The captured previous final uses exactly the unchanged mountain contribution and composition");
             var priorRanges = priorTerrain.PangaeaMountainRanges!;
             var currentRanges = terrain.PangaeaMountainRanges!;
-            Check(priorRanges.Ranges.Length == currentRanges.Ranges.Length &&
-                priorRanges.RangeByCellId.SequenceEqual(currentRanges.RangeByCellId) &&
-                priorRanges.Ranges.Zip(currentRanges.Ranges).All(pair =>
-                    pair.First.Id == pair.Second.Id && pair.First.AxisCellIds.SequenceEqual(pair.Second.AxisCellIds) &&
-                    pair.First.WidthByAxisCell.SequenceEqual(pair.Second.WidthByAxisCell) &&
-                    pair.First.FirstPlateId == pair.Second.FirstPlateId && pair.First.SecondPlateId == pair.Second.SecondPlateId &&
-                    pair.First.PeakConvergence == pair.Second.PeakConvergence &&
-                    pair.First.MeanConvergence == pair.Second.MeanConvergence &&
-                    pair.First.Elongation == pair.Second.Elongation &&
-                    pair.First.ContactEndpoints == pair.Second.ContactEndpoints &&
-                    pair.First.ContactCycles == pair.Second.ContactCycles &&
-                    pair.First.BranchingCells == pair.Second.BranchingCells),
+            Check(SameRangeGeometry(priorRanges, currentRanges),
                 "Base calibration preserves mountain IDs, axes, widths, classification and intensity");
+            var priorCalibrationTerrain = new PangaeaMountainRangeGenerator().Apply(topology,
+                baseTerrain with { ElevationByCellId = priorCalibrationBase });
+            Check(priorCalibrationTerrain.ElevationByCellId!.SequenceEqual(priorCalibrationFinal) &&
+                SameRangeGeometry(priorCalibrationTerrain.PangaeaMountainRanges!, currentRanges),
+                "P03-A.2, P03-A.3 and P03-A.4 have identical tectonic systems and geometry");
 
-            Console.WriteLine($"P03-A.3 {size}/{seed}: generation={timer.Elapsed.TotalMilliseconds:F3} ms");
+            Console.WriteLine($"P03-A.4 {size}/{seed}: generation={timer.Elapsed.TotalMilliseconds:F3} ms");
+            Console.WriteLine($"  recovered base cells={initial.Zip(priorCalibrationBase).Count(p => p.First > p.Second)}, " +
+                $"final cells crossing85 vs P03-A.3={final.Zip(priorCalibrationFinal).Count(p => p.First >= 85 && p.Second < 85)}");
             var previousBaseStats = Measure(topology, terrain.SurfaceByCellId, previousBase);
             var previousFinalStats = Measure(topology, terrain.SurfaceByCellId, previousFinal, previousBase);
             Print("BASE ANTERIOR P03-A.2", previousBaseStats);
@@ -119,6 +134,11 @@ public static class PangaeaElevationTests
             byte[] previousDelta = previousFinal.Zip(previousBase).Select(pair => (byte)(pair.First - pair.Second)).ToArray();
             Print("APORTE ANTERIOR P03-A.2", Measure(topology, terrain.SurfaceByCellId, previousDelta));
             VerifyReportedPreviousResults(size, seed, previousBaseStats, previousFinalStats);
+            Print("BASE P03-A.3", Measure(topology, terrain.SurfaceByCellId, priorCalibrationBase));
+            Print("FINAL P03-A.3", Measure(topology, terrain.SurfaceByCellId, priorCalibrationFinal, priorCalibrationBase));
+            byte[] priorCalibrationDelta = priorCalibrationFinal.Zip(priorCalibrationBase)
+                .Select(pair => (byte)(pair.First - pair.Second)).ToArray();
+            Print("APORTE P03-A.3", Measure(topology, terrain.SurfaceByCellId, priorCalibrationDelta));
             Print("BASE", Measure(topology, terrain.SurfaceByCellId, initial));
             Print("APORTE", Measure(topology, terrain.SurfaceByCellId, delta));
             Print("FINAL", Measure(topology, terrain.SurfaceByCellId, final, initial));
@@ -146,13 +166,31 @@ public static class PangaeaElevationTests
                 $"{sources.MeanApproximationHigh:F4}/{sources.MeanNoiseHigh:F4}; " +
                 $"other={sources.MeanApproximationOther:F4}/{sources.MeanNoiseOther:F4}");
             var previousSources = sources.Previous ?? throw new Exception("Missing previous source statistics");
+            var priorCalibrationSources = sources.PriorCalibration ?? throw new Exception("Missing P03-A.3 source statistics");
             Console.WriteLine($"  PREVIOUS BASE correlations: approximate tectonics={previousSources.ApproximationCorrelation:F4}, " +
                 $"regional noise={previousSources.NoiseCorrelation:F4}; calibration={sources.CalibrationMilliseconds:F3} ms; " +
                 $"version={PangaeaFromPlatesGenerator.Version}");
+            Console.WriteLine($"  P03-A.3 BASE correlations: approximate tectonics={priorCalibrationSources.ApproximationCorrelation:F4}, " +
+                $"regional noise={priorCalibrationSources.NoiseCorrelation:F4}; composition limited=" +
+                $"{fields.PriorCalibrationCompositionLimitedCells}");
             Console.WriteLine($"  SHA256 base={Convert.ToHexString(SHA256.HashData(initial))}, " +
                 $"final={Convert.ToHexString(SHA256.HashData(final))}");
             Console.WriteLine($"  SHA256 previous base={Convert.ToHexString(SHA256.HashData(previousBase))}, " +
                 $"previous final={Convert.ToHexString(SHA256.HashData(previousFinal))}");
+            Console.WriteLine($"  SHA256 P03-A.3 base={Convert.ToHexString(SHA256.HashData(priorCalibrationBase))}, " +
+                $"P03-A.3 final={Convert.ToHexString(SHA256.HashData(priorCalibrationFinal))}");
+            var convergence = ConvergenceNeighborhood(topology, terrain);
+            PrintSystems("P03-A.2", priorRanges, land);
+            PrintSystems("P03-A.3", priorCalibrationTerrain.PangaeaMountainRanges!, land);
+            PrintSystems("P03-A.4", currentRanges, land);
+            PrintMountainMetrics("P03-A.2 BASE", topology, terrain, previousBase, priorRanges, convergence);
+            PrintMountainMetrics("P03-A.2 FINAL", topology, terrain, previousFinal, priorRanges, convergence);
+            PrintMountainMetrics("P03-A.3 BASE", topology, terrain, priorCalibrationBase,
+                priorCalibrationTerrain.PangaeaMountainRanges!, convergence);
+            PrintMountainMetrics("P03-A.3 FINAL", topology, terrain, priorCalibrationFinal,
+                priorCalibrationTerrain.PangaeaMountainRanges!, convergence);
+            PrintMountainMetrics("P03-A.4 BASE", topology, terrain, initial, currentRanges, convergence);
+            PrintMountainMetrics("P03-A.4 FINAL", topology, terrain, final, currentRanges, convergence);
             VerifyViews(terrain, fields);
             if (size == GridSize.Small && seed == 2026)
             {
@@ -161,9 +199,138 @@ public static class PangaeaElevationTests
             }
         }
         Check(calibrationChangedHeights, "The calibration changes upper relief in the regression matrix");
+        Check(regionalRecoveryChangedHeights, "Regional relief is recovered in the regression matrix");
         foreach (var type in new[] { LandmassType.Archipelagos, LandmassType.SmallContinents, LandmassType.Continents })
             Check(new WorldGenerationService().Generate(GridSize.Small, type, 2026).PangaeaElevations is null,
                 "Pangaea diagnostics are absent for other world types");
+    }
+
+    private static bool SameRangeGeometry(PangaeaMountainRangeState first, PangaeaMountainRangeState second) =>
+        first.Version == second.Version && first.Ranges.Length == second.Ranges.Length &&
+        first.RangeByCellId.SequenceEqual(second.RangeByCellId) &&
+        first.Ranges.Zip(second.Ranges).All(pair =>
+            pair.First.Id == pair.Second.Id && pair.First.AxisCellIds.SequenceEqual(pair.Second.AxisCellIds) &&
+            pair.First.WidthByAxisCell.SequenceEqual(pair.Second.WidthByAxisCell) &&
+            pair.First.FirstPlateId == pair.Second.FirstPlateId && pair.First.SecondPlateId == pair.Second.SecondPlateId &&
+            pair.First.PeakConvergence == pair.Second.PeakConvergence && pair.First.MeanConvergence == pair.Second.MeanConvergence &&
+            pair.First.Elongation == pair.Second.Elongation && pair.First.ContactEndpoints == pair.Second.ContactEndpoints &&
+            pair.First.ContactCycles == pair.Second.ContactCycles && pair.First.BranchingCells == pair.Second.BranchingCells);
+
+    private static void PrintSystems(string label, PangaeaMountainRangeState ranges, int landCells)
+    {
+        var restored = System.Text.Json.JsonSerializer.Deserialize<PangaeaMountainRangeState>(
+            System.Text.Json.JsonSerializer.Serialize(ranges)) ?? throw new Exception("Range serialization failed");
+        Check(SameRangeGeometry(ranges, restored) && ranges.Ranges.Zip(restored.Ranges)
+            .All(pair => pair.First.AffectedCells == pair.Second.AffectedCells),
+            "Detected mountain systems, geometry and affected-cell metadata survive serialization");
+        int influence = ranges.RangeByCellId.Count(id => id != 0);
+        Console.WriteLine($"  SYSTEMS {label}: detected={ranges.Ranges.Length}, persisted={restored.Ranges.Length}, " +
+            $"axis cells={ranges.Ranges.Sum(range => range.AxisCellIds.Length)}, " +
+            $"influence cells={influence} ({influence * 100.0 / landCells:F3}% land), " +
+            $"final raised cells metadata={ranges.Ranges.Sum(range => range.AffectedCells)}");
+    }
+
+    private static bool[] ConvergenceNeighborhood(HexTopology topology, LandmassState terrain)
+    {
+        var motion = terrain.TectonicMotion!;
+        int radius = Math.Max(1, (int)Math.Ceiling(motion.InfluenceRadiusHexes));
+        var distance = Enumerable.Repeat(-1, topology.Count).ToArray();
+        var queue = new Queue<int>();
+        foreach (var edge in motion.Interactions)
+        {
+            if (edge.Convergence < 1 || edge.Kind is not (PlateInteractionKind.Convergent or PlateInteractionKind.Mixed)) continue;
+            foreach (int id in new[] { edge.FirstCellId, edge.SecondCellId })
+                if (distance[id] < 0) { distance[id] = 0; queue.Enqueue(id); }
+        }
+        while (queue.TryDequeue(out int id))
+        {
+            if (distance[id] == radius) continue;
+            foreach (int next in topology.Neighbors(id))
+                if (distance[next] < 0) { distance[next] = distance[id] + 1; queue.Enqueue(next); }
+        }
+        return distance.Select(value => value >= 0).ToArray();
+    }
+
+    private static void PrintMountainMetrics(string label, HexTopology topology, LandmassState terrain,
+        byte[] heights, PangaeaMountainRangeState ranges, bool[] nearConvergence)
+    {
+        var slopes = TerrainSlope.Calculate(topology, terrain with { ElevationByCellId = heights })!;
+        int[] bands = new int[6], corridorBands = new int[6];
+        var boundarySum = new double[ranges.Ranges.Length];
+        var boundaryLinks = new int[ranges.Ranges.Length];
+        int corridorCells = 0, highCells = 0, lowCells = 0, highNearConvergence = 0, highInRanges = 0;
+        double corridorSlope = 0, highCompression = 0, lowCompression = 0;
+        for (int id = 0; id < topology.Count; id++)
+        {
+            if (!terrain.IsLand(id)) continue;
+            int band = heights[id] < 40 ? 0 : heights[id] <= 60 ? 1 : heights[id] <= 75 ? 2 :
+                heights[id] <= 84 ? 3 : heights[id] <= 94 ? 4 : 5;
+            bands[band]++;
+            int owner = ranges.RangeByCellId[id];
+            if (owner != 0)
+            {
+                corridorCells++; corridorSlope += slopes[id]; corridorBands[band]++;
+                foreach (int next in topology.Neighbors(id))
+                    if (terrain.IsLand(next) && ranges.RangeByCellId[next] != owner)
+                    { boundarySum[owner - 1] += heights[next]; boundaryLinks[owner - 1]++; }
+            }
+            double compression = terrain.TectonicMotion!.CompressionByCellId[id];
+            if (heights[id] >= 61)
+            {
+                highCells++; highCompression += compression;
+                if (nearConvergence[id]) highNearConvergence++;
+                if (owner != 0) highInRanges++;
+            }
+            else { lowCells++; lowCompression += compression; }
+        }
+        double axisSum = 0, localProminence = 0, boundaryProminence = 0;
+        int axisCells = 0, boundaryAxisCells = 0, axisMinimum = 100, axisMaximum = 0;
+        foreach (var range in ranges.Ranges)
+        {
+            double rangeAxisSum = 0;
+            foreach (int id in range.AxisCellIds)
+            {
+                int neighborSum = 0, neighbors = 0;
+                foreach (int next in topology.Neighbors(id))
+                    if (terrain.IsLand(next)) { neighbors++; neighborSum += heights[next]; }
+                axisCells++; axisSum += heights[id]; rangeAxisSum += heights[id];
+                axisMinimum = Math.Min(axisMinimum, heights[id]); axisMaximum = Math.Max(axisMaximum, heights[id]);
+                if (neighbors > 0) localProminence += heights[id] - (double)neighborSum / neighbors;
+            }
+            int links = boundaryLinks[range.Id - 1];
+            if (links > 0)
+            {
+                boundaryProminence += rangeAxisSum - range.AxisCellIds.Length * boundarySum[range.Id - 1] / links;
+                boundaryAxisCells += range.AxisCellIds.Length;
+            }
+        }
+        string Bands(int[] counts) => string.Join("/", counts);
+        Console.WriteLine($"  MOUNTAIN {label}: bands <40/40-60/61-75/76-84/85-94/95-100={Bands(bands)}; " +
+            $"corridor={Bands(corridorBands)}; outside={Bands(bands.Zip(corridorBands).Select(p => p.First - p.Second).ToArray())}");
+        Console.WriteLine($"    axis min/mean/max={(axisCells == 0 ? 0 : axisMinimum)}/" +
+            $"{(axisCells == 0 ? 0 : axisSum / axisCells):F3}/{axisMaximum}; " +
+            $"prominence vs six land neighbors={(axisCells == 0 ? 0 : localProminence / axisCells):F3}; " +
+            $"vs outside corridor={(boundaryAxisCells == 0 ? "n/a" : (boundaryProminence / boundaryAxisCells).ToString("F3"))}; " +
+            $"corridor mean slope={(corridorCells == 0 ? 0 : corridorSlope / corridorCells):F3} levels/hex");
+        Console.WriteLine($"    >=61 land={highCells}, near convergent contacts={highNearConvergence}, " +
+            $"in range influence={highInRanges}; H04 mean compression high/other=" +
+            $"{(highCells == 0 ? 0 : highCompression / highCells):F4}/{(lowCells == 0 ? 0 : lowCompression / lowCells):F4}; " +
+            $"near-contact radius={Math.Max(1, (int)Math.Ceiling(terrain.TectonicMotion!.InfluenceRadiusHexes))} hex");
+        foreach (byte threshold in new byte[] { 61, 75 })
+        {
+            var components = ElevatedComponents(topology, terrain.SurfaceByCellId, heights, threshold);
+            Console.WriteLine($"    >={threshold} components={components.Count}, largest={components.Largest}");
+        }
+    }
+
+    private static (int Count, int Largest) ElevatedComponents(HexTopology topology, byte[] surface,
+        byte[] heights, byte threshold)
+    {
+        var elevated = new byte[topology.Count];
+        for (int id = 0; id < topology.Count; id++)
+            if (surface[id] == 1 && heights[id] >= threshold) elevated[id] = 1;
+        var statistics = LandmassAnalysis.Analyze(topology, elevated);
+        return (statistics.ComponentCount, statistics.DominantMassSize);
     }
 
     private static void VerifyReportedPreviousResults(GridSize size, int seed,
@@ -295,6 +462,8 @@ public static class PangaeaElevationTests
         Check(stats.Min == 10 && stats.Max == 100 && stats.Mean == 62 && stats.Median == 85 && stats.Percentiles[2] == 85 &&
             stats.HighComponents.SequenceEqual(new[] { 2, 1 }) && stats.Above85 == 3 && stats.Exactly100 == 1,
             "Histogram and components use known levels and the east/west seam");
+        Check(ElevatedComponents(topology, surface, values, 85) == (2, 2),
+            "Mountain connectivity metrics reproduce the controlled wrapped components");
         int north = topology.Id(20, 0), south = topology.Id(20, topology.Rows - 1);
         Check(!topology.Neighbors(north).Contains(south), "Extreme components cannot wrap north/south");
     }
@@ -314,6 +483,11 @@ public static class PangaeaElevationTests
             var color = MapViewColors.ForCell(terrain, id, MapViewMode.ElevationFinal, fields);
             if (terrain.IsLand(id)) Check(color == new Vector3(before[id] / 100f),
                 "Final diagnostic retains numeric differences within the summit range");
+            Check(BiomeClassifier.GetCell(terrain, id).Elevation == before[id],
+                "The surface environment consumes the final world height");
+            if (terrain.IsImpassableSummit(id))
+                Check(MapViewColors.ForCell(terrain, id, MapViewMode.Biomes) == Vector3.One,
+                    "The traditional surface view uses the final summit classification");
         }
         Check(before.SequenceEqual(terrain.ElevationByCellId!), "View queries never mutate geography");
     }
@@ -324,9 +498,12 @@ public static class PangaeaElevationTests
         try
         {
             GameSaveStore.Save(path, new GameState { HexGrid = new HexGridState(world.Grid.Definition), Landmass = world.Landmass });
+            var loaded = GameSaveStore.Load(path).Landmass!;
             Check(!File.ReadAllText(path).Contains("PangaeaElevations", StringComparison.Ordinal) &&
-                GameSaveStore.Load(path).Landmass!.ElevationByCellId!.SequenceEqual(world.Landmass.ElevationByCellId!),
+                loaded.ElevationByCellId!.SequenceEqual(world.Landmass.ElevationByCellId!),
                 "Diagnostic arrays are transient and saved final heights remain compatible");
+            Check(SameRangeGeometry(world.Landmass.PangaeaMountainRanges!, loaded.PangaeaMountainRanges!),
+                "The full game save retains mountain count, IDs, axes and widths");
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }
