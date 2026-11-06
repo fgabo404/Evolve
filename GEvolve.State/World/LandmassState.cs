@@ -12,8 +12,6 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     public byte[]? PlateByCellId { get; init; }
     public TectonicMotionState? TectonicMotion { get; init; }
     public ContinentalGeologyState? ContinentalGeology { get; init; }
-    /// <summary>Optional versioned H05-A2 cortical state; absent from historical saves.</summary>
-    public SharedCorticalState? SharedCortex { get; init; }
     /// <summary>Continentes conserva sus placas y movimiento; la superficie aún no existe.</summary>
     public bool SurfaceGenerationPending { get; init; }
     /// <summary>
@@ -22,13 +20,6 @@ public sealed record LandmassState(LandmassConfiguration Configuration,
     /// their unclassified compatibility placeholder.
     /// </summary>
     public bool TectonicPreviewOnly { get; init; }
-    [JsonIgnore]
-    public WorldGenerationStage GenerationStage => HasSurface
-        ? WorldGenerationStage.SurfaceAvailable
-        : SharedCortex is not null && !TectonicPreviewOnly && SurfaceGenerationPending
-            ? WorldGenerationStage.CortexAvailable
-            : WorldGenerationStage.TectonicsOnly;
-    // Ready is reserved for later shared stage completion; surface alone is not ready.
     [JsonIgnore]
     public bool HasSurface => !TectonicPreviewOnly && !SurfaceGenerationPending && SurfaceByCellId.Length > 0;
     public BiomeState? Biomes { get; init; }

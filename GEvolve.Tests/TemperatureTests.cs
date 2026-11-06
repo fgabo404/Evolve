@@ -85,11 +85,7 @@ public static class TemperatureTests
                 foreach (var mode in Enum.GetValues<MapViewMode>())
                 {
                     var color = MapViewColors.ForCell(terrain, id, mode);
-                    if (mode == MapViewMode.Surface)
-                        Check(color == (terrain.IsLand(id)
-                                ? MapViewColors.SurfaceLandColor : MapViewColors.SurfaceOceanColor),
-                            "Preliminary surface uses explicit land/ocean colors even on summits");
-                    else if (mode == MapViewMode.Infrared)
+                    if (mode == MapViewMode.Infrared)
                         Check(color == ThermalPalette.ForCelsius(climate.CurrentCelsius(id)), "Thermal palette includes oceans and summits");
                     else if (mode == MapViewMode.Tectonic && terrain.PlateByCellId is { } plates)
                         Check(color == PlatePalette.ForPlate(plates[id], !terrain.IsLand(id)),

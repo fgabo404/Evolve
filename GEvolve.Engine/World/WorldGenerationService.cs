@@ -9,7 +9,7 @@ namespace GEvolve.Engine.World;
 
 /// <summary>
 /// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
-/// Ordinary Continents generation stops after stage 01; its surface preview is explicit.
+/// Continents currently stops after stage 01 with no surface.
 /// Temperature, precipitation and biome classification remain shared future stages.
 /// </summary>
 public sealed class WorldGenerationService
@@ -94,85 +94,6 @@ public sealed class WorldGenerationService
             $"Stage 02 {configuration.Type} did not meet the profile after four attempts " +
             $"(land={last?.LandFraction:P1}, components={last?.ComponentCount}, " +
             $"dominant={last?.DominantLandShare:P1}).");
-    }
-
-    /// <summary>Explicit H05-B3 preview: surface available, relief/climate/biomes still absent.</summary>
-    public GeneratedWorld GenerateContinentsSurfacePreview(LandmassConfiguration configuration)
-        => BuildContinentsSurfacePreview(configuration, false).Reference;
-
-    /// <summary>Session-only A/B comparison. Reference remains the persistible operational A.</summary>
-    public (GeneratedWorld Reference, ContinentsSurfaceComparison Comparison,
-        ContinentsCorticalAssemblyResult Assembly) CompareContinentsSurfacePreview(LandmassConfiguration configuration)
-    {
-        var result = BuildContinentsSurfacePreview(configuration, true);
-        return (result.Reference, result.Comparison ??
-            throw new InvalidOperationException("Regional comparison was not calculated."), result.Assembly);
-    }
-
-    private (GeneratedWorld Reference, ContinentsSurfaceComparison? Comparison,
-        ContinentsCorticalAssemblyResult Assembly) BuildContinentsSurfacePreview(
-        LandmassConfiguration configuration, bool compare)
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-        Validate(configuration);
-        if (configuration.Type != LandmassType.Continents)
-            throw new ArgumentException("Surface preview is restricted to Continents.", nameof(configuration));
-        // Reuse the ordinary official tectonics without changing its pending-surface contract.
-        var tectonics = Generate(configuration);
-        var topology = new HexTopology(tectonics.Grid);
-        var plates = tectonics.Landmass.PlateByCellId!;
-        var motion = tectonics.Landmass.TectonicMotion!;
-        var cortex = new ContinentsCorticalFragmentGenerator().Generate(topology, configuration, plates, motion);
-        var assembly = new ContinentsCorticalAssemblyGenerator().Assemble(topology, configuration, plates, motion, cortex);
-        var generator = new ContinentsSurfaceGenerator();
-        ContinentsSurfaceComparison? comparison = compare
-            ? generator.CompareRegional(topology, configuration, plates, motion, assembly) : null;
-        byte[] surface = comparison?.LocalizedSurface ?? generator.Generate(topology, configuration, plates, motion, assembly);
-        var terrain = new LandmassState(configuration, surface, 0)
-        {
-            PlateByCellId = plates,
-            TectonicMotion = motion,
-            SharedCortex = SharedCorticalPersistence.ToState(assembly.Model),
-            TectonicPreviewOnly = false,
-            SurfaceGenerationPending = false
-        };
-        // Ordinary preview does not calculate B or retain experiment diagnostics.
-        return (new GeneratedWorld(tectonics.Grid, terrain, LandmassAnalysis.Analyze(topology, surface)),
-            comparison, assembly);
-    }
-
-    /// <summary>Explicit C1 experiment. A remains official even if every C candidate is rejected.</summary>
-    public (GeneratedWorld Reference, C1ExperimentResult Experiment) CompareContinentsGeometryPreview(LandmassConfiguration configuration)
-    {
-        var reference = BuildContinentsSurfacePreview(configuration, false);
-        var world = reference.Reference; var topology = new HexTopology(world.Grid);
-        var summaries = new List<C1CandidateSummary>(); C1EvaluatedCandidate? selected = null;
-        foreach (var candidate in new ContinentsMultiscaleCorticalGenerator().GenerateCandidates(topology, configuration,
-            world.Landmass.PlateByCellId!, world.Landmass.TectonicMotion!, reference.Assembly.Model))
-        {
-            if (candidate.Model is null)
-            {
-                summaries.Add(new(candidate.Ordinal, candidate.PlannedDomains, candidate.CorticalBudget,
-                    candidate.Solvers, candidate.Deficits, null, candidate.Failure));
-                continue;
-            }
-            var assembly = new ContinentsCorticalAssemblyGenerator().Assemble(topology, configuration,
-                world.Landmass.PlateByCellId!, world.Landmass.TectonicMotion!, candidate.Model);
-            var surface = new ContinentsSurfaceGenerator().Generate(topology, configuration,
-                world.Landmass.PlateByCellId!, world.Landmass.TectonicMotion!, assembly);
-            var terrain = world.Landmass with { SurfaceByCellId = surface, SharedCortex = SharedCorticalPersistence.ToState(assembly.Model) };
-            var geography = C1GeographicEvaluation.Evaluate(topology, terrain, candidate, assembly);
-            summaries.Add(new(candidate.Ordinal, candidate.PlannedDomains, candidate.CorticalBudget,
-                candidate.Solvers, candidate.Deficits, geography, candidate.Failure));
-            var evaluated = new C1EvaluatedCandidate(candidate, assembly, terrain, geography);
-            // Keep only one safe geometry; reports retain every candidate's outcome.
-            if (selected is null || Rank(evaluated) < Rank(selected)) selected = evaluated;
-        }
-        return (world, new(summaries.ToArray(), selected,
-            world.Statistics!.ComponentSizes.Count(area => area * 100 >= topology.Count * 3)));
-
-        static int Rank(C1EvaluatedCandidate candidate) => (candidate.Geography.Status switch
-        { C1GeographicStatus.Accepted => 0, C1GeographicStatus.ReviewRequired => 1, _ => 2 }) * 100 + candidate.Formation.Ordinal;
     }
 
     /// <summary>Stage 01 alone, independent of the selected map type.</summary>

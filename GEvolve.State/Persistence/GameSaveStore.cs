@@ -33,13 +33,8 @@ public static class GameSaveStore
         if (state.SaveFormatVersion != CurrentFormatVersion || state.HexGrid is null ||
             state.HexGrid.Definition.Size != landmass.Configuration.Size ||
             (landmass.SurfaceGenerationPending
-                ? (landmass.TectonicPreviewOnly
-                    ? landmass.Configuration.Type !=
-                        GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.Continents ||
-                        landmass.SharedCortex is not null
-                    : landmass.SharedCortex is null ||
-                        landmass.Configuration.Type == GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.SmallContinents) ||
-                    landmass.SurfaceByCellId.Length != 0 ||
+                ? landmass.Configuration.Type != GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.Continents ||
+                    !landmass.TectonicPreviewOnly || landmass.SurfaceByCellId.Length != 0 ||
                     landmass.PlateByCellId is null || landmass.TectonicMotion is null ||
                     landmass.ElevationByCellId is not null || landmass.ContinentalGeology is not null ||
                     landmass.SlopeByCellId is not null || landmass.Climate is not null || landmass.Biomes is not null
@@ -51,14 +46,6 @@ public static class GameSaveStore
             (landmass.PlateByCellId is { } plates && plates.Length != checked(state.HexGrid.Definition.Columns *
                 state.HexGrid.Definition.Rows)))
             throw new InvalidDataException("Invalid landmass save data.");
-        if (landmass.SharedCortex is { } cortex)
-        {
-            if (landmass.PlateByCellId is null || landmass.TectonicMotion is null ||
-                landmass.TectonicPreviewOnly ||
-                landmass.Configuration.Type == GEvolve.Definitions.WorldGeneration.Configuration.LandmassType.SmallContinents)
-                throw new InvalidDataException("Cortical state requires official tectonics and an active world type.");
-            SharedCorticalStateValidator.Validate(state.HexGrid!.Definition, cortex, landmass.PlateByCellId);
-        }
         TectonicMotionValidation.Validate(landmass);
         ContinentalGeologyValidation.Validate(landmass);
         if (landmass.SlopeByCellId is { } slopes &&
