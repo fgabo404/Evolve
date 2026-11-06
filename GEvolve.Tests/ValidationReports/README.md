@@ -20,6 +20,8 @@ This set runs build and `dotnet run --project GEvolve.Tests -- --pangaea-tectoni
 
 Each stream is drained asynchronously and preserved in its own labeled section; this prevents deadlocks and makes no claim about ordering between stdout and stderr. Local repository/user/temp paths and recognizable credentials are replaced by explicit privacy markers. All remaining output, including failures, is retained. Review the resulting files for other sensitive information before any Git publication. The script never pushes, commits, deletes reports, changes generation code or runs the interactive game.
 
+For P03-A.6 use `-ValidationSet TectonicCalibration -Label P03-A6`. This runs build, elevations, mountains, the five-seed tectonic audit, the twenty-case `--pangaea-uplift` comparison and all suites. `pangaea-uplift.log` contains per-system and regional before/after JSON metrics, checked against `PangaeaUpliftReference.txt`, captured before the vertical change at commit `3c95bc7ca7afee362ab732efceb8fe86536aabc5`. This reference adds diagnostic coverage; it does not replace or approve historical baselines. The historical capture command is available only in that commit and its report script snapshot.
+
 Summaries distinguish reported suite totals from individual assertions, whose count is not emitted by this console test harness. Missing diagnostic metrics stay absent. The validated SHA identifies the source before the operational report commit; tracked source changes outside this reports directory are flagged. Untracked files are not certified by that SHA. A report is execution evidence, not architectural or visual approval.
 
 ## Retention

@@ -110,21 +110,22 @@ public static class PangaeaElevationTests
                     pair.First.WidthByAxisCell.SequenceEqual(pair.Second.WidthByAxisCell)),
                 "Diagnostic capture preserves heights, range identity, axes and widths");
 
+            PangaeaElevationDiagnostics? repeatedPrevious = null, repeatedPrior = null;
             var priorTerrain = new PangaeaMountainRangeGenerator().Apply(topology,
-                baseTerrain with { ElevationByCellId = previousBase });
-            Check(priorTerrain.ElevationByCellId!.SequenceEqual(previousFinal),
+                baseTerrain with { ElevationByCellId = previousBase }, value => repeatedPrevious = value);
+            Check(repeatedPrevious!.AdditiveFinalByCellId.Span.SequenceEqual(previousFinal),
                 "The captured previous final uses exactly the unchanged mountain contribution and composition");
             var priorRanges = priorTerrain.PangaeaMountainRanges!;
             var currentRanges = terrain.PangaeaMountainRanges!;
             Check(SameRangeGeometry(priorRanges, currentRanges),
                 "Base calibration preserves mountain IDs, axes, widths, classification and intensity");
             var priorCalibrationTerrain = new PangaeaMountainRangeGenerator().Apply(topology,
-                baseTerrain with { ElevationByCellId = priorCalibrationBase });
-            Check(priorCalibrationTerrain.ElevationByCellId!.SequenceEqual(priorCalibrationFinal) &&
+                baseTerrain with { ElevationByCellId = priorCalibrationBase }, value => repeatedPrior = value);
+            Check(repeatedPrior!.AdditiveFinalByCellId.Span.SequenceEqual(priorCalibrationFinal) &&
                 SameRangeGeometry(priorCalibrationTerrain.PangaeaMountainRanges!, currentRanges),
                 "P03-A.2, P03-A.3 and P03-A.4 have identical tectonic systems and geometry");
 
-            Console.WriteLine($"P03-A.4 {size}/{seed}: generation={timer.Elapsed.TotalMilliseconds:F3} ms");
+            Console.WriteLine($"P03-A.6 {size}/{seed}: generation={timer.Elapsed.TotalMilliseconds:F3} ms");
             Console.WriteLine($"  recovered base cells={initial.Zip(priorCalibrationBase).Count(p => p.First > p.Second)}, " +
                 $"final cells crossing85 vs P03-A.3={final.Zip(priorCalibrationFinal).Count(p => p.First >= 85 && p.Second < 85)}");
             var previousBaseStats = Measure(topology, terrain.SurfaceByCellId, previousBase);
@@ -182,7 +183,7 @@ public static class PangaeaElevationTests
             var convergence = ConvergenceNeighborhood(topology, terrain);
             PrintSystems("P03-A.2", priorRanges, land);
             PrintSystems("P03-A.3", priorCalibrationTerrain.PangaeaMountainRanges!, land);
-            PrintSystems("P03-A.4", currentRanges, land);
+            PrintSystems("P03-A.6", currentRanges, land);
             PrintMountainMetrics("P03-A.2 BASE", topology, terrain, previousBase, priorRanges, convergence);
             PrintMountainMetrics("P03-A.2 FINAL", topology, terrain, previousFinal, priorRanges, convergence);
             PrintMountainMetrics("P03-A.3 BASE", topology, terrain, priorCalibrationBase,
@@ -190,7 +191,8 @@ public static class PangaeaElevationTests
             PrintMountainMetrics("P03-A.3 FINAL", topology, terrain, priorCalibrationFinal,
                 priorCalibrationTerrain.PangaeaMountainRanges!, convergence);
             PrintMountainMetrics("P03-A.4 BASE", topology, terrain, initial, currentRanges, convergence);
-            PrintMountainMetrics("P03-A.4 FINAL", topology, terrain, final, currentRanges, convergence);
+            PrintMountainMetrics("P03-A.4 FINAL", topology, terrain, fields.AdditiveFinalByCellId.ToArray(), currentRanges, convergence);
+            PrintMountainMetrics("P03-A.6 FINAL", topology, terrain, final, currentRanges, convergence);
             VerifyViews(terrain, fields);
             if (size == GridSize.Small && seed == 2026)
             {

@@ -11,7 +11,6 @@ if (args.Contains("--tectonic-motion")) { TectonicMotionTests.Run(); return 0; }
 if (args.Contains("--mountain-ranges")) { PangaeaMountainRangeTests.Run(); return 0; }
 if (args.Contains("--pangaea-elevations")) { PangaeaElevationTests.Run(); return 0; }
 if (args.Contains("--pangaea-tectonic-audit")) { PangaeaTectonicAuditTests.Run(); return 0; }
-if (args.Contains("--pangaea-uplift-reference")) { PangaeaUpliftTests.Run(captureReference: true); return 0; }
 if (args.Contains("--pangaea-uplift")) { PangaeaUpliftTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
@@ -22,7 +21,8 @@ if (args.Contains("--all-suites"))
         ("Precipitation", PrecipitationTests.Run), ("PlateBoundary", PlateBoundaryTests.Run),
         ("TectonicPlate", TectonicPlateTests.Run), ("StagedLandmass", StagedLandmassTests.Run),
         ("Game", GameTests.Run), ("TectonicMotion", TectonicMotionTests.Run), ("ContinentalGeology", ContinentalGeologyTests.Run),
-        ("PangaeaMountainRanges", PangaeaMountainRangeTests.Run), ("PangaeaElevations", PangaeaElevationTests.Run)];
+        ("PangaeaMountainRanges", PangaeaMountainRangeTests.Run), ("PangaeaElevations", PangaeaElevationTests.Run),
+        ("PangaeaUplift", () => PangaeaUpliftTests.Run())];
     int failures = 0;
     string? requestedSuite = args.FirstOrDefault(arg => arg.StartsWith("--suite=", StringComparison.Ordinal))?[8..];
     if (requestedSuite is not null && !suites.Any(suite => suite.Name == requestedSuite))

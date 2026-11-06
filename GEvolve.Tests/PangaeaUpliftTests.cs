@@ -13,10 +13,9 @@ public static class PangaeaUpliftTests
     private sealed record Reference(string Size, int Seed, int Attempt, string Surface, string Plates,
         string Motion, string Base, string Geometry, string Influence, string AdditiveFinal);
 
-    public static void Run(bool captureReference = false)
+    public static void Run()
     {
         var references = new Dictionary<string, Reference>();
-        if (!captureReference)
         {
             using var stream = typeof(PangaeaUpliftTests).Assembly.GetManifestResourceStream("PangaeaUpliftReference.txt")
                 ?? throw new Exception("Missing immutable P03-A.4 comparison reference");
@@ -33,6 +32,7 @@ public static class PangaeaUpliftTests
                 -234020843, -690013300 }.Select(seed => (GridSize.Large, seed)))
             .Append((GridSize.Enormous, 1697481406)).ToArray();
         Check(cases.Length == 20 && cases.Distinct().Count() == 20, "Required comparison cases");
+        Check(references.Count == cases.Length, "Complete immutable reference coverage");
         foreach (var (size, seed) in cases)
         {
             var timer = Stopwatch.StartNew();
@@ -42,17 +42,16 @@ public static class PangaeaUpliftTests
             var topology = new HexTopology(world.Grid);
             var fields = world.PangaeaElevations!;
             byte[] initial = fields.BaseByCellId.ToArray(), final = fields.FinalByCellId.ToArray();
-            // In the reference-capture commit the active generator is still P03-A.4.
-            byte[] previous = final;
+            byte[] previous = fields.AdditiveFinalByCellId.ToArray();
             var ranges = terrain.PangaeaMountainRanges!;
             var reference = new Reference(size.ToString(), seed, terrain.DeterministicAttempt,
                 Hash(terrain.SurfaceByCellId), Hash(terrain.PlateByCellId!), Hash(terrain.TectonicMotion),
                 Hash(initial), Hash(ranges.Ranges.Select(range => range with { AffectedCells = 0 }).ToArray()),
                 Hash(ranges.RangeByCellId), Hash(previous));
             Console.WriteLine("UPLIFT_REFERENCE " + JsonSerializer.Serialize(reference));
-            if (!captureReference)
-                Check(references.TryGetValue($"{size}/{seed}", out var expected) && expected == reference,
-                    $"P03-A.4 BASE, geography, H04, geometry, influence or additive reference changed: {size}/{seed}");
+            Check(references.TryGetValue($"{size}/{seed}", out var expected) && expected == reference,
+                $"P03-A.4 BASE, geography, H04, geometry, influence or additive reference changed: {size}/{seed}");
+            var affected = new int[ranges.Ranges.Length + 1];
             for (int id = 0; id < topology.Count; id++)
             {
                 Check(terrain.IsLand(id) ? final[id] >= previous[id] && final[id] <= 100 : final[id] == 0,
@@ -60,23 +59,30 @@ public static class PangaeaUpliftTests
                 Check(ranges.RangeByCellId[id] != 0 || final[id] == initial[id], "No elevation outside existing corridors");
                 Check(initial[id] <= 94 || final[id] == initial[id], "Inherited summits above composition limit retained");
                 Check(initial[id] + fields.ContributionByCellId.Span[id] == final[id], "Diagnostic contribution is actual gain");
+                if (final[id] > initial[id]) affected[ranges.RangeByCellId[id]]++;
             }
+            Check(affected[0] == 0 && ranges.Ranges.All(range => range.AffectedCells == affected[range.Id]),
+                "Affected-cell metadata follows actual final heights and unchanged owners");
             var repeated = new PangaeaMountainRangeGenerator().Apply(topology,
                 terrain with { ElevationByCellId = initial, PangaeaMountainRanges = null });
             Check(Hash(repeated) == Hash(terrain), "Mountain phase deterministic without diagnostic callbacks");
             var restored = JsonSerializer.Deserialize<LandmassState>(JsonSerializer.Serialize(terrain))!;
             Check(Hash(restored) == Hash(terrain), "Stored final and all mountain metadata round-trip unchanged");
+            Console.WriteLine($"UPLIFT_COUNTS {size}/{seed}: systems={ranges.Ranges.Length}; " +
+                $"axisMean={ranges.Ranges.SelectMany(r => r.AxisCellIds).Select(id => (double)previous[id]).DefaultIfEmpty().Average():F3}" +
+                $"->{ranges.Ranges.SelectMany(r => r.AxisCellIds).Select(id => (double)final[id]).DefaultIfEmpty().Average():F3}; " +
+                $"white={previous.Count(h => h >= 85)}->{final.Count(h => h >= 85)}; generationMs={generationMs:F3}");
             Console.WriteLine("UPLIFT_CASE " + JsonSerializer.Serialize(new
             {
                 Size = size.ToString(), Seed = seed, GenerationMs = generationMs, Invariants = "PASS",
+                Composition = PangaeaMountainRangeGenerator.ElevationCompositionVersion,
                 Systems = ranges.Ranges.Length, AxisCells = ranges.Ranges.Sum(r => r.AxisCellIds.Length),
                 InfluenceCells = ranges.RangeByCellId.Count(id => id > 0),
                 Before = Measure(topology, terrain, initial, previous, "P03-A.4"),
                 After = Measure(topology, terrain, initial, final, "P03-A.6")
             }));
         }
-        Console.WriteLine(captureReference ? "UPLIFT_REFERENCE_CAPTURE: twenty P03-A.4 cases" :
-            "UPLIFT_PASS: twenty cases; immutable P03-A.4 geography/BASE/geometry/influence and additive heights verified; deterministic composition and metadata round-trip");
+        Console.WriteLine("UPLIFT_PASS: twenty cases; immutable P03-A.4 geography/BASE/geometry/influence and additive heights verified; deterministic composition and metadata round-trip");
     }
 
     private static object Measure(HexTopology topology, LandmassState terrain, byte[] initial, byte[] heights, string version)

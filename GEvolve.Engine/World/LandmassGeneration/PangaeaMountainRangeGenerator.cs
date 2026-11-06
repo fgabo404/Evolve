@@ -8,6 +8,7 @@ namespace GEvolve.Engine.World.LandmassGeneration;
 public sealed class PangaeaMountainRangeGenerator
 {
     public const string Version = "pangaea-ranges-2";
+    public const string ElevationCompositionVersion = "tectonic-envelope-1";
 
     public LandmassState Apply(HexTopology topology, LandmassState terrain)
         => Apply(topology, terrain, null);
@@ -218,6 +219,7 @@ public sealed class PangaeaMountainRangeGenerator
         ranges.Sort((a, b) => a.AxisCellIds.Min().CompareTo(b.AxisCellIds.Min()));
         var owner = new ushort[count];
         var best = new double[count];
+        var composed = new double[count];
         var final = (byte[])original.Clone();
         var localBest = new double[count];
         var touched = new List<int>();
@@ -228,6 +230,21 @@ public sealed class PangaeaMountainRangeGenerator
             var frontier = new PriorityQueue<(int Cell, int Axis, int Distance, double Uplift), double>();
             var profile = longitudinal[range.AxisCellIds[0]];
             double scale = range.AxisCellIds.Length >= topology.Rows * .20 ? 1 : .65;
+            // Smooth convergence along the existing connected axis. No RNG or
+            // changes to the legacy propagation priorities/ownership below.
+            var prefix = new double[range.AxisCellIds.Length + 1];
+            for (int i = 0; i < range.AxisCellIds.Length; i++)
+                prefix[i + 1] = prefix[i] + strength[range.AxisCellIds[i]];
+            var crests = new double[range.AxisCellIds.Length];
+            int smoothingRadius = Math.Max(2, range.AxisCellIds.Length / 12);
+            double continuity = range.AxisCellIds.Length / (range.AxisCellIds.Length + topology.Rows * .08);
+            for (int i = 0; i < crests.Length; i++)
+            {
+                int left = Math.Max(0, i - smoothingRadius), right = Math.Min(crests.Length, i + smoothingRadius + 1);
+                double localConvergence = (prefix[right] - prefix[left]) / (right - left);
+                double convergence = Math.Sqrt(range.MeanConvergence * localConvergence);
+                crests[i] = 94 * Math.Sqrt(continuity) * (1 - Math.Exp(-convergence / 2));
+            }
             for (int i = 0; i < range.AxisCellIds.Length; i++)
             {
                 int cell = range.AxisCellIds[i];
@@ -240,13 +257,22 @@ public sealed class PangaeaMountainRangeGenerator
             while (frontier.TryDequeue(out var step, out _))
             {
                 if (step.Uplift < localBest[step.Cell]) continue;
+                double width = range.WidthByAxisCell[step.Axis];
+                double taper = Math.Pow(1 - step.Distance / (width + 1), 2);
+                double blend = (.6 + .4 * profile[step.Axis]) * taper;
+                double requested = Math.Max(step.Uplift,
+                    Math.Max(0, crests[step.Axis] - original[step.Cell]) * blend);
+                // Max, never sum: intersecting corridors cannot accumulate uplift.
+                // The legacy field still exclusively determines traversal and owner.
+                if (requested > composed[step.Cell])
+                {
+                    composed[step.Cell] = requested;
+                    final[step.Cell] = ComposeElevation(original[step.Cell], requested);
+                }
                 if (step.Uplift > best[step.Cell])
                 {
                     best[step.Cell] = step.Uplift;
                     owner[step.Cell] = checked((ushort)range.Id);
-                    // Existing high terrain is preserved; new uplift cannot create
-                    // broad saturated plateaus at the top of the 1..100 scale.
-                    final[step.Cell] = ComposeElevation(original[step.Cell], step.Uplift);
                 }
                 if (step.Distance >= range.WidthByAxisCell[step.Axis]) continue;
                 foreach (int neighbor in topology.Neighbors(step.Cell))
@@ -280,7 +306,7 @@ public sealed class PangaeaMountainRangeGenerator
             if (owner[id] != 0 && final[id] > original[id]) affected[owner[id] - 1]++;
         for (int i = 0; i < ranges.Count; i++)
             ranges[i] = ranges[i] with { AffectedCells = affected[i] };
-        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best, previousBase, priorCalibrationBase));
+        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best, previousBase, priorCalibrationBase, composed));
         if (captureAudit is not null)
         {
             var byStart = ranges.ToDictionary(range => range.AxisCellIds[0]);

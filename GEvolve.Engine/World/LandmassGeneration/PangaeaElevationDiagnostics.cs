@@ -6,6 +6,8 @@ public sealed class PangaeaElevationDiagnostics
     public ReadOnlyMemory<byte> BaseByCellId { get; }
     public ReadOnlyMemory<byte> ContributionByCellId { get; }
     public ReadOnlyMemory<byte> FinalByCellId { get; }
+    /// <summary>P03-A.4 additive composition on the same BASE and unchanged propagation field.</summary>
+    public ReadOnlyMemory<byte> AdditiveFinalByCellId { get; }
     public ReadOnlyMemory<bool> CompositionLimitedByCellId { get; }
     public ReadOnlyMemory<byte> PreviousBaseByCellId { get; }
     public ReadOnlyMemory<byte> PreviousFinalByCellId { get; }
@@ -16,19 +18,22 @@ public sealed class PangaeaElevationDiagnostics
     public PangaeaElevationSources? Sources { get; internal set; }
 
     internal PangaeaElevationDiagnostics(byte[] initial, byte[] final, double[] requested,
-        ReadOnlyMemory<byte> previousBase = default, ReadOnlyMemory<byte> priorCalibrationBase = default)
+        ReadOnlyMemory<byte> previousBase = default, ReadOnlyMemory<byte> priorCalibrationBase = default,
+        double[]? composedRequested = null)
     {
         var contribution = new byte[initial.Length];
         var limited = new bool[initial.Length];
         for (int id = 0; id < initial.Length; id++)
         {
             contribution[id] = checked((byte)(final[id] - initial[id]));
-            limited[id] = requested[id] > 0 &&
-                final[id] < Math.Round(initial[id] + requested[id]);
+            double actualRequest = composedRequested is null ? requested[id] : composedRequested[id];
+            limited[id] = actualRequest > 0 &&
+                final[id] < Math.Round(initial[id] + actualRequest);
         }
         BaseByCellId = initial;
         FinalByCellId = final;
         ContributionByCellId = contribution;
+        AdditiveFinalByCellId = ComposeComparison(initial, requested).Final;
         CompositionLimitedByCellId = limited;
         if (!previousBase.IsEmpty)
         {

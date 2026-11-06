@@ -137,7 +137,7 @@ public static class PangaeaMountainRangeTests
             Check(ordered.Count == cells.Count, "Controlled ring follows one hex cycle");
             return ordered.ToArray();
         }
-        LandmassState Terrain(int[] path, bool close)
+        LandmassState Terrain(int[] path, bool close, double convergence = 3, byte initialHeight = 10)
         {
             var compression = new float[topology.Count];
             var distance = Enumerable.Repeat((ushort)1, topology.Count).ToArray();
@@ -146,10 +146,10 @@ public static class PangaeaMountainRangeTests
             {
                 int a = path[i - 1], b = path[i % path.Length];
                 Check(topology.Neighbors(a).Contains(b), "Controlled contact is adjacent");
-                compression[a] = compression[b] = 3;
+                compression[a] = compression[b] = (float)convergence;
                 distance[a] = distance[b] = 0;
                 edges.Add(new(Math.Min(a, b), Math.Max(a, b), 0, 1,
-                    new TectonicVector(1, 0), 3, 0, 0, PlateInteractionKind.Convergent));
+                    new TectonicVector(1, 0), convergence, 0, 0, PlateInteractionKind.Convergent));
             }
             var motion = new TectonicMotionState("controlled", [], edges.ToArray(),
                 compression, new float[topology.Count], new float[topology.Count],
@@ -157,7 +157,7 @@ public static class PangaeaMountainRangeTests
             return new LandmassState(configuration, Enumerable.Repeat((byte)1, topology.Count).ToArray(), 0)
             {
                 PlateByCellId = new byte[topology.Count], TectonicMotion = motion,
-                ElevationByCellId = Enumerable.Repeat((byte)10, topology.Count).ToArray()
+                ElevationByCellId = Enumerable.Repeat(initialHeight, topology.Count).ToArray()
             };
         }
         var generator = new PangaeaMountainRangeGenerator();
@@ -168,6 +168,19 @@ public static class PangaeaMountainRangeTests
         var broad = generator.Apply(topology, Terrain(openArc, false));
         Check(broad.PangaeaMountainRanges!.Ranges.Length > 0,
             "Long open tectonic arc remains eligible");
+        var weak = generator.Apply(topology, Terrain(openArc, false, 1.1));
+        var strong = generator.Apply(topology, Terrain(openArc, false, 9));
+        Check(broad.PangaeaMountainRanges.RangeByCellId.SequenceEqual(strong.PangaeaMountainRanges!.RangeByCellId) &&
+            strong.PangaeaMountainRanges.RangeByCellId.SequenceEqual(weak.PangaeaMountainRanges!.RangeByCellId),
+            "Vertical convergence response preserves controlled influence");
+        int[] controlledAxis = strong.PangaeaMountainRanges.Ranges.SelectMany(r => r.AxisCellIds).ToArray();
+        Check(controlledAxis.Average(id => strong.ElevationByCellId![id]) >
+            controlledAxis.Average(id => weak.ElevationByCellId![id]) &&
+            controlledAxis.Any(id => strong.ElevationByCellId![id] < 85),
+            "Stronger convergence raises a low-BASE crest without a universal summit floor");
+        var inherited = generator.Apply(topology, Terrain(openArc, false, 9, 97));
+        Check(inherited.ElevationByCellId!.All(height => height == 97),
+            "Composition never clips inherited summits above 94");
     }
 
     private static void PrintDiagnostics(string label, HexTopology topology, byte[] surface,

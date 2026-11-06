@@ -2,7 +2,7 @@
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$Label = 'P03-A4',
-    [ValidateSet('Worldgen', 'TectonicAudit', 'UpliftReference', 'TectonicCalibration')]
+    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration')]
     [string]$ValidationSet = 'Worldgen'
 )
 
@@ -106,12 +106,6 @@ if ($ValidationSet -eq 'TectonicAudit') {
     )
 }
 $results = @()
-if ($ValidationSet -eq 'UpliftReference') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'uplift-reference'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-uplift-reference') }
-    )
-}
 if ($ValidationSet -eq 'TectonicCalibration') {
     $steps = @(
         @{ Name = 'build'; Arguments = @('build') },
@@ -197,10 +191,10 @@ if ($warnings.Count -eq 0) { $summary.Add('No warning lines were emitted.') }
 else { $summary.Add('```text'); foreach ($warning in $warnings) { $summary.Add($warning) }; $summary.Add('```') }
 $summary.Add('')
 $summary.Add('## Actual diagnostic and regression evidence')
-$diagnosticName = if ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } else { 'pangaea-elevations' }
+$diagnosticName = if ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } elseif ($ValidationSet -eq 'TectonicCalibration') { 'pangaea-uplift' } else { 'pangaea-elevations' }
 $diagnostic = ($results | Where-Object { $_.Name -eq $diagnosticName }).Text
 $excerpts = @($diagnostic -split '\r?\n' | Where-Object {
-    $_ -match '^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.4 |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.4 FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
+    $_ -match '^UPLIFT_COUNTS |^UPLIFT_PASS:|^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.[46] |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.[46] FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
 })
 if ($excerpts.Count -eq 0) { $summary.Add('No diagnostic records were reached/emitted. No metrics are invented.') }
 else { $summary.Add('Selected actual records; full decisions, distributions, prominence and H04 metrics are in ' + $diagnosticName + '.log.'); $summary.Add('```text'); foreach ($line in $excerpts) { $summary.Add($line) }; $summary.Add('```') }
