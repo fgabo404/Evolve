@@ -39,4 +39,8 @@ Only report text, Markdown and PowerShell belong here. Stage explicit paths; nev
 
 ## Interactive game
 
+P03-A.7.2.1 reuses `-ValidationSet LaboratoryPangaea -Label P03-A721`. The laboratory suite additionally checks automatic grid, five visible actions, sequential plates/H04, signed random seeds, numeric annotation fields/zoom limits, strict laboratory-only surface white above 90 and immediate FINAL-to-BASE fallback. Numeric palette assertions exercise pure code and never open a window or inspect pixels; clipboard/graphics appearance remain manual-only.
+
+`-ValidationSet LaboratoryControls` runs build and the laboratory controller/representation tests only. Use this focused set after a change confined to those contracts; it does not claim to run staged equivalence or all suites. Every report lists the actual commands and source SHA. Preserve broader reports separately when their historical failures/equivalence evidence remain relevant.
+
 `GEvolve.Game/Program.cs` creates an OpenTK window and enters `window.Run()`. Run `dotnet run --project GEvolve.Game` manually after a successful build, inspect the reference worlds and their existing views, then close the window normally. Unattended validation neither launches nor forcibly closes it.

@@ -75,8 +75,9 @@ public static class PangaeaLaboratoryTests
         lab.Execute(PangaeaGenerationStage.Motion);
         Check(lab.Map!.Snapshot.Elevations is null && lab.Map.Snapshot.Base is not null,
             "Repeating H04 invalidates FINAL immediately while retaining BASE");
+        var retainedBase = lab.Map.Snapshot.Base ?? throw new InvalidOperationException("H04 regeneration lost BASE.");
         for (int id = 0; id < grid.Cells.Count; id++)
-            Check(lab.Map.Height(id, MapViewMode.Surface) == lab.Map.Snapshot.Base[id], "Surface immediately falls back to current BASE");
+            Check(lab.Map.Height(id, MapViewMode.Surface) == retainedBase[id], "Surface immediately falls back to current BASE");
         Wait(lab); Run(lab, PangaeaGenerationStage.MountainSystems, MapViewMode.Geology);
         Run(lab, PangaeaGenerationStage.Final, MapViewMode.ElevationFinal);
         systemsRevision = Stage(lab, PangaeaGenerationStage.MountainSystems).Revision;

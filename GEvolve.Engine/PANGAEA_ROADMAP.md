@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-07:** P03-A.7.1 implementado con equivalencia original/automática/manual. P03-A.7.2 implementado, pendiente de aprobación visual del usuario; P03-A.7.3–7.4 planificados. P03-A.6 sigue pendiente de validación visual y aprobación del usuario. P03-A no aprobado; baselines históricos de elevación intactos.
+> **Estado al 2026-11-07:** P03-A.7.1 implementado con equivalencia original/automática/manual. P03-A.7.2.1 simplifica la interfaz manual: cuadrícula automática, cinco acciones, semillas aleatorias y alturas numéricas; pendiente de aprobación visual del usuario. P03-A.7.3–7.4 planificados. P03-A.6 sigue pendiente de validación visual y aprobación del usuario. P03-A no aprobado; baselines históricos de elevación intactos.
 
 ## Objetivo
 
@@ -201,6 +201,7 @@ La solicitud del 2026-11-07 reorganiza el próximo paso: primero observar el mis
 |---|---|---|
 | **P03-A.7.1 — Motor por etapas** | Separación mínima, sesión temporal, DAG, invalidación, equivalencia | **Implementado; equivalencia técnica verificada; pendiente de revisión del usuario** |
 | **P03-A.7.2 — Interfaz manual** | Pantalla con componentes pixel-art existentes, semilla/tamaño, botones, estados, vistas parciales y ejecución asíncrona | **Implementado y validado técnicamente; pendiente de aprobación visual del usuario** |
+| **P03-A.7.2.1 — Ajustes de interfaz** | Cuadrícula automática, placas/H04 agrupados, cinco botones, semilla aleatoria copiable, alturas y blanco >90 solo en superficie del laboratorio | **Implementado; pendiente de aprobación visual** |
 | P03-A.7.3 — Comparación y diagnósticos | ANTES/DESPUÉS, diferencias, hashes y estadísticas enriquecidas visibles | Planificado; no implementado |
 | P03-A.7.4 — Auditoría integral | Topología, superficie/costas, 16 placas/H04, BASE, sistemas, FINAL, persistencia, rendimiento, determinismo, capas y representación | Planificado; no ejecutado |
 
@@ -221,6 +222,16 @@ Commit `feat(game): add interactive Pangaea generation laboratory`, SHA `e231bbf
 Menú **LABORATORIO DE PANGEA**, configuración con confirmación de reinicio, siete operaciones reales y botones dependientes del DAG. El renderer existente admite snapshots parciales sin construir estados persistibles ficticios; muestra cuadrícula, placas/H04, superficie, BASE, sistemas y FINAL. Selección de vistas vigentes, inspección con pendiente/invalidado/cero real, duración y errores. La interfaz almacena las representaciones por revisión; generación y copia de snapshots se hacen fuera del hilo de ventana. Regenerar BASE conserva sistemas; editar configuración oculta capas hasta aplicar/cancelar; las terminaciones abandonadas no se publican.
 
 Validación automatizada mediante `-ValidationSet LaboratoryPangaea -Label P03-A72`: build PASS (cero advertencias/errores), laboratorio PASS en cuatro tamaños, equivalencia por etapas PASS en 28 Pangea + 12 controles; general **16 PASS / 2 FAIL**. Las 16 diferencias históricas de elevación en TectonicMotion/ContinentalGeology coinciden exactamente con P03-A.7.1; baselines intactos. Codex no inicia Game, no crea contexto GL, capturas ni automatización visual, y no aprueba apariencia o calidad geográfica. El usuario ejecuta el juego e inspecciona cada capa. P03-A.7.3 queda planificado para comparación ANTES/DESPUÉS y diagnósticos visibles; P03-A.7.4 y P03-B no se ejecutan.
+
+#### P03-A.7.2.1 — Controles y elevaciones del laboratorio
+
+Commit `feat(game): simplify Pangaea laboratory controls and elevation display`, SHA `f862a0c265cd9c341a761c5c0606c6f107dc1f2b`. [Informe](../GEvolve.Tests/ValidationReports/P03-A721_20261107_223547253Z_a9387211/REPORT.md), [resumen](../GEvolve.Tests/ValidationReports/P03-A721_20261107_223547253Z_a9387211/SUMMARY.md), [guía de uso](../GEvolve.Game/PANGAEA_LABORATORY.md).
+
+La cuadrícula oficial inicia automáticamente con cada sesión; conserva su etapa interna. Cinco acciones visibles: 01 placas/movimiento, 02 superficie, 03 BASE, 04 sistemas y 05 FINAL. La acción 01 ejecuta placas y H04 secuencialmente sin combinar generadores. Cancelar impide comenzar H04 si sigue en cola. El motor conserva las siete etapas, sus dependencias y resultados. Placas y direcciones tienen vistas separadas, además de compresión/extensión/cizalla.
+
+ALEATORIA con dado crea un entero con signo de 32 bits usando aleatoriedad criptográfica de Game, sin tocar el RNG determinista ni iniciar un mundo completo. Utiliza el mismo borrador/confirmación; Ctrl+C copia la semilla y Ctrl+V con foco reemplaza su texto. MOSTRAR ALTURAS utiliza datos reales de la vista, solo con escala ≥13 y hasta 1000 etiquetas visibles. En SUPERFICIE se usa FINAL vigente o BASE en su ausencia; tierra >90 blanca, tierra ≤90 con color terrestre, océano azul. Sin alturas no se inventan números ni blanco; invalidar FINAL retira ese campo inmediatamente. El cambio de umbral es exclusivo del laboratorio: la paleta global y los guardados siguen intactos.
+
+Solo validación automatizada de código; Codex no abre Game, no ejecuta pruebas visuales ni certifica apariencia o geografía. P03-A.7.2.1 queda pendiente de aprobación visual del usuario. P03-A.7.3 no comienza.
 
 ## Arquitectura protegida y dependencias
 
