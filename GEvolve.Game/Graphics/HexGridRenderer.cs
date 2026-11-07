@@ -57,9 +57,10 @@ public sealed class HexGridRenderer : IDisposable
         """;
 
     private readonly HexGrid _grid;
-    private readonly LandmassState _landmass;
+    private readonly LandmassState? _landmass;
+    private PangaeaMapData? _laboratory;
     private readonly PangaeaElevationDiagnostics? _elevationDiagnostics;
-    private readonly HexTopology? _plateTopology;
+    private HexTopology? _plateTopology;
     public PlateBoundaryMap? PlateBoundaries { get; }
     private readonly ShaderProgram _shader;
     private readonly int _vao;
@@ -76,15 +77,23 @@ public sealed class HexGridRenderer : IDisposable
 
     public HexGridRenderer(HexGrid grid, LandmassState landmass,
         PangaeaElevationDiagnostics? elevationDiagnostics)
+        : this(grid, landmass, elevationDiagnostics, null) { }
+
+    public HexGridRenderer(PangaeaMapData laboratory)
+        : this(laboratory.Snapshot.Grid!, null, null, laboratory) { }
+
+    private HexGridRenderer(HexGrid grid, LandmassState? landmass,
+        PangaeaElevationDiagnostics? elevationDiagnostics, PangaeaMapData? laboratory)
     {
-        if ((landmass.SurfaceGenerationPending ? landmass.SurfaceByCellId.Length != 0 :
+        if (landmass is not null && ((landmass.SurfaceGenerationPending ? landmass.SurfaceByCellId.Length != 0 :
                 landmass.SurfaceByCellId.Length != grid.Cells.Count) ||
-            landmass.Configuration.Size != grid.Definition.Size)
+            landmass.Configuration.Size != grid.Definition.Size))
             throw new ArgumentException("Landmass state differs from the grid.", nameof(landmass));
         _grid = grid;
         _landmass = landmass;
+        _laboratory = laboratory;
         _elevationDiagnostics = elevationDiagnostics;
-        if (landmass.PlateByCellId is not null)
+        if (landmass?.PlateByCellId is not null)
         {
             _plateTopology = new HexTopology(grid);
             PlateBoundaries = PlateBoundaryMap.Analyze(_plateTopology, landmass);
@@ -120,6 +129,14 @@ public sealed class HexGridRenderer : IDisposable
         GL.BindVertexArray(0);
     }
 
+    public void UpdateLaboratory(PangaeaMapData laboratory)
+    {
+        if (_landmass is not null || laboratory.Snapshot.Grid?.Definition != _grid.Definition)
+            throw new InvalidOperationException("A laboratory renderer must keep its grid configuration.");
+        _laboratory = laboratory;
+        _cameraVersion = -1;
+    }
+
     public void Draw(MapCamera2D camera, int width, int height, MapViewMode viewMode = MapViewMode.Biomes)
     {
         if (camera.Columns != _grid.Definition.Columns || camera.Rows != _grid.Definition.Rows)
@@ -150,8 +167,9 @@ public sealed class HexGridRenderer : IDisposable
     /// <summary>Draw real shared edges on the visible hex copies, including wrap.</summary>
     public void DrawPlateBoundaries(UiRenderer ui, MapCamera2D camera)
     {
-        if (_plateTopology is null || PlateBoundaries is null ||
-            _landmass.PlateByCellId is not { } plates) return;
+        var plates = _landmass?.PlateByCellId ?? _laboratory?.Snapshot.Plates;
+        if (plates is null) return;
+        _plateTopology ??= new HexTopology(_grid);
         var range = camera.VisibleRange();
         int columns = _plateTopology.Columns;
         var tint = new Vector4(.99f, .84f, .28f, .95f);
@@ -161,7 +179,7 @@ public sealed class HexGridRenderer : IDisposable
         {
             int wrapped = ((column % columns) + columns) % columns;
             int id = row * columns + wrapped;
-            if (!PlateBoundaries.BoundaryByCellId[id]) continue;
+            if (PlateBoundaries is not null && !PlateBoundaries.BoundaryByCellId[id]) continue;
             Vector2 center = FlatHexGeometry.Center(new GridAddress(column, row));
             foreach (int neighbor in _plateTopology.Neighbors(id))
             {
@@ -189,7 +207,7 @@ public sealed class HexGridRenderer : IDisposable
 
     public void DrawPlateMotions(UiRenderer ui, MapCamera2D camera)
     {
-        if (_landmass.TectonicMotion is not { } motion) return;
+        if ((_landmass?.TectonicMotion ?? _laboratory?.Snapshot.Motion) is not { } motion) return;
         int columns = _grid.Definition.Columns;
         var range = camera.VisibleRange();
         foreach (var plate in motion.Motions)
@@ -220,7 +238,7 @@ public sealed class HexGridRenderer : IDisposable
 
     public void DrawContinentalGeology(UiRenderer ui, MapCamera2D camera)
     {
-        if (_landmass.ContinentalGeology is not { } geology || _landmass.TectonicMotion is not { } motion) return;
+        if (_landmass?.ContinentalGeology is not { } geology || _landmass.TectonicMotion is not { } motion) return;
         int columns = _grid.Definition.Columns;
         var range = camera.VisibleRange();
         foreach (var contact in geology.Contacts)
@@ -258,13 +276,22 @@ public sealed class HexGridRenderer : IDisposable
 
     public void DrawPangaeaMountainRanges(UiRenderer ui, MapCamera2D camera)
     {
-        if (_landmass.PangaeaMountainRanges is not { } state) return;
+        if (_laboratory?.Snapshot.Mountains is { } selection)
+        {
+            foreach (var system in selection.Systems) DrawMountainAxis(ui, camera, system.AxisCellIds, system.WidthByAxisCell);
+            return;
+        }
+        if (_landmass?.PangaeaMountainRanges is not { } state) return;
+        foreach (var mountain in state.Ranges) DrawMountainAxis(ui, camera, mountain.AxisCellIds, null);
+    }
+
+    private void DrawMountainAxis(UiRenderer ui, MapCamera2D camera, int[] axis, byte[]? widths)
+    {
         int columns = _grid.Definition.Columns;
         var visible = camera.VisibleRange();
-        foreach (var mountain in state.Ranges)
-        for (int i = 1; i < mountain.AxisCellIds.Length; i++)
+        for (int i = 1; i < axis.Length; i++)
         {
-            int previous = mountain.AxisCellIds[i - 1], current = mountain.AxisCellIds[i];
+            int previous = axis[i - 1], current = axis[i];
             int x = previous % columns, nextX = current % columns;
             int step = nextX - x;
             if (step > columns / 2) nextX -= columns;
@@ -277,6 +304,8 @@ public sealed class HexGridRenderer : IDisposable
                 var b = camera.WorldToScreen(FlatHexGeometry.Center(new(nextX + copy * columns, nextRow)));
                 if (Math.Max(a.Y, b.Y) < MapCamera2D.TopBarHeight ||
                     Math.Min(a.Y, b.Y) > camera.ViewHeight) continue;
+                if (widths is not null)
+                    ui.Line(a, b, Math.Max(2, widths[i] * 1.7320508f * camera.Scale), new(.7f, .48f, .22f, .16f));
                 ui.Line(a, b, 2, new(1f, .86f, .38f, 1f));
             }
         }
@@ -296,14 +325,14 @@ public sealed class HexGridRenderer : IDisposable
             int wrapped = ((column % columns) + columns) % columns;
             _instances[index++] = center.X;
             _instances[index++] = center.Y;
-            var color = MapViewColors.ForCell(_landmass, row * columns + wrapped, _viewMode,
-                _elevationDiagnostics);
+            var color = _laboratory is { } lab ? lab.Color(row * columns + wrapped, _viewMode) :
+                MapViewColors.ForCell(_landmass!, row * columns + wrapped, _viewMode, _elevationDiagnostics);
             _instances[index++] = color.X;
             _instances[index++] = color.Y;
             _instances[index++] = color.Z;
-            _instances[index++] = _landmass.ElevationByCellId is { } heights
+            _instances[index++] = _landmass?.ElevationByCellId is { } heights
                 ? heights[row * columns + wrapped] / 100f : -1f;
-            _instances[index++] = _landmass.IsImpassableSummit(row * columns + wrapped) ? 1f : 0f;
+            _instances[index++] = _landmass?.IsImpassableSummit(row * columns + wrapped) == true ? 1f : 0f;
         }
         _instanceCount = index / 7;
         GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVbo);

@@ -28,6 +28,8 @@ Summaries distinguish reported suite totals from individual assertions, whose co
 
 ## Retention
 
+For P03-A.7.2 use `-ValidationSet LaboratoryPangaea -Label P03-A72`: build, `--pangaea-laboratory`, `--pangaea-staged` and `--all-suites`. Laboratory tests exercise the Game controller, partial data, dependency controls, revision caching, configuration/reset/cancellation and numeric layout bounds without creating a window or GL context. They do not certify appearance or geography. Codex must not launch Game, run graphics smoke, inspect screenshots or use visual automation for this milestone. Visual execution and approval belong exclusively to the user.
+
 - Keep every milestone/reference report and every report with a failure or new regression.
 - Keep one canonical routine success per validated commit and SDK. Repeat only when code/environment changes or a failure investigation needs another execution.
 - After five routine successful reports, review for redundancy before publishing more. Older redundant routine successes may be removed in an explicit maintenance commit after reviewing their summaries; they remain in Git history. Preserve important reference/failure reports regardless of age.

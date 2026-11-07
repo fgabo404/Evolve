@@ -9,7 +9,7 @@ using GEvolve.State.Game;
 
 namespace GEvolve.Game;
 
-public enum GameScreen { MainMenu, CreateWorld, Options, Generating, World }
+public enum GameScreen { MainMenu, CreateWorld, Options, Generating, World, PangaeaLaboratory }
 
 /// <summary>Una sesión lógica; generación y GPU se completan en el hilo de Game.</summary>
 public sealed class GameSession
@@ -23,6 +23,11 @@ public sealed class GameSession
     public GameState State { get; } = new();
     public PangaeaElevationDiagnostics? PangaeaElevations { get; private set; }
     public string? Error { get; private set; }
+
+    public void OpenPangaeaLaboratory()
+    {
+        if (Screen == GameScreen.MainMenu) Screen = GameScreen.PangaeaLaboratory;
+    }
 
     public void OpenCreateWorld()
     {

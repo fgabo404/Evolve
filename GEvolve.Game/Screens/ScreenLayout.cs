@@ -9,7 +9,11 @@ public enum UiAction
     Small, Medium, Large, Enormous,
     Continents, Pangaea, SmallContinents, Archipelagos,
     SeedField, RandomSeed, Regenerate, ToggleSurface, ToggleGrayscale, ToggleInfrared, ToggleRainfall, ToggleTectonic,
-    StressCompression, StressExtension, StressShear, ToggleGeology
+    StressCompression, StressExtension, StressShear, ToggleGeology,
+    Laboratory, LabRestart, LabConfirm, LabKeep, LabCancel, LabView,
+    LabGrid, LabPlates, LabMotion, LabSurface, LabBase, LabSystems, LabFinal,
+    LabViewGrid, LabViewPlates, LabViewCompression, LabViewExtension, LabViewShear,
+    LabViewSurface, LabViewBase, LabViewSystems, LabViewContribution, LabViewFinal
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)
@@ -30,11 +34,13 @@ public static class ScreenLayout
         float menuX = center - menuWidth / 2;
         if (screen == GameScreen.MainMenu)
         {
-            float y = MathF.Max(160, height * .48f);
+            float y = MathF.Max(150, height * .42f);
             return [new(UiAction.Create, "Crear mundo", new(menuX, y, menuWidth, menuHeight)),
-                new(UiAction.Options, "Opciones", new(menuX, y + menuHeight + menuGap,
+                new(UiAction.Laboratory, "LABORATORIO DE PANGEA", new(menuX, y + menuHeight + menuGap,
                     menuWidth, menuHeight)),
-                new(UiAction.Exit, "Salir", new(menuX, y + 2 * (menuHeight + menuGap),
+                new(UiAction.Options, "Opciones", new(menuX, y + 2 * (menuHeight + menuGap),
+                    menuWidth, menuHeight)),
+                new(UiAction.Exit, "Salir", new(menuX, y + 3 * (menuHeight + menuGap),
                     menuWidth, menuHeight))];
         }
         if (screen == GameScreen.CreateWorld)

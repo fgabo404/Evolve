@@ -18,7 +18,7 @@ public static class GameTests
         Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
             session.State.HexGrid is null, "Start at menu without generation");
         Check(ScreenLayout.Buttons(session.Screen, 1280, 720).Select(button => button.Action)
-            .SequenceEqual([UiAction.Create, UiAction.Options, UiAction.Exit]), "Main menu actions");
+            .SequenceEqual([UiAction.Create, UiAction.Laboratory, UiAction.Options, UiAction.Exit]), "Main menu actions including Pangaea laboratory");
         session.OpenOptions();
         Check(session.Screen == GameScreen.Options && session.Grid is null, "Options screen");
         session.ReturnToMenu();

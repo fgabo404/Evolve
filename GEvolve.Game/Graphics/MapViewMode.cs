@@ -5,7 +5,7 @@ using GEvolve.Engine.World.LandmassGeneration;
 namespace GEvolve.Game.Graphics;
 
 public enum MapViewMode { Biomes, Elevation, Infrared, Rainfall, Tectonic, Compression, Extension, Shear, Geology,
-    ElevationBase, ElevationContribution, ElevationFinal }
+    ElevationBase, ElevationContribution, ElevationFinal, Grid, Surface }
 
 public static class PangaeaElevationViews
 {

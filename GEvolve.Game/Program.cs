@@ -16,7 +16,7 @@ using Vector2i = OpenTK.Mathematics.Vector2i;
 
 namespace GEvolve.Game;
 
-internal sealed class EvolveWindow : GameWindow
+internal sealed partial class EvolveWindow : GameWindow
 {
     private static string GameVersion => "v" + (typeof(EvolveWindow).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false).Cast<System.Reflection.AssemblyInformationalVersionAttribute>().Single().InformationalVersion.Split('+')[0]);
     private static readonly Vector4 White = new(1, 1, 1, 1);
@@ -78,7 +78,7 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
-        if (_session.Grid is { } grid)
+        if ((_session.Screen == GameScreen.PangaeaLaboratory ? _laboratory?.Map?.Snapshot.Grid : _session.Grid) is { } grid)
             _camera.Fit(grid.Definition.Columns, grid.Definition.Rows, ClientSize.X, ClientSize.Y);
         _dirty = true;
     }
@@ -86,6 +86,11 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
+        if (_session.Screen == GameScreen.PangaeaLaboratory)
+        {
+            if (_laboratory?.Update() == true) _dirty = true;
+            RefreshLaboratoryRenderer();
+        }
         if (_pendingGeneration is { IsCompleted: true } completed)
         {
             _pendingGeneration = null;
@@ -147,7 +152,8 @@ internal sealed class EvolveWindow : GameWindow
         GL.ClearColor(.96f, .98f, .99f, 1f);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         _ui.Clear();
-        if (_session.Screen == GameScreen.World) RenderWorld();
+        if (_session.Screen == GameScreen.PangaeaLaboratory) RenderLaboratory();
+        else if (_session.Screen == GameScreen.World) RenderWorld();
         else RenderMenu();
         _ui.Flush(ClientSize.X, ClientSize.Y);
         if (_graphicsSmoke && _session.Screen == GameScreen.World && !_smokeZoomed)
@@ -700,6 +706,12 @@ internal sealed class EvolveWindow : GameWindow
 
     private IEnumerable<UiButton> VisibleControls()
     {
+        if (_session.Screen == GameScreen.PangaeaLaboratory) return LaboratoryControls();
+        return StandardControls();
+    }
+
+    private IEnumerable<UiButton> StandardControls()
+    {
         foreach (var button in WorldButtons())
             yield return button;
         if (_openDropdown is not { } selector) yield break;
@@ -710,6 +722,8 @@ internal sealed class EvolveWindow : GameWindow
 
     private UiAction? Hit(float x, float y)
     {
+        if (_session.Screen == GameScreen.PangaeaLaboratory)
+            return LaboratoryControls().Reverse().Where(b => b.Bounds.Contains(x, y)).Select(b => (UiAction?)b.Action).FirstOrDefault();
         // The open dropdown overlays the map and any controls below it.
         if (_openDropdown is { } selector)
             foreach (var option in ScreenLayout.DropdownOptions(
@@ -736,7 +750,13 @@ internal sealed class EvolveWindow : GameWindow
         if (e.Button != MouseButton.Left) return;
         Vector2 position = new(MousePosition.X, MousePosition.Y);
         _pressed = Hit(position.X, position.Y);
-        if (_openDropdown is not null &&
+        if (_session.Screen == GameScreen.PangaeaLaboratory && _openDropdown is { } labSelector &&
+            _pressed != labSelector && !PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, labSelector, _laboratory?.Map)
+                .Any(b => b.Action == _pressed))
+        {
+            _openDropdown = null; _pressed = null; _dirty = true; return;
+        }
+        if (_session.Screen != GameScreen.PangaeaLaboratory && _openDropdown is not null &&
             _pressed is not (UiAction.SizeSelect or UiAction.TypeSelect or
                 UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous or
                 UiAction.Continents or UiAction.Pangaea or UiAction.SmallContinents or
@@ -748,8 +768,8 @@ internal sealed class EvolveWindow : GameWindow
             _dirty = true;
             return; // Dismiss outside click; do not pan or select a world hex.
         }
-        if (_session.Screen == GameScreen.World &&
-            position.Y >= MapCamera2D.TopBarHeight && _pressed is null)
+        if ((_session.Screen == GameScreen.World && position.Y >= MapCamera2D.TopBarHeight ||
+             _session.Screen == GameScreen.PangaeaLaboratory && LaboratoryMapContains(position)) && _pressed is null)
         {
             _dragging = true;
             _dragDistance = 0;
@@ -778,11 +798,14 @@ internal sealed class EvolveWindow : GameWindow
         {
             _dragging = false;
             if (_dragDistance < 4)
-                _session.SelectAt(_camera.ScreenToWorld(position));
+            {
+                if (_session.Screen == GameScreen.PangaeaLaboratory) _laboratory?.SelectAt(_camera.ScreenToWorld(position));
+                else _session.SelectAt(_camera.ScreenToWorld(position));
+            }
         }
         else if (_pressed is { } action && Hit(position.X, position.Y) == action)
             Activate(action);
-        else if (_session.Screen == GameScreen.CreateWorld)
+        else if (_session.Screen is GameScreen.CreateWorld or GameScreen.PangaeaLaboratory)
             _seedFocused = false;
         _pressed = null;
         _dirty = true;
@@ -791,7 +814,11 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        if (_session.Screen != GameScreen.World || MousePosition.Y < MapCamera2D.TopBarHeight) return;
+        if (_session.Screen == GameScreen.PangaeaLaboratory)
+        {
+            if (!LaboratoryMapContains(new(MousePosition.X, MousePosition.Y))) return;
+        }
+        else if (_session.Screen != GameScreen.World || MousePosition.Y < MapCamera2D.TopBarHeight) return;
         _camera.Zoom(e.OffsetY, new Vector2(MousePosition.X, MousePosition.Y));
         _dirty = true;
     }
@@ -799,6 +826,11 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnKeyDown(KeyboardKeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (_session.Screen == GameScreen.PangaeaLaboratory && _seedFocused && e.Key == Keys.Backspace)
+        {
+            if (_laboratory!.SeedText.Length > 0) _laboratory.SetSeedText(_laboratory.SeedText[..^1]);
+            _dirty = true; return;
+        }
         if (_session.Screen == GameScreen.CreateWorld && _seedFocused &&
             e.Key == Keys.Backspace)
         {
@@ -825,6 +857,10 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
+        if (_session.Screen == GameScreen.PangaeaLaboratory && _seedFocused)
+        {
+            _laboratory!.SetSeedText(_laboratory.SeedText + e.AsString); _dirty = true; return;
+        }
         if (_session.Screen != GameScreen.CreateWorld || !_seedFocused) return;
         _session.SetSeedText(_session.SeedText + e.AsString);
         _dirty = true;
@@ -832,12 +868,18 @@ internal sealed class EvolveWindow : GameWindow
 
     private void Activate(UiAction action)
     {
+        if (_session.Screen == GameScreen.PangaeaLaboratory) { ActivateLaboratory(action); return; }
         switch (action)
         {
             case UiAction.SizeSelect or UiAction.TypeSelect:
                 _openDropdown = _openDropdown == action ? null : action;
                 break;
             case UiAction.Create: _session.OpenCreateWorld(); break;
+            case UiAction.Laboratory:
+                _session.OpenPangaeaLaboratory();
+                _laboratory = new PangaeaLaboratory();
+                _laboratory.RequestRestart();
+                break;
             case UiAction.Options: _session.OpenOptions(); break;
             case UiAction.Exit: Close(); break;
             case UiAction.Back: ReturnToMenu(); break;
@@ -945,6 +987,8 @@ internal sealed class EvolveWindow : GameWindow
 
     private void ReturnToMenu()
     {
+        _laboratory?.Dispose(); _laboratory = null; _laboratoryData = null;
+        _openDropdown = null;
         _gridRenderer?.Dispose();
         _gridRenderer = null;
         _session.ReturnToMenu();
@@ -955,6 +999,7 @@ internal sealed class EvolveWindow : GameWindow
 
     protected override void OnUnload()
     {
+        _laboratory?.Dispose();
         _gridRenderer?.Dispose();
         _ui?.Dispose();
         base.OnUnload();
