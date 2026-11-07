@@ -2,7 +2,7 @@
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$Label = 'P03-A4',
-    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration')]
+    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedReference', 'StagedPangaea')]
     [string]$ValidationSet = 'Worldgen'
 )
 
@@ -117,6 +117,23 @@ if ($ValidationSet -eq 'TectonicCalibration') {
     )
 }
 $buildFailed = $false
+if ($ValidationSet -eq 'StagedReference') {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'staged-reference'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged-reference') }
+    )
+}
+if ($ValidationSet -eq 'StagedPangaea') {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
+        @{ Name = 'pangaea-elevations'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-elevations') },
+        @{ Name = 'mountain-ranges'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--mountain-ranges') },
+        @{ Name = 'tectonic-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-tectonic-audit') },
+        @{ Name = 'pangaea-uplift'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-uplift') },
+        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
+    )
+}
 foreach ($step in $steps) {
     $command = 'dotnet ' + ($step.Arguments -join ' ')
     $stepStarted = [DateTime]::UtcNow

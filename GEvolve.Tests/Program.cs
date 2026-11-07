@@ -12,6 +12,7 @@ if (args.Contains("--mountain-ranges")) { PangaeaMountainRangeTests.Run(); retur
 if (args.Contains("--pangaea-elevations")) { PangaeaElevationTests.Run(); return 0; }
 if (args.Contains("--pangaea-tectonic-audit")) { PangaeaTectonicAuditTests.Run(); return 0; }
 if (args.Contains("--pangaea-uplift")) { PangaeaUpliftTests.Run(); return 0; }
+if (args.Contains("--pangaea-staged-reference")) { PangaeaStagedGenerationTests.CaptureReference(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [
