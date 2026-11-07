@@ -1,0 +1,15 @@
+Command: dotnet run --project GEvolve.Tests -- --pangaea-laboratory
+Started UTC: 2026-11-07T22:05:50.5155274Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 19.281
+
+=== STDOUT (complete) ===
+LAB_CASE_PASS Small: seven stages, cached partial data, dependency buttons, real zero/pending/invalidated, BASE repeat, original automatic equivalence, layout contracts, reset confirmation
+LAB_CASE_PASS Medium: seven stages, cached partial data, dependency buttons, real zero/pending/invalidated, BASE repeat, original automatic equivalence, layout contracts, reset confirmation
+LAB_CASE_PASS Large: seven stages, cached partial data, dependency buttons, real zero/pending/invalidated, BASE repeat, original automatic equivalence, layout contracts, reset confirmation
+LAB_CASE_PASS Enormous: seven stages, cached partial data, dependency buttons, real zero/pending/invalidated, BASE repeat, original automatic equivalence, layout contracts, reset confirmation
+LAB_ASYNC_PASS: invalid request/recovery, reset during worker, obsolete work detached, cooperative cancellation/retry; no UI thread blocking
+LAB_PASS: four sizes; seven real stages; non-linear dependencies; partial input contracts; revision cache; regeneration; reset; obsolete completion; cancellation; errors/recovery. NO window, GL context, screenshots or visual approval.
+
+=== STDERR (complete) ===

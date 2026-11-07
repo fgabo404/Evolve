@@ -76,5 +76,5 @@ El modo automático usa la misma sesión internamente, omitiendo hashes de etapa
 - La retención de muestras añade memoria proporcional a los pasos válidos de la propagación existente; evita repetir selección o cambiar la influencia al componer BASE nueva. Su cantidad se registrará en las pruebas.
 - Cancelar no interrumpe un generador a mitad de sus bucles; impide publicar su resultado y mantiene seguro el reinicio. No se introduce un hilo gráfico en Engine.
 - Los hashes y metadatos de ejecución son infraestructura de P03-A.7.1. ANTES/DESPUÉS, histogramas enriquecidos y comparación visual pertenecen a P03-A.7.3.
-- P03-A.7.2 añadirá pantalla pixel-art, botones habilitados por el grafo, estado de trabajo, selección de vistas compatibles y adaptación de datos intermedios. No se implementa todavía.
+- P03-A.7.2 incorpora la [interfaz de Game](../GEvolve.Game/PANGAEA_LABORATORY.md), con botones habilitados por el grafo, estado de trabajo, selección de vistas compatibles y datos intermedios explícitos. Reutiliza esta API sin cambiar Engine; queda pendiente de aprobación visual del usuario.
 - P03-A.7.4 realizará la auditoría integral utilizando el laboratorio funcional. P03-A sigue sin aprobación y P03-B no comienza.
