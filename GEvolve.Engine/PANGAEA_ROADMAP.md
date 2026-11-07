@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-06:** P03-A.5 auditado; P03-A.6 implementado, pendiente de validación visual y aprobación del usuario. La comparación técnica protege BASE y geometría P03-A.4 en 20 casos. P03-A no aprobado; regresiones históricas de elevación pendientes. P03-A.7 planificado, sin ejecutar.
+> **Estado al 2026-11-07:** P03-A.7.1 implementado: motor por etapas con equivalencia original/automática/manual en siete semillas × cuatro tamaños. P03-A.7.2–7.4 planificados, sin implementar. P03-A.6 sigue pendiente de validación visual y aprobación del usuario. P03-A no aprobado; baselines históricos de elevación intactos.
 
 ## Objetivo
 
@@ -193,9 +193,26 @@ Se mantienen los filtros y la propagación previa como autoridad exclusiva de in
 
 Repetir desde la raíz con `powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet TectonicCalibration -Label P03-A6`. La tarea autoriza expresamente ejecución .NET, como excepción a las reglas ordinarias; no se ejecuta el juego gráfico.
 
-### P03-A.7 — Auditoría integral de la arquitectura y generación de Pangea
+### P03-A.7 — Laboratorio de generación manual de Pangea
 
-**Planificado; no ejecutado.** Revisará topología hexagonal, superficie y costas, 16 placas, H04 e interacciones, BASE, cordilleras, FINAL, persistencia, rendimiento, determinismo, integración de capas y representación visual. Requiere su siguiente alcance autorizado. P03-A continúa pendiente de aprobación del usuario; no iniciar P03-B.
+La solicitud del 2026-11-07 reorganiza el próximo paso: primero observar el mismo mundo por etapas; la auditoría integral previamente prevista pasa a P03-A.7.4. Solo se autoriza implementar P03-A.7.1 en esta entrega.
+
+| Subfase | Alcance | Estado |
+|---|---|---|
+| **P03-A.7.1 — Motor por etapas** | Separación mínima, sesión temporal, DAG, invalidación, equivalencia | **Implementado; equivalencia técnica verificada; pendiente de revisión del usuario** |
+| P03-A.7.2 — Interfaz manual | Pantalla pixel-art, panel semilla/tamaño, botones, estados, vistas intermedias y ejecución asíncrona | Planificado; no implementado |
+| P03-A.7.3 — Comparación y diagnósticos | ANTES/DESPUÉS, diferencias, hashes y estadísticas enriquecidas visibles | Planificado; no implementado |
+| P03-A.7.4 — Auditoría integral | Topología, superficie/costas, 16 placas/H04, BASE, sistemas, FINAL, persistencia, rendimiento, determinismo, capas y representación | Planificado; no ejecutado |
+
+Commit solicitado: `refactor(worldgen): introduce staged Pangaea generation session`, SHA `46483ca299175c80ea2be0890bda8455f93305f7`. [Auditoría inicial y API](PANGAEA_STAGED_GENERATION.md), [informe](../GEvolve.Tests/ValidationReports/P03-A71_20261107_204048086Z_e7e415c6/REPORT.md), [resumen](../GEvolve.Tests/ValidationReports/P03-A71_20261107_204048086Z_e7e415c6/SUMMARY.md) y [hashes e invalidaciones completos](../GEvolve.Tests/ValidationReports/P03-A71_20261107_204048086Z_e7e415c6/pangaea-staged.log).
+
+Las siete operaciones comparten los mismos generadores y cálculos. Superficie conserva el intento elegido y su presión inicial; BASE reutiliza el sufijo existente sin volver a elegir mapa. Sistemas conserva geometría, propietarios y muestras de la propagación; FINAL compone P03-A.6 sin repetir selección. No cambian fórmulas, RNG, superficie, BASE, ejes, anchuras, influencia ni FINAL. State y Game no reciben contratos incompletos ni cambios de interfaz.
+
+Dependencias: cuadrícula→placas; placas→H04 y superficie; superficie→BASE; H04+superficie→sistemas; BASE+sistemas→FINAL. Repetir BASE conserva sistemas e invalida FINAL; repetir H04 conserva superficie/BASE e invalida sistemas/FINAL. Los descendientes se eliminan al comenzar una repetición. Cambiar configuración limpia toda la sesión y descarta publicaciones de trabajos obsoletos. Los snapshots son copias aisladas y solo FINAL vigente permite exportar un mundo guardable.
+
+La referencia independiente se capturó antes de refactorizar en `9220a1da789936c63b6fb143743d57ed9dbb48b5`. **PASS:** 28 mundos Pangea (las siete semillas solicitadas en cuatro tamaños) coinciden exactamente con automático y referencia original, más 12 controles de otros tipos. También pasan repetición, invalidación por grafo, snapshots/exportaciones aisladas, cancelación/reinicio asíncrono y guardado/carga. Medium/−174327693 conserva el rechazo de intento 0 y la aceptación de intento 1. No se actualizan los baselines históricos.
+
+Repetir con `powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet StagedPangaea -Label P03-A71`. No se ejecutó Game ni se añadió pantalla. P03-A.7.2 deberá consumir snapshots por revisión y adaptar las vistas a los campos realmente disponibles; no puede usar placeholders como resultados. P03-A permanece sin aprobación y P03-B no inicia.
 
 ## Arquitectura protegida y dependencias
 
@@ -216,7 +233,7 @@ Configuración (tipo + tamaño + semilla)
   -> Validación, persistencia y consumo por Game P11
 ```
 
-El diagrama representa la **secuencia objetivo**, no afirma que todos los módulos estén integrados hoy en el orquestador. En la implementación actual, Pangea produce superficie y elevación juntas; temperatura, lluvia y biomas existen como módulos especializados separados. La introducción de P03 debe conservar la salida actual y evitar acoplar los demás tipos de mapa.
+El diagrama representa la **secuencia objetivo**, no afirma que todos los módulos estén integrados hoy en el orquestador. P03-A.7.1 separa superficie y elevación en etapas conservando su salida; temperatura, lluvia y biomas existen como módulos especializados separados. La introducción de P03 debe conservar la salida actual y evitar acoplar los demás tipos de mapa.
 
 ## Reglas de trabajo
 
@@ -226,3 +243,5 @@ El diagrama representa la **secuencia objetivo**, no afirma que todos los módul
 4. No crear mapas PNG/SVG/CSV/HTML ni laboratorios externos. Inspección visual en Evolve.
 5. La escala actual es tierra 1–100, océano 0; la batimetría tendrá representación separada sin redefinir el cero silenciosamente.
 6. El cierre del roadmap requiere evidencia técnica **y** evaluación visual. Evitar adoptar un modelo solo porque pasa los tests.
+
+Validación técnica P03-A.7.1: build y cinco suites específicas PASS; general 15 PASS / 2 FAIL históricos (TectonicMotion: 4 escenarios; ContinentalGeology: 12). Las 16 diferencias son de elevación; baselines intactos. Véase el informe enlazado para códigos y duraciones.

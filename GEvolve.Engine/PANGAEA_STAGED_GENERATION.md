@@ -51,6 +51,28 @@ Cada etapa informa estado, disponibilidad por dependencias, revisión, hash de s
 
 ## Límites de esta entrega
 
+### API implementada
+
+```csharp
+var service = new WorldGenerationService();
+var configuration = LandmassProfiles.Create(GridSize.Large, LandmassType.Pangaea, -1387338765);
+var laboratory = service.CreatePangaeaSession(configuration);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.Grid);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.Plates);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.Motion);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.Surface);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.Base);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.MountainSystems);
+await laboratory.ExecuteAsync(PangaeaGenerationStage.Final);
+GeneratedWorld completed = laboratory.GetCompletedWorld();
+```
+
+`GetStages()` es la consulta ligera para botones/estado. `GetSnapshot()` devuelve datos desligados, con configuración/revisión y campos nulos donde todavía no hay resultado. Debe solicitarse al cambiar de revisión y almacenarse en el consumidor, no copiar mapas cada frame. El snapshot de sistemas expone geometría, cobertura y conteos de decisiones reales; no fabrica un contador `AffectedCells` antes de FINAL. Los hashes de BASE/placas usan bytes; H04 y el estado final usan JSON determinista; superficie incluye intento y hash de bytes; sistemas incluye geometría y propietarios. Las revisiones/tiempos son metadatos de ejecución y no entran en los hashes geográficos.
+
+`Reset(configuration)` valida primero el perfil y después invalida la sesión completa. `Execute` es la variante síncrona del mismo mecanismo. Las excepciones por prerequisitos o configuración no modifican el estado; una repetición válida invalida su rama al comenzar. Un fallo de perfil conserva las estadísticas de los intentos examinados sin publicar una superficie aceptada. `GetCompletedWorld()` falla si FINAL no está vigente. Ningún snapshot temporal se convierte implícitamente en un save.
+
+El modo automático usa la misma sesión internamente, omitiendo hashes de etapa y copias de exportación que no necesita; conserva sus diagnósticos de elevación anteriores y la traza opcional. Los demás tipos mantienen su ruta de generación original. Las copias de cuadrícula solo duplican almacenamiento, no vuelven a calcular topología. La exportación completa clona el estado y los diagnósticos para que un consumidor no pueda alterar las dependencias conservadas.
+
 - La retención de muestras añade memoria proporcional a los pasos válidos de la propagación existente; evita repetir selección o cambiar la influencia al componer BASE nueva. Su cantidad se registrará en las pruebas.
 - Cancelar no interrumpe un generador a mitad de sus bucles; impide publicar su resultado y mantiene seguro el reinicio. No se introduce un hilo gráfico en Engine.
 - Los hashes y metadatos de ejecución son infraestructura de P03-A.7.1. ANTES/DESPUÉS, histogramas enriquecidos y comparación visual pertenecen a P03-A.7.3.
