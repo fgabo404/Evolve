@@ -1,0 +1,16 @@
+Command: dotnet run --project GEvolve.Tests -- --pangaea-laboratory
+Started UTC: 2026-11-07T22:35:58.0858508Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 18.716
+
+=== STDOUT (complete) ===
+LAB_CASE_PASS Small: automatic grid; five visible actions; grouped plates/H04; seven engine stages; numeric heights; white threshold >90; FINAL/BASE fallback; cache/invalidation; original automatic equivalence; reset confirmation
+LAB_CASE_PASS Medium: automatic grid; five visible actions; grouped plates/H04; seven engine stages; numeric heights; white threshold >90; FINAL/BASE fallback; cache/invalidation; original automatic equivalence; reset confirmation
+LAB_CASE_PASS Large: automatic grid; five visible actions; grouped plates/H04; seven engine stages; numeric heights; white threshold >90; FINAL/BASE fallback; cache/invalidation; original automatic equivalence; reset confirmation
+LAB_CASE_PASS Enormous: automatic grid; five visible actions; grouped plates/H04; seven engine stages; numeric heights; white threshold >90; FINAL/BASE fallback; cache/invalidation; original automatic equivalence; reset confirmation
+LAB_ASYNC_PASS: invalid request/recovery, reset during worker, obsolete work detached, cooperative cancellation/retry; no UI thread blocking
+LAB_SEEDS_PASS: 100 signed int32 samples, boundary editing, no implicit generation, confirmation/cancel and presentation-only toggle
+LAB_PASS: four sizes; auto grid; five visible actions; grouped plates/H04; signed random seeds; height labels and strict >90 surface white; non-linear dependencies; original automatic equivalence; cache/reset/cancellation. NO window, GL context, screenshots or visual approval.
+
+=== STDERR (complete) ===

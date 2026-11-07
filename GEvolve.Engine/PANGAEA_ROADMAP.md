@@ -201,7 +201,7 @@ La solicitud del 2026-11-07 reorganiza el próximo paso: primero observar el mis
 |---|---|---|
 | **P03-A.7.1 — Motor por etapas** | Separación mínima, sesión temporal, DAG, invalidación, equivalencia | **Implementado; equivalencia técnica verificada; pendiente de revisión del usuario** |
 | **P03-A.7.2 — Interfaz manual** | Pantalla con componentes pixel-art existentes, semilla/tamaño, botones, estados, vistas parciales y ejecución asíncrona | **Implementado y validado técnicamente; pendiente de aprobación visual del usuario** |
-| **P03-A.7.2.1 — Ajustes de interfaz** | Cuadrícula automática, placas/H04 agrupados, cinco botones, semilla aleatoria copiable, alturas y blanco >90 solo en superficie del laboratorio | **Implementado; pendiente de aprobación visual** |
+| **P03-A.7.2.1 — Ajustes de interfaz** | Cuadrícula automática, placas/H04 agrupados, cinco botones, semilla aleatoria copiable, alturas y blanco >90 solo en superficie del laboratorio | **Implementado y validado técnicamente; pendiente de aprobación visual** |
 | P03-A.7.3 — Comparación y diagnósticos | ANTES/DESPUÉS, diferencias, hashes y estadísticas enriquecidas visibles | Planificado; no implementado |
 | P03-A.7.4 — Auditoría integral | Topología, superficie/costas, 16 placas/H04, BASE, sistemas, FINAL, persistencia, rendimiento, determinismo, capas y representación | Planificado; no ejecutado |
 
@@ -232,6 +232,8 @@ La cuadrícula oficial inicia automáticamente con cada sesión; conserva su eta
 ALEATORIA con dado crea un entero con signo de 32 bits usando aleatoriedad criptográfica de Game, sin tocar el RNG determinista ni iniciar un mundo completo. Utiliza el mismo borrador/confirmación; Ctrl+C copia la semilla y Ctrl+V con foco reemplaza su texto. MOSTRAR ALTURAS utiliza datos reales de la vista, solo con escala ≥13 y hasta 1000 etiquetas visibles. En SUPERFICIE se usa FINAL vigente o BASE en su ausencia; tierra >90 blanca, tierra ≤90 con color terrestre, océano azul. Sin alturas no se inventan números ni blanco; invalidar FINAL retira ese campo inmediatamente. El cambio de umbral es exclusivo del laboratorio: la paleta global y los guardados siguen intactos.
 
 Solo validación automatizada de código; Codex no abre Game, no ejecuta pruebas visuales ni certifica apariencia o geografía. P03-A.7.2.1 queda pendiente de aprobación visual del usuario. P03-A.7.3 no comienza.
+
+Evidencia: laboratorio PASS en cuatro tamaños; equivalencia PASS en 28 Pangea + 12 controles; general **16 PASS / 2 FAIL históricos**, con los mismos 16 registros de elevación que P03-A.7.2. La compilación inicial pasó con CS8602 en una prueba; se corrigió mediante guarda explícita en `5bfbfc96bcb896615679d78dabe091f60d308164`. La [comprobación posterior](../GEvolve.Tests/ValidationReports/P03-A721-nullable_20261107_224554334Z_1be5ccd6/SUMMARY.md) pasa build sin advertencias/errores y laboratorio. No se modifican baselines ni se presenta la general como aprobada.
 
 ## Arquitectura protegida y dependencias
 
