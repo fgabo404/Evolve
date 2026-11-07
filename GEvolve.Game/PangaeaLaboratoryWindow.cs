@@ -54,7 +54,8 @@ internal sealed partial class EvolveWindow
     {
         var lab = _laboratory!;
         if (!LaboratoryEnabled(action)) return;
-        if (PangaeaLaboratoryLayout.IsStageAction(action)) lab.Execute(PangaeaLaboratoryLayout.Stage(action));
+        if (action == UiAction.LabPlates) lab.ExecutePlatesAndMotion();
+        else if (PangaeaLaboratoryLayout.IsStageAction(action)) lab.Execute(PangaeaLaboratoryLayout.Stage(action));
         else if (PangaeaLaboratoryLayout.IsViewAction(action))
         { lab.ChooseView(PangaeaLaboratoryLayout.View(action)); _openDropdown = null; }
         else switch (action)
@@ -64,6 +65,8 @@ internal sealed partial class EvolveWindow
             case UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous:
                 lab.ChooseSize(ScreenLayout.SizeFor(action)); _openDropdown = null; break;
             case UiAction.SeedField: _seedFocused = true; break;
+            case UiAction.RandomSeed: lab.RandomizeSeed(); break;
+            case UiAction.LabShowHeights: lab.ToggleHeights(); break;
             case UiAction.LabRestart: lab.RequestRestart(); break;
             case UiAction.LabConfirm: lab.ConfirmReset(); break;
             case UiAction.LabKeep: lab.CancelReset(); break;
@@ -85,9 +88,19 @@ internal sealed partial class EvolveWindow
                 Math.Max(0, (int)((ClientSize.Y - MapCamera2D.TopBarHeight) * FramebufferSize.Y / ClientSize.Y)));
             _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, lab.View);
             GL.Disable(EnableCap.ScissorTest);
-            if (lab.View == MapViewMode.Tectonic)
-            { _gridRenderer.DrawPlateBoundaries(_ui, _camera); _gridRenderer.DrawPlateMotions(_ui, _camera); }
+            if (lab.View is MapViewMode.Tectonic or MapViewMode.Motion) _gridRenderer.DrawPlateBoundaries(_ui, _camera);
+            if (lab.View == MapViewMode.Motion) _gridRenderer.DrawPlateMotions(_ui, _camera);
             if (lab.View == MapViewMode.Geology) _gridRenderer.DrawPangaeaMountainRanges(_ui, _camera);
+            foreach (var label in PangaeaHeightLabels.Build(lab.Map, lab.View, _camera.VisibleRange(), _camera.Scale, lab.ShowHeights))
+            {
+                var position = _camera.WorldToScreen(GEvolve.Engine.Grid.FlatHexGeometry.Center(new(label.Column, label.Row)));
+                if (position.X < panel + 12 || position.X > ClientSize.X - 12 || position.Y < 135 ||
+                    position.Y > ClientSize.Y - 12) continue;
+                bool dark = lab.View == MapViewMode.Surface ? lab.Map.Snapshot.Surface![label.CellId] == 1 && label.Height > 90 :
+                    label.Height >= (lab.View == MapViewMode.ElevationContribution ? 13 : 60);
+                _ui.Text(label.Height.ToString(System.Globalization.CultureInfo.InvariantCulture), position.X, position.Y - 5,
+                    1.3f, dark ? new(.08f, .08f, .08f, 1) : White);
+            }
             if (lab.SelectedCell is { } cell)
             {
                 int columns = lab.Map.Snapshot.Grid!.Definition.Columns;
@@ -104,6 +117,7 @@ internal sealed partial class EvolveWindow
         _ui.Rect(0, 58, panel, ClientSize.Y - 58, new(.075f, .13f, .19f, 1));
         _ui.Text("LABORATORIO DE PANGEA", 12, 21, ClientSize.X < 800 ? 1.7f : 2.2f, White, false);
         _ui.Text("TIPO: PANGEA", 12, 68, 1.5f, Muted, false);
+        _ui.Text("SEMILLA - CTRL C: COPIAR", 12, 120, 1, Muted, false);
         foreach (var button in PangaeaLaboratoryLayout.Buttons(ClientSize.X, ClientSize.Y, lab.ConfirmRestart))
         {
             var rect = button.Bounds; bool enabled = LaboratoryEnabled(button.Action);
@@ -113,16 +127,27 @@ internal sealed partial class EvolveWindow
             {
                 var stage = lab.Stages.FirstOrDefault(s => s.Stage == PangaeaLaboratoryLayout.Stage(button.Action));
                 _ui.Text(button.Text, rect.X + 5, rect.Y + 4, Math.Min(1.25f, (rect.Width - 10) / (button.Text.Length * 6)), enabled ? White : Muted, false);
-                string state = stage is null ? "PENDIENTE" : lab.StageState(stage);
-                string duration = stage?.Duration is { } time ? $"  {time.TotalMilliseconds:F0} MS" : "";
+                bool grouped = button.Action == UiAction.LabPlates;
+                string state = grouped ? lab.PlatesAndMotionState() : stage is null ? "PENDIENTE" : lab.StageState(stage);
+                var durations = lab.Stages.Where(s => s.Stage == stage?.Stage || grouped && s.Stage == PangaeaGenerationStage.Motion)
+                    .Where(s => s.Duration.HasValue).Select(s => s.Duration!.Value.TotalMilliseconds).ToArray();
+                string duration = durations.Length > 0 ? $"  {durations.Sum():F0} MS" : "";
                 _ui.Text(state + duration, rect.X + 5, rect.Y + rect.Height - 12, 1.1f, Accent, false);
+            }
+            else if (button.Action == UiAction.RandomSeed)
+            {
+                _ui.Border(rect.X + 4, rect.Y + 7, 13, 13, 1, White);
+                foreach (var (x, y) in new[] { (2, 2), (8, 2), (5, 5), (2, 8), (8, 8) })
+                    _ui.Rect(rect.X + 4 + x, rect.Y + 7 + y, 2, 2, White);
+                _ui.Text("ALEATORIA", rect.X + 21, rect.Y + 10, .95f, White, false);
             }
             else
             {
                 string text = button.Action switch
                 {
                     UiAction.SizeSelect => "TAMAÑO: " + ScreenLayout.SizeLabel(lab.Size),
-                    UiAction.SeedField => "SEMILLA: " + lab.SeedText + (_seedFocused ? "-" : ""),
+                    UiAction.SeedField => lab.SeedText + (_seedFocused ? "-" : ""),
+                    UiAction.LabShowHeights => "MOSTRAR ALTURAS: " + (lab.ShowHeights ? "SÍ" : "NO"),
                     UiAction.LabView => "VER: " + (lab.Map is null ? "PENDIENTE" : PangaeaMapData.ViewLabel(lab.View)),
                     _ => button.Text
                 };

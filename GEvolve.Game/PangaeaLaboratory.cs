@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Security.Cryptography;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World;
@@ -16,6 +17,7 @@ public sealed class PangaeaLaboratory : IDisposable
     private PangaeaGenerationSession? _session;
     private Work? _work;
     private PangaeaGenerationSnapshot? _snapshot;
+    private bool _motionQueued;
     public GridSize Size { get; private set; } = GridSize.Small;
     public string SeedText { get; private set; } = "2026";
     public bool ConfirmRestart { get; private set; }
@@ -29,6 +31,7 @@ public sealed class PangaeaLaboratory : IDisposable
     public PangaeaMapData? Map { get; private set; }
     public GridCell? SelectedCell { get; private set; }
     public MapViewMode View { get; private set; } = MapViewMode.Grid;
+    public bool ShowHeights { get; private set; }
     public IReadOnlyList<PangaeaStageInfo> Stages { get; private set; } = [];
 
     public void ChooseSize(GridSize size) { _ = HexGridDefinitions.Get(size); Size = size; DraftChanged(); }
@@ -37,6 +40,24 @@ public sealed class PangaeaLaboratory : IDisposable
         if (text.Length > 11 || text.Any(c => !char.IsAsciiDigit(c) && c != '-') ||
             text.Count(c => c == '-') > 1 || text.IndexOf('-') > 0) return;
         SeedText = text; DraftChanged();
+    }
+    public void RandomizeSeed() => SetSeedText(
+        BitConverter.ToInt32(RandomNumberGenerator.GetBytes(sizeof(int))).ToString(CultureInfo.InvariantCulture));
+    public void ToggleHeights() { ShowHeights = !ShowHeights; PresentationRevision++; }
+    public void ExecutePlatesAndMotion()
+    {
+        Execute(PangaeaGenerationStage.Plates);
+        _motionQueued = _work?.Stage == PangaeaGenerationStage.Plates && Error is null;
+    }
+    public string PlatesAndMotionState()
+    {
+        var stages = Stages.Where(s => s.Stage is PangaeaGenerationStage.Plates or PangaeaGenerationStage.Motion).ToArray();
+        if (stages.Length != 2) return "PENDIENTE";
+        if (_motionQueued || stages.Any(s => s.Status == PangaeaStageStatus.Running)) return "GENERANDO";
+        if (stages.Any(s => s.Status == PangaeaStageStatus.Failed)) return "ERROR";
+        if (stages.All(s => s.Status == PangaeaStageStatus.Completed)) return "COMPLETADA";
+        if (stages.Any(s => s.Status == PangaeaStageStatus.Invalidated)) return "INVALIDADA";
+        return CanExecute(PangaeaGenerationStage.Plates) ? "DISPONIBLE" : "PENDIENTE";
     }
     private void DraftChanged()
     {
@@ -67,10 +88,11 @@ public sealed class PangaeaLaboratory : IDisposable
         AbandonWork();
         if (_session is null) _session = _service.CreatePangaeaSession(configuration);
         else _session.Reset(configuration);
-        ConfirmRestart = false; Error = null; Notice = "SESIÓN INICIADA. GENERA LA CUADRÍCULA.";
+        ConfirmRestart = false; Error = null;
         SelectedCell = null; View = MapViewMode.Grid;
         SnapshotCopies++;
         Publish(_session.GetSnapshot());
+        Execute(PangaeaGenerationStage.Grid);
     }
 
     public bool CanExecute(PangaeaGenerationStage stage) => !ConfigurationPending && !ConfirmRestart &&
@@ -91,7 +113,10 @@ public sealed class PangaeaLaboratory : IDisposable
         if (Busy) return "ESPERA LA OPERACIÓN ACTIVA";
         var missing = PangaeaGenerationSession.Dependencies[stage]
             .Where(d => Stages.Single(s => s.Stage == d).Status != PangaeaStageStatus.Completed);
-        return "FALTA: " + string.Join(", ", missing.Select(d => ((int)d).ToString("00")));
+        return "FALTA: " + string.Join(", ", missing.Select(d => d switch
+        { PangaeaGenerationStage.Grid => "CUADRÍCULA AUTOMÁTICA", PangaeaGenerationStage.Plates => "PLACAS",
+            PangaeaGenerationStage.Motion => "MOVIMIENTO", PangaeaGenerationStage.Surface => "SUPERFICIE",
+            PangaeaGenerationStage.Base => "BASE", _ => "SISTEMAS" }));
     }
 
     public void Execute(PangaeaGenerationStage stage)
@@ -106,7 +131,11 @@ public sealed class PangaeaLaboratory : IDisposable
             Stages = session.GetStages();
             Publish(Prune(_snapshot!, Stages));
             _work = new(Complete(task, session), cancellation, stage);
-            Error = null; Notice = $"GENERANDO ETAPA {(int)stage:00}";
+            Error = null; Notice = "GENERANDO " + (stage switch
+            { PangaeaGenerationStage.Grid => "CUADRÍCULA AUTOMÁTICA", PangaeaGenerationStage.Plates => "PLACAS",
+                PangaeaGenerationStage.Motion => "MOVIMIENTO / H04", PangaeaGenerationStage.Surface => "SUPERFICIE",
+                PangaeaGenerationStage.Base => "ELEVACIONES BASE", PangaeaGenerationStage.MountainSystems => "SISTEMAS MONTAÑOSOS",
+                _ => "ELEVACIONES FINAL" });
         }
         catch (Exception error) { cancellation.Dispose(); Error = error.Message; }
     }
@@ -121,6 +150,8 @@ public sealed class PangaeaLaboratory : IDisposable
     {
         if (_work is not { Task.IsCompleted: true } work) return false;
         _work = null;
+        bool runMotion = _motionQueued && work.Stage == PangaeaGenerationStage.Plates;
+        _motionQueued = false;
         try
         {
             var result = work.Task.GetAwaiter().GetResult();
@@ -129,7 +160,8 @@ public sealed class PangaeaLaboratory : IDisposable
                 ChooseView(work.Stage switch
                 {
                     PangaeaGenerationStage.Grid => MapViewMode.Grid,
-                    PangaeaGenerationStage.Plates or PangaeaGenerationStage.Motion => MapViewMode.Tectonic,
+                    PangaeaGenerationStage.Plates => MapViewMode.Tectonic,
+                    PangaeaGenerationStage.Motion => MapViewMode.Motion,
                     PangaeaGenerationStage.Surface => MapViewMode.Surface,
                     PangaeaGenerationStage.Base => MapViewMode.ElevationBase,
                     PangaeaGenerationStage.MountainSystems => MapViewMode.Geology,
@@ -138,6 +170,8 @@ public sealed class PangaeaLaboratory : IDisposable
             Error = result.Error is OperationCanceledException ? null : result.Error?.Message;
             Notice = result.Error is OperationCanceledException ? "RESULTADO CANCELADO Y DESCARTADO. PUEDES REPETIR." :
                 result.Error is null ? "ETAPA COMPLETADA" : "ERROR. PUEDES REPETIR LA ETAPA.";
+            if (runMotion && result.Error is null && !work.Cancellation.IsCancellationRequested)
+                Execute(PangaeaGenerationStage.Motion);
         }
         catch (Exception error) { Error = error.Message; }
         finally { work.Cancellation.Dispose(); }
@@ -145,11 +179,13 @@ public sealed class PangaeaLaboratory : IDisposable
     }
     public void Cancel()
     {
+        _motionQueued = false;
         _work?.Cancellation.Cancel();
         Notice = "CANCELACIÓN SOLICITADA. EL CÁLCULO PUEDE TERMINAR ANTES DE DESCARTARSE.";
     }
     private void AbandonWork()
     {
+        _motionQueued = false;
         if (_work is not { } work) return;
         _work = null; work.Cancellation.Cancel();
         _ = work.Task.ContinueWith(t => { _ = t.Exception; work.Cancellation.Dispose(); }, TaskScheduler.Default);

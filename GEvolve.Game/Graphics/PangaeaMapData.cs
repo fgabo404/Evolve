@@ -15,7 +15,7 @@ public sealed class PangaeaMapData
         Snapshot = snapshot;
         var views = new List<MapViewMode> { MapViewMode.Grid };
         if (snapshot.Plates is not null) views.Add(MapViewMode.Tectonic);
-        if (snapshot.Motion is not null) views.AddRange([MapViewMode.Compression, MapViewMode.Extension, MapViewMode.Shear]);
+        if (snapshot.Motion is not null) views.AddRange([MapViewMode.Motion, MapViewMode.Compression, MapViewMode.Extension, MapViewMode.Shear]);
         if (snapshot.Surface is not null) views.Add(MapViewMode.Surface);
         if (snapshot.Base is not null) views.Add(MapViewMode.ElevationBase);
         if (snapshot.Mountains is not null) views.Add(MapViewMode.Geology);
@@ -28,11 +28,12 @@ public sealed class PangaeaMapData
         var s = Snapshot;
         bool ocean = s.Surface is not null && s.Surface[id] == 0;
         if (view == MapViewMode.Grid) return new(.84f, .88f, .90f);
-        if (view == MapViewMode.Tectonic) return PlatePalette.ForPlate(s.Plates![id], ocean);
+        if (view is MapViewMode.Tectonic or MapViewMode.Motion) return PlatePalette.ForPlate(s.Plates![id], ocean);
         if (view == MapViewMode.Compression) return TectonicStressPalette.ForValue(s.Motion!.CompressionByCellId[id], view);
         if (view == MapViewMode.Extension) return TectonicStressPalette.ForValue(s.Motion!.ExtensionByCellId[id], view);
         if (view == MapViewMode.Shear) return TectonicStressPalette.ForValue(s.Motion!.ShearByCellId[id], view);
-        if (view == MapViewMode.Surface) return ocean ? new(.32f, .55f, .71f) : new(.35f, .57f, .32f);
+        if (view == MapViewMode.Surface) return ocean ? new(.32f, .55f, .71f) :
+            Height(id, view) is > 90 ? Vector3.One : new(.35f, .57f, .32f);
         if (ocean) return new(.08f, .17f, .30f);
         if (view == MapViewMode.Geology)
             return s.Mountains!.InfluenceByCellId[id] == 0 ? new(.30f, .34f, .30f) : new(.60f, .38f, .17f);
@@ -41,6 +42,16 @@ public sealed class PangaeaMapData
         float fraction = Math.Clamp(s.Elevations!.ContributionByCellId.Span[id] / 25f, 0, 1);
         return Vector3.Lerp(new(.12f, .14f, .16f), new(1f, .65f, .12f), fraction);
     }
+    /// <summary>Only current data; null is distinct from a measured zero.</summary>
+    public byte? Height(int id, MapViewMode view) => view switch
+    {
+        MapViewMode.ElevationBase when Snapshot.Base is { } initial => initial[id],
+        MapViewMode.ElevationContribution when Snapshot.Elevations is { } fields => fields.ContributionByCellId.Span[id],
+        MapViewMode.ElevationFinal when Snapshot.Elevations is { } fields => fields.FinalByCellId.Span[id],
+        MapViewMode.Surface when Snapshot.Surface is not null => Snapshot.Elevations is { } fields
+            ? fields.FinalByCellId.Span[id] : Snapshot.Base is { } initial ? initial[id] : null,
+        _ => null
+    };
     public IReadOnlyList<string> Inspect(int id)
     {
         var s = Snapshot; var cell = s.Grid!.Cells[id];
@@ -79,7 +90,7 @@ public sealed class PangaeaMapData
     }
     public static string ViewLabel(MapViewMode view) => view switch
     {
-        MapViewMode.Grid => "CUADRÍCULA", MapViewMode.Tectonic => "PLACAS Y MOVIMIENTO",
+        MapViewMode.Grid => "CUADRÍCULA", MapViewMode.Tectonic => "PLACAS", MapViewMode.Motion => "MOVIMIENTO / H04",
         MapViewMode.Compression => "COMPRESIÓN", MapViewMode.Extension => "EXTENSIÓN", MapViewMode.Shear => "CIZALLA",
         MapViewMode.Surface => "SUPERFICIE", MapViewMode.ElevationBase => "ALTURAS BASE",
         MapViewMode.Geology => "RELIEVE: SISTEMAS", MapViewMode.ElevationContribution => "APORTE CORDILLERAS",

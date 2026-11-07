@@ -826,6 +826,15 @@ internal sealed partial class EvolveWindow : GameWindow
     protected override void OnKeyDown(KeyboardKeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (_session.Screen == GameScreen.PangaeaLaboratory &&
+            (KeyboardState.IsKeyDown(Keys.LeftControl) || KeyboardState.IsKeyDown(Keys.RightControl)))
+        {
+            if (e.Key == Keys.C) { ClipboardString = _laboratory!.SeedText; return; }
+            if (e.Key == Keys.V && _seedFocused)
+            {
+                _laboratory!.SetSeedText(ClipboardString?.Trim() ?? ""); _dirty = true; return;
+            }
+        }
         if (_session.Screen == GameScreen.PangaeaLaboratory && _seedFocused && e.Key == Keys.Backspace)
         {
             if (_laboratory!.SeedText.Length > 0) _laboratory.SetSeedText(_laboratory.SeedText[..^1]);
