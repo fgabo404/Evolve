@@ -39,9 +39,17 @@ public sealed class PangaeaMountainRangeGenerator
             terrain.SurfaceByCellId.Length != topology.Count)
             throw new ArgumentException("Complete Pangaea terrain and official H04 motion are required.", nameof(terrain));
 
+        return ApplyPrepared(terrain, Prepare(topology, terrain.Configuration, terrain.SurfaceByCellId,
+            motion, captureAudit is not null), captureElevations, previousBase, priorCalibrationBase, captureAudit);
+    }
+
+    internal PangaeaMountainPlan Prepare(HexTopology topology, LandmassConfiguration configuration,
+        byte[] surface, TectonicMotionState motion, bool captureAudit)
+    {
+
         int count = topology.Count;
-        List<MountainContactAudit>? contactAudit = captureAudit is null ? null : [];
-        List<MountainCandidateAudit>? candidateAudit = captureAudit is null ? null : [];
+        List<MountainContactAudit>? contactAudit = captureAudit ? [] : null;
+        List<MountainCandidateAudit>? candidateAudit = captureAudit ? [] : null;
         var strength = new float[count];
         var pair = new int[count];
         Array.Fill(pair, -1);
@@ -53,8 +61,8 @@ public sealed class PangaeaMountainRangeGenerator
             interactionIndex++;
             if (edge.Kind is not (PlateInteractionKind.Convergent or PlateInteractionKind.Mixed) ||
                 edge.Convergence < 1 || edge.Convergence < edge.Shear * .65 ||
-                terrain.SurfaceByCellId[edge.FirstCellId] != 1 ||
-                terrain.SurfaceByCellId[edge.SecondCellId] != 1)
+                surface[edge.FirstCellId] != 1 ||
+                surface[edge.SecondCellId] != 1)
             {
                 // Reasons describe the existing first-failed predicate; they do not select contacts.
                 contactAudit?.Add(new(interactionIndex,
@@ -168,7 +176,7 @@ public sealed class PangaeaMountainRangeGenerator
                 foreach (int candidate in topology.Neighbors(axis[i - 1]))
                     if (candidate != old && !occupied.Contains(candidate) && !usedAxis[candidate] &&
                         topology.Neighbors(candidate).Contains(axis[i + 1]) &&
-                        terrain.SurfaceByCellId[candidate] == 1 &&
+                        surface[candidate] == 1 &&
                         motion.DistanceToBoundaryByCellId[candidate] is > 0 and <= 2 &&
                         motion.DistanceToBoundaryByCellId[candidate] >
                             motion.DistanceToBoundaryByCellId[old] &&
@@ -183,7 +191,7 @@ public sealed class PangaeaMountainRangeGenerator
             var widths = new byte[axis.Count];
             float peak = 0, mean = 0;
             int span = Math.Max(6, axis.Count / 6);
-            var random = new DeterministicRandom(terrain.Configuration.Seed,
+            var random = new DeterministicRandom(configuration.Seed,
                 unchecked((uint)(0x52414E47 + component.Min())));
             int anchorCount = axis.Count / span + 2;
             var widthAnchors = new double[anchorCount];
@@ -219,8 +227,7 @@ public sealed class PangaeaMountainRangeGenerator
         ranges.Sort((a, b) => a.AxisCellIds.Min().CompareTo(b.AxisCellIds.Min()));
         var owner = new ushort[count];
         var best = new double[count];
-        var composed = new double[count];
-        var final = (byte[])original.Clone();
+        var samples = new List<MountainUpliftSample>();
         var localBest = new double[count];
         var touched = new List<int>();
         for (int index = 0; index < ranges.Count; index++)
@@ -260,15 +267,7 @@ public sealed class PangaeaMountainRangeGenerator
                 double width = range.WidthByAxisCell[step.Axis];
                 double taper = Math.Pow(1 - step.Distance / (width + 1), 2);
                 double blend = (.6 + .4 * profile[step.Axis]) * taper;
-                double requested = Math.Max(step.Uplift,
-                    Math.Max(0, crests[step.Axis] - original[step.Cell]) * blend);
-                // Max, never sum: intersecting corridors cannot accumulate uplift.
-                // The legacy field still exclusively determines traversal and owner.
-                if (requested > composed[step.Cell])
-                {
-                    composed[step.Cell] = requested;
-                    final[step.Cell] = ComposeElevation(original[step.Cell], requested);
-                }
+                samples.Add(new(step.Cell, step.Uplift, crests[step.Axis], blend));
                 if (step.Uplift > best[step.Cell])
                 {
                     best[step.Cell] = step.Uplift;
@@ -276,7 +275,7 @@ public sealed class PangaeaMountainRangeGenerator
                 }
                 if (step.Distance >= range.WidthByAxisCell[step.Axis]) continue;
                 foreach (int neighbor in topology.Neighbors(step.Cell))
-                    if (terrain.SurfaceByCellId[neighbor] == 1)
+                    if (surface[neighbor] == 1)
                     {
                         double next = Uplift(step.Axis, step.Distance + 1);
                         if (next <= localBest[neighbor]) continue;
@@ -301,13 +300,8 @@ public sealed class PangaeaMountainRangeGenerator
         foreach (var range in ranges)
             foreach (int id in range.AxisCellIds)
                 owner[id] = checked((ushort)range.Id);
-        var affected = new int[ranges.Count];
-        for (int id = 0; id < count; id++)
-            if (owner[id] != 0 && final[id] > original[id]) affected[owner[id] - 1]++;
-        for (int i = 0; i < ranges.Count; i++)
-            ranges[i] = ranges[i] with { AffectedCells = affected[i] };
-        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, best, previousBase, priorCalibrationBase, composed));
-        if (captureAudit is not null)
+        PangaeaMountainRangeAudit? audit = null;
+        if (captureAudit)
         {
             var byStart = ranges.ToDictionary(range => range.AxisCellIds[0]);
             var candidates = candidateAudit!.Select(candidate =>
@@ -316,10 +310,9 @@ public sealed class PangaeaMountainRangeGenerator
                 var selected = byStart[candidate.FinalAxisCellIds[0]];
                 return candidate with { SelectedRangeId = selected.Id, AffectedCells = selected.AffectedCells };
             }).ToArray();
-            captureAudit(new(contactAudit!.ToArray(), candidates, minimumLength));
+            audit = new(contactAudit!.ToArray(), candidates, minimumLength);
         }
-        return terrain with { ElevationByCellId = final,
-            PangaeaMountainRanges = new(Version, ranges.ToArray(), owner) };
+        return new(ranges.ToArray(), owner, best, samples.ToArray(), audit);
 
         int Farthest(int source, int key)
         {
@@ -355,6 +348,37 @@ public sealed class PangaeaMountainRangeGenerator
                 cells.ToArray(), proposed?.ToArray() ?? [], selected?.ToArray() ?? [],
                 widths?.ToArray() ?? [], decision, elongation, endpoints, cycles, branches));
         }
+    }
+
+    internal LandmassState ApplyPrepared(LandmassState terrain, PangaeaMountainPlan plan,
+        Action<PangaeaElevationDiagnostics>? captureElevations, ReadOnlyMemory<byte> previousBase,
+        ReadOnlyMemory<byte> priorCalibrationBase, Action<PangaeaMountainRangeAudit>? captureAudit)
+    {
+        byte[] original = terrain.ElevationByCellId!;
+        var final = (byte[])original.Clone();
+        var composed = new double[original.Length];
+        foreach (var sample in plan.Samples)
+        {
+            double requested = Math.Max(sample.LegacyUplift,
+                Math.Max(0, sample.Crest - original[sample.Cell]) * sample.Blend);
+            // Identical P03-A.6 arithmetic and order, deferred until BASE exists.
+            if (requested > composed[sample.Cell])
+            {
+                composed[sample.Cell] = requested;
+                final[sample.Cell] = ComposeElevation(original[sample.Cell], requested);
+            }
+        }
+        var affected = new int[plan.Ranges.Length];
+        for (int id = 0; id < original.Length; id++)
+            if (plan.Owner[id] != 0 && final[id] > original[id]) affected[plan.Owner[id] - 1]++;
+        var ranges = plan.Ranges.Select((range, i) => range with { AffectedCells = affected[i] }).ToArray();
+        captureElevations?.Invoke(new PangaeaElevationDiagnostics(original, final, plan.LegacyUplift,
+            previousBase, priorCalibrationBase, composed));
+        if (captureAudit is not null && plan.Audit is { } audit)
+            captureAudit(audit with { Candidates = audit.Candidates.Select(candidate => candidate.SelectedRangeId == 0
+                ? candidate : candidate with { AffectedCells = affected[candidate.SelectedRangeId - 1] }).ToArray() });
+        return terrain with { ElevationByCellId = final,
+            PangaeaMountainRanges = new(Version, ranges, plan.Owner) };
     }
 
     internal static byte ComposeElevation(byte original, double uplift) =>

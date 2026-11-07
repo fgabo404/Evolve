@@ -17,6 +17,24 @@ public sealed class PangaeaElevationDiagnostics
     public int PriorCalibrationCompositionLimitedCells { get; }
     public PangaeaElevationSources? Sources { get; internal set; }
 
+    internal PangaeaElevationDiagnostics Copy() => new(this);
+
+    private PangaeaElevationDiagnostics(PangaeaElevationDiagnostics source)
+    {
+        BaseByCellId = source.BaseByCellId.ToArray();
+        ContributionByCellId = source.ContributionByCellId.ToArray();
+        FinalByCellId = source.FinalByCellId.ToArray();
+        AdditiveFinalByCellId = source.AdditiveFinalByCellId.ToArray();
+        CompositionLimitedByCellId = source.CompositionLimitedByCellId.ToArray();
+        PreviousBaseByCellId = source.PreviousBaseByCellId.ToArray();
+        PreviousFinalByCellId = source.PreviousFinalByCellId.ToArray();
+        PreviousCompositionLimitedCells = source.PreviousCompositionLimitedCells;
+        PriorCalibrationBaseByCellId = source.PriorCalibrationBaseByCellId.ToArray();
+        PriorCalibrationFinalByCellId = source.PriorCalibrationFinalByCellId.ToArray();
+        PriorCalibrationCompositionLimitedCells = source.PriorCalibrationCompositionLimitedCells;
+        Sources = PangaeaElevationSources.Copy(source.Sources);
+    }
+
     internal PangaeaElevationDiagnostics(byte[] initial, byte[] final, double[] requested,
         ReadOnlyMemory<byte> previousBase = default, ReadOnlyMemory<byte> priorCalibrationBase = default,
         double[]? composedRequested = null)
@@ -81,6 +99,13 @@ public sealed record PangaeaElevationSources(double[] Quantiles, double[] Potent
     public PangaeaElevationSources? PriorCalibration { get; init; }
     public ReadOnlyMemory<byte> PriorCalibrationBaseByCellId { get; init; }
     public double CalibrationMilliseconds { get; init; }
+    internal static PangaeaElevationSources? Copy(PangaeaElevationSources? source) => source is null ? null : source with
+    {
+        Quantiles = source.Quantiles.ToArray(), PotentialAnchors = source.PotentialAnchors.ToArray(),
+        ElevationAnchors = source.ElevationAnchors.ToArray(), Previous = Copy(source.Previous),
+        PreviousBaseByCellId = source.PreviousBaseByCellId.ToArray(), PriorCalibration = Copy(source.PriorCalibration),
+        PriorCalibrationBaseByCellId = source.PriorCalibrationBaseByCellId.ToArray()
+    };
     internal static PangaeaElevationSources Measure(byte[] surface, byte[] elevation,
         double[] potential, double[] uplift, double[] quantiles, double[] anchors, double[] levels)
     {

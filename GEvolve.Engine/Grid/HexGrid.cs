@@ -13,6 +13,14 @@ public sealed class HexGrid
     public HexGridDefinition Definition { get; }
     public IReadOnlyList<GridCell> Cells => _cells;
 
+    private HexGrid(HexGrid source)
+    {
+        Definition = source.Definition;
+        _cells = (GridCell[])source._cells.Clone();
+    }
+
+    internal HexGrid Copy() => new(this);
+
     private HexGrid(HexGridDefinition definition)
     {
         Definition = definition;

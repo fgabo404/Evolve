@@ -20,6 +20,13 @@ public sealed class PangaeaFromPlatesGenerator
         HexTopology topology, LandmassConfiguration configuration, byte[] plates, int attempt,
         Action<PangaeaElevationSources>? captureSources)
     {
+        var surface = GenerateSurface(topology, configuration, plates, attempt);
+        return (surface.Surface, GenerateElevation(surface, captureSources));
+    }
+
+    internal PangaeaSurfaceWork GenerateSurface(HexTopology topology,
+        LandmassConfiguration configuration, byte[] plates, int attempt)
+    {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(plates);
@@ -176,6 +183,18 @@ public sealed class PangaeaFromPlatesGenerator
         }
         for(int id=0;id<count;id++)if(surface[id]==0 && !ocean[id])surface[id]=1;
 
+        return new(topology, configuration, attempt, surface, uplift);
+    }
+
+    internal byte[] GenerateElevation(PangaeaSurfaceWork work,
+        Action<PangaeaElevationSources>? captureSources)
+    {
+        var topology = work.Topology;
+        var configuration = work.Configuration;
+        int attempt = work.Attempt, width = topology.Columns, height = topology.Rows, count = topology.Count;
+        byte[] surface = work.Surface;
+        double[] uplift = work.InitialUplift;
+
         // Suavizar la presión tectónica a través de los vecinos reales.
         for(int pass=0;pass<4;pass++)
         {
@@ -242,7 +261,7 @@ public sealed class PangaeaFromPlatesGenerator
                 PriorCalibrationBaseByCellId = priorCalibration,
                 CalibrationMilliseconds = calibrationMilliseconds
             });
-        return (surface, calibrated);
+        return calibrated;
     }
 
     /// <summary>

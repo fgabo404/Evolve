@@ -14,9 +14,10 @@ namespace GEvolve.Engine.World;
 /// </summary>
 public sealed class WorldGenerationService
 {
-    private readonly PangaeaFromPlatesGenerator _pangaea = new();
     private readonly PlateAwareElevationGenerator _relief = new();
-    private readonly PangaeaMountainRangeGenerator _mountainRanges = new();
+
+    /// <summary>Temporary staged Pangaea generation; partial data never enters saved worlds.</summary>
+    public PangaeaGenerationSession CreatePangaeaSession(LandmassConfiguration configuration) => new(configuration);
 
     /// <summary>Generates a world using the official profile for the selected size, type and seed.</summary>
     public GeneratedWorld Generate(GridSize size, LandmassType worldType, int seed = 2026)
@@ -30,6 +31,15 @@ public sealed class WorldGenerationService
         Action<PangaeaMountainRangeAudit>? captureMountainAudit)
     {
         Validate(configuration);
+        if (configuration.Type == LandmassType.Pangaea)
+        {
+            var session = new PangaeaGenerationSession(configuration, recordDiagnostics: false,
+                captureAudit: captureMountainAudit is not null);
+            foreach (var stage in Enum.GetValues<PangaeaGenerationStage>()) session.Execute(stage);
+            var world = session.GetOwnedCompletedWorld();
+            if (captureMountainAudit is not null) captureMountainAudit(session.GetFinalAudit()!);
+            return world;
+        }
         HexGrid grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
         var topology = new HexTopology(grid);
 
@@ -53,7 +63,6 @@ public sealed class WorldGenerationService
 
         IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch
         {
-            LandmassType.Pangaea => null,
             LandmassType.SmallContinents => new SmallContinentsGenerator(),
             LandmassType.Archipelagos => new ArchipelagosGenerator(),
             _ => throw new ArgumentOutOfRangeException(nameof(configuration))
@@ -62,32 +71,12 @@ public sealed class WorldGenerationService
         LandmassStatistics? last = null;
         for (int attempt = 0; attempt < 4; attempt++)
         {
-            PangaeaElevationSources? elevationSources = null;
-            PangaeaElevationDiagnostics? elevationDiagnostics = null;
-            byte[] surface;
-            byte[] elevation;
-            if (configuration.Type == LandmassType.Pangaea)
-                (surface, elevation) = _pangaea.Generate(topology, configuration, plates, attempt,
-                    sources => elevationSources = sources);
-            else
-            {
-                // Each existing land generator preserves its distinct distribution:
-                // large separate continents, small landmasses or island chains.
-                // Plate guidance gently influences their surface *and* shared relief.
-                surface = landmassGenerator!.Generate(topology, configuration, attempt, plates);
-                last = LandmassAnalysis.Analyze(topology, surface);
-                if (!LandmassProfileValidator.MeetsProfile(configuration.Type, last))
-                    continue;
-                elevation = _relief.Generate(
-                    topology, surface, plates, configuration.Type, configuration.Seed, attempt);
-            }
-
-            if (configuration.Type == LandmassType.Pangaea)
-            {
-                last = LandmassAnalysis.Analyze(topology, surface);
-                if (!LandmassProfileValidator.MeetsProfile(configuration.Type, last))
-                    continue;
-            }
+            // Existing non-Pangaea distribution, profile validation and relief order.
+            byte[] surface = landmassGenerator!.Generate(topology, configuration, attempt, plates);
+            last = LandmassAnalysis.Analyze(topology, surface);
+            if (!LandmassProfileValidator.MeetsProfile(configuration.Type, last)) continue;
+            byte[] elevation = _relief.Generate(
+                topology, surface, plates, configuration.Type, configuration.Seed, attempt);
 
             var terrain = new LandmassState(configuration, surface, attempt)
             {
@@ -95,15 +84,8 @@ public sealed class WorldGenerationService
                 TectonicMotion = tectonicMotion,
                 ElevationByCellId = elevation
             };
-            if (configuration.Type == LandmassType.Pangaea)
-                terrain = _mountainRanges.Apply(topology, terrain,
-                    diagnostics => elevationDiagnostics = diagnostics,
-                    elevationSources?.PreviousBaseByCellId ?? default,
-                    elevationSources?.PriorCalibrationBaseByCellId ?? default, captureMountainAudit);
-            if (elevationDiagnostics is not null) elevationDiagnostics.Sources = elevationSources;
             return new GeneratedWorld(grid, terrain, last
-                ?? throw new InvalidOperationException("Landmass statistics were not calculated."))
-                { PangaeaElevations = elevationDiagnostics };
+                ?? throw new InvalidOperationException("Landmass statistics were not calculated."));
         }
 
         throw new InvalidOperationException(
@@ -131,7 +113,7 @@ public sealed class WorldGenerationService
             new LandmassStatistics(0, topology.Count, [], 0));
     }
 
-    private static void Validate(LandmassConfiguration configuration)
+    internal static void Validate(LandmassConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         if (configuration != LandmassProfiles.Create(
