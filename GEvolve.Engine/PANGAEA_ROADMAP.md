@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-07:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3–7.4 planificados; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
+> **Estado al 2026-11-07:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 pendiente de revisión del usuario; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
 
 ## Objetivo
 
@@ -204,7 +204,7 @@ La solicitud del 2026-11-07 reorganiza el próximo paso: primero observar el mis
 | **P03-A.7.2.1 — Ajustes de interfaz** | Cuadrícula automática, placas/H04 agrupados, cinco botones, semilla aleatoria copiable, alturas y blanco >90 solo en superficie del laboratorio | **Implementado y validado técnicamente; pendiente de aprobación visual** |
 | **P03-A.7.2.3 — Etiquetas legibles** | Medición de glifos, ajuste y centrado dentro del hexágono, sin números espaciados a distancia | **Implementado y validado técnicamente; pendiente de aprobación visual** |
 | P03-A.7.3 — Comparación y diagnósticos | ANTES/DESPUÉS, diferencias, hashes y estadísticas enriquecidas visibles | Planificado; no implementado |
-| P03-A.7.4 — Auditoría integral | Topología, superficie/costas, 16 placas/H04, BASE, sistemas, FINAL, persistencia, rendimiento, determinismo, capas y representación | Planificado; no ejecutado |
+| P03-A.7.4 — Auditoría técnica | Alcance autorizado actual: fuentes/morfología BASE y relación H04/sistemas/FINAL; revisión integral posterior conserva su gate | Auditoría BASE implementada; pendiente de revisión del usuario, sin correcciones ni aprobación integral |
 
 Commit solicitado: `refactor(worldgen): introduce staged Pangaea generation session`, SHA `46483ca299175c80ea2be0890bda8455f93305f7`. [Auditoría inicial y API](PANGAEA_STAGED_GENERATION.md), [informe](../GEvolve.Tests/ValidationReports/P03-A71_20261107_204048086Z_e7e415c6/REPORT.md), [resumen](../GEvolve.Tests/ValidationReports/P03-A71_20261107_204048086Z_e7e415c6/SUMMARY.md) y [hashes e invalidaciones completos](../GEvolve.Tests/ValidationReports/P03-A71_20261107_204048086Z_e7e415c6/pangaea-staged.log).
 
@@ -295,3 +295,13 @@ La validación técnica cubre cuatro tamaños, elegibilidad JSON, determinismo, 
 Evidencia P09.1: [informe técnico y distribución por mundo](../GEvolve.Tests/ValidationReports/P09-1_20261108_032515779Z_96457619/REPORT.md), [comandos, SHA y resultados](../GEvolve.Tests/ValidationReports/P09-1_20261108_032515779Z_96457619/SUMMARY.md). Código de integración: `fa3bf8b0a591ae8e4ed1fd201135d4cf6c9ebc5a`. El informe conserva los prechecks y mide el sesgo seco y los fallbacks climáticos sin modificar el clasificador. Pendiente de calibración y aprobación visual.
 
 Validación del commit de integración: build (0 errores/advertencias), ecología (16 mundos), laboratorio (cuatro tamaños) y equivalencia geológica (28 Pangea + 12 controles) PASS. Suite general: 17 PASS / 2 FAIL históricos (TectonicMotion 4 y ContinentalGeology 12 discrepancias de elevación), con los mismos hashes del informe anterior; baselines intactos. Aridez terrestre 89.49–96.01%, cero celdas sin clasificación y cero océanos incorrectos en la muestra. No se recalibra. Resultados completos en el informe P09.1 enlazado.
+
+## P03-A.7.4 — Auditoría técnica de BASE
+
+Alcance actual implementado en `d1d4571d262a17ea4b1da0643c4bad0f254448c6`, `test(worldgen): audit Pangaea base elevation sources and morphology`: traza opcional A–H en la sesión oficial, ocho mundos (−1387338765 y −132790047 × cuatro tamaños), relación con H04, transformaciones, máximos, crestas/compactación/cierres numéricos y comparación BASE/FINAL. [Informe técnico](../GEvolve.Tests/ValidationReports/P03-A74_20261108_222619723Z_ca4e68da/REPORT.md).
+
+La presión heredada usa velocidades distintas de H04; BASE antecede la selección de sistemas. ShapeUpperRelief y RecoverRegionalShoulders conservan su código y resultados. La recuperación no altera las alturas ≥85 de la etapa anterior; FINAL no crea >94, de modo que ≥95 procede de BASE. Los posibles anillos son heurísticas topológicas con contraste, no aprobación visual ni una atribución causal por cercanía. Fuente/costas, geometría, clima/biomas, catálogos, baselines y laboratorio permanecen intactos.
+
+**Pendiente de revisión y decisión del usuario antes de modificar BASE.** No se implementan recomendaciones, no se aprueba P03-A ni se inicia P03-B. El alcance BASE no equivale a aprobar la auditoría integral de todas las capas o la representación. Rendimiento y resultados completos se documentan en el informe, con sus límites de medición; no se certifican por inspección estática.
+
+Validación canónica: build 0 errores/advertencias, auditoría ocho mundos y equivalencia 28+12 PASS. General 17 PASS/2 FAIL históricos (4+12 discrepancias), mismos 32 registros de escenario/hash que P09.1; baselines intactos. Rendimiento normal contrastado con binarios previos/actuales en orden intercalado, sin regresión sistemática observable; límites y asignaciones en el informe. Pendiente de revisión del usuario, sin correcciones.
