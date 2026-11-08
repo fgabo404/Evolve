@@ -1,0 +1,28 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A8_20261108_230933671Z_4194a94a
+Started UTC: 2026-11-08T23:09:33.9020993Z
+Status: FAIL
+Native exit code: 1
+Duration seconds: 7.805
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 86 ms).
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 88 ms).
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 89 ms).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 281 ms).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 281 ms).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A8_20261108_230933671Z_4194a94a\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A8_20261108_230933671Z_4194a94a\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A8_20261108_230933671Z_4194a94a\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A8_20261108_230933671Z_4194a94a\bin\GEvolve.Game\debug\GEvolve.Game.dll
+<REPO>\GEvolve.Tests\PangaeaBaseVariantTests.cs(133,56): error CS0246: The type or namespace name 'GeneratedWorld' could not be found (are you missing a using directive or an assembly reference?) [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+
+Build FAILED.
+
+<REPO>\GEvolve.Tests\PangaeaBaseVariantTests.cs(133,56): error CS0246: The type or namespace name 'GeneratedWorld' could not be found (are you missing a using directive or an assembly reference?) [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:07.43
+
+=== STDERR (complete) ===

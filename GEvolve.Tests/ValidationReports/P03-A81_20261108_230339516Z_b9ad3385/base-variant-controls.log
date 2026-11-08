@@ -1,0 +1,10 @@
+Command: dotnet run --project GEvolve.Tests --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A81_20261108_230339516Z_b9ad3385 -- --pangaea-base-variants-controls
+Started UTC: 2026-11-08T23:03:58.2362564Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 11.860
+
+=== STDOUT (complete) ===
+BASE_VARIANT_CONTROLS_PASS: V0 byte-exact F/G/H; immutable shared inputs; one-factor parent chain; fixed amplitude; monotone C1 summit treatment; ocean/land validity; eight laboratory actions; no official mutation or adoption
+
+=== STDERR (complete) ===

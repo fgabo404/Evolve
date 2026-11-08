@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-07:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 pendiente de revisión del usuario; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
+> **Estado al 2026-11-08:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 publicada; experimentación P03-A.8.1/.8.2 implementada con selección/aprobación visual pendientes; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
 
 ## Objetivo
 
@@ -305,3 +305,15 @@ La presión heredada usa velocidades distintas de H04; BASE antecede la selecci�
 **Pendiente de revisión y decisión del usuario antes de modificar BASE.** No se implementan recomendaciones, no se aprueba P03-A ni se inicia P03-B. El alcance BASE no equivale a aprobar la auditoría integral de todas las capas o la representación. Rendimiento y resultados completos se documentan en el informe, con sus límites de medición; no se certifican por inspección estática.
 
 Validación canónica: build 0 errores/advertencias, auditoría ocho mundos y equivalencia 28+12 PASS. General 17 PASS/2 FAIL históricos (4+12 discrepancias), mismos 32 registros de escenario/hash que P09.1; baselines intactos. Rendimiento normal contrastado con binarios previos/actuales en orden intercalado, sin regresión sistemática observable; límites y asignaciones en el informe. Pendiente de revisión del usuario, sin correcciones.
+
+## P03-A.8.1 y P03-A.8.2 — Experimentación regional aislada
+
+**Experimentación implementada, variante definitiva pendiente de selección y aprobación visual.** Infraestructura y comparación exclusivamente en Tests: V0 oficial exacta, V1 sin presión heredada, puente V1T sin tratamiento superior, V2 con escala fija de amplitud teórica y V3 con compresión suave C1. Se reutilizan superficie/campos instrumentados y transformaciones originales; no se añade otro generador oficial, controles Game ni datos persistibles experimentales. Cero cambios de código productivo en Engine/Game/State/Definitions, ruido, placas/H04, sistemas, FINAL, clima/biomas o baselines.
+
+Fuentes: `393da16d604d7e8e12b4f3d1bb45d10c2eca4bfb` y `ef53b0b343e3ac158d5cc31569c8711b07db15af`, con corrección de import de Tests `8cd7a0604691e0f70fe59fc79e60c501716d5647`. [Informe comparativo](../GEvolve.Tests/ValidationReports/P03-A8_20261108_231013846Z_120f9b55/REPORT.md): 12 configuraciones ×5 variantes, 464 máscaras fijas/relativas y protección oficial. V0 coincide con hashes/morfología histórica de P03-A.7.4; generación normal/manual, clima/biomas, reentrada y guardado/carga oficiales se conservan.
+
+V1 es el control más prometedor para continuar investigando la retirada de presión: reduce pendiente media en 12/12 y saltos terrestres ≥20 de 5969 a 7 (suma de mundos), pero sigue forzando 100 y empeora cinco costas. V2/V3 reducen cumbres pero elevan demasiado tierras bajas/costas en la escala ensayada. Ninguna variante se recomienda para adopción completa por ahora, y no se elige por producir menos celdas altas. Hallazgos y límites están clasificados en el informe.
+
+No se aprueba P03-A, no se sustituye el método oficial ni se inicia P03-A.8.3 o posteriores. Una nueva decisión del usuario es necesaria antes de continuar o exponer variantes a evaluación visual en Evolve. Esta entrega solo ofrece comparación numérica; no guarda ni renderiza mapas experimentales.
+
+Validación final P03-A.8: build 0 errores/advertencias; controles y 60 comparaciones PASS; equivalencia/sesiones 28+12 y laboratorio cuatro tamaños PASS. General 17 PASS/2 FAIL históricos con los mismos 32 registros de hashes de P03-A.7.4; referencias intactas. El fallo inicial de import de Tests se conserva por separado. Ninguna variante adoptada; selección y aprobación visual pendientes.
