@@ -1,0 +1,26 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A721-sidebar_20261108_013348836Z_784fadcd
+Started UTC: 2026-11-08T01:33:49.0713524Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 8.051
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 163 ms).
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 165 ms).
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 166 ms).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 1.69 sec).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 1.69 sec).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A721-sidebar_20261108_013348836Z_784fadcd\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A721-sidebar_20261108_013348836Z_784fadcd\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A721-sidebar_20261108_013348836Z_784fadcd\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A721-sidebar_20261108_013348836Z_784fadcd\bin\GEvolve.Game\debug\GEvolve.Game.dll
+  GEvolve.Tests -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A721-sidebar_20261108_013348836Z_784fadcd\bin\GEvolve.Tests\debug\GEvolve.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.71
+
+=== STDERR (complete) ===

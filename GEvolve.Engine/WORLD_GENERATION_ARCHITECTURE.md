@@ -11,7 +11,10 @@ La calibración detallada en [PANGAEA_ROADMAP.md](PANGAEA_ROADMAP.md) modifica e
 
 **Ajuste P03-A.7.2.1:** Game inicia cuadrícula y agrupa la acción de placas→H04 usando las siete operaciones oficiales existentes; no cambia Engine. El laboratorio incorpora aleatoriedad de sesión independiente del RNG geográfico y anotaciones numéricas de campos vigentes. Únicamente su vista SUPERFICIE aplica blanco a tierra >90, con prioridad FINAL→BASE; no se modifica la paleta global, el estado persistible ni el valor de altura. La aprobación visual corresponde exclusivamente al usuario. Véase la [guía](../GEvolve.Game/PANGAEA_LABORATORY.md).
 
+**Rediseño lateral posterior:** Game impone un flujo manual secuencial de cinco acciones sobre el DAG original de Engine. El tipo fijo Pangea, configuración, vistas, etapas e inspección se alojan en una columna; la cámara/renderer reciben el origen real del mapa a su derecha. Las alturas se anotan siempre cuando existen, con densidad según zoom. Cambiar configuración limpia datos y selección; el dado reinicia sin confirmación. Ninguna regla de precedencia de la UI altera las dependencias o los cálculos del generador. La validación técnica no certifica apariencia ni ejecuta el juego.
+
 ## Decisión de limpieza H05 — 5 de noviembre de 2026
+
 
 **H05 experimental retirado del árbol operativo.** Se preservan en el historial Git los hitos H05-A1/A2, B1/B2/B3, la comparación regional A/B y la formación multiescala C1. La referencia de respaldo `backup/worldgenerator-pre-h05-cleanup-20261105` conserva el estado inmediatamente anterior a esta limpieza, sin reescribir historial.
 

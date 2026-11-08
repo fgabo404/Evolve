@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-07:** P03-A.7.1 implementado con equivalencia original/automática/manual. P03-A.7.2.1 simplifica la interfaz manual: cuadrícula automática, cinco acciones, semillas aleatorias y alturas numéricas; pendiente de aprobación visual del usuario. P03-A.7.3–7.4 planificados. P03-A.6 sigue pendiente de validación visual y aprobación del usuario. P03-A no aprobado; baselines históricos de elevación intactos.
+> **Estado al 2026-11-07:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones secuenciales en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Motor P03-A.7.1 y resultados conservados. Pendiente de aprobación visual del usuario. P03-A.7.3–7.4 planificados; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
 
 ## Objetivo
 
@@ -234,6 +234,16 @@ ALEATORIA con dado crea un entero con signo de 32 bits usando aleatoriedad cript
 Solo validación automatizada de código; Codex no abre Game, no ejecuta pruebas visuales ni certifica apariencia o geografía. P03-A.7.2.1 queda pendiente de aprobación visual del usuario. P03-A.7.3 no comienza.
 
 Evidencia: laboratorio PASS en cuatro tamaños; equivalencia PASS en 28 Pangea + 12 controles; general **16 PASS / 2 FAIL históricos**, con los mismos 16 registros de elevación que P03-A.7.2. La compilación inicial pasó con CS8602 en una prueba; se corrigió mediante guarda explícita en `5bfbfc96bcb896615679d78dabe091f60d308164`. La [comprobación posterior](../GEvolve.Tests/ValidationReports/P03-A721-nullable_20261107_224554334Z_1be5ccd6/SUMMARY.md) pasa build sin advertencias/errores y laboratorio. No se modifican baselines ni se presenta la general como aprobada.
+
+#### Rediseño lateral y flujo secuencial — seguimiento de P03-A.7.2.1
+
+La solicitud posterior sustituye las reglas de interacción anteriores: controles en columna izquierda fija; título, tipo mapa, tamaño, semilla, vista, generación manual, información de celda y salida en ese orden. Tipo Pangea explícitamente único. Mapa con viewport propio a la derecha, sin controles superpuestos. Inspector y salida fijos abajo; controles/detalles desplazables en ventanas bajas. Las cinco acciones visibles requieren todos los pasos previos en el controlador; Engine conserva sus siete etapas y DAG independiente.
+
+El dado borra automáticamente sesión, capas, selección y trabajo en curso, y prepara únicamente la nueva cuadrícula, sin confirmación. Cambiar tamaño también reinicia; editar semilla limpia inmediatamente y espera iniciar con un texto válido. Las alturas son permanentes en el mapa: todas a escala ≥13 y espaciadas al alejarse, siempre valores reales; BASE/APORTE/FINAL según vista y FINAL→BASE en otras. Se conserva blanco de superficie solo en tierra >90 y los guardados/paletas globales.
+
+Implementación: `86a7effcf8d0425b4c669b588590cdb4a93397a3`, `feat(game): reorganize Pangaea laboratory sidebar and sequential flow`. Validación aislada preparada en `51ca6458b7445334df4961ce7903640959ca3490` (opción de artefactos por ejecución y prueba de anclaje periódico E/O). [Guía](../GEvolve.Game/PANGAEA_LABORATORY.md), [informe](../GEvolve.Tests/ValidationReports/P03-A721-sidebar_20261108_013348836Z_784fadcd/REPORT.md), [resumen](../GEvolve.Tests/ValidationReports/P03-A721-sidebar_20261108_013348836Z_784fadcd/SUMMARY.md). La compilación normal inicial encontró DLLs bloqueadas por el juego abierto: se conserva [su fallo](../GEvolve.Tests/ValidationReports/P03-A721-sidebar_20261108_013206845Z_e1030014/SUMMARY.md); Codex no cierra ni inspecciona esa instancia. La validación usa `--artifacts-path` bajo bin ignorado. No se cambian algoritmos ni baselines; aprobación visual pendiente, P03-A.7.3 no iniciado.
+
+Resultado técnico: build PASS sin advertencias/errores; laboratorio cuatro tamaños PASS; equivalencia 28 Pangea + 12 controles PASS; general **16 PASS / 2 FAIL históricos**, con exactamente los mismos 16 registros de elevación del informe anterior. Se conserva el fallo de copia inicial y la ejecución aislada completa. Implementado y validado técnicamente, pendiente de aprobación visual exclusiva del usuario.
 
 ## Arquitectura protegida y dependencias
 

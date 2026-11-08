@@ -1,0 +1,7 @@
+Command: dotnet run --project GEvolve.Tests -- --all-suites
+Started UTC: 2026-11-08T01:32:27.7843761Z
+Status: SKIPPED
+Native exit code: N/A
+Duration seconds: 0.000
+
+SKIPPED: dotnet build failed; dependent validation was not started.
