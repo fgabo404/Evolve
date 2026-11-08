@@ -48,9 +48,9 @@ public sealed class PangaeaMapData
         MapViewMode.ElevationBase when Snapshot.Base is { } initial => initial[id],
         MapViewMode.ElevationContribution when Snapshot.Elevations is { } fields => fields.ContributionByCellId.Span[id],
         MapViewMode.ElevationFinal when Snapshot.Elevations is { } fields => fields.FinalByCellId.Span[id],
-        MapViewMode.Surface when Snapshot.Surface is not null => Snapshot.Elevations is { } fields
+        MapViewMode.ElevationBase or MapViewMode.ElevationContribution or MapViewMode.ElevationFinal => null,
+        _ => Snapshot.Elevations is { } fields
             ? fields.FinalByCellId.Span[id] : Snapshot.Base is { } initial ? initial[id] : null,
-        _ => null
     };
     public IReadOnlyList<string> Inspect(int id)
     {

@@ -6,17 +6,22 @@ public readonly record struct PangaeaHeightLabel(int CellId, int Column, int Row
 public static class PangaeaHeightLabels
 {
     public const float MinimumScale = 13;
-    public const int MaximumLabels = 1000;
+    public const int MaximumSimplifiedLabels = 600;
     public static IReadOnlyList<PangaeaHeightLabel> Build(PangaeaMapData data, MapViewMode view,
-        VisibleHexRange visible, float scale, bool enabled)
+        VisibleHexRange visible, float scale)
     {
-        if (!enabled || scale < MinimumScale || !float.IsFinite(scale) || visible.Count > MaximumLabels)
-            return [];
+        if (scale <= 0 || !float.IsFinite(scale)) return [];
+        int stride = scale >= MinimumScale ? 1 : Math.Max(1, (int)Math.Ceiling(MinimumScale / scale));
+        while (scale < MinimumScale &&
+            Math.Ceiling(Math.Max(0, visible.LastColumn - visible.FirstColumn + 1) / (double)stride) *
+            Math.Ceiling(Math.Max(0, visible.LastRow - visible.FirstRow + 1) / (double)stride) > MaximumSimplifiedLabels) stride++;
         var grid = data.Snapshot.Grid!;
         int columns = grid.Definition.Columns;
         var labels = new List<PangaeaHeightLabel>();
-        for (int row = Math.Max(0, visible.FirstRow); row <= Math.Min(grid.Definition.Rows - 1, visible.LastRow); row++)
-        for (int column = visible.FirstColumn; column <= visible.LastColumn; column++)
+        int firstRow = (int)Math.Ceiling(Math.Max(0, visible.FirstRow) / (double)stride) * stride;
+        int firstColumn = (int)Math.Ceiling(visible.FirstColumn / (double)stride) * stride;
+        for (int row = firstRow; row <= Math.Min(grid.Definition.Rows - 1, visible.LastRow); row += stride)
+        for (int column = firstColumn; column <= visible.LastColumn; column += stride)
         {
             int id = row * columns + ((column % columns) + columns) % columns;
             if (data.Height(id, view) is { } height) labels.Add(new(id, column, row, height));

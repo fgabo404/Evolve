@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using GEvolve.Engine.World;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
@@ -10,34 +10,39 @@ internal sealed partial class EvolveWindow
 {
     private PangaeaLaboratory? _laboratory;
     private PangaeaMapData? _laboratoryData;
-    private long _laboratoryConfiguration, _laboratoryGrid;
+    private long _laboratorySession, _laboratoryGrid;
+    private float _laboratoryScroll;
+    private int _inspectorScroll, _inspectorLines, _inspectorVisibleLines;
+    private int? _inspectorCell;
 
     private IEnumerable<UiButton> LaboratoryControls()
     {
-        foreach (var button in PangaeaLaboratoryLayout.Buttons(ClientSize.X, ClientSize.Y, _laboratory?.ConfirmRestart == true))
-            yield return button;
-        if (_openDropdown is UiAction.SizeSelect or UiAction.LabView)
-            foreach (var button in PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, _openDropdown.Value, _laboratory?.Map))
+        foreach (var button in PangaeaLaboratoryLayout.HitButtons(ClientSize.X, ClientSize.Y, _laboratoryScroll)) yield return button;
+        if (_openDropdown is UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView)
+            foreach (var button in PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, _openDropdown.Value, _laboratory?.Map, _laboratoryScroll))
                 yield return button;
     }
     private bool LaboratoryMapContains(Vector2 point) => _laboratory?.Map is not null && _openDropdown is null &&
-        point.X > PangaeaLaboratoryLayout.PanelWidth(ClientSize.X) && point.Y > 200 &&
-        !PangaeaLaboratoryLayout.Inspector(ClientSize.X, ClientSize.Y).Contains(point.X, point.Y);
-
+        PangaeaLaboratoryLayout.Map(ClientSize.X, ClientSize.Y).Contains(point.X, point.Y);
+    private void FitLaboratoryCamera()
+    {
+        if (_laboratory?.Map?.Snapshot.Grid is not { } grid) return;
+        var viewport = PangaeaLaboratoryLayout.Map(ClientSize.X, ClientSize.Y);
+        _camera.FitViewport(grid.Definition.Columns, grid.Definition.Rows, (int)viewport.X, (int)viewport.Y, (int)viewport.Width, (int)viewport.Height);
+    }
     private void RefreshLaboratoryRenderer()
     {
         var data = _laboratory?.Map;
         if (ReferenceEquals(data, _laboratoryData)) return;
         _laboratoryData = data;
         if (data is null) { _gridRenderer?.Dispose(); _gridRenderer = null; _dirty = true; return; }
-        var snapshot = data.Snapshot;
-        long gridRevision = snapshot.Stages.Single(s => s.Stage == PangaeaGenerationStage.Grid).Revision;
-        if (_gridRenderer is null || _laboratoryConfiguration != snapshot.ConfigurationRevision || _laboratoryGrid != gridRevision)
+        long gridRevision = data.Snapshot.Stages.Single(s => s.Stage == PangaeaGenerationStage.Grid).Revision;
+        if (_gridRenderer is null || _laboratorySession != _laboratory!.SessionRevision || _laboratoryGrid != gridRevision)
         {
             _gridRenderer?.Dispose(); _gridRenderer = new HexGridRenderer(data);
-            _laboratoryConfiguration = snapshot.ConfigurationRevision; _laboratoryGrid = gridRevision;
-            var grid = snapshot.Grid!;
-            _camera.Fit(grid.Definition.Columns, grid.Definition.Rows, ClientSize.X, ClientSize.Y);
+            _laboratorySession = _laboratory!.SessionRevision; _laboratoryGrid = gridRevision;
+            _inspectorScroll = 0; _inspectorCell = null;
+            FitLaboratoryCamera();
         }
         else _gridRenderer.UpdateLaboratory(data);
         _dirty = true;
@@ -61,126 +66,167 @@ internal sealed partial class EvolveWindow
         else switch (action)
         {
             case UiAction.Back: ReturnToMenu(); break;
-            case UiAction.SizeSelect or UiAction.LabView: _openDropdown = _openDropdown == action ? null : action; break;
+            case UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView:
+                _openDropdown = _openDropdown == action ? null : action; break;
+            case UiAction.Pangaea: _openDropdown = null; break; // Explicitly the only supported laboratory type.
             case UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous:
-                lab.ChooseSize(ScreenLayout.SizeFor(action)); _openDropdown = null; break;
+                lab.ChooseSize(ScreenLayout.SizeFor(action)); ResetLaboratoryNavigation(); break;
             case UiAction.SeedField: _seedFocused = true; break;
-            case UiAction.RandomSeed: lab.RandomizeSeed(); break;
-            case UiAction.LabShowHeights: lab.ToggleHeights(); break;
-            case UiAction.LabRestart: lab.RequestRestart(); break;
-            case UiAction.LabConfirm: lab.ConfirmReset(); break;
-            case UiAction.LabKeep: lab.CancelReset(); break;
+            case UiAction.RandomSeed: lab.RandomizeSeed(); ResetLaboratoryNavigation(); break;
+            case UiAction.LabRestart: lab.RequestRestart(); _inspectorScroll = 0; break;
             case UiAction.LabCancel: lab.Cancel(); break;
         }
         if (action != UiAction.SeedField) _seedFocused = false;
         _dirty = true;
     }
-
+    private void ResetLaboratoryNavigation()
+    {
+        _laboratoryScroll = 0; _inspectorScroll = 0; _inspectorCell = null; _openDropdown = null;
+    }
+    private IReadOnlyList<string> LaboratoryStatus()
+    {
+        var lab = _laboratory!;
+        string text = lab.Error ?? lab.Notice ?? "INICIA LA GENERACIÓN MANUAL.";
+        var hovered = Hit(MousePosition.X, MousePosition.Y);
+        if (hovered is { } action && PangaeaLaboratoryLayout.IsStageAction(action) && !LaboratoryEnabled(action))
+            text = lab.UnavailableReason(PangaeaLaboratoryLayout.Stage(action));
+        return PangaeaLaboratoryLayout.Wrap([text], PangaeaLaboratoryLayout.PanelWidth(ClientSize.X) - 24, 1.1f);
+    }
+    private void LaboratoryWheel(float amount, Vector2 pointer)
+    {
+        if (_openDropdown is not null) return;
+        var info = PangaeaLaboratoryLayout.Inspector(ClientSize.X, ClientSize.Y);
+        if (info.Contains(pointer.X, pointer.Y))
+            _inspectorScroll = Math.Clamp(_inspectorScroll - (int)(amount * 3), 0, Math.Max(0, _inspectorLines - _inspectorVisibleLines));
+        else if (PangaeaLaboratoryLayout.ControlsViewport(ClientSize.X, ClientSize.Y).Contains(pointer.X, pointer.Y))
+            _laboratoryScroll = Math.Clamp(_laboratoryScroll - amount * 36, 0,
+                PangaeaLaboratoryLayout.MaximumScroll(ClientSize.X, ClientSize.Y, LaboratoryStatus().Count));
+        else if (LaboratoryMapContains(pointer)) _camera.Zoom(amount, pointer);
+        _dirty = true;
+    }
+    private void LaboratoryClip(UiRect rect)
+    {
+        GL.Enable(EnableCap.ScissorTest);
+        int left = (int)(rect.X * FramebufferSize.X / ClientSize.X);
+        int right = (int)((rect.X + rect.Width) * FramebufferSize.X / ClientSize.X);
+        int bottom = (int)((ClientSize.Y - rect.Y - rect.Height) * FramebufferSize.Y / ClientSize.Y);
+        int top = (int)((ClientSize.Y - rect.Y) * FramebufferSize.Y / ClientSize.Y);
+        GL.Scissor(left, bottom, Math.Max(0, right - left), Math.Max(0, top - bottom));
+    }
+    private void FlushLaboratoryClip(UiRect rect)
+    {
+        LaboratoryClip(rect); _ui!.Flush(ClientSize.X, ClientSize.Y); _ui.Clear(); GL.Disable(EnableCap.ScissorTest);
+    }
     private void RenderLaboratory()
     {
         if (_ui is null || _laboratory is not { } lab) return;
-        float panel = PangaeaLaboratoryLayout.PanelWidth(ClientSize.X);
-        if (lab.Map is not null && _gridRenderer is not null)
+        int width = ClientSize.X, height = ClientSize.Y;
+        var mapRect = PangaeaLaboratoryLayout.Map(width, height);
+        if (lab.Map is { } map && _gridRenderer is not null)
         {
-            GL.Enable(EnableCap.ScissorTest);
-            GL.Scissor((int)(panel * FramebufferSize.X / ClientSize.X), 0,
-                (int)((ClientSize.X - panel) * FramebufferSize.X / ClientSize.X),
-                Math.Max(0, (int)((ClientSize.Y - MapCamera2D.TopBarHeight) * FramebufferSize.Y / ClientSize.Y)));
-            _gridRenderer.Draw(_camera, ClientSize.X, ClientSize.Y, lab.View);
+            LaboratoryClip(mapRect);
+            _gridRenderer.Draw(_camera, width, height, lab.View);
             GL.Disable(EnableCap.ScissorTest);
             if (lab.View is MapViewMode.Tectonic or MapViewMode.Motion) _gridRenderer.DrawPlateBoundaries(_ui, _camera);
             if (lab.View == MapViewMode.Motion) _gridRenderer.DrawPlateMotions(_ui, _camera);
             if (lab.View == MapViewMode.Geology) _gridRenderer.DrawPangaeaMountainRanges(_ui, _camera);
-            foreach (var label in PangaeaHeightLabels.Build(lab.Map, lab.View, _camera.VisibleRange(), _camera.Scale, lab.ShowHeights))
-            {
-                var position = _camera.WorldToScreen(GEvolve.Engine.Grid.FlatHexGeometry.Center(new(label.Column, label.Row)));
-                if (position.X < panel + 12 || position.X > ClientSize.X - 12 || position.Y < 135 ||
-                    position.Y > ClientSize.Y - 12) continue;
-                bool dark = lab.View == MapViewMode.Surface ? lab.Map.Snapshot.Surface![label.CellId] == 1 && label.Height > 90 :
-                    label.Height >= (lab.View == MapViewMode.ElevationContribution ? 13 : 60);
-                _ui.Text(label.Height.ToString(System.Globalization.CultureInfo.InvariantCulture), position.X, position.Y - 5,
-                    1.3f, dark ? new(.08f, .08f, .08f, 1) : White);
-            }
             if (lab.SelectedCell is { } cell)
             {
-                int columns = lab.Map.Snapshot.Grid!.Definition.Columns;
+                int columns = map.Snapshot.Grid!.Definition.Columns;
                 var visible = _camera.VisibleRange();
                 for (int copy = (int)Math.Ceiling((visible.FirstColumn - cell.Address.Column) / (double)columns);
                     cell.Address.Column + copy * columns <= visible.LastColumn; copy++)
                 {
-                    var position = _camera.WorldToScreen(GEvolve.Engine.Grid.FlatHexGeometry.Center(new(cell.Address.Column + copy * columns, cell.Address.Row)));
-                    _ui.Hex(position.X, position.Y, _camera.Scale, new(1, 1, 1, .08f), new(1, .9f, .3f, 1));
+                    var p = _camera.WorldToScreen(GEvolve.Engine.Grid.FlatHexGeometry.Center(new(cell.Address.Column + copy * columns, cell.Address.Row)));
+                    _ui.Hex(p.X, p.Y, _camera.Scale, new(1, 1, 1, .08f), new(1, .9f, .3f, 1));
                 }
             }
+            // An integrated map property: always requested, dense at readable zoom and sparse when far away.
+            foreach (var label in PangaeaHeightLabels.Build(map, lab.View, _camera.VisibleRange(), _camera.Scale))
+            {
+                var p = _camera.WorldToScreen(GEvolve.Engine.Grid.FlatHexGeometry.Center(new(label.Column, label.Row)));
+                if (p.X < mapRect.X + 12 || p.X > mapRect.X + mapRect.Width - 12 || p.Y < 10 || p.Y > height - 10) continue;
+                bool dark = lab.View == MapViewMode.Surface ? map.Snapshot.Surface![label.CellId] == 1 && label.Height > 90 :
+                    label.Height >= (lab.View == MapViewMode.ElevationContribution ? 13 : 60);
+                _ui.Text(label.Height.ToString(System.Globalization.CultureInfo.InvariantCulture), p.X, p.Y - 5, 1.3f,
+                    dark ? new(.08f, .08f, .08f, 1) : White);
+            }
+            FlushLaboratoryClip(mapRect);
         }
-        _ui.Rect(0, 0, ClientSize.X, 58, new(.055f, .10f, .16f, 1));
-        _ui.Rect(0, 58, panel, ClientSize.Y - 58, new(.075f, .13f, .19f, 1));
-        _ui.Text("LABORATORIO DE PANGEA", 12, 21, ClientSize.X < 800 ? 1.7f : 2.2f, White, false);
-        _ui.Text("TIPO: PANGEA", 12, 68, 1.5f, Muted, false);
-        _ui.Text("SEMILLA - CTRL C: COPIAR", 12, 120, 1, Muted, false);
-        foreach (var button in PangaeaLaboratoryLayout.Buttons(ClientSize.X, ClientSize.Y, lab.ConfirmRestart))
+        float panel = PangaeaLaboratoryLayout.PanelWidth(width);
+        _ui.Rect(0, 0, panel, height, new(.055f, .10f, .16f, 1));
+        _ui.Rect(panel - 1, 0, 1, height, new(.24f, .42f, .48f, 1));
+        _ui.Text("GENERACION DE MUNDO LAB", 12, 15, 1.5f, White, false);
+        _ui.Flush(width, height); _ui.Clear();
+        var status = LaboratoryStatus();
+        _laboratoryScroll = Math.Clamp(_laboratoryScroll, 0, PangaeaLaboratoryLayout.MaximumScroll(width, height, status.Count));
+        foreach (var (label, y) in new[] { ("TIPO MAPA", 46), ("TAMAÑO", 92), ("SEMILLA - CTRL C: COPIAR", 138), ("VISTA", 186), ("GENERACIÓN MANUAL", 238) })
+            _ui.Text(label, 12, y - _laboratoryScroll, 1.15f, Muted, false);
+        foreach (var button in PangaeaLaboratoryLayout.Buttons(width, height, _laboratoryScroll).Where(b => b.Action != UiAction.Back)) DrawLaboratoryButton(button);
+        for (int i = 0; i < status.Count; i++)
+            _ui.Text(status[i], 12, PangaeaLaboratoryLayout.StatusTop - _laboratoryScroll + i * 12, 1.1f,
+                lab.Error is null ? Muted : new(1, .62f, .48f, 1), false);
+        FlushLaboratoryClip(PangaeaLaboratoryLayout.ControlsViewport(width, height));
+        DrawLaboratoryInspector();
+        DrawLaboratoryButton(PangaeaLaboratoryLayout.Buttons(width, height).Single(b => b.Action == UiAction.Back));
+        if (_openDropdown is UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView)
+        foreach (var button in PangaeaLaboratoryLayout.Dropdown(width, height, _openDropdown.Value, lab.Map, _laboratoryScroll))
         {
-            var rect = button.Bounds; bool enabled = LaboratoryEnabled(button.Action);
-            _ui.Rect(rect.X, rect.Y, rect.Width, rect.Height, enabled ? new(.12f, .24f, .31f, 1) : new(.12f, .15f, .18f, 1));
-            _ui.Border(rect.X, rect.Y, rect.Width, rect.Height, 1, enabled ? Accent : Muted * .4f);
-            if (PangaeaLaboratoryLayout.IsStageAction(button.Action))
-            {
-                var stage = lab.Stages.FirstOrDefault(s => s.Stage == PangaeaLaboratoryLayout.Stage(button.Action));
-                _ui.Text(button.Text, rect.X + 5, rect.Y + 4, Math.Min(1.25f, (rect.Width - 10) / (button.Text.Length * 6)), enabled ? White : Muted, false);
-                bool grouped = button.Action == UiAction.LabPlates;
-                string state = grouped ? lab.PlatesAndMotionState() : stage is null ? "PENDIENTE" : lab.StageState(stage);
-                var durations = lab.Stages.Where(s => s.Stage == stage?.Stage || grouped && s.Stage == PangaeaGenerationStage.Motion)
-                    .Where(s => s.Duration.HasValue).Select(s => s.Duration!.Value.TotalMilliseconds).ToArray();
-                string duration = durations.Length > 0 ? $"  {durations.Sum():F0} MS" : "";
-                _ui.Text(state + duration, rect.X + 5, rect.Y + rect.Height - 12, 1.1f, Accent, false);
-            }
-            else if (button.Action == UiAction.RandomSeed)
-            {
-                _ui.Border(rect.X + 4, rect.Y + 7, 13, 13, 1, White);
-                foreach (var (x, y) in new[] { (2, 2), (8, 2), (5, 5), (2, 8), (8, 8) })
-                    _ui.Rect(rect.X + 4 + x, rect.Y + 7 + y, 2, 2, White);
-                _ui.Text("ALEATORIA", rect.X + 21, rect.Y + 10, .95f, White, false);
-            }
-            else
-            {
-                string text = button.Action switch
-                {
-                    UiAction.SizeSelect => "TAMAÑO: " + ScreenLayout.SizeLabel(lab.Size),
-                    UiAction.SeedField => lab.SeedText + (_seedFocused ? "-" : ""),
-                    UiAction.LabShowHeights => "MOSTRAR ALTURAS: " + (lab.ShowHeights ? "SÍ" : "NO"),
-                    UiAction.LabView => "VER: " + (lab.Map is null ? "PENDIENTE" : PangaeaMapData.ViewLabel(lab.View)),
-                    _ => button.Text
-                };
-                _ui.Text(text, rect.X + 5, rect.Y + 9, Math.Min(1.4f, (rect.Width - 10) / (text.Length * 6)), enabled ? White : Muted, false);
-            }
-        }
-        var inspector = PangaeaLaboratoryLayout.Inspector(ClientSize.X, ClientSize.Y);
-        _ui.Rect(inspector.X, inspector.Y, inspector.Width, inspector.Height, new(.055f, .10f, .16f, .96f));
-        _ui.Text("INSPECCIÓN DE CELDA", inspector.X + 8, inspector.Y + 8, 1.3f, Accent, false);
-        var lines = lab.Inspect();
-        if (lines.Count == 0) LabText("SELECCIONA UN HEXÁGONO. RUEDA: ZOOM. ARRASTRAR: MOVER.", inspector.X + 8, inspector.Y + 28, inspector.Width - 16, 1.2f);
-        else for (int i = 0; i < lines.Count; i++)
-            _ui.Text(lines[i], inspector.X + 8, inspector.Y + 26 + i * 12, Math.Min(1.2f, (inspector.Width - 16) / (lines[i].Length * 6)), White, false);
-        float statusX = panel + 10;
-        string status = lab.Error ?? lab.Notice ?? "SESIÓN LISTA";
-        LabText(status, statusX, lab.ConfirmRestart ? 190 : 140, ClientSize.X - statusX - 12, 1.2f);
-        var hovered = Hit(MousePosition.X, MousePosition.Y);
-        if (hovered.HasValue && PangaeaLaboratoryLayout.IsStageAction(hovered.Value) && !LaboratoryEnabled(hovered.Value))
-            LabText(lab.UnavailableReason(PangaeaLaboratoryLayout.Stage(hovered.Value)), statusX, 235, ClientSize.X - statusX - 12, 1.2f);
-        // Dropdown entries are last in the UI batch and first in hit testing.
-        if (_openDropdown is UiAction.SizeSelect or UiAction.LabView)
-        foreach (var button in PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, _openDropdown.Value, lab.Map))
-        {
-            var r = button.Bounds;
-            _ui.Rect(r.X, r.Y, r.Width, r.Height, new(.10f, .19f, .26f, 1));
+            var r = button.Bounds; _ui.Rect(r.X, r.Y, r.Width, r.Height, new(.10f, .19f, .26f, 1));
             _ui.Border(r.X, r.Y, r.Width, r.Height, 1, Accent);
-            _ui.Text(button.Text, r.X + 5, r.Y + 8, Math.Min(1.3f, (r.Width - 10) / (button.Text.Length * 6)), White, false);
+            _ui.Text(button.Text, r.X + 6, r.Y + 7, Math.Min(1.2f, (r.Width - 12) / (button.Text.Length * 6)), White, false);
         }
     }
-    private void LabText(string text, float x, float y, float width, float pixel)
+    private void DrawLaboratoryButton(UiButton button)
     {
-        int length = Math.Max(1, (int)(width / (6 * pixel)));
-        for (int start = 0, row = 0; start < text.Length; start += length, row++)
-            _ui!.Text(text.Substring(start, Math.Min(length, text.Length - start)), x, y + row * 12, pixel, White, false);
+        var lab = _laboratory!; var r = button.Bounds; bool enabled = LaboratoryEnabled(button.Action);
+        bool stageButton = PangaeaLaboratoryLayout.IsStageAction(button.Action);
+        var stage = stageButton ? lab.Stages.FirstOrDefault(s => s.Stage == PangaeaLaboratoryLayout.Stage(button.Action)) : null;
+        bool grouped = button.Action == UiAction.LabPlates;
+        string state = grouped ? lab.PlatesAndMotionState() : stage is null ? "BLOQUEADA" : lab.StageState(stage);
+        bool completed = stageButton && state == "COMPLETADA";
+        var edge = completed ? new Vector4(.38f, .70f, .50f, 1) : enabled ? Accent : new(.24f, .32f, .39f, 1);
+        _ui!.Rect(r.X, r.Y, r.Width, r.Height, enabled ? new(.12f, .24f, .31f, 1) : new(.09f, .14f, .19f, 1));
+        _ui.Border(r.X, r.Y, r.Width, r.Height, 1, edge);
+        if (stageButton)
+        {
+            _ui.Text(button.Text, r.X + 6, r.Y + 4, Math.Min(1.25f, (r.Width - 12) / (button.Text.Length * 6)), enabled ? White : Muted, false);
+            var times = lab.Stages.Where(s => s.Stage == stage?.Stage || grouped && s.Stage == PangaeaGenerationStage.Motion)
+                .Where(s => s.Duration.HasValue).Select(s => s.Duration!.Value.TotalMilliseconds).ToArray();
+            _ui.Text(state + (times.Length == 0 ? "" : $"  {times.Sum():F0} MS"), r.X + 6, r.Y + 20, 1.05f, edge, false);
+            return;
+        }
+        if (button.Action == UiAction.RandomSeed)
+        {
+            _ui.Border(r.X + 10, r.Y + 6, 15, 15, 1, White);
+            foreach (var (x, y) in new[] { (2, 2), (10, 2), (6, 6), (2, 10), (10, 10) }) _ui.Rect(r.X + 10 + x, r.Y + 6 + y, 2, 2, White);
+            return;
+        }
+        string text = button.Action switch
+        {
+            UiAction.SizeSelect => ScreenLayout.SizeLabel(lab.Size),
+            UiAction.SeedField => lab.SeedText + (_seedFocused ? "-" : ""),
+            UiAction.LabView => lab.Map is null ? "SIN CAPAS DISPONIBLES" : PangaeaMapData.ViewLabel(lab.View),
+            _ => button.Text
+        };
+        _ui.Text(text, r.X + 6, r.Y + 8, Math.Min(1.4f, (r.Width - 12) / (text.Length * 6)), enabled ? White : Muted, false);
+    }
+    private void DrawLaboratoryInspector()
+    {
+        var lab = _laboratory!; var rect = PangaeaLaboratoryLayout.Inspector(ClientSize.X, ClientSize.Y);
+        if (_inspectorCell != lab.SelectedCell?.Id) { _inspectorCell = lab.SelectedCell?.Id; _inspectorScroll = 0; }
+        _ui!.Rect(rect.X, rect.Y, rect.Width, rect.Height, new(.075f, .14f, .21f, 1));
+        _ui.Text("INFORMACIÓN DE CELDA", rect.X + 7, rect.Y + 8, 1.15f, Accent, false);
+        _ui.Text("RUEDA: MÁS DATOS", rect.X + 7, rect.Y + rect.Height - 11, 1, Muted, false);
+        _ui.Flush(ClientSize.X, ClientSize.Y); _ui.Clear();
+        var original = lab.Inspect();
+        var ordered = original.Take(2).Concat(original.Where(s => s.StartsWith("BASE:") || s.StartsWith("APORTE:") || s.StartsWith("FINAL:")))
+            .Concat(original.Skip(2).Where(s => !s.StartsWith("BASE:") && !s.StartsWith("APORTE:") && !s.StartsWith("FINAL:")));
+        var lines = PangaeaLaboratoryLayout.Wrap(original.Count == 0 ? ["SELECCIONA UN HEXÁGONO DEL MAPA."] : ordered, rect.Width - 14);
+        _inspectorLines = lines.Count; _inspectorVisibleLines = (int)((rect.Height - 40) / 12);
+        _inspectorScroll = Math.Clamp(_inspectorScroll, 0, Math.Max(0, _inspectorLines - _inspectorVisibleLines));
+        for (int i = _inspectorScroll; i < Math.Min(lines.Count, _inspectorScroll + _inspectorVisibleLines); i++)
+            _ui.Text(lines[i], rect.X + 7, rect.Y + 25 + (i - _inspectorScroll) * 12, 1.2f, White, false);
+        FlushLaboratoryClip(new(rect.X, rect.Y + 23, rect.Width, rect.Height - 38));
     }
 }

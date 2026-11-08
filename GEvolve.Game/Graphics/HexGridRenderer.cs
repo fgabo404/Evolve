@@ -23,11 +23,12 @@ public sealed class HexGridRenderer : IDisposable
         uniform vec2 uCamera;
         uniform float uScale;
         uniform float uTop;
+        uniform float uLeft;
         out vec3 vColor;
         out float vHeight;
         out float vSummit;
         void main() {
-            vec2 pixel = (aCenter + aVertex - uCamera) * uScale + vec2(0.0, uTop);
+            vec2 pixel = (aCenter + aVertex - uCamera) * uScale + vec2(uLeft, uTop);
             gl_Position = vec4(2.0 * pixel.x / uViewport.x - 1.0,
                 1.0 - 2.0 * pixel.y / uViewport.y, 0.0, 1.0);
             vColor = aColor;
@@ -155,7 +156,8 @@ public sealed class HexGridRenderer : IDisposable
         GL.Uniform2(_shader.Uniform("uViewport"), (float)width, (float)height);
         GL.Uniform2(_shader.Uniform("uCamera"), camera.X, camera.Y);
         GL.Uniform1(_shader.Uniform("uScale"), camera.Scale);
-        GL.Uniform1(_shader.Uniform("uTop"), (float)MapCamera2D.TopBarHeight);
+        GL.Uniform1(_shader.Uniform("uTop"), (float)camera.ViewportY);
+        GL.Uniform1(_shader.Uniform("uLeft"), (float)camera.ViewportX);
         GL.BindVertexArray(_vao);
         GL.Uniform1(_shader.Uniform("uOutline"), 0);
         GL.DrawArraysInstanced(PrimitiveType.TriangleFan, 0, 8, _instanceCount);
@@ -196,9 +198,9 @@ public sealed class HexGridRenderer : IDisposable
                 Vector2 middle = (center + other) / 2;
                 Vector2 a = camera.WorldToScreen(middle - normal * .5f);
                 Vector2 b = camera.WorldToScreen(middle + normal * .5f);
-                if (MathF.Max(a.X, b.X) < 0 || MathF.Min(a.X, b.X) > camera.ViewWidth ||
-                    MathF.Max(a.Y, b.Y) < MapCamera2D.TopBarHeight ||
-                    MathF.Min(a.Y, b.Y) > camera.ViewHeight + MapCamera2D.TopBarHeight)
+                if (MathF.Max(a.X, b.X) < camera.ViewportX || MathF.Min(a.X, b.X) > camera.ViewportX + camera.ViewWidth ||
+                    MathF.Max(a.Y, b.Y) < camera.ViewportY ||
+                    MathF.Min(a.Y, b.Y) > camera.ViewHeight + camera.ViewportY)
                     continue;
                 ui.Line(a, b, thickness, tint);
             }
@@ -219,7 +221,7 @@ public sealed class HexGridRenderer : IDisposable
             for (int copy = firstCopy; copy <= lastCopy; copy++)
             {
                 var center = camera.WorldToScreen(FlatHexGeometry.Center(new(canonical + copy * columns, row)));
-                if (center.Y < MapCamera2D.TopBarHeight + 20 || center.Y > camera.ViewHeight - 20) continue;
+                if (center.Y < camera.ViewportY + 20 || center.Y > camera.ViewportY + camera.ViewHeight - 20) continue;
                 var unit = plate.UnitVector;
                 Vector2 direction = new((float)unit.X, (float)unit.Y);
                 Vector2 tangent = new(-direction.Y, direction.X);
@@ -254,7 +256,7 @@ public sealed class HexGridRenderer : IDisposable
                 Vector2 tangent = new(-normal.Y, normal.X);
                 Vector2 middle = center + normal * (.8660254f);
                 Vector2 screen = camera.WorldToScreen(middle);
-                if (screen.X < 0 || screen.X > camera.ViewWidth || screen.Y < MapCamera2D.TopBarHeight || screen.Y > camera.ViewHeight) continue;
+                if (screen.X < camera.ViewportX || screen.X > camera.ViewportX + camera.ViewWidth || screen.Y < camera.ViewportY || screen.Y > camera.ViewportY + camera.ViewHeight) continue;
                 ui.Line(camera.WorldToScreen(middle - tangent * .5f), camera.WorldToScreen(middle + tangent * .5f),
                     2, new(1, .65f, .22f, 1));
             }
@@ -266,7 +268,7 @@ public sealed class HexGridRenderer : IDisposable
                 column + copy * columns <= range.LastColumn; copy++)
             {
                 Vector2 point = camera.WorldToScreen(FlatHexGeometry.Center(new(column + copy * columns, row)));
-                if (point.Y < MapCamera2D.TopBarHeight || point.Y > camera.ViewHeight) continue;
+                if (point.Y < camera.ViewportY || point.Y > camera.ViewportY + camera.ViewHeight) continue;
                 Vector2 top = point + new Vector2(0, -5), left = point + new Vector2(-4, 4), right = point + new Vector2(4, 4);
                 foreach (var (width, tint) in new[] { (4f, new Vector4(.08f,.04f,.03f,1)), (1.5f, new Vector4(1,.85f,.32f,1)) })
                 { ui.Line(top, left, width, tint); ui.Line(left, right, width, tint); ui.Line(right, top, width, tint); }
@@ -302,8 +304,8 @@ public sealed class HexGridRenderer : IDisposable
             {
                 var a = camera.WorldToScreen(FlatHexGeometry.Center(new(x + copy * columns, row)));
                 var b = camera.WorldToScreen(FlatHexGeometry.Center(new(nextX + copy * columns, nextRow)));
-                if (Math.Max(a.Y, b.Y) < MapCamera2D.TopBarHeight ||
-                    Math.Min(a.Y, b.Y) > camera.ViewHeight) continue;
+                if (Math.Max(a.Y, b.Y) < camera.ViewportY ||
+                    Math.Min(a.Y, b.Y) > camera.ViewportY + camera.ViewHeight) continue;
                 if (widths is not null)
                     ui.Line(a, b, Math.Max(2, widths[i] * 1.7320508f * camera.Scale), new(.7f, .48f, .22f, .16f));
                 ui.Line(a, b, 2, new(1f, .86f, .38f, 1f));

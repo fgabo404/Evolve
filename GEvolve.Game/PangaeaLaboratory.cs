@@ -20,30 +20,40 @@ public sealed class PangaeaLaboratory : IDisposable
     private bool _motionQueued;
     public GridSize Size { get; private set; } = GridSize.Small;
     public string SeedText { get; private set; } = "2026";
-    public bool ConfirmRestart { get; private set; }
     public string? Error { get; private set; }
     public string? Notice { get; private set; }
     public long PresentationRevision { get; private set; }
+    public long SessionRevision { get; private set; }
     public int SnapshotCopies { get; private set; }
     public bool Busy => _work is not null;
-    public bool ConfigurationPending => _snapshot is not null &&
-        (_snapshot.Configuration.Size != Size || !int.TryParse(SeedText, out int seed) || _snapshot.Configuration.Seed != seed);
     public PangaeaMapData? Map { get; private set; }
     public GridCell? SelectedCell { get; private set; }
     public MapViewMode View { get; private set; } = MapViewMode.Grid;
-    public bool ShowHeights { get; private set; }
     public IReadOnlyList<PangaeaStageInfo> Stages { get; private set; } = [];
 
-    public void ChooseSize(GridSize size) { _ = HexGridDefinitions.Get(size); Size = size; DraftChanged(); }
+    public void ChooseSize(GridSize size)
+    {
+        _ = HexGridDefinitions.Get(size);
+        if (size == Size) return;
+        Size = size; ClearSession();
+        if (int.TryParse(SeedText, out _)) RequestRestart();
+    }
     public void SetSeedText(string text)
     {
         if (text.Length > 11 || text.Any(c => !char.IsAsciiDigit(c) && c != '-') ||
             text.Count(c => c == '-') > 1 || text.IndexOf('-') > 0) return;
-        SeedText = text; DraftChanged();
+        if (SeedText == text) return;
+        SeedText = text; ClearSession();
+        Notice = "SEMILLA CAMBIADA. INICIAR SESIÓN PARA CONTINUAR.";
     }
-    public void RandomizeSeed() => SetSeedText(
-        BitConverter.ToInt32(RandomNumberGenerator.GetBytes(sizeof(int))).ToString(CultureInfo.InvariantCulture));
-    public void ToggleHeights() { ShowHeights = !ShowHeights; PresentationRevision++; }
+    public void RandomizeSeed()
+    {
+        bool hadSeed = int.TryParse(SeedText, out int previous);
+        int seed;
+        do { seed = BitConverter.ToInt32(RandomNumberGenerator.GetBytes(sizeof(int))); } while (hadSeed && seed == previous);
+        SeedText = seed.ToString(CultureInfo.InvariantCulture);
+        ClearSession(); RequestRestart();
+    }
     public void ExecutePlatesAndMotion()
     {
         Execute(PangaeaGenerationStage.Plates);
@@ -53,34 +63,23 @@ public sealed class PangaeaLaboratory : IDisposable
     {
         var stages = Stages.Where(s => s.Stage is PangaeaGenerationStage.Plates or PangaeaGenerationStage.Motion).ToArray();
         if (stages.Length != 2) return "PENDIENTE";
-        if (_motionQueued || stages.Any(s => s.Status == PangaeaStageStatus.Running)) return "GENERANDO";
+        if (_motionQueued || stages.Any(s => s.Status == PangaeaStageStatus.Running)) return "EJECUTÁNDOSE";
         if (stages.Any(s => s.Status == PangaeaStageStatus.Failed)) return "ERROR";
         if (stages.All(s => s.Status == PangaeaStageStatus.Completed)) return "COMPLETADA";
-        if (stages.Any(s => s.Status == PangaeaStageStatus.Invalidated)) return "INVALIDADA";
-        return CanExecute(PangaeaGenerationStage.Plates) ? "DISPONIBLE" : "PENDIENTE";
+        return CanExecute(PangaeaGenerationStage.Plates) ? "PENDIENTE" : "BLOQUEADA";
     }
-    private void DraftChanged()
+    private void ClearSession()
     {
-        ConfirmRestart = false; Error = null;
-        Notice = ConfigurationPending ? "CAMBIOS SIN APLICAR. INICIAR PARA CONFIRMAR." : null;
-        UpdateMap();
+        AbandonWork(); _session = null; _snapshot = null; Stages = [];
+        Map = null; SelectedCell = null; View = MapViewMode.Grid; Error = null;
+        PresentationRevision++;
     }
 
     public void RequestRestart()
     {
         if (!int.TryParse(SeedText, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
         { Error = "LA SEMILLA DEBE SER UN ENTERO DE 32 BITS"; return; }
-        if (_snapshot?.Stages.Any(s => s.Revision > 0) == true || Busy)
-        { ConfirmRestart = true; Notice = "REINICIAR ELIMINA TODAS LAS CAPAS DE ESTA SESIÓN."; return; }
         Restart();
-    }
-    public void ConfirmReset() { if (ConfirmRestart) Restart(); }
-    public void CancelReset()
-    {
-        ConfirmRestart = false; Notice = null;
-        if (_snapshot is { } current)
-        { Size = current.Configuration.Size; SeedText = current.Configuration.Seed.ToString(CultureInfo.InvariantCulture); }
-        UpdateMap();
     }
     private void Restart()
     {
@@ -88,31 +87,32 @@ public sealed class PangaeaLaboratory : IDisposable
         AbandonWork();
         if (_session is null) _session = _service.CreatePangaeaSession(configuration);
         else _session.Reset(configuration);
-        ConfirmRestart = false; Error = null;
+        SessionRevision++; Error = null;
         SelectedCell = null; View = MapViewMode.Grid;
         SnapshotCopies++;
         Publish(_session.GetSnapshot());
         Execute(PangaeaGenerationStage.Grid);
     }
 
-    public bool CanExecute(PangaeaGenerationStage stage) => !ConfigurationPending && !ConfirmRestart &&
-        !Busy && Stages.Any(s => s.Stage == stage && s.CanExecute);
+    private static readonly PangaeaGenerationStage[] OrderedStages = [PangaeaGenerationStage.Grid,
+        PangaeaGenerationStage.Plates, PangaeaGenerationStage.Motion, PangaeaGenerationStage.Surface,
+        PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final];
+    private IEnumerable<PangaeaGenerationStage> MissingPredecessors(PangaeaGenerationStage stage) => OrderedStages
+        .TakeWhile(s => s != stage).Where(s => !Stages.Any(info => info.Stage == s && info.Status == PangaeaStageStatus.Completed));
+    public bool CanExecute(PangaeaGenerationStage stage) => _session is not null && !Busy &&
+        Stages.Any(s => s.Stage == stage && s.CanExecute) && !MissingPredecessors(stage).Any();
     public string StageState(PangaeaStageInfo stage) => stage.Status switch
     {
-        PangaeaStageStatus.Running => "GENERANDO",
+        PangaeaStageStatus.Running => "EJECUTÁNDOSE",
         PangaeaStageStatus.Completed => "COMPLETADA",
-        PangaeaStageStatus.Invalidated => "INVALIDADA",
         PangaeaStageStatus.Failed => "ERROR",
-        _ => stage.CanExecute && !ConfigurationPending && !ConfirmRestart ? "DISPONIBLE" : "PENDIENTE"
+        _ => CanExecute(stage.Stage) ? "PENDIENTE" : "BLOQUEADA"
     };
     public string UnavailableReason(PangaeaGenerationStage stage)
     {
         if (_session is null) return "INICIA UNA SESIÓN";
-        if (ConfigurationPending) return "APLICA O CANCELA LOS CAMBIOS";
-        if (ConfirmRestart) return "CONFIRMA O CANCELA EL REINICIO";
         if (Busy) return "ESPERA LA OPERACIÓN ACTIVA";
-        var missing = PangaeaGenerationSession.Dependencies[stage]
-            .Where(d => Stages.Single(s => s.Stage == d).Status != PangaeaStageStatus.Completed);
+        var missing = MissingPredecessors(stage);
         return "FALTA: " + string.Join(", ", missing.Select(d => d switch
         { PangaeaGenerationStage.Grid => "CUADRÍCULA AUTOMÁTICA", PangaeaGenerationStage.Plates => "PLACAS",
             PangaeaGenerationStage.Motion => "MOVIMIENTO", PangaeaGenerationStage.Surface => "SUPERFICIE",
@@ -196,7 +196,7 @@ public sealed class PangaeaLaboratory : IDisposable
     }
     private void UpdateMap()
     {
-        Map = !ConfigurationPending && _snapshot?.Grid is not null ? new(_snapshot) : null;
+        Map = _snapshot?.Grid is not null ? new(_snapshot) : null;
         if (Map is null) SelectedCell = null;
         if (Map is not null && !Map.AvailableViews.Contains(View)) View = Map.AvailableViews.Last();
         PresentationRevision++;
@@ -235,5 +235,5 @@ public sealed class PangaeaLaboratory : IDisposable
             Mountains = Has(PangaeaGenerationStage.MountainSystems) ? s.Mountains : null,
             Elevations = Has(PangaeaGenerationStage.Final) ? s.Elevations : null };
     }
-    public void Dispose() { AbandonWork(); _session = null; _snapshot = null; Map = null; }
+    public void Dispose() => ClearSession();
 }

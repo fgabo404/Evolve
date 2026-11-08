@@ -78,7 +78,8 @@ internal sealed partial class EvolveWindow : GameWindow
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
-        if ((_session.Screen == GameScreen.PangaeaLaboratory ? _laboratory?.Map?.Snapshot.Grid : _session.Grid) is { } grid)
+        if (_session.Screen == GameScreen.PangaeaLaboratory) FitLaboratoryCamera();
+        else if (_session.Grid is { } grid)
             _camera.Fit(grid.Definition.Columns, grid.Definition.Rows, ClientSize.X, ClientSize.Y);
         _dirty = true;
     }
@@ -751,7 +752,7 @@ internal sealed partial class EvolveWindow : GameWindow
         Vector2 position = new(MousePosition.X, MousePosition.Y);
         _pressed = Hit(position.X, position.Y);
         if (_session.Screen == GameScreen.PangaeaLaboratory && _openDropdown is { } labSelector &&
-            _pressed != labSelector && !PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, labSelector, _laboratory?.Map)
+            _pressed != labSelector && !PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, labSelector, _laboratory?.Map, _laboratoryScroll)
                 .Any(b => b.Action == _pressed))
         {
             _openDropdown = null; _pressed = null; _dirty = true; return;
@@ -799,7 +800,8 @@ internal sealed partial class EvolveWindow : GameWindow
             _dragging = false;
             if (_dragDistance < 4)
             {
-                if (_session.Screen == GameScreen.PangaeaLaboratory) _laboratory?.SelectAt(_camera.ScreenToWorld(position));
+                if (_session.Screen == GameScreen.PangaeaLaboratory)
+                { _laboratory?.SelectAt(_camera.ScreenToWorld(position)); _inspectorScroll = 0; }
                 else _session.SelectAt(_camera.ScreenToWorld(position));
             }
         }
@@ -816,7 +818,7 @@ internal sealed partial class EvolveWindow : GameWindow
         base.OnMouseWheel(e);
         if (_session.Screen == GameScreen.PangaeaLaboratory)
         {
-            if (!LaboratoryMapContains(new(MousePosition.X, MousePosition.Y))) return;
+            LaboratoryWheel(e.OffsetY, new(MousePosition.X, MousePosition.Y)); return;
         }
         else if (_session.Screen != GameScreen.World || MousePosition.Y < MapCamera2D.TopBarHeight) return;
         _camera.Zoom(e.OffsetY, new Vector2(MousePosition.X, MousePosition.Y));
@@ -886,6 +888,7 @@ internal sealed partial class EvolveWindow : GameWindow
             case UiAction.Create: _session.OpenCreateWorld(); break;
             case UiAction.Laboratory:
                 _session.OpenPangaeaLaboratory();
+                ResetLaboratoryNavigation();
                 _laboratory = new PangaeaLaboratory();
                 _laboratory.RequestRestart();
                 break;

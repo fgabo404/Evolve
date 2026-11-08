@@ -19,16 +19,22 @@ public sealed class MapCamera2D
     public float FitScale { get; private set; } = 1;
     public int ViewWidth { get; private set; } = 1;
     public int ViewHeight { get; private set; } = 1;
+    public int ViewportX { get; private set; }
+    public int ViewportY { get; private set; } = TopBarHeight;
     public int Columns { get; private set; }
     public int Rows { get; private set; }
     public int Version { get; private set; }
 
     public void Fit(int columns, int rows, int width, int height)
+        => FitViewport(columns, rows, 0, TopBarHeight, width, height - TopBarHeight);
+
+    public void FitViewport(int columns, int rows, int left, int top, int width, int height)
     {
         Columns = columns;
         Rows = rows;
         ViewWidth = Math.Max(width, 1);
-        ViewHeight = Math.Max(height - TopBarHeight, 1);
+        ViewHeight = Math.Max(height, 1);
+        ViewportX = left; ViewportY = top;
         float period = FlatHexGeometry.PeriodWidth(columns);
         float mapHeight = FlatHexGeometry.MapHeight(rows);
         FitScale = .94f * MathF.Min(ViewWidth / period, ViewHeight / mapHeight);
@@ -40,10 +46,10 @@ public sealed class MapCamera2D
     }
 
     public Vector2 ScreenToWorld(Vector2 screen)
-        => new(X + screen.X / Scale, Y + (screen.Y - TopBarHeight) / Scale);
+        => new(X + (screen.X - ViewportX) / Scale, Y + (screen.Y - ViewportY) / Scale);
 
     public Vector2 WorldToScreen(Vector2 world)
-        => new((world.X - X) * Scale, TopBarHeight + (world.Y - Y) * Scale);
+        => new(ViewportX + (world.X - X) * Scale, ViewportY + (world.Y - Y) * Scale);
 
     public VisibleHexRange VisibleRange()
     {
@@ -73,8 +79,8 @@ public sealed class MapCamera2D
             MathF.Min(FitScale * 40f, 35f));
         if (MathF.Abs(next - Scale) < .00001f) return;
         Scale = next;
-        X = anchor.X - screen.X / Scale;
-        Y = anchor.Y - (screen.Y - TopBarHeight) / Scale;
+        X = anchor.X - (screen.X - ViewportX) / Scale;
+        Y = anchor.Y - (screen.Y - ViewportY) / Scale;
         Normalize();
         Version++;
     }
