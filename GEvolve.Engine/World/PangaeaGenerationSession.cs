@@ -43,7 +43,7 @@ public sealed class PangaeaGenerationSession
     private sealed record Operation(long Id, PangaeaGenerationStage Stage, LandmassConfiguration Configuration,
         Data Inputs, CancellationToken Cancellation);
     private readonly object _gate = new();
-    private readonly bool _recordDiagnostics, _captureAudit;
+    private readonly bool _recordDiagnostics, _captureAudit, _captureBaseFields;
     private readonly PangaeaFromPlatesGenerator _pangaea = new();
     private readonly PangaeaMountainRangeGenerator _mountains = new();
     private LandmassConfiguration _configuration;
@@ -53,12 +53,13 @@ public sealed class PangaeaGenerationSession
     private Dictionary<PangaeaGenerationStage, PangaeaStageInfo> _stages = NewStages();
 
     internal PangaeaGenerationSession(LandmassConfiguration configuration, bool recordDiagnostics = true,
-        bool captureAudit = true)
+        bool captureAudit = true, bool captureBaseFields = false)
     {
         Validate(configuration);
         _configuration = configuration;
         _recordDiagnostics = recordDiagnostics;
         _captureAudit = captureAudit;
+        _captureBaseFields = captureBaseFields;
     }
 
     public void Reset(LandmassConfiguration configuration)
@@ -202,7 +203,7 @@ public sealed class PangaeaGenerationSession
                 LandmassStatistics? last = null;
                 for (int attempt = 0; attempt < 4; attempt++)
                 {
-                    var work = _pangaea.GenerateSurface(data.Topology!, configuration, data.Plates!, attempt);
+                    var work = _pangaea.GenerateSurface(data.Topology!, configuration, data.Plates!, attempt, _captureBaseFields);
                     last = LandmassAnalysis.Analyze(data.Topology!, work.Surface);
                     bool accepted = LandmassProfileValidator.MeetsProfile(configuration.Type, last);
                     attempts.Add(new(attempt, accepted, last, _recordDiagnostics ? Hash(work.Surface) : null));

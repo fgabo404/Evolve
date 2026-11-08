@@ -19,6 +19,10 @@ public sealed class WorldGenerationService
     /// <summary>Temporary staged Pangaea generation; partial data never enters saved worlds.</summary>
     public PangaeaGenerationSession CreatePangaeaSession(LandmassConfiguration configuration) => new(configuration);
 
+    /// <summary>Opt-in detached BASE fields for numerical audits; normal generation never requests them.</summary>
+    public PangaeaGenerationSession CreatePangaeaSession(LandmassConfiguration configuration, bool captureBaseFields)
+        => new(configuration, captureBaseFields: captureBaseFields);
+
     /// <summary>Generates a world using the official profile for the selected size, type and seed.</summary>
     public GeneratedWorld Generate(GridSize size, LandmassType worldType, int seed = 2026)
         => Generate(LandmassProfiles.Create(size, worldType, seed));

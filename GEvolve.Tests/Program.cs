@@ -15,6 +15,8 @@ if (args.Contains("--pangaea-uplift")) { PangaeaUpliftTests.Run(); return 0; }
 if (args.Contains("--pangaea-staged")) { PangaeaStagedGenerationTests.Run(); return 0; }
 if (args.Contains("--pangaea-laboratory")) { PangaeaLaboratoryTests.Run(); return 0; }
 if (args.Contains("--pangaea-ecology")) { PangaeaEcologyTests.Run(); return 0; }
+if (args.Contains("--pangaea-base-reference")) { PangaeaBaseAuditTests.CaptureReference(); return 0; }
+if (args.Contains("--pangaea-base-audit")) { PangaeaBaseAuditTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [

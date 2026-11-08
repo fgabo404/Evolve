@@ -25,7 +25,7 @@ public sealed class PangaeaFromPlatesGenerator
     }
 
     internal PangaeaSurfaceWork GenerateSurface(HexTopology topology,
-        LandmassConfiguration configuration, byte[] plates, int attempt)
+        LandmassConfiguration configuration, byte[] plates, int attempt, bool captureBaseFields = false)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -183,7 +183,14 @@ public sealed class PangaeaFromPlatesGenerator
         }
         for(int id=0;id<count;id++)if(surface[id]==0 && !ocean[id])surface[id]=1;
 
-        return new(topology, configuration, attempt, surface, uplift);
+        return new(topology, configuration, attempt, surface, uplift)
+        {
+            Fields = !captureBaseFields ? null : new PangaeaBaseFields
+            {
+                CenterX = centerX.ToArray(), CenterY = centerY.ToArray(), VelocityX = speedX.ToArray(), VelocityY = speedY.ToArray(),
+                Compression = compression.ToArray(), Extension = extension.ToArray(), InitialPressure = uplift.ToArray()
+            }
+        };
     }
 
     internal byte[] GenerateElevation(PangaeaSurfaceWork work,
@@ -209,13 +216,16 @@ public sealed class PangaeaFromPlatesGenerator
         }
         var potential=new double[count];
         var localDetail=new double[count];
+        double[]? regionalNoise = work.Fields is null ? null : new double[count];
         var sorted=new List<double>();
         for(int id=0;id<count;id++)
         {
             int x=id%width,y=id/width;
             localDetail[id]=PeriodicNoise.Sample(x,y,width,height,15,configuration.Seed+attempt*2011+2053);
             potential[id]=2.5*uplift[id]+
-                1.3*PeriodicNoise.Sample(x,y,width,height,5,configuration.Seed+attempt*2011+1009)+
+                1.3*(regionalNoise is null
+                    ? PeriodicNoise.Sample(x,y,width,height,5,configuration.Seed+attempt*2011+1009)
+                    : (regionalNoise[id] = PeriodicNoise.Sample(x,y,width,height,5,configuration.Seed+attempt*2011+1009)))+
                 .45*localDetail[id];
             if(surface[id]==1)sorted.Add(potential[id]);
         }
@@ -259,7 +269,12 @@ public sealed class PangaeaFromPlatesGenerator
                 PriorCalibration = PangaeaElevationSources.Measure(surface, priorCalibration,
                     potential, uplift, quantile, anchors, level),
                 PriorCalibrationBaseByCellId = priorCalibration,
-                CalibrationMilliseconds = calibrationMilliseconds
+                CalibrationMilliseconds = calibrationMilliseconds,
+                Fields = work.Fields is null ? null : work.Fields with
+                {
+                    SmoothedPressure = uplift.ToArray(), RegionalNoise = regionalNoise!,
+                    LocalNoise = localDetail.ToArray(), Potential = potential.ToArray()
+                }
             });
         return calibrated;
     }

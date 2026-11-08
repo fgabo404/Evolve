@@ -99,12 +99,13 @@ public sealed record PangaeaElevationSources(double[] Quantiles, double[] Potent
     public PangaeaElevationSources? PriorCalibration { get; init; }
     public ReadOnlyMemory<byte> PriorCalibrationBaseByCellId { get; init; }
     public double CalibrationMilliseconds { get; init; }
+    public PangaeaBaseFields? Fields { get; init; }
     internal static PangaeaElevationSources? Copy(PangaeaElevationSources? source) => source is null ? null : source with
     {
         Quantiles = source.Quantiles.ToArray(), PotentialAnchors = source.PotentialAnchors.ToArray(),
         ElevationAnchors = source.ElevationAnchors.ToArray(), Previous = Copy(source.Previous),
         PreviousBaseByCellId = source.PreviousBaseByCellId.ToArray(), PriorCalibration = Copy(source.PriorCalibration),
-        PriorCalibrationBaseByCellId = source.PriorCalibrationBaseByCellId.ToArray()
+        PriorCalibrationBaseByCellId = source.PriorCalibrationBaseByCellId.ToArray(), Fields = source.Fields?.Copy()
     };
     internal static PangaeaElevationSources Measure(byte[] surface, byte[] elevation,
         double[] potential, double[] uplift, double[] quantiles, double[] anchors, double[] levels)
