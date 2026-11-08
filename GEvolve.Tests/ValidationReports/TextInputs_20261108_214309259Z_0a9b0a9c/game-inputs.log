@@ -1,0 +1,15 @@
+Command: dotnet run --project GEvolve.Tests --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/TextInputs_20261108_214309259Z_0a9b0a9c -- --all-suites --suite=Game
+Started UTC: 2026-11-08T21:43:21.9519610Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 12.224
+
+=== STDOUT (complete) ===
+INPUT_EDIT_PASS: positive/negative int32; selection replacement; clipboard copy/cut/paste; cursor/delete/home/end; invalid/overflow; focus isolation; no duplicate key/text insertion; full laboratory invalidation and restart. No window/GL/native clipboard.
+PASS: Game Small (26600 cells, 389 ms)
+PASS: Game Medium (41750 cells, 586 ms)
+PASS: Game Large (60000 cells, 711 ms)
+PASS: Game Enormous (106800 cells, 1366 ms)
+SUITE PASS: Game
+
+=== STDERR (complete) ===

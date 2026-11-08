@@ -50,3 +50,7 @@ P03-A.7.2.1 reuses `-ValidationSet LaboratoryPangaea -Label P03-A721`. The labor
 `-ValidationSet LaboratoryControls` runs build and the laboratory controller/representation tests only. Use this focused set after a change confined to those contracts; it does not claim to run staged equivalence or all suites. Every report lists the actual commands and source SHA. Preserve broader reports separately when their historical failures/equivalence evidence remain relevant.
 
 `GEvolve.Game/Program.cs` creates an OpenTK window and enters `window.Run()`. Run `dotnet run --project GEvolve.Game` manually after a successful build, inspect the reference worlds and their existing views, then close the window normally. Unattended validation neither launches nor forcibly closes it.
+
+## Text input editing
+
+Use `-ValidationSet TextInputs -Label TextInputs -IsolatedArtifacts` for input-only changes. It runs build, `dotnet run --project GEvolve.Tests -- --all-suites --suite=Game` (only the existing Game suite, including TextFieldEditingTests), and `--pangaea-laboratory`. This does not run the full general suite. Tests use OpenTK key identifiers and the production editor bound to real GameSession/PangaeaLaboratory fields, with a memory clipboard callback; they never create a window/GL context or touch the OS clipboard. Native clipboard delivery, focus and appearance remain pending interactive user verification. All native codes, complete streams and the source SHA are retained in each report. Existing report retention rules apply.

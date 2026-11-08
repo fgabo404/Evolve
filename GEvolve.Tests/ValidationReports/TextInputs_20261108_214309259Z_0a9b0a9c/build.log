@@ -1,0 +1,26 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/TextInputs_20261108_214309259Z_0a9b0a9c
+Started UTC: 2026-11-08T21:43:09.4914635Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 12.417
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 107 ms).
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 107 ms).
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 107 ms).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 1.1 sec).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 1.1 sec).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\TextInputs_20261108_214309259Z_0a9b0a9c\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\TextInputs_20261108_214309259Z_0a9b0a9c\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\TextInputs_20261108_214309259Z_0a9b0a9c\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\TextInputs_20261108_214309259Z_0a9b0a9c\bin\GEvolve.Game\debug\GEvolve.Game.dll
+  GEvolve.Tests -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\TextInputs_20261108_214309259Z_0a9b0a9c\bin\GEvolve.Tests\debug\GEvolve.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:12.07
+
+=== STDERR (complete) ===
