@@ -12,21 +12,27 @@ public static class PangaeaBaseVariantTests
 {
     private static readonly int[] Seeds = [-1387338765, -132790047, 2026];
     private const string Historical = "GEvolve.Tests/ValidationReports/P03-A74_20261108_222619723Z_ca4e68da/base-audit.log";
-    public static void Run()
+    public static void Run() => Run(false);
+    public static void RunLowlands() => Run(true);
+    private static void Run(bool lowlands)
     {
         PangaeaBaseVariantControls.Run();
+        if (lowlands) PangaeaRegionalLowlandVariants.Controls();
         var history = ReadHistory(); int comparisons = 0;
-        Console.WriteLine("BASE_VARIANT_ENV " + JsonSerializer.Serialize(new { Worlds = 12, Variants = 5,
-            Definitions = PangaeaBaseVariants.Definitions.Select(d => new { Id = d.Id.ToString(), d.Parent, d.Hypothesis }),
+        var definitions = lowlands ? PangaeaRegionalLowlandVariants.Definitions : PangaeaRegionalLowlandVariants.Legacy;
+        var oldResults = lowlands ? ReadPreviousVariants() : new Dictionary<string, JsonElement>();
+        int[] seeds = lowlands ? [.. Seeds, 42] : Seeds;
+        Console.WriteLine("BASE_VARIANT_ENV " + JsonSerializer.Serialize(new { Worlds = seeds.Length * 4, PrimaryWorlds = 12, HoldoutWorlds = lowlands ? 4 : 0, Variants = definitions.Length,
+            Definitions = definitions,
             Mode = "Tests only, official surface/fields, no experimental FINAL/save", KernelRepeats = 3,
             PangaeaBaseVariants.NoiseAmplitude, PangaeaBaseVariants.Shoulder, PangaeaBaseVariants.LandMinimum, PangaeaBaseVariants.LandMaximum }));
-        foreach (var size in Enum.GetValues<GridSize>()) foreach (int seed in Seeds)
+        foreach (var size in Enum.GetValues<GridSize>()) foreach (int seed in seeds)
         {
-            Compare(size, seed, history); comparisons += 5;
+            Compare(size, seed, history, oldResults, lowlands); comparisons += definitions.Length;
         }
-        Console.WriteLine($"BASE_VARIANT_PASS: {comparisons} comparisons = 12 configurations x 5 variants; exact V0 F/G/H; old audit morphology; immutable official geology+climate+biomes; deterministic variants; historical/current persistence; no adoption or visual approval");
+        Console.WriteLine($"BASE_VARIANT_PASS: {comparisons} comparisons = {seeds.Length * 4} configurations, controlled variants; exact V0 F/G/H; old audit morphology; immutable official geology+climate+biomes; deterministic variants; historical/current persistence; no adoption or visual approval");
     }
-    private static void Compare(GridSize size, int seed, Dictionary<string, JsonElement> history)
+    private static void Compare(GridSize size, int seed, Dictionary<string, JsonElement> history, Dictionary<string, JsonElement> oldResults, bool lowlands)
     {
         var config = LandmassProfiles.Create(size, LandmassType.Pangaea, seed); var service = new WorldGenerationService();
         long normalBytes = GC.GetAllocatedBytesForCurrentThread(); var normalTimer = Stopwatch.StartNew();
@@ -48,15 +54,15 @@ public static class PangaeaBaseVariantTests
         var topo = new HexTopology(official.Grid);
         bool detailed = size == GridSize.Small && seed == Seeds[0] || size == GridSize.Enormous && seed == Seeds[1];
         var context = new PangaeaBaseVariantMetrics.Context(topo, official.Landmass, detailed);
-        var results = new Dictionary<PangaeaBaseVariants.Kind, PangaeaBaseVariants.Result>();
-        foreach (var definition in PangaeaBaseVariants.Definitions)
+        var results = new Dictionary<string, PangaeaBaseVariants.Result>();
+        foreach (var definition in lowlands ? PangaeaRegionalLowlandVariants.Definitions : PangaeaRegionalLowlandVariants.Legacy)
         {
-            _ = PangaeaBaseVariants.Generate(input, definition.Id); // warm this kernel, excluded from recorded samples
+            _ = PangaeaRegionalLowlandVariants.Generate(input, definition.Id, context); // warm this kernel, excluded from recorded samples
             var times = new List<double>(); var bytes = new List<long>(); PangaeaBaseVariants.Result result = null!; string? previous = null;
             for (int repeat = 0; repeat < 3; repeat++)
             {
                 long allocated = GC.GetAllocatedBytesForCurrentThread(); var timer = Stopwatch.StartNew();
-                result = PangaeaBaseVariants.Generate(input, definition.Id); timer.Stop();
+                result = PangaeaRegionalLowlandVariants.Generate(input, definition.Id, context); timer.Stop();
                 bytes.Add(GC.GetAllocatedBytesForCurrentThread() - allocated); times.Add(timer.Elapsed.TotalMilliseconds);
                 string hash = Hash(result.Heights);
                 Check(previous is null || previous == hash, "Variant output must be deterministic"); previous = hash;
@@ -64,13 +70,13 @@ public static class PangaeaBaseVariantTests
             results.Add(definition.Id, result);
             Check(Enumerable.Range(0, context.Surface.Length).All(i => context.Surface[i] == 0 ? result.Heights[i] == 0 : result.Heights[i] is >= 1 and <= 100),
                 "Every variant retains official land/ocean mask and height contract");
-            var parent = definition.Id == PangaeaBaseVariants.Kind.V0 ? result : results[Enum.Parse<PangaeaBaseVariants.Kind>(definition.Parent)];
-            var v0 = results[PangaeaBaseVariants.Kind.V0];
+            var parent = definition.Id == "V0" ? result : results[definition.Parent];
+            var v0 = results["V0"];
             long metricBytes = GC.GetAllocatedBytesForCurrentThread(); var metricTimer = Stopwatch.StartNew();
             object metrics = PangaeaBaseVariantMetrics.Measure(context, result, v0.Heights, parent.Heights);
             metricTimer.Stop(); metricBytes = GC.GetAllocatedBytesForCurrentThread() - metricBytes;
             using var measured = JsonDocument.Parse(JsonSerializer.Serialize(metrics));
-            if (definition.Id == PangaeaBaseVariants.Kind.V0)
+            if (definition.Id == "V0")
             {
                 Check(result.Potential.AsSpan().SequenceEqual(input.Fields.Potential.Span), "V0 reproduces captured E exactly");
                 if (history.TryGetValue($"world/{size}/{seed}", out var prior))
@@ -83,19 +89,28 @@ public static class PangaeaBaseVariantTests
                         Check(old.GetRawText() == morph.GetProperty("Analysis").GetRawText(), "V0 reproduces historical morphology exactly at every measured common threshold");
                 }
             }
-            if (definition.Id is PangaeaBaseVariants.Kind.V1T or PangaeaBaseVariants.Kind.V2 or PangaeaBaseVariants.Kind.V3)
+            if (definition.Id is "V1T" or "V2" or "V3")
                 Check(result.Potential.SequenceEqual(parent.Potential), "Only the declared factor changes relative to immediate parent");
-            if (definition.Id == PangaeaBaseVariants.Kind.V1T) Check(result.Normalized.SequenceEqual(parent.Normalized), "Bridge changes summit treatment only");
-            if (definition.Id == PangaeaBaseVariants.Kind.V3)
+            if (definition.Id == "V1T") Check(result.Normalized.SequenceEqual(parent.Normalized), "Bridge changes summit treatment only");
+            if (definition.Id == "V3")
                 Check(result.Normalized.SequenceEqual(parent.Normalized) && Enumerable.Range(0, context.Surface.Length)
                     .All(i => parent.Heights[i] > 60 || parent.Heights[i] == result.Heights[i]), "V3 changes only upper treatment, preserving low/middle heights");
-            Emit("BASE_VARIANT_RESULT", new { Size = size.ToString(), Seed = seed, Variant = definition.Id.ToString(), definition.Parent, definition.Hypothesis,
+            long coastBytes = GC.GetAllocatedBytesForCurrentThread(); var coastTimer = Stopwatch.StartNew();
+            object? coastMetrics = lowlands ? PangaeaLowlandMetrics.Measure(context, result.Heights, parent.Heights) : null;
+            coastTimer.Stop(); coastBytes = GC.GetAllocatedBytesForCurrentThread() - coastBytes;
+            Emit("BASE_VARIANT_RESULT", new { Size = size.ToString(), Seed = seed, Holdout = lowlands && seed == 42, Variant = definition.Id.ToString(), definition.Parent, definition.Hypothesis,
+                Lowlands = coastMetrics, CoastalDiagnostics = new { Milliseconds = coastTimer.Elapsed.TotalMilliseconds, AllocatedBytes = coastBytes },
                 HeightsHash = Hash(result.Heights), PotentialHash = Hash(result.Potential), result.Anchors,
                 Kernel = new { SamplesMs = times, AllocatedBytes = bytes, MedianMs = times.Order().ElementAt(1), MedianAllocatedBytes = bytes.Order().ElementAt(1),
                     OutputPayloadBytes = result.Potential.Length * sizeof(double) + result.Anchors.Length * sizeof(double) + result.Normalized.Length + result.Heights.Length },
                 Diagnostics = new { Milliseconds = metricTimer.Elapsed.TotalMilliseconds, AllocatedBytes = metricBytes }, Metrics = measured.RootElement });
+            if (lowlands && oldResults.TryGetValue($"{size}/{seed}/{definition.Id}", out var oldResult))
+                Check(oldResult.GetProperty("HeightsHash").GetString() == Hash(result.Heights) &&
+                    oldResult.GetProperty("PotentialHash").GetString() == Hash(result.Potential) &&
+                    oldResult.GetProperty("Metrics").GetRawText() == measured.RootElement.GetRawText(), "The five previous variants retain exact hashes AND numerical results");
             Console.WriteLine($"BASE_VARIANT_CASE_PASS {size}/{seed}/{definition.Id}: deterministic isolated BASE, immutable official surface/inputs, controlled parent comparison");
         }
+        if (lowlands) ValidateLowlands(input, context, results);
         Check(inputHash == Hash(input) && beforeHash == Hash(official.Landmass) && beforeHash == Hash(session.GetCompletedWorld().Landmass),
             "All official inputs and completed session remain untouched after every variant");
         Persist(official.Landmass, official); Persist(Geology(official.Landmass), official);
@@ -103,7 +118,7 @@ public static class PangaeaBaseVariantTests
         var after = service.Generate(config); afterTimer.Stop(); normalBytes = GC.GetAllocatedBytesForCurrentThread() - normalBytes;
         Check(beforeHash == Hash(after.Landmass) && Hash(official.PangaeaElevations!.BaseByCellId.ToArray()) == Hash(after.PangaeaElevations!.BaseByCellId.ToArray()) &&
             Hash(official.PangaeaElevations.FinalByCellId.ToArray()) == Hash(after.PangaeaElevations.FinalByCellId.ToArray()), "Normal official generation must not adopt any experimental value");
-        Emit("BASE_VARIANT_WORLD", new { Size = size.ToString(), Seed = seed, Columns = topo.Columns, Rows = topo.Rows, LandCells = context.Land.Length, Detailed = detailed,
+        Emit("BASE_VARIANT_WORLD", new { Size = size.ToString(), Seed = seed, Holdout = lowlands && seed == 42, Columns = topo.Columns, Rows = topo.Rows, LandCells = context.Land.Length, Detailed = detailed,
             Official = new { State = beforeHash, Geology = Hash(Geology(official.Landmass)), Base = Hash(input.Official), Final = Hash(official.Landmass.ElevationByCellId!),
                 Surface = Hash(official.Landmass.SurfaceByCellId), Plates = Hash(official.Landmass.PlateByCellId!), H04 = Hash(official.Landmass.TectonicMotion),
                 Systems = Hash(official.Landmass.PangaeaMountainRanges), Climate = Hash(official.Landmass.Climate), Biomes = Hash(official.Landmass.Biomes),
@@ -113,6 +128,36 @@ public static class PangaeaBaseVariantTests
             NormalGenerateBeforeAllocatedBytes = normalBeforeBytes, NormalGenerateAfterAllocatedBytes = normalBytes,
             OfficialUnchanged = true, CurrentAndHistoricalSaveRoundtrip = true });
         Console.WriteLine($"BASE_VARIANT_WORLD_PASS {size}/{seed}: official automatic/manual hashes, climate/biomes, persistence and re-entry unchanged; eight laboratory actions remain original");
+    }
+    private static Dictionary<string, JsonElement> ReadPreviousVariants()
+    {
+        var values = new Dictionary<string, JsonElement>();
+        const string prefix = "BASE_VARIANT_RESULT ";
+        foreach (string line in File.ReadLines("GEvolve.Tests/ValidationReports/P03-A8_20261108_231013846Z_120f9b55/base-variants.log"))
+        {
+            if (!line.StartsWith(prefix, StringComparison.Ordinal)) continue;
+            using var doc = JsonDocument.Parse(line[prefix.Length..]); var item = doc.RootElement;
+            values.Add(item.GetProperty("Size").GetString() + "/" + item.GetProperty("Seed").GetInt32() + "/" + item.GetProperty("Variant").GetString(), item.Clone());
+        }
+        if (values.Count != 60) throw new InvalidOperationException("The five historical variants require all 60 original records.");
+        return values;
+    }
+    private static void ValidateLowlands(PangaeaBaseVariants.Input input, PangaeaBaseVariantMetrics.Context c, Dictionary<string, PangaeaBaseVariants.Result> r)
+    {
+        Check(PangaeaBaseVariants.GeneratePressureControl(input, true, true).Heights.SequenceEqual(r["V0"].Heights) &&
+            PangaeaBaseVariants.GeneratePressureControl(input, false, false).Heights.SequenceEqual(r["V1"].Heights), "Pressure factorial endpoints equal their historical controls");
+        Check(r["VP"].Potential.SequenceEqual(r["V0"].Potential) && r["VP"].Normalized.SequenceEqual(r["V0"].Normalized) &&
+            r["VS"].Potential.SequenceEqual(r["V1"].Potential) && r["VS"].Normalized.SequenceEqual(r["V1"].Normalized), "Support-only contrasts hold potential AND normalization constant");
+        foreach (string id in new[] { "V4O", "V4S", "V4U", "V4C" })
+            Check(r[id].Potential.SequenceEqual(r["V2"].Potential), "Regional scale/coast contrasts cannot change the noise field");
+        Check(r["V4U"].Normalized.SequenceEqual(r["V4O"].Normalized) && r["V4C"].Normalized.SequenceEqual(r["V4U"].Heights), "Upper/coast parents remain fixed");
+        foreach (int id in c.Land)
+        {
+            if (r["V4O"].Heights[id] <= 50) Check(r["V4U"].Heights[id] == r["V4O"].Heights[id], "Upper curve preserves low/middle heights");
+            Check(r["V4C"].Heights[id] <= r["V4U"].Heights[id], "Coastal transition cannot raise the continent");
+            if (c.Coast[id] >= PangaeaRegionalLowlandVariants.Radius(c.Topology) || r["V4U"].Heights[id] >= 50)
+                Check(r["V4C"].Heights[id] == r["V4U"].Heights[id], "High coast and outside-transition values remain exactly unchanged");
+        }
     }
     private static Dictionary<string, JsonElement> ReadHistory()
     {

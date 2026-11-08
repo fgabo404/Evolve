@@ -2,7 +2,7 @@
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$Label = 'P03-A4',
-    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedPangaea', 'LaboratoryPangaea', 'LaboratoryControls', 'PangaeaEcology', 'EcologyControls', 'TextInputs', 'BaseAuditReference', 'BaseReliefAudit', 'BaseAuditControls', 'BaseVariantControls', 'BaseRegionalVariants', 'BaseRegionalComparison')]
+    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedPangaea', 'LaboratoryPangaea', 'LaboratoryControls', 'PangaeaEcology', 'EcologyControls', 'TextInputs', 'BaseAuditReference', 'BaseReliefAudit', 'BaseAuditControls', 'BaseVariantControls', 'BaseRegionalVariants', 'BaseRegionalComparison', 'BaseLowlandControls', 'BaseLowlandVariants', 'BaseLowlandComparison')]
     [string]$ValidationSet = 'Worldgen',
     [switch]$IsolatedArtifacts
 )
@@ -192,6 +192,22 @@ if ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) {
     )
     if ($ValidationSet -eq 'BaseRegionalComparison') { $steps = @($steps | Select-Object -First 2) }
 }
+if ($ValidationSet -eq 'BaseLowlandControls') {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'lowland-controls'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-lowland-controls') }
+    )
+}
+if ($ValidationSet -in @('BaseLowlandVariants', 'BaseLowlandComparison')) {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'lowland-variants'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-lowland-variants') },
+        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
+        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
+        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
+    )
+    if ($ValidationSet -eq 'BaseLowlandComparison') { $steps = @($steps | Select-Object -First 2) }
+}
 if ($IsolatedArtifacts) {
     foreach ($step in $steps) {
         if ($step.Arguments[0] -eq 'build') {
@@ -280,10 +296,10 @@ if ($warnings.Count -eq 0) { $summary.Add('No warning lines were emitted.') }
 else { $summary.Add('```text'); foreach ($warning in $warnings) { $summary.Add($warning) }; $summary.Add('```') }
 $summary.Add('')
 $summary.Add('## Actual diagnostic and regression evidence')
-$diagnosticName = if ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) { 'base-variants' } elseif ($ValidationSet -eq 'BaseVariantControls') { 'base-variant-controls' } elseif ($ValidationSet -eq 'BaseAuditReference') { 'base-reference' } elseif ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) { 'base-audit' } elseif ($ValidationSet -eq 'TextInputs') { 'game-inputs' } elseif ($ValidationSet -in @('PangaeaEcology', 'EcologyControls')) { 'pangaea-ecology' } elseif ($ValidationSet -in @('LaboratoryPangaea', 'LaboratoryControls')) { 'pangaea-laboratory' } elseif ($ValidationSet -eq 'StagedPangaea') { 'pangaea-staged' } elseif ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } elseif ($ValidationSet -eq 'TectonicCalibration') { 'pangaea-uplift' } else { 'pangaea-elevations' }
+$diagnosticName = if ($ValidationSet -eq 'BaseLowlandControls') { 'lowland-controls' } elseif ($ValidationSet -in @('BaseLowlandVariants', 'BaseLowlandComparison')) { 'lowland-variants' } elseif ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) { 'base-variants' } elseif ($ValidationSet -eq 'BaseVariantControls') { 'base-variant-controls' } elseif ($ValidationSet -eq 'BaseAuditReference') { 'base-reference' } elseif ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) { 'base-audit' } elseif ($ValidationSet -eq 'TextInputs') { 'game-inputs' } elseif ($ValidationSet -in @('PangaeaEcology', 'EcologyControls')) { 'pangaea-ecology' } elseif ($ValidationSet -in @('LaboratoryPangaea', 'LaboratoryControls')) { 'pangaea-laboratory' } elseif ($ValidationSet -eq 'StagedPangaea') { 'pangaea-staged' } elseif ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } elseif ($ValidationSet -eq 'TectonicCalibration') { 'pangaea-uplift' } else { 'pangaea-elevations' }
 $diagnostic = ($results | Where-Object { $_.Name -eq $diagnosticName }).Text
 $excerpts = @($diagnostic -split '\r?\n' | Where-Object {
-    $_ -match '^BASE_VARIANT_.*PASS|^BASE_(REFERENCE_PASS|MORPH_CONTROLS_PASS|CASE_PASS|AUDIT_PASS)|^INPUT_EDIT_PASS:|^ECOLOGY_(ENV|CASE_PASS|SESSION_PASS|PASS)|^LAB_(CASE_PASS|ASYNC_PASS|SEEDS_PASS|PASS)|^STAGED_(CASE_PASS|GRAPH_PASS|OTHER_PASS|ASYNC_PASS|PASS)|^UPLIFT_COUNTS |^UPLIFT_PASS:|^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.[46] |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.[46] FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
+    $_ -match '^LOWLAND_CONTROLS_PASS|^BASE_VARIANT_.*PASS|^BASE_(REFERENCE_PASS|MORPH_CONTROLS_PASS|CASE_PASS|AUDIT_PASS)|^INPUT_EDIT_PASS:|^ECOLOGY_(ENV|CASE_PASS|SESSION_PASS|PASS)|^LAB_(CASE_PASS|ASYNC_PASS|SEEDS_PASS|PASS)|^STAGED_(CASE_PASS|GRAPH_PASS|OTHER_PASS|ASYNC_PASS|PASS)|^UPLIFT_COUNTS |^UPLIFT_PASS:|^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.[46] |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.[46] FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
 })
 if ($excerpts.Count -eq 0) { $summary.Add('No diagnostic records were reached/emitted. No metrics are invented.') }
 else { $summary.Add('Selected actual records; complete emitted output is in ' + $diagnosticName + '.log.'); $summary.Add('```text'); foreach ($line in $excerpts) { $summary.Add($line) }; $summary.Add('```') }

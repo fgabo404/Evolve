@@ -37,13 +37,19 @@ internal static class PangaeaBaseVariants
         BindingFlags.NonPublic | BindingFlags.Static) ?? throw new MissingMethodException(typeof(PangaeaFromPlatesGenerator).FullName, name);
 
     internal static Result Generate(Input input, Kind kind)
+        => GenerateCore(input, kind, kind == Kind.V0, kind == Kind.V0);
+
+    internal static Result GeneratePressureControl(Input input, bool potentialPressure, bool supportPressure)
+        => GenerateCore(input, Kind.V1, potentialPressure, supportPressure);
+
+    private static Result GenerateCore(Input input, Kind kind, bool potentialPressure, bool supportPressure)
     {
         Validate(input);
         if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
         int count = input.Surface.Length;
         var potential = new double[count];
         for (int id = 0; id < count; id++)
-            potential[id] = kind == Kind.V0
+            potential[id] = potentialPressure
                 ? 2.5 * input.Fields.SmoothedPressure.Span[id] + RegionalWeight * input.Fields.RegionalNoise.Span[id] + LocalWeight * input.Fields.LocalNoise.Span[id]
                 : RegionalWeight * input.Fields.RegionalNoise.Span[id] + LocalWeight * input.Fields.LocalNoise.Span[id];
         double[] anchors;
@@ -69,7 +75,7 @@ internal static class PangaeaBaseVariants
         byte[] result;
         if (kind is Kind.V0 or Kind.V1)
         {
-            var pressure = kind == Kind.V0 ? input.Fields.SmoothedPressure.ToArray() : new double[count];
+            var pressure = supportPressure ? input.Fields.SmoothedPressure.ToArray() : new double[count];
             result = Shape(input.Surface, normalized, input.Fields.LocalNoise.ToArray(), pressure);
             if (kind == Kind.V0 && !result.AsSpan().SequenceEqual(input.ShapedReference))
                 throw new InvalidOperationException("V0 must reproduce the official pre-recovery field byte-for-byte.");
@@ -94,7 +100,7 @@ internal static class PangaeaBaseVariants
         return Shoulder + excess / (1 + excess / (LandMaximum - LandMinimum));
     }
     private static byte Rounded(double value) => (byte)Math.Clamp((int)Math.Round(value), 1, 100);
-    private static void Validate(Input input)
+    internal static void Validate(Input input)
     {
         int n = input.Surface.Length;
         if (n == 0 || input.Surface.Any(v => v > 1) || !input.Surface.Contains((byte)1) || input.Official.Length != n ||
