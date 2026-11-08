@@ -5,7 +5,7 @@ using GEvolve.State.Game;
 
 namespace GEvolve.Engine.World;
 
-public enum PangaeaGenerationStage { Grid = 1, Plates, Motion, Surface, Base, MountainSystems, Final }
+public enum PangaeaGenerationStage { Grid = 1, Plates, Motion, Surface, Base, MountainSystems, Final, Temperature, Precipitation, Biomes }
 public enum PangaeaStageStatus { Pending, Running, Completed, Invalidated, Failed }
 
 public sealed record PangaeaStageInfo(PangaeaGenerationStage Stage, PangaeaStageStatus Status,
@@ -29,4 +29,9 @@ public sealed record PangaeaGenerationSnapshot(LandmassConfiguration Configurati
     IReadOnlyList<PangaeaStageInfo> Stages, HexGrid? Grid, byte[]? Plates, TectonicMotionState? Motion,
     int? SelectedAttempt, IReadOnlyList<PangaeaSurfaceAttempt> Attempts, byte[]? Surface,
     LandmassStatistics? SurfaceStatistics, byte[]? Base, PangaeaElevationSources? BaseSources,
-    PangaeaMountainSelection? Mountains, PangaeaElevationDiagnostics? Elevations);
+    PangaeaMountainSelection? Mountains, PangaeaElevationDiagnostics? Elevations)
+{
+    public byte[]? Slopes { get; init; }
+    public ClimateState? Climate { get; init; }
+    public BiomeState? Biomes { get; init; }
+}

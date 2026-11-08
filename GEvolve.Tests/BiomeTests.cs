@@ -78,7 +78,7 @@ public static class BiomeTests
         foreach (int seed in new[] { 2026, 42, -731 })
         foreach (var type in new[] { LandmassType.Pangaea, LandmassType.SmallContinents, LandmassType.Archipelagos })
         {
-            var generated = new WorldGenerationService().Generate(
+            var generated = new WorldGenerationService().GenerateGeology(
                 LandmassProfiles.Create(size, type, seed));
             var topology = new HexTopology(generated.Grid);
             if (size == GridSize.Small && type == LandmassType.Pangaea && seed == 2026)

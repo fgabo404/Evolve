@@ -7,6 +7,8 @@ using GEvolve.Engine.Grid;
 using GEvolve.Engine.World.LandmassGeneration;
 using GEvolve.Engine.World.LandmassGeneration.Shared;
 using GEvolve.Engine.World.Tectonics;
+using GEvolve.Engine.World.BiomeGeneration;
+using GEvolve.Engine.World.Climate;
 using GEvolve.State.Game;
 
 namespace GEvolve.Engine.World;
@@ -24,13 +26,20 @@ public sealed class PangaeaGenerationSession
                 [PangaeaGenerationStage.Surface] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Plates }),
                 [PangaeaGenerationStage.Base] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Surface }),
                 [PangaeaGenerationStage.MountainSystems] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Surface, PangaeaGenerationStage.Motion }),
-                [PangaeaGenerationStage.Final] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems })
+                [PangaeaGenerationStage.Final] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems }),
+                [PangaeaGenerationStage.Temperature] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Final }),
+                [PangaeaGenerationStage.Precipitation] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Temperature }),
+                [PangaeaGenerationStage.Biomes] = Array.AsReadOnly(new[] { PangaeaGenerationStage.Precipitation })
             });
+
+    public static IReadOnlyList<PangaeaGenerationStage> GeologicalStages { get; } = Array.AsReadOnly(
+        Enum.GetValues<PangaeaGenerationStage>().Where(s => (int)s <= (int)PangaeaGenerationStage.Final).ToArray());
 
     private sealed record Data(HexGrid? Grid = null, HexTopology? Topology = null, byte[]? Plates = null,
         TectonicMotionState? Motion = null, PangaeaSurfaceWork? Surface = null, LandmassStatistics? Statistics = null,
         PangaeaSurfaceAttempt[]? Attempts = null, byte[]? Base = null, PangaeaElevationSources? Sources = null,
-        PangaeaMountainPlan? Plan = null, GeneratedWorld? World = null, PangaeaMountainRangeAudit? FinalAudit = null);
+        PangaeaMountainPlan? Plan = null, GeneratedWorld? World = null, PangaeaMountainRangeAudit? FinalAudit = null,
+        LandmassState? Temperature = null, LandmassState? Precipitation = null, LandmassState? Biomes = null);
     private sealed record Operation(long Id, PangaeaGenerationStage Stage, LandmassConfiguration Configuration,
         Data Inputs, CancellationToken Cancellation);
     private readonly object _gate = new();
@@ -86,11 +95,13 @@ public sealed class PangaeaGenerationSession
         Data data; LandmassConfiguration configuration; long revision; IReadOnlyList<PangaeaStageInfo> stages;
         lock (_gate) { data = _data; configuration = _configuration; revision = _configurationRevision; stages = StageViews(); }
         // Published inputs are never mutated internally; copying outside the lock is safe.
+        var environment = data.Biomes ?? data.Precipitation ?? data.Temperature;
         return new(configuration, revision, stages, data.Grid?.Copy(), data.Plates?.ToArray(), Clone(data.Motion),
             data.Surface?.Attempt, Array.AsReadOnly((data.Attempts ?? []).Select(a => a with
             { Statistics = CopyStatistics(a.Statistics)! }).ToArray()), data.Surface?.Surface.ToArray(),
             CopyStatistics(data.Statistics), data.Base?.ToArray(), PangaeaElevationSources.Copy(data.Sources),
-            CopySelection(data.Plan), data.World?.PangaeaElevations?.Copy());
+            CopySelection(data.Plan), data.World?.PangaeaElevations?.Copy())
+        { Slopes = environment?.SlopeByCellId?.ToArray(), Climate = Clone(environment?.Climate), Biomes = Clone(environment?.Biomes) };
     }
 
     public GeneratedWorld GetCompletedWorld()
@@ -103,8 +114,11 @@ public sealed class PangaeaGenerationSession
     internal GeneratedWorld GetOwnedCompletedWorld()
     {
         lock (_gate)
-            return _stages[PangaeaGenerationStage.Final].Status == PangaeaStageStatus.Completed && _data.World is { } world
-                ? world : throw new InvalidOperationException("A current completed FINAL stage is required.");
+        {
+            if (_stages[PangaeaGenerationStage.Final].Status != PangaeaStageStatus.Completed || _data.World is not { } world)
+                throw new InvalidOperationException("A current completed FINAL stage is required.");
+            return world with { Landmass = _data.Biomes ?? _data.Precipitation ?? _data.Temperature ?? world.Landmass };
+        }
     }
 
     internal PangaeaMountainRangeAudit? GetFinalAudit() { lock (_gate) return _data.FinalAudit; }
@@ -213,6 +227,14 @@ public sealed class PangaeaGenerationSession
                     _captureAudit ? value => audit = value : null);
                 diagnostics!.Sources = data.Sources;
                 return (data with { World = new(data.Grid!, terrain, data.Statistics) { PangaeaElevations = diagnostics }, FinalAudit = audit }, null);
+            case PangaeaGenerationStage.Temperature:
+                var geology = data.World!.Landmass;
+                var slopes = TerrainSlope.Calculate(data.Topology!, geology);
+                return (data with { Temperature = new TemperatureGenerator().Apply(data.Topology!, geology with { SlopeByCellId = slopes }) }, null);
+            case PangaeaGenerationStage.Precipitation:
+                return (data with { Precipitation = new PrecipitationGenerator().Apply(data.Topology!, data.Temperature!) }, null);
+            case PangaeaGenerationStage.Biomes:
+                return (data with { Biomes = new BiomeClassifier().Apply(data.Precipitation!, data.Topology!) }, null);
             default: throw new ArgumentOutOfRangeException(nameof(operation));
         }
     }
@@ -235,6 +257,9 @@ public sealed class PangaeaGenerationSession
                 PangaeaGenerationStage.Base => _data with { Base = null, Sources = null },
                 PangaeaGenerationStage.MountainSystems => _data with { Plan = null },
                 PangaeaGenerationStage.Final => _data with { World = null, FinalAudit = null },
+                PangaeaGenerationStage.Temperature => _data with { Temperature = null },
+                PangaeaGenerationStage.Precipitation => _data with { Precipitation = null },
+                PangaeaGenerationStage.Biomes => _data with { Biomes = null },
                 _ => throw new ArgumentOutOfRangeException(nameof(root))
             };
         }
@@ -263,6 +288,9 @@ public sealed class PangaeaGenerationSession
         PangaeaGenerationStage.Base => Hash(data.Base!),
         PangaeaGenerationStage.MountainSystems => Hash(new { data.Plan!.Ranges, data.Plan.Owner }),
         PangaeaGenerationStage.Final => Hash(data.World!.Landmass),
+        PangaeaGenerationStage.Temperature => Hash(new { data.Temperature!.SlopeByCellId, data.Temperature.Climate }),
+        PangaeaGenerationStage.Precipitation => Hash(data.Precipitation!.Climate),
+        PangaeaGenerationStage.Biomes => Hash(data.Biomes!.Biomes),
         _ => throw new ArgumentOutOfRangeException(nameof(stage))
     };
     private static string Hash<T>(T value) => Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));

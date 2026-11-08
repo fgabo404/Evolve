@@ -43,6 +43,13 @@ public static class PangaeaStagedGenerationTests
         {
             var timer = Stopwatch.StartNew();
             var world = new WorldGenerationService().Generate(size, type, seed);
+            if (type == LandmassType.Pangaea)
+            {
+                Check(world.Landmass.Climate?.BaseMoistureByCellId is not null && world.Landmass.Biomes is not null,
+                    "Automatic Pangaea includes actual ecology after FINAL");
+                // The independent historical fixture describes geology, not the newly added ecology.
+                world = world with { Landmass = world.Landmass with { SlopeByCellId = null, Climate = null, Biomes = null } };
+            }
             timer.Stop();
             var expected = references[$"{size}/{type}/{seed}"];
             Check(Signature(world) == expected, $"Automatic pipeline changed from pre-refactor reference: {size}/{type}/{seed}");
@@ -83,7 +90,7 @@ public static class PangaeaStagedGenerationTests
                 "BASE does not invalidate independent mountain geometry");
             Expect<InvalidOperationException>(() => session.GetCompletedWorld());
             session.Execute(PangaeaGenerationStage.Final);
-            foreach (var info in session.GetStages())
+            foreach (var info in session.GetStages().Where(s => PangaeaGenerationSession.GeologicalStages.Contains(s.Stage)))
                 Check(info.Status == PangaeaStageStatus.Completed && info.Hash?.Length == 64 && info.Duration >= TimeSpan.Zero &&
                     info.InputHashes.All(entry => entry.Value == Info(session, entry.Key).Hash),
                     "Stage evidence records actual completion, time and dependency hashes");
@@ -219,13 +226,13 @@ public static class PangaeaStagedGenerationTests
             Info(session, PangaeaGenerationStage.Surface).Status == PangaeaStageStatus.Pending,
             "Old work cannot publish fields or errors into a reset configuration");
         Complete(session);
-        AssertEqual(service.Generate(next), session.GetCompletedWorld(), "new configuration after overlapping reset");
+        AssertEqual(service.GenerateGeology(next), session.GetCompletedWorld(), "new configuration after overlapping reset");
         Console.WriteLine("STAGED_ASYNC_PASS: detached snapshots/exports; invalid requests atomic; cancellation; seed+size reset; obsolete results discarded; async stages complete");
     }
 
     private static void Complete(PangaeaGenerationSession session)
     {
-        foreach (var stage in Enum.GetValues<PangaeaGenerationStage>())
+        foreach (var stage in PangaeaGenerationSession.GeologicalStages)
             if (Info(session, stage).Status != PangaeaStageStatus.Completed) session.Execute(stage);
     }
     private static PangaeaStageInfo Info(PangaeaGenerationSession session, PangaeaGenerationStage stage) => session.GetStages().Single(s => s.Stage == stage);

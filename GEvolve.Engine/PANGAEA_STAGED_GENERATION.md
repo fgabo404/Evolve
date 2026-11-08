@@ -78,3 +78,7 @@ El modo automático usa la misma sesión internamente, omitiendo hashes de etapa
 - Los hashes y metadatos de ejecución son infraestructura de P03-A.7.1. ANTES/DESPUÉS, histogramas enriquecidos y comparación visual pertenecen a P03-A.7.3.
 - P03-A.7.2 incorpora la [interfaz de Game](../GEvolve.Game/PANGAEA_LABORATORY.md), con botones habilitados por el grafo, estado de trabajo, selección de vistas compatibles y datos intermedios explícitos. Reutiliza esta API sin cambiar Engine; queda pendiente de aprobación visual del usuario.
 - P03-A.7.4 realizará la auditoría integral utilizando el laboratorio funcional. P03-A sigue sin aprobación y P03-B no comienza.
+
+## Continuación vigente P09.1
+
+Las siete operaciones anteriores conservan sus valores enum y hashes. Se añaden `08 Temperature` (calcula pendientes desde FINAL), `09 Precipitation` (lluvia/humedad) y `10 Biomes` al mismo DAG: `Final → Temperature → Precipitation → Biomes`. El laboratorio agrupa Grid/Plates/Motion como antes y muestra ocho acciones. `GetSnapshot` incluye opcionalmente Slopes/Climate/Biomes mediante copias aisladas; al invalidar una entrada desaparecen sus descendientes. `GetCompletedWorld` sigue requiriendo FINAL y exporta las capas ambientales vigentes si existen. `Generate` completa la continuación ecológica para Pangea; `GenerateGeology` recorre solo `GeologicalStages` en el mismo orquestador. Los demás tipos no cambian. Detalles y límites: [P09.1](PANGAEA_ECOLOGY_INTEGRATION.md), integración inicial pendiente de calibración y aprobación visual.

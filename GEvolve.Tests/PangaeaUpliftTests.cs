@@ -36,7 +36,7 @@ public static class PangaeaUpliftTests
         foreach (var (size, seed) in cases)
         {
             var timer = Stopwatch.StartNew();
-            var world = new WorldGenerationService().Generate(size, LandmassType.Pangaea, seed);
+            var world = new WorldGenerationService().GenerateGeology(size, LandmassType.Pangaea, seed);
             double generationMs = timer.Elapsed.TotalMilliseconds;
             var terrain = world.Landmass;
             var topology = new HexTopology(world.Grid);

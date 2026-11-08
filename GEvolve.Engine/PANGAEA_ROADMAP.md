@@ -285,3 +285,9 @@ El diagrama representa la **secuencia objetivo**, no afirma que todos los módul
 6. El cierre del roadmap requiere evidencia técnica **y** evaluación visual. Evitar adoptar un modelo solo porque pasa los tests.
 
 Validación técnica P03-A.7.1: build y cinco suites específicas PASS; general 15 PASS / 2 FAIL históricos (TectonicMotion: 4 escenarios; ContinentalGeology: 12). Las 16 diferencias son de elevación; baselines intactos. Véase el informe enlazado para códigos y duraciones.
+
+## P09.1 — Integración inicial de biomas
+
+**Implementado; pendiente de calibración y aprobación visual.** Pangea continúa FINAL → pendientes/temperatura → precipitación/humedad → biomas/subbiomas del catálogo original. Automático y laboratorio comparten las mismas operaciones; el laboratorio conserva 01–05 y añade 06–08, vistas ambientales e inspector. Se reutilizan TerrainSlope, TemperatureGenerator, PrecipitationGenerator y BiomeClassifier sin modificar sus fórmulas, IDs, rangos ni prioridades. La geología permanece intacta; los otros tipos mantienen su ruta. Persistencia opcional existente sin cambios de esquema. Véase [auditoría y contrato](PANGAEA_ECOLOGY_INTEGRATION.md).
+
+La validación técnica cubre cuatro tamaños, elegibilidad JSON, determinismo, sensibilidad FINAL, guardado/carga, invalidación, equivalencia geológica y regresión de otros mapas. Los informes publican aridez y resultados inesperados de prioridades para revisión posterior; no se imponen cuotas ni se recalibra. No se aprueba la distribución de biomas ni P03-A; baselines históricos intactos. No se inicia flora, fauna ni minerales. Validación visual exclusiva del usuario.

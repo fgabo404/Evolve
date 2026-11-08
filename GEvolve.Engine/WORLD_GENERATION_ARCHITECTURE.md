@@ -13,6 +13,10 @@ La calibración detallada en [PANGAEA_ROADMAP.md](PANGAEA_ROADMAP.md) modifica e
 
 **Rediseño lateral posterior:** Game impone un flujo manual secuencial de cinco acciones sobre el DAG original de Engine. El tipo fijo Pangea, configuración, vistas, etapas e inspección se alojan en una columna; la cámara/renderer reciben el origen real del mapa a su derecha. Desde P03-A.7.2.3, las alturas se anotan únicamente si el texto bitmap real cabe legible y centrado dentro de su hexágono y viewport; no hay muestreo de números a distancia. Cambiar configuración limpia datos y selección; el dado reinicia sin confirmación. Ninguna regla de precedencia de la UI altera las dependencias o los cálculos del generador. La validación técnica no certifica apariencia ni ejecuta el juego.
 
+## P09.1 — Integración inicial de biomas
+
+Pangea continúa después de FINAL con pendientes + temperatura → precipitación/humedad → biomas/subbiomas. Las tres operaciones se añaden al DAG de `PangaeaGenerationSession`; automático y laboratorio ejecutan los componentes originales sin modificar fórmulas, catálogo ni geología. Las siete operaciones geológicas y sus hashes conservan su contrato. `GenerateGeology` permite consumir esa salida dentro del mismo orquestador. Los estados ambientales opcionales y la persistencia existente se reutilizan sin migración. Game conserva 01–05 y añade 06–08, vistas ambientales e inspector; retirar una dependencia retira sus resultados. Alcance y prioridades: [auditoría P09.1](PANGAEA_ECOLOGY_INTEGRATION.md). **Integración inicial, pendiente de calibración y aprobación visual**; recursos, flora y fauna no se generan.
+
 ## Decisión de limpieza H05 — 5 de noviembre de 2026
 
 

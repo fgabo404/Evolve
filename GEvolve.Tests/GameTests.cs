@@ -106,8 +106,8 @@ public static class GameTests
                 terrain.SurfaceByCellId.Any(value => value == 0) &&
                 terrain.ElevationByCellId is { } elevations &&
                 elevations.Length == grid.Cells.Count &&
-                terrain.Climate is null && terrain.Biomes is null,
-                "Stage 02 generates land and elevation from universal tectonic plates");
+                terrain.Climate?.BasePrecipitationMmByCellId is not null && terrain.Biomes is not null && terrain.SlopeByCellId is not null,
+                "Pangaea generates original geology followed by catalog ecology");
             int landId = Array.IndexOf(terrain.SurfaceByCellId, (byte)1);
             int oceanId = Array.IndexOf(terrain.SurfaceByCellId, (byte)0);
             Check(session.SelectAt(grid.Cells[landId].Center)?.Id == landId &&

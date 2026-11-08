@@ -7,7 +7,7 @@ namespace GEvolve.Game.Screens;
 public static class PangaeaLaboratoryLayout
 {
     public const float HeaderHeight = 42;
-    public const float StatusTop = 478;
+    public const float StatusTop = 586;
     public static float PanelWidth(int width) => width < 800 ? 240 : 280;
     public static UiRect Map(int width, int height) => new(PanelWidth(width), 0, width - PanelWidth(width), height);
     public static UiRect Inspector(int width, int height) => new(12, height - 190, PanelWidth(width) - 24, 136);
@@ -15,19 +15,25 @@ public static class PangaeaLaboratoryLayout
     public static float MaximumScroll(int width, int height, int statusLines = 3) => Math.Max(0,
         StatusTop + Math.Max(3, statusLines) * 12 + 8 - (ControlsViewport(width, height).Y + ControlsViewport(width, height).Height));
     public static readonly PangaeaGenerationStage[] VisibleStages = [PangaeaGenerationStage.Plates,
-        PangaeaGenerationStage.Surface, PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final];
+        PangaeaGenerationStage.Surface, PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final,
+        PangaeaGenerationStage.Temperature, PangaeaGenerationStage.Precipitation, PangaeaGenerationStage.Biomes];
     public static readonly string[] StageLabels = ["GENERAR PLACAS Y MOVIMIENTOS", "GENERAR SUPERFICIES",
-        "GENERAR ELEVACIONES", "GENERAR SISTEMAS MONTAÑOSOS", "GENERAR ELEVACIONES FINALES"];
+        "GENERAR ELEVACIONES", "GENERAR SISTEMAS MONTAÑOSOS", "GENERAR ELEVACIONES FINALES",
+        "GENERAR TEMPERATURA", "GENERAR PRECIPITACIÓN Y HUMEDAD", "GENERAR BIOMAS"];
     public static readonly MapViewMode[] Views = [MapViewMode.Grid, MapViewMode.Tectonic, MapViewMode.Compression,
         MapViewMode.Extension, MapViewMode.Shear, MapViewMode.Surface, MapViewMode.ElevationBase,
-        MapViewMode.Geology, MapViewMode.ElevationContribution, MapViewMode.ElevationFinal, MapViewMode.Motion];
+        MapViewMode.Geology, MapViewMode.ElevationContribution, MapViewMode.ElevationFinal, MapViewMode.Motion,
+        MapViewMode.Infrared, MapViewMode.Rainfall, MapViewMode.Moisture, MapViewMode.Biomes];
     private static readonly UiAction[] ViewActions = [UiAction.LabViewGrid, UiAction.LabViewPlates,
         UiAction.LabViewCompression, UiAction.LabViewExtension, UiAction.LabViewShear, UiAction.LabViewSurface,
-        UiAction.LabViewBase, UiAction.LabViewSystems, UiAction.LabViewContribution, UiAction.LabViewFinal, UiAction.LabViewMotion];
-    public static UiAction StageAction(PangaeaGenerationStage stage) => (UiAction)((int)UiAction.LabGrid + (int)stage - 1);
+        UiAction.LabViewBase, UiAction.LabViewSystems, UiAction.LabViewContribution, UiAction.LabViewFinal, UiAction.LabViewMotion,
+        UiAction.LabViewTemperature, UiAction.LabViewRainfall, UiAction.LabViewMoisture, UiAction.LabViewBiomes];
+    private static readonly UiAction[] StageActions = [UiAction.LabGrid, UiAction.LabPlates, UiAction.LabMotion,
+        UiAction.LabSurface, UiAction.LabBase, UiAction.LabSystems, UiAction.LabFinal, UiAction.LabTemperature, UiAction.LabPrecipitation, UiAction.LabBiomes];
+    public static UiAction StageAction(PangaeaGenerationStage stage) => StageActions[(int)stage - 1];
     public static bool IsStageAction(UiAction action) => VisibleStages.Any(s => StageAction(s) == action);
     public static bool IsViewAction(UiAction action) => ViewActions.Contains(action);
-    public static PangaeaGenerationStage Stage(UiAction action) => (PangaeaGenerationStage)((int)action - (int)UiAction.LabGrid + 1);
+    public static PangaeaGenerationStage Stage(UiAction action) => (PangaeaGenerationStage)(Array.IndexOf(StageActions, action) + 1);
     public static UiAction ViewAction(MapViewMode view) => ViewActions[Array.IndexOf(Views, view)];
     public static MapViewMode View(UiAction action) => Views[Array.IndexOf(ViewActions, action)];
     public static IReadOnlyList<UiButton> Buttons(int width, int height, float scroll = 0)
@@ -40,8 +46,8 @@ public static class PangaeaLaboratoryLayout
             new(UiAction.SeedField, "SEMILLA", new(12, 152 - scroll, w - 44, 26)),
             new(UiAction.RandomSeed, "ALEATORIA", new(panel - 48, 152 - scroll, 36, 26)),
             new(UiAction.LabView, "VISTA", new(12, 200 - scroll, w, 26)),
-            new(UiAction.LabRestart, "INICIAR / REINICIAR", new(12, 442 - scroll, w * .62f - 4, 26)),
-            new(UiAction.LabCancel, "CANCELAR", new(12 + w * .62f + 4, 442 - scroll, w * .38f - 4, 26)),
+            new(UiAction.LabRestart, "INICIAR / REINICIAR", new(12, 550 - scroll, w * .62f - 4, 26)),
+            new(UiAction.LabCancel, "CANCELAR", new(12 + w * .62f + 4, 550 - scroll, w * .38f - 4, 26)),
             new(UiAction.Back, "SALIR AL MENÚ", new(12, height - 42, w, 30))
         };
         for (int i = 0; i < VisibleStages.Length; i++)

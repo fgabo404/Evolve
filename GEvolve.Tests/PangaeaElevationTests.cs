@@ -45,7 +45,7 @@ public static class PangaeaElevationTests
         foreach (var (size, seed) in cases)
         {
             var timer = Stopwatch.StartNew();
-            var world = new WorldGenerationService().Generate(size, LandmassType.Pangaea, seed);
+            var world = new WorldGenerationService().GenerateGeology(size, LandmassType.Pangaea, seed);
             timer.Stop();
             var fields = world.PangaeaElevations ?? throw new Exception("Missing elevation diagnostics");
             var terrain = world.Landmass;
@@ -203,7 +203,7 @@ public static class PangaeaElevationTests
         Check(calibrationChangedHeights, "The calibration changes upper relief in the regression matrix");
         Check(regionalRecoveryChangedHeights, "Regional relief is recovered in the regression matrix");
         foreach (var type in new[] { LandmassType.Archipelagos, LandmassType.SmallContinents, LandmassType.Continents })
-            Check(new WorldGenerationService().Generate(GridSize.Small, type, 2026).PangaeaElevations is null,
+            Check(new WorldGenerationService().GenerateGeology(GridSize.Small, type, 2026).PangaeaElevations is null,
                 "Pangaea diagnostics are absent for other world types");
     }
 

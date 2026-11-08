@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Numerics;
 using GEvolve.Engine.World;
+using GEvolve.Engine.World.BiomeGeneration;
+using GEvolve.State.Game;
 
 namespace GEvolve.Game.Graphics;
 
@@ -20,6 +22,9 @@ public sealed class PangaeaMapData
         if (snapshot.Base is not null) views.Add(MapViewMode.ElevationBase);
         if (snapshot.Mountains is not null) views.Add(MapViewMode.Geology);
         if (snapshot.Elevations is not null) views.AddRange([MapViewMode.ElevationContribution, MapViewMode.ElevationFinal]);
+        if (snapshot.Climate is not null) views.Add(MapViewMode.Infrared);
+        if (snapshot.Climate?.BasePrecipitationMmByCellId is not null) views.AddRange([MapViewMode.Rainfall, MapViewMode.Moisture]);
+        if (snapshot.Biomes is not null) views.Add(MapViewMode.Biomes);
         AvailableViews = views.AsReadOnly();
     }
     public Vector3 Color(int id, MapViewMode view)
@@ -27,6 +32,11 @@ public sealed class PangaeaMapData
         if (!AvailableViews.Contains(view)) throw new InvalidOperationException("The requested laboratory layer is unavailable.");
         var s = Snapshot;
         bool ocean = s.Surface is not null && s.Surface[id] == 0;
+        if (view == MapViewMode.Infrared) return ThermalPalette.ForCelsius(s.Climate!.BaseCelsius(id));
+        if (view == MapViewMode.Rainfall) return RainfallPalette.ForMillimetres(s.Climate!.BasePrecipitationMmByCellId![id]);
+        if (view == MapViewMode.Moisture) return Vector3.Lerp(new(.65f, .43f, .20f), new(.14f, .55f, .72f), s.Climate!.BaseMoistureByCellId![id] / 100f);
+        if (view == MapViewMode.Biomes) return s.Biomes!.Get(id) is { Status: BiomeClassificationStatus.Assigned, BiomeId: { } biome }
+            ? BiomePalette.ForBiome(biome) : new(.43f, .43f, .43f);
         if (view == MapViewMode.Grid) return new(.84f, .88f, .90f);
         if (view is MapViewMode.Tectonic or MapViewMode.Motion) return PlatePalette.ForPlate(s.Plates![id], ocean);
         if (view == MapViewMode.Compression) return TectonicStressPalette.ForValue(s.Motion!.CompressionByCellId[id], view);
@@ -86,6 +96,15 @@ public sealed class PangaeaMapData
         else lines.Add("SISTEMA: " + Missing(PangaeaGenerationStage.MountainSystems));
         lines.Add("APORTE: " + (s.Elevations is null ? Missing(PangaeaGenerationStage.Final) : s.Elevations.ContributionByCellId.Span[id].ToString(CultureInfo.InvariantCulture)));
         lines.Add("FINAL: " + (s.Elevations is null ? Missing(PangaeaGenerationStage.Final) : s.Elevations.FinalByCellId.Span[id].ToString(CultureInfo.InvariantCulture)));
+        lines.Add(FormattableString.Invariant($"LATITUD: {BiomeClassifier.Latitude(cell.Address.Row, s.Grid.Definition.Rows):F2} GRADOS"));
+        lines.Add("PENDIENTE: " + (s.Slopes is null ? Missing(PangaeaGenerationStage.Temperature) : $"{s.Slopes[id]} NIVELES/PASO"));
+        lines.Add("TEMPERATURA: " + (s.Climate is null ? Missing(PangaeaGenerationStage.Temperature) : FormattableString.Invariant($"{s.Climate.BaseCelsius(id):F1} C")));
+        lines.Add("PRECIPITACIÓN: " + (s.Climate?.BasePrecipitationMmByCellId is not { } rain ? Missing(PangaeaGenerationStage.Precipitation) : $"{rain[id]} MM/AÑO"));
+        lines.Add("HUMEDAD: " + (s.Climate?.BaseMoistureByCellId is not { } humid ? Missing(PangaeaGenerationStage.Precipitation) : $"{humid[id]} / 100"));
+        var assignment = s.Biomes?.Get(id);
+        lines.Add("BIOMA: " + (assignment?.BiomeId ?? (assignment is null ? Missing(PangaeaGenerationStage.Biomes) : "SIN COINCIDENCIA")));
+        lines.Add("SUBBIOMA: " + (assignment?.SubbiomeId ?? (assignment is null ? Missing(PangaeaGenerationStage.Biomes) : "SIN COINCIDENCIA")));
+        lines.Add("CLASIFICACIÓN: " + (assignment?.Status.ToString() ?? Missing(PangaeaGenerationStage.Biomes)));
         return lines;
     }
     public static string ViewLabel(MapViewMode view) => view switch
@@ -94,6 +113,7 @@ public sealed class PangaeaMapData
         MapViewMode.Compression => "COMPRESIÓN", MapViewMode.Extension => "EXTENSIÓN", MapViewMode.Shear => "CIZALLA",
         MapViewMode.Surface => "SUPERFICIE", MapViewMode.ElevationBase => "ALTURAS BASE",
         MapViewMode.Geology => "RELIEVE: SISTEMAS", MapViewMode.ElevationContribution => "APORTE CORDILLERAS",
-        MapViewMode.ElevationFinal => "ALTURAS FINAL", _ => throw new ArgumentOutOfRangeException(nameof(view))
+        MapViewMode.ElevationFinal => "ALTURAS FINAL", MapViewMode.Infrared => "TEMPERATURA", MapViewMode.Rainfall => "PRECIPITACIÓN",
+        MapViewMode.Moisture => "HUMEDAD", MapViewMode.Biomes => "BIOMAS", _ => throw new ArgumentOutOfRangeException(nameof(view))
     };
 }

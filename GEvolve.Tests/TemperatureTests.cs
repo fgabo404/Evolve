@@ -66,7 +66,7 @@ public static class TemperatureTests
         foreach (var size in Enum.GetValues<GridSize>())
         foreach (int seed in new[] { 2026, 42, -731 })
         {
-            var generated = new WorldGenerationService().Generate(LandmassProfiles.Create(size, LandmassType.Pangaea, seed));
+            var generated = new WorldGenerationService().GenerateGeology(LandmassProfiles.Create(size, LandmassType.Pangaea, seed));
             var terrain = generator.Apply(new HexTopology(generated.Grid), generated.Landmass);
             generated = generated with { Landmass = terrain };
             var climate = terrain.Climate!;

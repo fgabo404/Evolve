@@ -10,7 +10,7 @@ namespace GEvolve.Engine.World;
 /// <summary>
 /// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
 /// Continents currently stops after stage 01 with no surface.
-/// Temperature, precipitation and biome classification remain shared future stages.
+/// Pangaea continues through the existing climate and catalog biome stages.
 /// </summary>
 public sealed class WorldGenerationService
 {
@@ -29,13 +29,27 @@ public sealed class WorldGenerationService
     /// <summary>Optional read-only selection evidence; no extra random stream or generation strategy.</summary>
     public GeneratedWorld Generate(LandmassConfiguration configuration,
         Action<PangaeaMountainRangeAudit>? captureMountainAudit)
+        => Generate(configuration, captureMountainAudit, includePangaeaEcology: true);
+
+    /// <summary>Same official pipeline through geology only, for geological references and specialized consumers.</summary>
+    public GeneratedWorld GenerateGeology(GridSize size, LandmassType type, int seed = 2026)
+        => GenerateGeology(LandmassProfiles.Create(size, type, seed));
+
+    public GeneratedWorld GenerateGeology(LandmassConfiguration configuration,
+        Action<PangaeaMountainRangeAudit>? captureMountainAudit = null)
+        => Generate(configuration, captureMountainAudit, includePangaeaEcology: false);
+
+    private GeneratedWorld Generate(LandmassConfiguration configuration,
+        Action<PangaeaMountainRangeAudit>? captureMountainAudit, bool includePangaeaEcology)
     {
         Validate(configuration);
         if (configuration.Type == LandmassType.Pangaea)
         {
             var session = new PangaeaGenerationSession(configuration, recordDiagnostics: false,
                 captureAudit: captureMountainAudit is not null);
-            foreach (var stage in Enum.GetValues<PangaeaGenerationStage>()) session.Execute(stage);
+            IEnumerable<PangaeaGenerationStage> stages = includePangaeaEcology
+                ? Enum.GetValues<PangaeaGenerationStage>() : PangaeaGenerationSession.GeologicalStages;
+            foreach (var stage in stages) session.Execute(stage);
             var world = session.GetOwnedCompletedWorld();
             if (captureMountainAudit is not null) captureMountainAudit(session.GetFinalAudit()!);
             return world;

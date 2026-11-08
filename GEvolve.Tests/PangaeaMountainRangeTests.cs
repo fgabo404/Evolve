@@ -17,7 +17,7 @@ public static class PangaeaMountainRangeTests
         foreach (int seed in new[] { 2026, 42, -731 })
         {
             var timer = Stopwatch.StartNew();
-            var world = service.Generate(size, LandmassType.Pangaea, seed);
+            var world = service.GenerateGeology(size, LandmassType.Pangaea, seed);
             timer.Stop();
             var terrain = world.Landmass;
             var topology = new HexTopology(world.Grid);
@@ -74,7 +74,7 @@ public static class PangaeaMountainRangeTests
                       terrain.ElevationByCellId[id] >= initial.Elevation[id] &&
                       (state.RangeByCellId[id] != 0 || terrain.ElevationByCellId[id] == initial.Elevation[id]),
                     "Only local land elevation may rise");
-            var repeated = service.Generate(size, LandmassType.Pangaea, seed).Landmass;
+            var repeated = service.GenerateGeology(size, LandmassType.Pangaea, seed).Landmass;
             Check(terrain.SurfaceByCellId.SequenceEqual(repeated.SurfaceByCellId) &&
                 terrain.ElevationByCellId!.SequenceEqual(repeated.ElevationByCellId!) &&
                 terrain.PlateByCellId!.SequenceEqual(repeated.PlateByCellId!) &&
@@ -97,13 +97,13 @@ public static class PangaeaMountainRangeTests
         }
         foreach (var type in new[] { LandmassType.Archipelagos, LandmassType.SmallContinents })
         {
-            var world = service.Generate(GridSize.Small, type, 2026);
+            var world = service.GenerateGeology(GridSize.Small, type, 2026);
             Check(world.Landmass.PangaeaMountainRanges is null, "Other types have no Pangaea ranges");
         }
         foreach (int seed in new[] { 1510325998, -251942972, 1697481406,
             1567286827, 418579367 })
         {
-            var world = service.Generate(GridSize.Enormous, LandmassType.Pangaea, seed);
+            var world = service.GenerateGeology(GridSize.Enormous, LandmassType.Pangaea, seed);
             var topology = new HexTopology(world.Grid);
             var terrain = world.Landmass;
             var initial = new PangaeaFromPlatesGenerator().Generate(topology,

@@ -195,7 +195,7 @@ public static class TectonicMotionTests
             var config = LandmassProfiles.Create(Enum.Parse<GridSize>(parts[0]), Enum.Parse<LandmassType>(parts[1]), int.Parse(parts[2]));
             if (config.Type == LandmassType.Continents)
             {
-                var rebuilt = service.Generate(config);
+                var rebuilt = service.GenerateGeology(config);
                 Check(rebuilt.Statistics is null && rebuilt.Landmass.SurfaceGenerationPending &&
                     rebuilt.Landmass.SurfaceByCellId.Length == 0 &&
                     rebuilt.Landmass.PlateByCellId is not null && rebuilt.Landmass.TectonicMotion is not null,
@@ -204,11 +204,11 @@ public static class TectonicMotionTests
             }
             if (parts[3] == "ERROR")
             {
-                try { service.Generate(config); throw new Exception("Expected existing generation failure changed"); }
+                try { service.GenerateGeology(config); throw new Exception("Expected existing generation failure changed"); }
                 catch (InvalidOperationException error) { Check(error.Message == parts[4], "Existing failure remains identical"); }
                 failures++; continue;
             }
-            var terrain = service.Generate(config).Landmass;
+            var terrain = service.GenerateGeology(config).Landmass;
             string Hash(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
             var actualAttempt = terrain.DeterministicAttempt;
             var actualSurface = Hash(terrain.SurfaceByCellId);

@@ -19,7 +19,7 @@ public static class ContinentalGeologyTests
         foreach (int seed in new[] { 2026, 42, -731 })
         {
             var config = LandmassProfiles.Create(size, LandmassType.Continents, seed);
-            var world = service.Generate(config);
+            var world = service.GenerateGeology(config);
             var terrain = world.Landmass;
             var preview = service.GeneratePlatePreview(config).Landmass;
             var topology = new HexTopology(world.Grid);
@@ -42,7 +42,7 @@ public static class ContinentalGeologyTests
             catch (InvalidOperationException) { }
             if (size == GridSize.Small)
             {
-                var repeated = service.Generate(config).Landmass;
+                var repeated = service.GenerateGeology(config).Landmass;
                 Check(repeated.SurfaceByCellId.Length == 0 &&
                     repeated.PlateByCellId!.SequenceEqual(terrain.PlateByCellId) &&
                     JsonSerializer.Serialize(repeated.TectonicMotion) == JsonSerializer.Serialize(terrain.TectonicMotion),
@@ -165,7 +165,7 @@ public static class ContinentalGeologyTests
         while (reader.ReadLine() is { } line)
         {
             var parts = line.Split('|');
-            var terrain = service.Generate(LandmassProfiles.Create(Enum.Parse<GridSize>(parts[0]),
+            var terrain = service.GenerateGeology(LandmassProfiles.Create(Enum.Parse<GridSize>(parts[0]),
                 Enum.Parse<LandmassType>(parts[1]), int.Parse(parts[2]))).Landmass;
             string Hash(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
             string scenario = $"{parts[0]}/{parts[1]}/{parts[2]}";

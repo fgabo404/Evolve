@@ -46,11 +46,11 @@ public static class PangaeaTectonicAuditTests
         var configuration = LandmassProfiles.Create(GridSize.Large, LandmassType.Pangaea, seed);
         var service = new WorldGenerationService();
         var timer = Stopwatch.StartNew();
-        var control = service.Generate(configuration);
+        var control = service.GenerateGeology(configuration);
         double controlMs = timer.Elapsed.TotalMilliseconds;
         PangaeaMountainRangeAudit? captured = null;
         timer.Restart();
-        var world = service.Generate(configuration, value => captured = value);
+        var world = service.GenerateGeology(configuration, value => captured = value);
         double tracedMs = timer.Elapsed.TotalMilliseconds;
         var audit = captured ?? throw new Exception("Selection trace missing");
         var terrain = world.Landmass;

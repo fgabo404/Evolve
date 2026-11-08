@@ -10,7 +10,8 @@ using GEvolve.Game.Screens;
 public static class PangaeaLaboratoryTests
 {
     private static readonly PangaeaGenerationStage[] Actions = [PangaeaGenerationStage.Plates, PangaeaGenerationStage.Surface,
-        PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final];
+        PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final,
+        PangaeaGenerationStage.Temperature, PangaeaGenerationStage.Precipitation, PangaeaGenerationStage.Biomes];
     public static void Run()
     {
         var menu = new GameSession(); menu.OpenPangaeaLaboratory();
@@ -18,7 +19,7 @@ public static class PangaeaLaboratoryTests
         menu.ReturnToMenu(); menu.OpenCreateWorld(); Check(menu.Screen == GameScreen.CreateWorld, "Automatic creation remains accessible");
         foreach (var size in Enum.GetValues<GridSize>()) Exercise(size);
         ResetAndCancellation(); RandomSeeds();
-        Console.WriteLine("LAB_PASS: four sizes; fixed sidebar/map viewport; sequential five actions over unchanged seven-stage engine; immediate seed/size/random reset; always-integrated numeric heights; surface >90; original automatic equivalence. NO window/GL/visual approval.");
+        Console.WriteLine("LAB_PASS: four sizes; fixed sidebar/map viewport; five geological actions preserved, three ecological controls reachable; immediate seed/size/random reset; always-integrated numeric heights; surface >90; original geological equivalence. NO window/GL/visual approval.");
     }
     private static void Exercise(GridSize size)
     {
@@ -49,7 +50,7 @@ public static class PangaeaLaboratoryTests
         Run(lab, PangaeaGenerationStage.Final, MapViewMode.ElevationFinal);
         var final = lab.Map!.Snapshot.Elevations!.FinalByCellId.ToArray();
         var contribution = lab.Map.Snapshot.Elevations.ContributionByCellId.ToArray();
-        foreach (var view in PangaeaLaboratoryLayout.Views) Check(lab.ChooseView(view), "Available layer selection");
+        foreach (var view in lab.Map.AvailableViews) Check(lab.ChooseView(view), "Available layer selection");
         Check(!lab.ChooseView(MapViewMode.Biomes), "Unavailable layer rejected");
         lab.SelectAt(grid.Cells[ocean].Center);
         Check(lab.Inspect().Contains("BASE: 0") && lab.Inspect().Contains("APORTE: 0") && lab.Inspect().Contains("FINAL: 0"), "Actual zero differs from pending");
@@ -165,7 +166,7 @@ public static class PangaeaLaboratoryTests
             {
                 var buttons = PangaeaLaboratoryLayout.Buttons(width, height, scroll);
                 Check(buttons.Where(b => PangaeaLaboratoryLayout.IsStageAction(b.Action)).Select(b => b.Action)
-                    .SequenceEqual(Actions.Select(PangaeaLaboratoryLayout.StageAction)), "Exactly five visible actions in required order");
+                    .SequenceEqual(Actions.Select(PangaeaLaboratoryLayout.StageAction)), "Exactly eight visible actions in required order");
                 Check(!buttons.Any(b => b.Action is UiAction.LabGrid or UiAction.LabMotion or UiAction.LabShowHeights or UiAction.LabConfirm), "No grid/H04/height-toggle or confirmation button");
                 var controls = PangaeaLaboratoryLayout.ControlsViewport(width, height);
                 foreach (var button in PangaeaLaboratoryLayout.HitButtons(width, height, scroll))
@@ -181,7 +182,7 @@ public static class PangaeaLaboratoryTests
                     Check(option.Bounds.X + option.Bounds.Width <= viewport.X && option.Bounds.Y >= controls.Y &&
                         option.Bounds.Y + option.Bounds.Height <= controls.Y + controls.Height + .01f, "Dropdowns stay entirely in sidebar controls");
             }
-            Check(Actions.All(s => seen.Contains(PangaeaLaboratoryLayout.StageAction(s))), "All five actions reachable at supported resolutions");
+            Check(Actions.All(s => seen.Contains(PangaeaLaboratoryLayout.StageAction(s))), "All eight actions reachable at supported resolutions");
             var type = PangaeaLaboratoryLayout.Dropdown(width, height, UiAction.TypeSelect, map);
             Check(type.Count == 1 && type[0].Action == UiAction.Pangaea, "Only supported laboratory map type is selectable");
             foreach (var view in map.AvailableViews)

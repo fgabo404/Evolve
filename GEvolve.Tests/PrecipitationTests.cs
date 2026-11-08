@@ -27,7 +27,7 @@ public static class PrecipitationTests
         foreach(var size in Enum.GetValues<GridSize>())
         foreach(int seed in new[] { 2026,42,-731 })
         {
-            var world=new WorldGenerationService().Generate(
+            var world=new WorldGenerationService().GenerateGeology(
                 LandmassProfiles.Create(size,LandmassType.Pangaea,seed));
             var topology=new HexTopology(world.Grid);
             var withTemperature=new TemperatureGenerator().Apply(topology,world.Landmass);

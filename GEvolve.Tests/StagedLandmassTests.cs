@@ -18,7 +18,7 @@ public static class StagedLandmassTests
         {
             var generated = new Dictionary<LandmassType, GeneratedWorld>();
             var pendingConfig = LandmassProfiles.Create(size, LandmassType.Continents, 2026);
-            var pending = service.Generate(pendingConfig);
+            var pending = service.GenerateGeology(pendingConfig);
             generated[LandmassType.Continents] = pending;
             Check(pending.Statistics is null && pending.Landmass.SurfaceGenerationPending &&
                 pending.Landmass.SurfaceByCellId.Length == 0 && pending.Landmass.ElevationByCellId is null &&
@@ -30,7 +30,7 @@ public static class StagedLandmassTests
                 var config = LandmassProfiles.Create(size, type, 2026);
                 var platesPreview = service.GeneratePlatePreview(config).Landmass.PlateByCellId!;
                 byte[] immutableSnapshot = platesPreview.ToArray();
-                var world = service.Generate(config);
+                var world = service.GenerateGeology(config);
                 generated[type] = world;
                 var landmass = world.Landmass;
                 var topology = new HexTopology(world.Grid);
@@ -87,7 +87,7 @@ public static class StagedLandmassTests
                 }
                 if (size == GridSize.Small)
                 {
-                    var repeated = service.Generate(config).Landmass;
+                    var repeated = service.GenerateGeology(config).Landmass;
                     Check(repeated.PlateByCellId!.SequenceEqual(ids) &&
                         repeated.SurfaceByCellId.SequenceEqual(landmass.SurfaceByCellId) &&
                         repeated.ElevationByCellId!.SequenceEqual(heights) &&
@@ -125,7 +125,7 @@ public static class StagedLandmassTests
         foreach (var type in finishedTypes)
         {
             var config = LandmassProfiles.Create(GridSize.Small, type, 42);
-            var world = service.Generate(config);
+            var world = service.GenerateGeology(config);
             Check(world.Landmass.PlateByCellId!.SequenceEqual(
                     service.GeneratePlatePreview(config).Landmass.PlateByCellId!) &&
                 LandmassProfileValidator.MeetsProfile(type, world.Statistics!),
@@ -139,8 +139,8 @@ public static class StagedLandmassTests
         foreach (var type in Enum.GetValues<LandmassType>())
         {
             var configuration = LandmassProfiles.Create(GridSize.Small, type, 2026);
-            var viaConfiguration = service.Generate(configuration);
-            var viaParameters = service.Generate(GridSize.Small, type);
+            var viaConfiguration = service.GenerateGeology(configuration);
+            var viaParameters = service.GenerateGeology(GridSize.Small, type);
             var baseline = viaConfiguration.Landmass;
             var actual = viaParameters.Landmass;
 
@@ -172,8 +172,8 @@ public static class StagedLandmassTests
         foreach (var type in Enum.GetValues<LandmassType>())
         {
             var alternateConfig = LandmassProfiles.Create(GridSize.Small, type, -731);
-            var alternate = service.Generate(GridSize.Small, type, -731);
-            var baselineAlternate = service.Generate(alternateConfig);
+            var alternate = service.GenerateGeology(GridSize.Small, type, -731);
+            var baselineAlternate = service.GenerateGeology(alternateConfig);
             Check(alternate.Landmass.Configuration == alternateConfig &&
                 alternate.Landmass.PlateByCellId!.SequenceEqual(
                     baselineAlternate.Landmass.PlateByCellId!) &&

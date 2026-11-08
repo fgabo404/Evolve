@@ -96,7 +96,8 @@ public sealed class PangaeaLaboratory : IDisposable
 
     private static readonly PangaeaGenerationStage[] OrderedStages = [PangaeaGenerationStage.Grid,
         PangaeaGenerationStage.Plates, PangaeaGenerationStage.Motion, PangaeaGenerationStage.Surface,
-        PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final];
+        PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final,
+        PangaeaGenerationStage.Temperature, PangaeaGenerationStage.Precipitation, PangaeaGenerationStage.Biomes];
     private IEnumerable<PangaeaGenerationStage> MissingPredecessors(PangaeaGenerationStage stage) => OrderedStages
         .TakeWhile(s => s != stage).Where(s => !Stages.Any(info => info.Stage == s && info.Status == PangaeaStageStatus.Completed));
     public bool CanExecute(PangaeaGenerationStage stage) => _session is not null && !Busy &&
@@ -116,7 +117,9 @@ public sealed class PangaeaLaboratory : IDisposable
         return "FALTA: " + string.Join(", ", missing.Select(d => d switch
         { PangaeaGenerationStage.Grid => "CUADRÍCULA AUTOMÁTICA", PangaeaGenerationStage.Plates => "PLACAS",
             PangaeaGenerationStage.Motion => "MOVIMIENTO", PangaeaGenerationStage.Surface => "SUPERFICIE",
-            PangaeaGenerationStage.Base => "BASE", _ => "SISTEMAS" }));
+            PangaeaGenerationStage.Base => "BASE", PangaeaGenerationStage.Final => "FINAL",
+            PangaeaGenerationStage.Temperature => "TEMPERATURA", PangaeaGenerationStage.Precipitation => "PRECIPITACIÓN",
+            _ => "SISTEMAS" }));
     }
 
     public void Execute(PangaeaGenerationStage stage)
@@ -135,7 +138,9 @@ public sealed class PangaeaLaboratory : IDisposable
             { PangaeaGenerationStage.Grid => "CUADRÍCULA AUTOMÁTICA", PangaeaGenerationStage.Plates => "PLACAS",
                 PangaeaGenerationStage.Motion => "MOVIMIENTO / H04", PangaeaGenerationStage.Surface => "SUPERFICIE",
                 PangaeaGenerationStage.Base => "ELEVACIONES BASE", PangaeaGenerationStage.MountainSystems => "SISTEMAS MONTAÑOSOS",
-                _ => "ELEVACIONES FINAL" });
+                PangaeaGenerationStage.Temperature => "TEMPERATURA Y PENDIENTES",
+                PangaeaGenerationStage.Precipitation => "PRECIPITACIÓN Y HUMEDAD",
+                PangaeaGenerationStage.Biomes => "BIOMAS", _ => "ELEVACIONES FINAL" });
         }
         catch (Exception error) { cancellation.Dispose(); Error = error.Message; }
     }
@@ -165,6 +170,9 @@ public sealed class PangaeaLaboratory : IDisposable
                     PangaeaGenerationStage.Surface => MapViewMode.Surface,
                     PangaeaGenerationStage.Base => MapViewMode.ElevationBase,
                     PangaeaGenerationStage.MountainSystems => MapViewMode.Geology,
+                    PangaeaGenerationStage.Temperature => MapViewMode.Infrared,
+                    PangaeaGenerationStage.Precipitation => MapViewMode.Rainfall,
+                    PangaeaGenerationStage.Biomes => MapViewMode.Biomes,
                     _ => MapViewMode.ElevationFinal
                 });
             Error = result.Error is OperationCanceledException ? null : result.Error?.Message;
@@ -233,7 +241,11 @@ public sealed class PangaeaLaboratory : IDisposable
             Base = Has(PangaeaGenerationStage.Base) ? s.Base : null,
             BaseSources = Has(PangaeaGenerationStage.Base) ? s.BaseSources : null,
             Mountains = Has(PangaeaGenerationStage.MountainSystems) ? s.Mountains : null,
-            Elevations = Has(PangaeaGenerationStage.Final) ? s.Elevations : null };
+            Elevations = Has(PangaeaGenerationStage.Final) ? s.Elevations : null,
+            Slopes = Has(PangaeaGenerationStage.Temperature) ? s.Slopes : null,
+            Climate = !Has(PangaeaGenerationStage.Temperature) ? null : Has(PangaeaGenerationStage.Precipitation) ? s.Climate :
+                s.Climate is { } climate ? climate with { BasePrecipitationMmByCellId = null, BaseMoistureByCellId = null, PrecipitationModelVersion = null } : null,
+            Biomes = Has(PangaeaGenerationStage.Biomes) ? s.Biomes : null };
     }
     public void Dispose() => ClearSession();
 }
