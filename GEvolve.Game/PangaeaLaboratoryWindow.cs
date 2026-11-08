@@ -141,15 +141,10 @@ internal sealed partial class EvolveWindow
                     _ui.Hex(p.X, p.Y, _camera.Scale, new(1, 1, 1, .08f), new(1, .9f, .3f, 1));
                 }
             }
-            // An integrated map property: always requested, dense at readable zoom and sparse when far away.
-            foreach (var label in PangaeaHeightLabels.Build(map, lab.View, _camera.VisibleRange(), _camera.Scale))
+            // Each bitmap number must fit its own cell and the map viewport at a readable size.
+            foreach (var label in PangaeaHeightLabels.Build(map, lab.View, _camera))
             {
-                var p = _camera.WorldToScreen(GEvolve.Engine.Grid.FlatHexGeometry.Center(new(label.Column, label.Row)));
-                if (p.X < mapRect.X + 12 || p.X > mapRect.X + mapRect.Width - 12 || p.Y < 10 || p.Y > height - 10) continue;
-                bool dark = lab.View == MapViewMode.Surface ? map.Snapshot.Surface![label.CellId] == 1 && label.Height > 90 :
-                    label.Height >= (lab.View == MapViewMode.ElevationContribution ? 13 : 60);
-                _ui.Text(label.Height.ToString(System.Globalization.CultureInfo.InvariantCulture), p.X, p.Y - 5, 1.3f,
-                    dark ? new(.08f, .08f, .08f, 1) : White);
+                _ui.Text(label.Text, label.TextOrigin.X, label.TextOrigin.Y, label.Pixel, label.TextColor, centered: false);
             }
             FlushLaboratoryClip(mapRect);
         }

@@ -3,6 +3,12 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GEvolve.Game.Graphics;
 
+/// <summary>Bounds of lit bitmap pixels, relative to the uncentered text origin.</summary>
+public readonly record struct BitmapTextBounds(float X, float Y, float Width, float Height)
+{
+    public Vector2 Center => new(X + Width / 2, Y + Height / 2);
+}
+
 /// <summary>Interfaz 2D propia: rectángulos y fuente bitmap en un solo lote OpenGL.</summary>
 public sealed class UiRenderer : IDisposable
 {
@@ -141,6 +147,26 @@ public sealed class UiRenderer : IDisposable
                     Rect(left + (i * 6 + column) * pixel, y + row * pixel,
                         pixel, pixel, color);
         }
+    }
+
+    /// <summary>Pure metrics from the same glyphs/spacing as Text; does not construct graphics resources.</summary>
+    public static BitmapTextBounds MeasureTextInk(string value, float pixel = 1)
+    {
+        if (!float.IsFinite(pixel) || pixel <= 0) throw new ArgumentOutOfRangeException(nameof(pixel));
+        int left = int.MaxValue, top = int.MaxValue, right = 0, bottom = 0;
+        string upper = value.ToUpperInvariant();
+        for (int i = 0; i < upper.Length; i++)
+        {
+            if (!Glyphs.TryGetValue(upper[i], out var rows)) continue;
+            for (int row = 0; row < 7; row++)
+            for (int column = 0; column < 5; column++)
+                if ((rows[row] & (1 << (4 - column))) != 0)
+                {
+                    left = Math.Min(left, i * 6 + column); right = Math.Max(right, i * 6 + column + 1);
+                    top = Math.Min(top, row); bottom = Math.Max(bottom, row + 1);
+                }
+        }
+        return left == int.MaxValue ? default : new(left * pixel, top * pixel, (right - left) * pixel, (bottom - top) * pixel);
     }
 
     public void Flush(int width, int height)

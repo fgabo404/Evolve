@@ -28,7 +28,7 @@ public static class PangaeaLaboratoryTests
         var grid = lab.Map!.Snapshot.Grid!;
         Check(lab.Map.Snapshot.Plates is null && lab.Map.Snapshot.Base is null && lab.Map.Snapshot.Elevations is null, "No fictitious grid attributes");
         Check(lab.SelectAt(grid.Cells[0].Center)?.Id == 0 && lab.Inspect().Contains("BASE: PENDIENTE"), "Grid-only selection distinguishes pending");
-        Check(PangaeaHeightLabels.Build(lab.Map, MapViewMode.Grid, new(0, 2, 0, 0), 20).Count == 0, "No invented labels before elevation");
+        Check(PangaeaHeightLabels.Build(lab.Map, MapViewMode.Grid, PangaeaHeightLabelTests.Camera(lab.Map)).Count == 0, "No invented labels before elevation");
         var cache = lab.Map; long revision = lab.PresentationRevision; int copies = lab.SnapshotCopies;
         for (int i = 0; i < 100; i++) Check(!lab.Update(), "Idle frame never requests snapshot");
         Check(ReferenceEquals(cache, lab.Map) && revision == lab.PresentationRevision && copies == lab.SnapshotCopies, "Stable revision cache");
@@ -54,6 +54,13 @@ public static class PangaeaLaboratoryTests
         lab.SelectAt(grid.Cells[ocean].Center);
         Check(lab.Inspect().Contains("BASE: 0") && lab.Inspect().Contains("APORTE: 0") && lab.Inspect().Contains("FINAL: 0"), "Actual zero differs from pending");
         HeightDisplay(lab.Map); LayoutAndCamera(lab.Map);
+        var inspector = lab.Inspect().ToArray();
+        var inspectionCamera = PangaeaHeightLabelTests.Camera(lab.Map, close: false);
+        Check(PangaeaHeightLabels.Build(lab.Map, lab.View, inspectionCamera).Count == 0 && lab.Inspect().SequenceEqual(inspector),
+            "Inspector preserves exact values even when labels are hidden at far zoom");
+        inspectionCamera.Zoom(100, new(inspectionCamera.ViewportX + inspectionCamera.ViewWidth / 2f, inspectionCamera.ViewHeight / 2f));
+        lab.SelectAt(inspectionCamera.ScreenToWorld(inspectionCamera.WorldToScreen(grid.Cells[ocean].Center)));
+        Check(lab.Inspect().SequenceEqual(inspector), "Inspector selection and fields remain unchanged through camera zoom");
         lab.Execute(PangaeaGenerationStage.Motion);
         var retainedBase = lab.Map!.Snapshot.Base ?? throw new InvalidOperationException("H04 lost independent BASE");
         Check(lab.Map.Snapshot.Elevations is null && !lab.CanExecute(PangaeaGenerationStage.Final), "Invalidate FINAL immediately and block execution");
@@ -197,22 +204,8 @@ public static class PangaeaLaboratoryTests
     }
     private static void HeightDisplay(PangaeaMapData map)
     {
-        var s = map.Snapshot; var range = new VisibleHexRange(-1, 1, 0, 0);
-        foreach (var view in map.AvailableViews)
-        {
-            var labels = PangaeaHeightLabels.Build(map, view, range, 13);
-            Check(labels.Count == 3 && labels[0].CellId == s.Grid!.Definition.Columns - 1 && labels[0].Column == -1, "Always-integrated labels preserve wrapped cell identity");
-            foreach (var label in labels)
-            {
-                byte expected = view == MapViewMode.ElevationBase ? s.Base![label.CellId] :
-                    view == MapViewMode.ElevationContribution ? s.Elevations!.ContributionByCellId.Span[label.CellId] : s.Elevations!.FinalByCellId.Span[label.CellId];
-                Check(label.Height == expected, "Annotation uses active field or latest relevant elevation");
-            }
-        }
-        Check(PangaeaHeightLabels.Build(map, MapViewMode.Surface, new(0, 1000, 0, 0), 20).Count == 1001, "Readable zoom shows every value, without blanket cap");
-        var sparse = PangaeaHeightLabels.Build(map, MapViewMode.Surface, new(0, 1000, 0, 100), 2);
-        Check(sparse.Count > 0 && sparse.Count <= PangaeaHeightLabels.MaximumSimplifiedLabels, "Far zoom simplifies instead of requiring a toggle or hiding all heights");
-        foreach (var label in sparse) Check(label.Height == s.Elevations!.FinalByCellId.Span[label.CellId], "Sparse labels still contain real cell values");
+        var s = map.Snapshot;
+        PangaeaHeightLabelTests.Run(map);
         var surface = (byte[])s.Surface!.Clone(); var initial = (byte[])s.Base!.Clone();
         surface[0] = surface[1] = 1; surface[2] = surface[3] = 0; initial[0] = 90; initial[1] = 91; initial[2] = 100; initial[3] = 0;
         var baseOnly = new PangaeaMapData(s with { Surface = surface, Base = initial, Elevations = null });
@@ -221,7 +214,7 @@ public static class PangaeaLaboratoryTests
         Check(baseOnly.Height(3, MapViewMode.Surface) == 0 && baseOnly.Height(3, MapViewMode.ElevationContribution) is null, "Zero distinct from pending contribution");
         var noHeights = new PangaeaMapData(s with { Surface = surface, Base = null, Elevations = null });
         Check(noHeights.Color(1, MapViewMode.Surface) == new Vector3(.35f, .57f, .32f) &&
-            PangaeaHeightLabels.Build(noHeights, MapViewMode.Surface, range, 20).Count == 0, "No invented values before elevations");
+            PangaeaHeightLabels.Build(noHeights, MapViewMode.Surface, PangaeaHeightLabelTests.Camera(noHeights)).Count == 0, "No invented values before elevations");
         for (int id = 0; id < s.Grid!.Cells.Count; id++)
             Check((map.Color(id, MapViewMode.Surface) == Vector3.One) == (s.Surface[id] == 1 && s.Elevations!.FinalByCellId.Span[id] > 90), "Actual surface white classification follows FINAL >90");
     }
