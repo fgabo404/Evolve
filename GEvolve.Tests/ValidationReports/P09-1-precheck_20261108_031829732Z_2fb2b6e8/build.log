@@ -1,0 +1,28 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P09-1-precheck_20261108_031829732Z_2fb2b6e8
+Started UTC: 2026-11-08T03:18:29.9217178Z
+Status: FAIL
+Native exit code: 1
+Duration seconds: 7.631
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 71 ms).
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 71 ms).
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 69 ms).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 215 ms).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 215 ms).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1-precheck_20261108_031829732Z_2fb2b6e8\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1-precheck_20261108_031829732Z_2fb2b6e8\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1-precheck_20261108_031829732Z_2fb2b6e8\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1-precheck_20261108_031829732Z_2fb2b6e8\bin\GEvolve.Game\debug\GEvolve.Game.dll
+<REPO>\GEvolve.Tests\PangaeaEcologyTests.cs(32,52): error CS0246: The type or namespace name 'HexTopology' could not be found (are you missing a using directive or an assembly reference?) [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+
+Build FAILED.
+
+<REPO>\GEvolve.Tests\PangaeaEcologyTests.cs(32,52): error CS0246: The type or namespace name 'HexTopology' could not be found (are you missing a using directive or an assembly reference?) [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:07.34
+
+=== STDERR (complete) ===

@@ -1,0 +1,26 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P09-1_20261108_032515779Z_96457619
+Started UTC: 2026-11-08T03:25:15.9723635Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 3.470
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 120 ms).
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 123 ms).
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 123 ms).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 256 ms).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 256 ms).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1_20261108_032515779Z_96457619\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1_20261108_032515779Z_96457619\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1_20261108_032515779Z_96457619\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1_20261108_032515779Z_96457619\bin\GEvolve.Game\debug\GEvolve.Game.dll
+  GEvolve.Tests -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P09-1_20261108_032515779Z_96457619\bin\GEvolve.Tests\debug\GEvolve.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.15
+
+=== STDERR (complete) ===

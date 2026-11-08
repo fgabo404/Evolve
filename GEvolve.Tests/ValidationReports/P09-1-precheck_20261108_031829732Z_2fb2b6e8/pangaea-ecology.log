@@ -1,0 +1,7 @@
+Command: dotnet run --project GEvolve.Tests --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P09-1-precheck_20261108_031829732Z_2fb2b6e8 -- --pangaea-ecology
+Started UTC: 2026-11-08T03:18:37.5892686Z
+Status: SKIPPED
+Native exit code: N/A
+Duration seconds: 0.000
+
+SKIPPED: dotnet build failed; dependent validation was not started.

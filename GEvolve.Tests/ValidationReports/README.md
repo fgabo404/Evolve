@@ -28,6 +28,8 @@ Summaries distinguish reported suite totals from individual assertions, whose co
 
 ## Retention
 
+P09.1 uses `-ValidationSet PangaeaEcology -Label P09-1 -IsolatedArtifacts`: build, `--pangaea-ecology`, `--pangaea-laboratory`, `--pangaea-staged`, then `--all-suites`. The ecology suite covers 16 worlds across four sizes with the original catalog, exact component composition, unchanged geology, determinism, FINAL-driven climate, current/historical save contracts and manual ecological invalidation. Each `ECOLOGY_WORLD` JSON record includes biome/subbiome percentages, latitude/elevation diagnostic groups, climate statistics, aridity and priority examples. These groups never influence classification. `EcologyControls` runs only the first three commands for focused work; it does not claim full regression coverage. Source SHA and dirty status in each summary distinguish exploratory prechecks from a canonical committed validation. Technical success does not approve biome distribution or visuals. No game window or GL context is created.
+
 For P03-A.7.2 use `-ValidationSet LaboratoryPangaea -Label P03-A72`: build, `--pangaea-laboratory`, `--pangaea-staged` and `--all-suites`. Laboratory tests exercise the Game controller, partial data, dependency controls, revision caching, configuration/reset/cancellation and numeric layout bounds without creating a window or GL context. They do not certify appearance or geography. Codex must not launch Game, run graphics smoke, inspect screenshots or use visual automation for this milestone. Visual execution and approval belong exclusively to the user.
 
 - Keep every milestone/reference report and every report with a failure or new regression.
