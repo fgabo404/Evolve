@@ -14,6 +14,7 @@ public static class GameTests
 {
     public static void Run()
     {
+        TextFieldEditingTests.Run();
         var session = new GameSession();
         Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
             session.State.HexGrid is null, "Start at menu without generation");

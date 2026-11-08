@@ -34,7 +34,8 @@ internal sealed partial class EvolveWindow : GameWindow
     private bool _dirty = true;
     private readonly bool _graphicsSmoke;
     private Task<GeneratedWorld>? _pendingGeneration;
-    private bool _seedFocused;
+    private readonly TextFieldEditor _textEditor = new();
+    private bool _seedFocused => _textEditor.HasFocus;
     // A real, overlayed dropdown instead of four always-visible buttons.
     private UiAction? _openDropdown;
     private int _smokeScenario = -1;
@@ -637,11 +638,9 @@ internal sealed partial class EvolveWindow : GameWindow
             else if (button.Action == UiAction.SeedField)
             {
                 const float pixel = 2.2f;
-                _ui.Text(_session.SeedText, r.X + 13,
-                    r.Y + (r.Height - 7 * pixel) / 2, pixel, White, centered: false);
-                if (_seedFocused)
-                    _ui.Rect(r.X + 13 + _session.SeedText.Length * 6 * pixel,
-                        r.Y + 9, 2, r.Height - 18, Accent);
+                float textY = r.Y + (r.Height - 7 * pixel) / 2;
+                DrawSeedEditing(r.X + 13, textY, pixel);
+                _ui.Text(_session.SeedText, r.X + 13, textY, pixel, White, centered: false);
             }
             else
             {
@@ -751,6 +750,7 @@ internal sealed partial class EvolveWindow : GameWindow
         if (e.Button != MouseButton.Left) return;
         Vector2 position = new(MousePosition.X, MousePosition.Y);
         _pressed = Hit(position.X, position.Y);
+        if (_pressed != UiAction.SeedField) _textEditor.Blur();
         if (_session.Screen == GameScreen.PangaeaLaboratory && _openDropdown is { } labSelector &&
             _pressed != labSelector && !PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, labSelector, _laboratory?.Map, _laboratoryScroll)
                 .Any(b => b.Action == _pressed))
@@ -808,7 +808,7 @@ internal sealed partial class EvolveWindow : GameWindow
         else if (_pressed is { } action && Hit(position.X, position.Y) == action)
             Activate(action);
         else if (_session.Screen is GameScreen.CreateWorld or GameScreen.PangaeaLaboratory)
-            _seedFocused = false;
+            _textEditor.Blur();
         _pressed = null;
         _dirty = true;
     }
@@ -828,28 +828,9 @@ internal sealed partial class EvolveWindow : GameWindow
     protected override void OnKeyDown(KeyboardKeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (_session.Screen == GameScreen.PangaeaLaboratory &&
-            (KeyboardState.IsKeyDown(Keys.LeftControl) || KeyboardState.IsKeyDown(Keys.RightControl)))
-        {
-            if (e.Key == Keys.C) { ClipboardString = _laboratory!.SeedText; return; }
-            if (e.Key == Keys.V && _seedFocused)
-            {
-                _laboratory!.SetSeedText(ClipboardString?.Trim() ?? ""); _dirty = true; return;
-            }
-        }
-        if (_session.Screen == GameScreen.PangaeaLaboratory && _seedFocused && e.Key == Keys.Backspace)
-        {
-            if (_laboratory!.SeedText.Length > 0) _laboratory.SetSeedText(_laboratory.SeedText[..^1]);
-            _dirty = true; return;
-        }
-        if (_session.Screen == GameScreen.CreateWorld && _seedFocused &&
-            e.Key == Keys.Backspace)
-        {
-            if (_session.SeedText.Length > 0)
-                _session.SetSeedText(_session.SeedText[..^1]);
-            _dirty = true;
-            return;
-        }
+        if (_textEditor.KeyDown(e.Key, e.Control, e.Shift, e.Alt, e.Command,
+            () => ClipboardString, value => ClipboardString = value))
+        { _dirty = true; return; }
         if (e.Key == Keys.Escape && _openDropdown is not null)
         {
             _openDropdown = null;
@@ -859,22 +840,45 @@ internal sealed partial class EvolveWindow : GameWindow
         }
         if (e.Key == Keys.Escape && _session.Screen != GameScreen.MainMenu)
         {
-            _seedFocused = false;
+            _textEditor.Blur();
             ReturnToMenu();
             _dirty = true;
         }
     }
 
+    protected override void OnKeyUp(KeyboardKeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        _textEditor.UpdateModifiers(e.Control, e.Alt, e.Command);
+    }
+
+    protected override void OnFocusedChanged(FocusedChangedEventArgs e)
+    {
+        base.OnFocusedChanged(e);
+        if (!e.IsFocused) { _textEditor.Blur(); _dirty = true; }
+    }
+
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
-        if (_session.Screen == GameScreen.PangaeaLaboratory && _seedFocused)
-        {
-            _laboratory!.SetSeedText(_laboratory.SeedText + e.AsString); _dirty = true; return;
-        }
-        if (_session.Screen != GameScreen.CreateWorld || !_seedFocused) return;
-        _session.SetSeedText(_session.SeedText + e.AsString);
-        _dirty = true;
+        if (_textEditor.TextInput(e.AsString)) _dirty = true;
+    }
+
+    private void FocusSeedInput()
+    {
+        if (_session.Screen == GameScreen.PangaeaLaboratory && _laboratory is { } lab)
+            _textEditor.Focus(lab, () => lab.SeedText, lab.SetSeedText);
+        else if (_session.Screen == GameScreen.CreateWorld)
+            _textEditor.Focus(_session, () => _session.SeedText, _session.SetSeedText);
+    }
+
+    private void DrawSeedEditing(float x, float y, float pixel)
+    {
+        if (!_seedFocused) return;
+        if (_textEditor.SelectionLength > 0)
+            _ui!.Rect(x + _textEditor.SelectionStart * 6 * pixel, y - 1,
+                _textEditor.SelectionLength * 6 * pixel, 7 * pixel + 2, new(.20f, .46f, .65f, .65f));
+        _ui!.Rect(x + _textEditor.Cursor * 6 * pixel, y - 1, 1.5f, 7 * pixel + 2, Accent);
     }
 
     private void Activate(UiAction action)
@@ -959,12 +963,12 @@ internal sealed partial class EvolveWindow : GameWindow
                 }
                 else _session.ChooseType(newType);
                 break;
-            case UiAction.SeedField: _seedFocused = true; break;
+            case UiAction.SeedField: FocusSeedInput(); break;
             case UiAction.RandomSeed: _session.RandomizeSeed(); break;
             case UiAction.Generate: StartGeneration(); break;
             case UiAction.Regenerate: StartGeneration(regenerate: true); break;
         }
-        if (action != UiAction.SeedField) _seedFocused = false;
+        if (action != UiAction.SeedField) _textEditor.Blur();
         _hover.Clear();
         _dirty = true;
     }
@@ -1005,7 +1009,7 @@ internal sealed partial class EvolveWindow : GameWindow
         _gridRenderer = null;
         _session.ReturnToMenu();
         _viewMode = MapViewMode.Biomes;
-        _seedFocused = false;
+        _textEditor.Blur();
         _hover.Clear();
     }
 

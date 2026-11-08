@@ -71,12 +71,12 @@ internal sealed partial class EvolveWindow
             case UiAction.Pangaea: _openDropdown = null; break; // Explicitly the only supported laboratory type.
             case UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous:
                 lab.ChooseSize(ScreenLayout.SizeFor(action)); ResetLaboratoryNavigation(); break;
-            case UiAction.SeedField: _seedFocused = true; break;
+            case UiAction.SeedField: FocusSeedInput(); break;
             case UiAction.RandomSeed: lab.RandomizeSeed(); ResetLaboratoryNavigation(); break;
             case UiAction.LabRestart: lab.RequestRestart(); _inspectorScroll = 0; break;
             case UiAction.LabCancel: lab.Cancel(); break;
         }
-        if (action != UiAction.SeedField) _seedFocused = false;
+        if (action != UiAction.SeedField) _textEditor.Blur();
         _dirty = true;
     }
     private void ResetLaboratoryNavigation()
@@ -155,7 +155,7 @@ internal sealed partial class EvolveWindow
         _ui.Flush(width, height); _ui.Clear();
         var status = LaboratoryStatus();
         _laboratoryScroll = Math.Clamp(_laboratoryScroll, 0, PangaeaLaboratoryLayout.MaximumScroll(width, height, status.Count));
-        foreach (var (label, y) in new[] { ("TIPO MAPA", 46), ("TAMAÑO", 92), ("SEMILLA - CTRL C: COPIAR", 138), ("VISTA", 186), ("GENERACIÓN MANUAL", 238) })
+        foreach (var (label, y) in new[] { ("TIPO MAPA", 46), ("TAMAÑO", 92), ("SEMILLA - CTRL V: PEGAR", 138), ("VISTA", 186), ("GENERACIÓN MANUAL", 238) })
             _ui.Text(label, 12, y - _laboratoryScroll, 1.15f, Muted, false);
         foreach (var button in PangaeaLaboratoryLayout.Buttons(width, height, _laboratoryScroll).Where(b => b.Action != UiAction.Back)) DrawLaboratoryButton(button);
         for (int i = 0; i < status.Count; i++)
@@ -200,11 +200,13 @@ internal sealed partial class EvolveWindow
         string text = button.Action switch
         {
             UiAction.SizeSelect => ScreenLayout.SizeLabel(lab.Size),
-            UiAction.SeedField => lab.SeedText + (_seedFocused ? "-" : ""),
+            UiAction.SeedField => lab.SeedText,
             UiAction.LabView => lab.Map is null ? "SIN CAPAS DISPONIBLES" : PangaeaMapData.ViewLabel(lab.View),
             _ => button.Text
         };
-        _ui.Text(text, r.X + 6, r.Y + 8, Math.Min(1.4f, (r.Width - 12) / (text.Length * 6)), enabled ? White : Muted, false);
+        float textPixel = Math.Min(1.4f, (r.Width - 12) / (Math.Max(1, text.Length) * 6));
+        if (button.Action == UiAction.SeedField) DrawSeedEditing(r.X + 6, r.Y + 8, textPixel);
+        _ui.Text(text, r.X + 6, r.Y + 8, textPixel, enabled ? White : Muted, false);
     }
     private void DrawLaboratoryInspector()
     {
