@@ -31,9 +31,11 @@ La cámara admite un origen de viewport explícito para ocupar el área real del
 ## Validación técnica
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet LaboratoryPangaea -Label P03-A721-sidebar
+powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet LaboratoryPangaea -Label P03-A721-sidebar -IsolatedArtifacts
 ```
 
 Incluye build, `--pangaea-laboratory`, `--pangaea-staged` y `--all-suites`. Las pruebas del laboratorio verifican secuencia, reinicios inmediatos, descartes asíncronos, campos numéricos, límites del layout, coordenadas de cámara y equivalencia automática en cuatro tamaños. La referencia por etapas cubre 28 Pangea y 12 controles. Los baselines históricos no se actualizan.
+
+`-IsolatedArtifacts` coloca salidas de build y run en una carpeta por ejecución dentro de `GEvolve.Tests/bin/ValidationArtifacts`, ya ignorada por Git. Permite validar sin reemplazar DLLs que tenga abiertas el juego del usuario. No inicia, inspecciona ni cierra ese proceso.
 
 La apariencia, fluidez, portapapeles, dado y lectura real de etiquetas/scroll quedan pendientes de revisión manual. Los estados parciales no son partidas guardables. P03-A permanece sin aprobación; P03-A.7.3, P03-A.7.4 y P03-B no se inician con este rediseño.

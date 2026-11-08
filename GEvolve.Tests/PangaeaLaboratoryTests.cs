@@ -186,7 +186,10 @@ public static class PangaeaLaboratoryTests
             Check(Vector2.Distance(camera.ScreenToWorld(camera.WorldToScreen(cell.Center)), cell.Center) < .001f, "Viewport-aware selection transform");
             var anchor = new Vector2(viewport.X + viewport.Width / 2, height / 2f);
             var before = camera.ScreenToWorld(anchor); camera.Zoom(2, anchor);
-            Check(Vector2.Distance(before, camera.ScreenToWorld(anchor)) < .001f, "Zoom anchor respects sidebar origin");
+            var delta = before - camera.ScreenToWorld(anchor);
+            float period = GEvolve.Engine.Grid.FlatHexGeometry.PeriodWidth(grid.Definition.Columns);
+            delta.X -= MathF.Round(delta.X / period) * period;
+            Check(delta.Length() < .001f, "Zoom anchor respects sidebar origin and equivalent E/O copies");
             camera.Fit(grid.Definition.Columns, grid.Definition.Rows, width, height);
             Check(camera.ViewportX == 0 && camera.ViewportY == MapCamera2D.TopBarHeight && camera.ViewHeight == height - MapCamera2D.TopBarHeight,
                 "Traditional camera retains original viewport contract");

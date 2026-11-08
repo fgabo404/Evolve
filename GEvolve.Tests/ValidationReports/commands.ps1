@@ -3,7 +3,8 @@ param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$Label = 'P03-A4',
     [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedPangaea', 'LaboratoryPangaea', 'LaboratoryControls')]
-    [string]$ValidationSet = 'Worldgen'
+    [string]$ValidationSet = 'Worldgen',
+    [switch]$IsolatedArtifacts
 )
 
 # Run from the repository root. This script never commits, pushes, deletes reports,
@@ -142,6 +143,19 @@ if ($ValidationSet -eq 'LaboratoryControls') {
         @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') }
     )
 }
+$artifactsDirectory = 'GEvolve.Tests/bin/ValidationArtifacts/' + $runId
+if ($IsolatedArtifacts) {
+    foreach ($step in $steps) {
+        if ($step.Arguments[0] -eq 'build') {
+            $step.Arguments = @('build', '--artifacts-path', $artifactsDirectory)
+        }
+        elseif ($step.Arguments[0] -eq 'run') {
+            $separator = [Array]::IndexOf($step.Arguments, '--')
+            $step.Arguments = @($step.Arguments[0..($separator - 1)]) + @('--artifacts-path', $artifactsDirectory) +
+                @($step.Arguments[$separator..($step.Arguments.Length - 1)])
+        }
+    }
+}
 foreach ($step in $steps) {
     $command = 'dotnet ' + ($step.Arguments -join ' ')
     $stepStarted = [DateTime]::UtcNow
@@ -184,6 +198,8 @@ $summary.Add('- Branch: `' + $branch + '`')
 $summary.Add('- Validated commit: `' + $validatedSha + '` - ' + $validatedSubject)
 $summary.Add('- .NET SDK: `' + $sdk + '`')
 $summary.Add('- Validation set: `' + $ValidationSet + '`')
+$summary.Add('- Isolated build artifacts: ' + [bool]$IsolatedArtifacts)
+if ($IsolatedArtifacts) { $summary.Add('- Ignored artifact directory: `' + $artifactsDirectory + '` (never published).') }
 $summary.Add('- PowerShell: ' + $PSVersionTable.PSVersion.ToString() + '; OS: ' + [Environment]::OSVersion.VersionString + '; 64-bit OS: ' + [Environment]::Is64BitOperatingSystem)
 $summary.Add('- Tracked source differs from validated HEAD: ' + $sourceDirty)
 $summary.Add('- The report/script changes are operational and excluded from the tracked-source comparison.')
@@ -240,7 +256,7 @@ $summary.Add('The Game entry point creates EvolveWindow and calls window.Run(); 
 $summary.Add('')
 $summary.Add('From the repository root, repeat this exact script snapshot:')
 $summary.Add('```powershell')
-$summary.Add('.\GEvolve.Tests\ValidationReports\' + $runId + '\commands.ps1 -ValidationSet ' + $ValidationSet + ' -Label ' + $Label)
+$summary.Add('.\GEvolve.Tests\ValidationReports\' + $runId + '\commands.ps1 -ValidationSet ' + $ValidationSet + ' -Label ' + $Label + $(if ($IsolatedArtifacts) { ' -IsolatedArtifacts' } else { '' }))
 $summary.Add('```')
 $summary.Add('Each invocation creates a new UTC directory. Individual native exit codes are in each log and the table; this script exits 1 if any validation failed, otherwise 0.')
 [IO.File]::WriteAllText((Join-Path $reportDirectory 'SUMMARY.md'), ($summary -join "`r`n"), $utf8)
