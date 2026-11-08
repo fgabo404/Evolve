@@ -2,7 +2,7 @@
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$Label = 'P03-A4',
-    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedPangaea', 'LaboratoryPangaea', 'LaboratoryControls', 'PangaeaEcology', 'EcologyControls', 'TextInputs', 'BaseAuditReference', 'BaseReliefAudit', 'BaseAuditControls', 'BaseVariantControls')]
+    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedPangaea', 'LaboratoryPangaea', 'LaboratoryControls', 'PangaeaEcology', 'EcologyControls', 'TextInputs', 'BaseAuditReference', 'BaseReliefAudit', 'BaseAuditControls', 'BaseVariantControls', 'BaseRegionalVariants', 'BaseRegionalComparison')]
     [string]$ValidationSet = 'Worldgen',
     [switch]$IsolatedArtifacts
 )
@@ -182,6 +182,16 @@ if ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) {
     )
     if ($ValidationSet -eq 'BaseAuditControls') { $steps = @($steps | Select-Object -First 2) }
 }
+if ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) {
+    $steps = @(
+        @{ Name = 'build'; Arguments = @('build') },
+        @{ Name = 'base-variants'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-base-variants') },
+        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
+        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
+        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
+    )
+    if ($ValidationSet -eq 'BaseRegionalComparison') { $steps = @($steps | Select-Object -First 2) }
+}
 if ($IsolatedArtifacts) {
     foreach ($step in $steps) {
         if ($step.Arguments[0] -eq 'build') {
@@ -270,7 +280,7 @@ if ($warnings.Count -eq 0) { $summary.Add('No warning lines were emitted.') }
 else { $summary.Add('```text'); foreach ($warning in $warnings) { $summary.Add($warning) }; $summary.Add('```') }
 $summary.Add('')
 $summary.Add('## Actual diagnostic and regression evidence')
-$diagnosticName = if ($ValidationSet -eq 'BaseVariantControls') { 'base-variant-controls' } elseif ($ValidationSet -eq 'BaseAuditReference') { 'base-reference' } elseif ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) { 'base-audit' } elseif ($ValidationSet -eq 'TextInputs') { 'game-inputs' } elseif ($ValidationSet -in @('PangaeaEcology', 'EcologyControls')) { 'pangaea-ecology' } elseif ($ValidationSet -in @('LaboratoryPangaea', 'LaboratoryControls')) { 'pangaea-laboratory' } elseif ($ValidationSet -eq 'StagedPangaea') { 'pangaea-staged' } elseif ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } elseif ($ValidationSet -eq 'TectonicCalibration') { 'pangaea-uplift' } else { 'pangaea-elevations' }
+$diagnosticName = if ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) { 'base-variants' } elseif ($ValidationSet -eq 'BaseVariantControls') { 'base-variant-controls' } elseif ($ValidationSet -eq 'BaseAuditReference') { 'base-reference' } elseif ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) { 'base-audit' } elseif ($ValidationSet -eq 'TextInputs') { 'game-inputs' } elseif ($ValidationSet -in @('PangaeaEcology', 'EcologyControls')) { 'pangaea-ecology' } elseif ($ValidationSet -in @('LaboratoryPangaea', 'LaboratoryControls')) { 'pangaea-laboratory' } elseif ($ValidationSet -eq 'StagedPangaea') { 'pangaea-staged' } elseif ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } elseif ($ValidationSet -eq 'TectonicCalibration') { 'pangaea-uplift' } else { 'pangaea-elevations' }
 $diagnostic = ($results | Where-Object { $_.Name -eq $diagnosticName }).Text
 $excerpts = @($diagnostic -split '\r?\n' | Where-Object {
     $_ -match '^BASE_VARIANT_.*PASS|^BASE_(REFERENCE_PASS|MORPH_CONTROLS_PASS|CASE_PASS|AUDIT_PASS)|^INPUT_EDIT_PASS:|^ECOLOGY_(ENV|CASE_PASS|SESSION_PASS|PASS)|^LAB_(CASE_PASS|ASYNC_PASS|SEEDS_PASS|PASS)|^STAGED_(CASE_PASS|GRAPH_PASS|OTHER_PASS|ASYNC_PASS|PASS)|^UPLIFT_COUNTS |^UPLIFT_PASS:|^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.[46] |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.[46] FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'

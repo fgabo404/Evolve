@@ -191,7 +191,7 @@ public static class PangaeaBaseAuditTests
         // -1 explicitly means no source exists, not an arbitrary long distance.
         return result;
     }
-    private static object Stats(IEnumerable<double> values)
+    internal static object Stats(IEnumerable<double> values)
     {
         double[] sorted = values.Order().ToArray(); if (sorted.Length == 0) return new { Count = 0 };
         double mean = sorted.Average();
@@ -199,7 +199,7 @@ public static class PangaeaBaseAuditTests
             P90 = sorted[(int)((sorted.Length - 1) * .9)], P99 = sorted[(int)((sorted.Length - 1) * .99)], Max = sorted[^1], Mean = sorted.Average(),
             StdDev = Math.Sqrt(sorted.Average(v => Math.Pow(v - mean, 2))) };
     }
-    private static double? Correlation(int[] ids, double[] a, double[] b)
+    internal static double? Correlation(int[] ids, double[] a, double[] b)
     {
         if (ids.Length == 0) return null;
         double ma = ids.Average(i => a[i]), mb = ids.Average(i => b[i]), aa = 0, bb = 0, ab = 0;

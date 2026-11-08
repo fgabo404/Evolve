@@ -18,6 +18,7 @@ if (args.Contains("--pangaea-ecology")) { PangaeaEcologyTests.Run(); return 0; }
 if (args.Contains("--pangaea-base-reference")) { PangaeaBaseAuditTests.CaptureReference(); return 0; }
 if (args.Contains("--pangaea-base-audit")) { PangaeaBaseAuditTests.Run(); return 0; }
 if (args.Contains("--pangaea-base-variants-controls")) { PangaeaBaseVariantControls.Run(); return 0; }
+if (args.Contains("--pangaea-base-variants")) { PangaeaBaseVariantTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [

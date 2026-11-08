@@ -26,6 +26,9 @@ public static class PangaeaBaseVariantControls
         var results = PangaeaBaseVariants.Definitions.Select(d => PangaeaBaseVariants.Generate(input, d.Id)).ToArray();
         Check(original == Hash(input), "No variant can mutate input surface, official BASE, fields or anchors");
         var v0 = results[0]; var v1 = results[1]; var bridge = results[2]; var v2 = results[3]; var v3 = results[4];
+        var perturbed = input with { Fields = input.Fields with { SmoothedPressure = Enumerable.Repeat(99.0, input.Surface.Length).ToArray() } };
+        foreach (var kind in new[] { PangaeaBaseVariants.Kind.V1, PangaeaBaseVariants.Kind.V1T, PangaeaBaseVariants.Kind.V2, PangaeaBaseVariants.Kind.V3 })
+            Check(PangaeaBaseVariants.Generate(perturbed, kind).Heights.SequenceEqual(results.Single(r => r.Variant == kind).Heights), "Regional variants are independent of legacy pressure, including summit support");
         Check(v0.Heights.SequenceEqual(snapshot.Base!) && v1.Potential.SequenceEqual(bridge.Potential) && bridge.Potential.SequenceEqual(v2.Potential) &&
             v2.Potential.SequenceEqual(v3.Potential) && v2.Normalized.SequenceEqual(v3.Normalized), "Controlled immediate-parent comparisons share unchanged factors");
         Check(Enumerable.Range(0, input.Surface.Length).All(i => input.Surface[i] == 0
