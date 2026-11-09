@@ -90,6 +90,8 @@ for (const [type, file] of Object.entries(files)) {
 assert(app.includes("renderSpawnRules(area, value.spawn)"), "subbiome view must render spawn rules");
 assert(app.includes("rules.required"), "required spawn rules must be shown");
 assert(app.includes("rules.preferred"), "preferred spawn rules must be shown");
+assert(app.includes("renderConstraint(childKey, childValue)"), "nested spawn constraints must remain visible");
+assert(app.includes("dryMonthThresholdMm"), "nested dry-month threshold must have a readable label");
 assert(!app.includes("../old/"), "Wiki must not read archived catalogs");
 const html = fs.readFileSync(path.join(wiki, "index.html"), "utf8");
 assert(html.includes("offline-data.js"), "offline mode must load current catalog snapshot");
