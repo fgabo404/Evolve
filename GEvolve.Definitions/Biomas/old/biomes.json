@@ -1,0 +1,1314 @@
+{
+  "schemaVersion": "3.0.0",
+  "biomes": [
+    {
+      "id": "desert",
+      "name": {
+        "es": "Desierto"
+      },
+      "subbiomes": [
+        {
+          "id": "desert_sandy",
+          "name": {
+            "es": "Arenoso (dunas)"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 40
+          },
+          "latitudeDegrees": {
+            "min": 10,
+            "max": 55,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_agaves",
+            "plant_date_palm",
+            "plant_desert_grasses",
+            "plant_mesquites",
+            "plant_saltbushes",
+            "plant_saxaul",
+            "plant_sonoran_saguaro",
+            "plant_xerophytic_shrubs"
+          ],
+          "fauna": [
+            "ANM#000178",
+            "animal_arabian_oryx",
+            "animal_land_tortoise",
+            "animal_regional_jerboas_and_gerbils",
+            "animal_wild_bactrian_camel"
+          ],
+          "minerals": [
+            "geological_sand",
+            "geological_calcareous_sand",
+            "geological_silica_sand",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_surface_opal"
+          ],
+          "resources": []
+        },
+        {
+          "id": "desert_rocky",
+          "name": {
+            "es": "Rocoso (cañones y mesetas)"
+          },
+          "elevationLevel": {
+            "min": 10,
+            "max": 60
+          },
+          "latitudeDegrees": {
+            "min": 15,
+            "max": 60,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000192",
+            "PLT#000194",
+            "plant_agaves",
+            "plant_atacama_coastal_fog_plants",
+            "plant_creosote_bushes",
+            "plant_desert_grasses",
+            "plant_mesquites",
+            "plant_prickly_pears",
+            "plant_sonoran_saguaro",
+            "plant_south_american_cacti",
+            "plant_xerophytic_shrubs"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000178",
+            "ANM#000181",
+            "animal_arabian_oryx",
+            "animal_coyote",
+            "animal_land_tortoise",
+            "animal_onager",
+            "animal_perentie",
+            "animal_regional_rattlesnakes",
+            "animal_roadrunner",
+            "animal_rock_hyraxes",
+            "animal_wild_bactrian_camel"
+          ],
+          "minerals": [
+            "geological_sand",
+            "geological_sandstone",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_granite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_volcanic_obsidian",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_pumice",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_basalt",
+            "geological_volcanic_rock",
+            "geological_rock_salt",
+            "geological_flint",
+            "geological_gypsum_in_evaporite_deposits",
+            "geological_surface_opal"
+          ],
+          "resources": []
+        },
+        {
+          "id": "desert_salt_flat",
+          "name": {
+            "es": "Salar"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 95
+          },
+          "latitudeDegrees": {
+            "min": 10,
+            "max": 60,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_saltbushes"
+          ],
+          "fauna": [
+            "animal_andean_condor",
+            "animal_vicuna"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_rock_salt",
+            "geological_gypsum_in_evaporite_deposits"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "forest",
+      "name": {
+        "es": "Bosque"
+      },
+      "subbiomes": [
+        {
+          "id": "forest_tropical",
+          "name": {
+            "es": "Tropical (selva)"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 74
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 25,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000195",
+            "PLT#000196",
+            "plant_african_oil_palm",
+            "plant_african_raffia_palms",
+            "plant_amazonian_rubber_tree",
+            "plant_brazil_nut",
+            "plant_kola_trees",
+            "plant_mesoamerican_teosinte",
+            "plant_mesoamerican_vanilla",
+            "plant_miombo_trees",
+            "plant_native_teak",
+            "plant_regional_tropical_timber_trees",
+            "plant_sal_trees",
+            "plant_tropical_palms",
+            "plant_wild_beans",
+            "plant_wild_cacao",
+            "plant_wild_squashes",
+            "plant_wild_sugarcane_relatives",
+            "plant_wild_taro"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000182",
+            "ANM#000185",
+            "animal_birds_of_paradise",
+            "animal_chimpanzee",
+            "animal_collared_peccary",
+            "animal_cuscuses_and_other_arboreal_marsupials",
+            "animal_elephant",
+            "animal_giant_anteater",
+            "animal_howler_monkey",
+            "animal_jaguar",
+            "animal_macaws",
+            "animal_ocellated_turkey",
+            "animal_okapi",
+            "animal_red_junglefowl",
+            "animal_southern_cassowary",
+            "animal_tiger",
+            "animal_western_gorilla"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_iron_rich_laterite",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_nickeliferous_laterite",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
+          "resources": []
+        },
+        {
+          "id": "forest_subtropical",
+          "name": {
+            "es": "Subtropical"
+          },
+          "elevationLevel": {
+            "min": 10,
+            "max": 74
+          },
+          "latitudeDegrees": {
+            "min": 15,
+            "max": 40,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000192",
+            "PLT#000197",
+            "plant_banksias",
+            "plant_cape_bulbs_and_geophytes",
+            "plant_heaths",
+            "plant_manzanitas",
+            "plant_proteas",
+            "plant_restios",
+            "plant_soapbark_tree",
+            "plant_wild_olive"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000172",
+            "ANM#000175",
+            "ANM#000180",
+            "ANM#000185",
+            "animal_collared_peccary",
+            "animal_cuscuses_and_other_arboreal_marsupials",
+            "animal_elephant",
+            "animal_indian_peafowl",
+            "animal_jaguar",
+            "animal_red_junglefowl",
+            "animal_scrub_birds",
+            "animal_short_beaked_echidna",
+            "animal_tiger"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_iron_rich_laterite",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_nickeliferous_laterite",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
+          "resources": []
+        },
+        {
+          "id": "forest_temperate",
+          "name": {
+            "es": "Templado"
+          },
+          "elevationLevel": {
+            "min": 5,
+            "max": 74
+          },
+          "latitudeDegrees": {
+            "min": 25,
+            "max": 65,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000201",
+            "PLT#000204",
+            "plant_asian_chestnuts",
+            "plant_coigue",
+            "plant_european_beech",
+            "plant_hazel",
+            "plant_lenga_beech",
+            "plant_maples",
+            "plant_native_wild_grapevine"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000170",
+            "ANM#000175",
+            "ANM#000180",
+            "ANM#000182",
+            "animal_aurochs",
+            "animal_coyote",
+            "animal_european_rabbit",
+            "animal_golden_eagle",
+            "animal_lynx",
+            "animal_puma",
+            "animal_reindeer",
+            "animal_short_beaked_echidna",
+            "animal_tiger",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_flint"
+          ],
+          "resources": []
+        },
+        {
+          "id": "forest_boreal",
+          "name": {
+            "es": "Boreal (taiga)"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 74
+          },
+          "latitudeDegrees": {
+            "min": 45,
+            "max": 75,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000191",
+            "PLT#000193",
+            "PLT#000201",
+            "PLT#000203",
+            "PLT#000205",
+            "plant_cloudberry",
+            "plant_mosses"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000170",
+            "ANM#000175",
+            "ANM#000182",
+            "animal_golden_eagle",
+            "animal_lynx",
+            "animal_reindeer",
+            "animal_subarctic_wolverine",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_peat"
+          ],
+          "resources": []
+        },
+        {
+          "id": "forest_wooded_swamp",
+          "name": {
+            "es": "Pantano arbolado (Everglades)"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 5
+          },
+          "latitudeDegrees": {
+            "min": 15,
+            "max": 40,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_african_raffia_palms",
+            "plant_mosses",
+            "plant_wetland_pandanus",
+            "plant_wild_taro"
+          ],
+          "fauna": [
+            "ANM#000185",
+            "animal_capybara",
+            "animal_collared_peccary",
+            "animal_giant_anteater",
+            "animal_howler_monkey",
+            "animal_jaguar",
+            "animal_shorebirds_and_waterbirds"
+          ],
+          "minerals": [
+            "geological_clay",
+            "geological_peat"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "plains",
+      "name": {
+        "es": "Llanuras"
+      },
+      "subbiomes": [
+        {
+          "id": "plains_savanna",
+          "name": {
+            "es": "Sabana"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 84
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 30,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000192",
+            "PLT#000197",
+            "plant_african_baobab",
+            "plant_african_wild_sorghums",
+            "plant_miombo_trees",
+            "plant_pequi",
+            "plant_prairie_grasses",
+            "plant_sahelian_wild_pearl_millet_relatives",
+            "plant_savanna_vegetation",
+            "plant_shea_tree"
+          ],
+          "fauna": [
+            "ANM#000171",
+            "ANM#000172",
+            "ANM#000174",
+            "ANM#000178",
+            "ANM#000185",
+            "animal_african_buffalo",
+            "animal_collared_peccary",
+            "animal_dingo",
+            "animal_elephant",
+            "animal_emu",
+            "animal_giant_anteater",
+            "animal_giraffe",
+            "animal_greater_rhea",
+            "animal_lion",
+            "animal_plains_zebra",
+            "animal_regional_wallabies",
+            "animal_scrub_birds",
+            "animal_wildebeest",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_iron_rich_laterite",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_nickeliferous_laterite",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
+          "resources": []
+        },
+        {
+          "id": "plains_prairie",
+          "name": {
+            "es": "Pradera"
+          },
+          "elevationLevel": {
+            "min": 10,
+            "max": 84
+          },
+          "latitudeDegrees": {
+            "min": 20,
+            "max": 60,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_prairie_grasses"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000175",
+            "ANM#000179",
+            "animal_american_bison",
+            "animal_aurochs",
+            "animal_coyote",
+            "animal_dingo",
+            "animal_emu",
+            "animal_european_rabbit",
+            "animal_golden_eagle",
+            "animal_greater_rhea",
+            "animal_prairie_dog",
+            "animal_puma",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_clay",
+            "geological_sand",
+            "geological_silica_sand",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_gravel",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_flint"
+          ],
+          "resources": []
+        },
+        {
+          "id": "plains_steppe",
+          "name": {
+            "es": "Estepa"
+          },
+          "elevationLevel": {
+            "min": 10,
+            "max": 84
+          },
+          "latitudeDegrees": {
+            "min": 25,
+            "max": 75,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000194",
+            "plant_southwest_asian_wild_wheat",
+            "plant_steppe_grasses",
+            "plant_wild_barley",
+            "plant_wild_quinoa_relatives"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000178",
+            "ANM#000179",
+            "animal_aurochs",
+            "animal_coyote",
+            "animal_emu",
+            "animal_eurasian_saiga",
+            "animal_gelada",
+            "animal_golden_eagle",
+            "animal_greater_rhea",
+            "animal_onager",
+            "animal_prairie_dog",
+            "animal_przewalski_horse",
+            "animal_vicuna",
+            "animal_wild_bactrian_camel",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_sandstone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_gravel",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_rock_salt",
+            "geological_gypsum_in_evaporite_deposits",
+            "geological_surface_opal"
+          ],
+          "resources": []
+        },
+        {
+          "id": "plains_open_wetland",
+          "name": {
+            "es": "Humedal abierto (Pantanal)"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 10
+          },
+          "latitudeDegrees": {
+            "min": 5,
+            "max": 40,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_wetland_pandanus",
+            "plant_wild_sugarcane_relatives"
+          ],
+          "fauna": [
+            "ANM#000185",
+            "animal_capybara",
+            "animal_collared_peccary",
+            "animal_giant_anteater",
+            "animal_jaguar",
+            "animal_mollusks",
+            "animal_shorebirds_and_waterbirds",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_clay",
+            "geological_alluvial_gold",
+            "geological_peat"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "marine",
+      "name": {
+        "es": "Marino"
+      },
+      "subbiomes": [
+        {
+          "id": "marine_reef",
+          "name": {
+            "es": "Arrecife"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 0
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 35,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_marine_algae",
+            "plant_seagrasses"
+          ],
+          "fauna": [
+            "ANM#000173",
+            "animal_mollusks",
+            "animal_regional_reef_fish",
+            "animal_sea_turtles"
+          ],
+          "minerals": [
+            "geological_calcareous_sand",
+            "geological_limestone",
+            "geological_seashells"
+          ],
+          "resources": []
+        },
+        {
+          "id": "marine_estuary_littoral",
+          "name": {
+            "es": "Estuario o litoral"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 0
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 75,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000198",
+            "plant_cordgrasses_and_saltmarsh_grasses",
+            "plant_estuarine_halophytes",
+            "plant_marine_algae",
+            "plant_seagrasses"
+          ],
+          "fauna": [
+            "ANM#000173",
+            "animal_coastal_elephant_seals",
+            "animal_juvenile_estuarine_fish",
+            "animal_mollusks",
+            "animal_regional_sardines",
+            "animal_sea_turtles",
+            "animal_seals",
+            "animal_shorebirds_and_waterbirds"
+          ],
+          "minerals": [
+            "geological_clay",
+            "geological_sand",
+            "geological_calcareous_sand",
+            "geological_silica_sand",
+            "geological_seashells",
+            "geological_gravel",
+            "geological_sea_salt"
+          ],
+          "resources": []
+        },
+        {
+          "id": "marine_mangrove",
+          "name": {
+            "es": "Manglar"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 0
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 35,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000200"
+          ],
+          "fauna": [
+            "ANM#000173",
+            "animal_juvenile_estuarine_fish",
+            "animal_mollusks",
+            "animal_shorebirds_and_waterbirds"
+          ],
+          "minerals": [
+            "geological_seashells",
+            "geological_sea_salt"
+          ],
+          "resources": []
+        },
+        {
+          "id": "marine_open_ocean",
+          "name": {
+            "es": "Océano abierto (alta mar)"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 0
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 90,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000198",
+            "plant_marine_algae",
+            "plant_marine_phytoplankton"
+          ],
+          "fauna": [
+            "ANM#000183",
+            "animal_antarctic_krill",
+            "animal_atlantic_cod",
+            "animal_regional_migratory_whales",
+            "animal_regional_polar_fish",
+            "animal_regional_sardines",
+            "animal_sea_turtles",
+            "animal_seabirds"
+          ],
+          "minerals": [
+            "geological_polymetallic_nodules"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "tundra",
+      "name": {
+        "es": "Tundra"
+      },
+      "subbiomes": [
+        {
+          "id": "tundra_tundra",
+          "name": {
+            "es": "Tundra"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 84
+          },
+          "latitudeDegrees": {
+            "min": 60,
+            "max": 85,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000191",
+            "PLT#000199",
+            "PLT#000205",
+            "plant_cloudberry",
+            "plant_cushion_plants",
+            "plant_mosses",
+            "plant_subantarctic_grasses",
+            "plant_tundra_berries"
+          ],
+          "fauna": [
+            "ANM#000169",
+            "ANM#000182",
+            "animal_arctic_hare",
+            "animal_lemming",
+            "animal_muskox",
+            "animal_reindeer",
+            "animal_snowy_owl",
+            "animal_subarctic_wolverine",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_peat"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "mountain",
+      "name": {
+        "es": "Montaña"
+      },
+      "subbiomes": [
+        {
+          "id": "mountain_alpine",
+          "name": {
+            "es": "Alpino"
+          },
+          "elevationLevel": {
+            "min": 50,
+            "max": 90
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 90,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "PLT#000199",
+            "plant_alpine_grasses",
+            "plant_cushion_plants",
+            "plant_east_african_giant_lobelias",
+            "plant_edelweiss",
+            "plant_ethiopian_highland_ensete",
+            "plant_gentians",
+            "plant_giant_groundsels",
+            "plant_high_altitude_rhododendrons",
+            "plant_ichu_grass",
+            "plant_lenga_beech",
+            "plant_queuna_trees",
+            "plant_wild_potato_relatives",
+            "plant_wild_quinoa_relatives"
+          ],
+          "fauna": [
+            "ANM#000179",
+            "ANM#000181",
+            "ANM#000184",
+            "ANM#000186",
+            "animal_andean_condor",
+            "animal_chamois",
+            "animal_gelada",
+            "animal_golden_eagle",
+            "animal_himalayan_tahr",
+            "animal_snow_leopard",
+            "animal_vicuna",
+            "animal_viscacha",
+            "animal_wild_yak",
+            "animal_wolf"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
+          "resources": []
+        },
+        {
+          "id": "mountain_rocky",
+          "name": {
+            "es": "Rocoso"
+          },
+          "elevationLevel": {
+            "min": 45,
+            "max": 100
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 90,
+            "hemisphere": "either"
+          },
+          "flora": [
+            "plant_high_altitude_rhododendrons",
+            "plant_mountain_junipers"
+          ],
+          "fauna": [
+            "ANM#000181",
+            "ANM#000184",
+            "ANM#000186",
+            "animal_andean_condor",
+            "animal_chamois",
+            "animal_golden_eagle",
+            "animal_himalayan_tahr",
+            "animal_puma",
+            "animal_rock_hyraxes",
+            "animal_snow_leopard",
+            "animal_viscacha",
+            "animal_wild_yak"
+          ],
+          "minerals": [
+            "geological_sandstone",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_granite",
+            "geological_gravel",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_volcanic_obsidian",
+            "geological_gold_bearing_quartz",
+            "geological_alluvial_gold",
+            "geological_vein_gold",
+            "geological_pumice",
+            "geological_slate",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_basalt",
+            "geological_volcanic_rock",
+            "geological_flint"
+          ],
+          "resources": []
+        },
+        {
+          "id": "mountain_cliffs",
+          "name": {
+            "es": "Acantilados"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 100
+          },
+          "latitudeDegrees": {
+            "min": 0,
+            "max": 90,
+            "hemisphere": "either"
+          },
+          "flora": [],
+          "fauna": [
+            "ANM#000184",
+            "ANM#000186",
+            "animal_andean_condor",
+            "animal_chamois",
+            "animal_golden_eagle",
+            "animal_himalayan_tahr",
+            "animal_rock_hyraxes",
+            "animal_viscacha"
+          ],
+          "minerals": [
+            "geological_sandstone",
+            "geological_limestone",
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_granite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_volcanic_obsidian",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_pumice",
+            "geological_slate",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore",
+            "geological_basalt",
+            "geological_volcanic_rock"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "polar_north",
+      "name": {
+        "es": "Polo Norte"
+      },
+      "subbiomes": [
+        {
+          "id": "polar_north_ice",
+          "name": {
+            "es": "Hielo polar"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 100
+          },
+          "latitudeDegrees": {
+            "min": 80,
+            "max": 90,
+            "hemisphere": "north"
+          },
+          "flora": [],
+          "fauna": [
+            "animal_arctic_hare",
+            "animal_muskox",
+            "animal_regional_migratory_whales",
+            "animal_regional_polar_fish",
+            "animal_seals",
+            "animal_snowy_owl"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
+          "resources": []
+        }
+      ]
+    },
+    {
+      "id": "polar_south",
+      "name": {
+        "es": "Polo Sur"
+      },
+      "subbiomes": [
+        {
+          "id": "polar_south_ice",
+          "name": {
+            "es": "Hielo polar"
+          },
+          "elevationLevel": {
+            "min": 0,
+            "max": 100
+          },
+          "latitudeDegrees": {
+            "min": 80,
+            "max": 90,
+            "hemisphere": "south"
+          },
+          "flora": [],
+          "fauna": [
+            "ANM#000183",
+            "animal_antarctic_krill",
+            "animal_coastal_elephant_seals",
+            "animal_regional_migratory_whales",
+            "animal_regional_polar_fish",
+            "animal_seabirds",
+            "animal_seals"
+          ],
+          "minerals": [
+            "geological_bituminous_coal",
+            "geological_copper_bearing_deposit",
+            "geological_chalcopyrite_copper_ore",
+            "geological_sulfide_copper_ore",
+            "geological_tin_bearing_deposit",
+            "geological_vein_cassiterite_tin_ore",
+            "geological_phosphorite",
+            "geological_apatite_phosphorite",
+            "geological_iron_bearing_deposit",
+            "geological_hematite_iron_ore",
+            "geological_magnetite_iron_ore",
+            "geological_manganese_bearing_deposit",
+            "geological_pyrolusite_manganese_ore",
+            "geological_nickel_bearing_deposit",
+            "geological_sulfide_nickel_ore",
+            "geological_gold_bearing_quartz",
+            "geological_vein_gold",
+            "geological_silver_bearing_deposit",
+            "geological_argentite_silver_ore",
+            "geological_lead_bearing_deposit",
+            "geological_galena_lead_ore"
+          ],
+          "resources": []
+        }
+      ]
+    }
+  ],
+  "classificationFactors": [
+    "elevation",
+    "latitude",
+    "temperature",
+    "moisture",
+    "slope",
+    "water",
+    "coast"
+  ]
+}

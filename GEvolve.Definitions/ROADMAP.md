@@ -4,8 +4,24 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** diseño iniciado; sin cambios en los catálogos ni en el motor  
+> **Estado:** catálogos originales archivados; nuevos catálogos vacíos; pendiente D01  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
+
+## 0. Reinicio controlado de los catálogos (2026-11-08)
+
+**Decisión aprobada:** reconstruir desde cero los catálogos de **biomas, fauna, flora y minerales**, en ese orden de diseño, sin borrar los anteriores.
+
+- Los JSON activos en `Biomas/biomes.json` y `Resources/{fauna,flora,minerals}.json` se sustituyen por contenedores mínimos con listas vacías: `biomes`, `animals`, `plants`, `minerals`. No se han inventado entidades ni reglas.
+- Las cuatro versiones anteriores se conservan **byte por byte** bajo `Biomas/old/` y `Resources/old/`; son referencias **históricas, no catálogos activos**.
+- Las carpetas principales `Biomas/`, `Resources/`, `Technologies/`, `Mechanics/`, `WorldGeneration/` y `wiki/` permanecen intactas.
+- El generador antiguo sigue compilando `Biomas/old/biomes.json` como `Evolve.biomes.json` hasta que exista un contrato tipado nuevo; no interpreta el JSON activo vacío todavía.
+- `DefinitionCatalog.Load` excluye los directorios `old/`, para que la lectura genérica de JSON no mezcle definiciones archivadas y nuevas.
+- `resources.json`, tecnologías y contratos C# existentes quedan sin cambios de contenido. Sus referencias a entidades históricas deben considerarse **pendientes de reconciliación** mientras se reconstruyen los catálogos.
+- La instantánea offline de la wiki se actualiza para mostrar los **catálogos nuevos vacíos**, manteniendo intactos los datos de recursos y tecnologías. La wiki y sus pruebas históricas requieren revisión de relaciones y expectativas durante D01–D08.
+- En cada nueva entidad se decidirán los campos mínimos. Para biomas se ha acordado conceptualmente `Bioma → Subbioma → Spawn (condiciones ambientales)`; la gramática exacta de `spawn` queda pendiente de diseño. Los modelos tipados vendrán después.
+- No se borran IDs antiguos del historial: al reintroducir la misma entidad se conservará su identidad o se documentará una migración explícita. El reinicio del diseño no equivale a autorizar reutilización arbitraria de IDs.
+
+**Nuevo estado de D01:** construir las definiciones de bioma y subbioma una por una. Los antiguos 8/22 son referencia, no las entidades activas ni una cantidad obligatoria.
 
 ## 1. Objetivo y alcance
 
@@ -28,7 +44,7 @@ Este roadmap **no sustituye** el roadmap independiente de `GEvolve.Engine/World/
 | Minerales | 45 entradas; `Resources/minerals.json` | Identidades, hábitats geológicos propuestos y recursos |
 | Recursos transversales | 121 recursos, 582 vínculos de origen y 43 procesos candidatos; `Resources/resources.json` | Referencias que deben conservarse y validarse |
 
-Los números son la **línea base del inicio**, no metas ni cuotas de contenido. Las definiciones de recursos y procesos marcadas como propuestas **no se consideran reglas ejecutables**.
+Los números describen el **archivo histórico anterior al reinicio**, no el contenido activo ni metas/cuotas de contenido. Las definiciones de recursos y procesos marcadas como propuestas **no se consideran reglas ejecutables**.
 
 ## 3. Principios obligatorios
 
@@ -55,7 +71,7 @@ Los números son la **línea base del inicio**, no metas ni cuotas de contenido.
 **Salida:** diccionario de conceptos, contratos y mapa de dependencias aprobados.
 
 ### D01 — Biomas y subbiomas (primero)
-- [ ] Revisar uno por uno los 8 biomas y sus 22 subbiomas existentes.
+- [ ] Reconstruir uno por uno los biomas y subbiomas nuevos; utilizar los 8 biomas y 22 subbiomas archivados solo como referencia.
 - [ ] Acordar jerarquía **bioma → subbioma**, separando clima/vegetación de rasgos superpuestos como relieve, costa, cuerpos de agua y humedales.
 - [ ] Revisar qué categorías conservar, renombrar, dividir o agregar, sin romper IDs existentes.
 - [ ] Definir condiciones necesarias y preferentes: temperatura, precipitación, humedad útil, estacionalidad, latitud, altitud, pendiente, suelo, hidrología y proximidad marina cuando aplique.
@@ -105,7 +121,7 @@ Los números son la **línea base del inicio**, no metas ni cuotas de contenido.
 - [ ] Definir interacciones con sociedades: caza, manejo, domesticación o aprovechamiento cuando correspondan.
 - [ ] Registrar posibilidades de adaptación, selección y cambios heredables **sin simular especiación obligatoria**.
 - [ ] Validar sus referencias cruzadas; cerrar la ficha y continuar con la siguiente.
-- [ ] Repetir hasta revisar las 92 entradas iniciales y las nuevas que se aprueben.
+- [ ] Reintroducir una por una las entidades aprobadas; las 92 entradas archivadas son referencia, no cuota ni fichas activas.
 
 ### D06 — Flora: fichas completas
 - [ ] Comenzar por la entidad `plant_southwest_asian_wild_wheat` (**Trigo silvestre**), ya presente en `flora.json` y vinculada a `plains_steppe`.
@@ -114,14 +130,14 @@ Los números son la **línea base del inicio**, no metas ni cuotas de contenido.
 - [ ] Diseñar el recorrido silvestre → cultivo → selección de rasgos → posibles linajes domesticados, con cambios heredables, condiciones y consecuencias; no convertirlo en una transformación instantánea por tecnología.
 - [ ] Separar la capacidad de cultivar, que puede desbloquear una tecnología, del cambio biológico de la planta.
 - [ ] Validar IDs, recursos, hábitats, tecnologías y relaciones; cerrar la ficha.
-- [ ] Continuar una por una con las restantes entradas del catálogo.
+- [ ] Continuar una por una con las entidades de flora que se aprueben, consultando el archivo histórico.
 
 ### D07 — Minerales: fichas completas
 - [ ] Seleccionar el primer material geológico existente con su ID canónico.
 - [ ] Desglosar origen, tipos de depósito, entorno geológico, localización posible y disponibilidad.
 - [ ] Documentar extracción, preparación, productos, subproductos y vínculos a recursos sin habilitar recetas todavía pendientes.
 - [ ] Validar vínculos y cerrar la ficha.
-- [ ] Continuar individualmente con el resto de las entradas.
+- [ ] Continuar individualmente con los materiales geológicos aprobados, consultando el archivo histórico.
 
 ### D08 — Validación global e integración futura
 - [ ] Comprobar IDs únicos, referencias válidas y vínculos bidireccionales cuando apliquen.
@@ -175,7 +191,7 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | Flujo de trabajo | Rama `definitions` nacida de `develop` | Aplicado | Commit base `772d4e3` |
 | 2026-11-08 | Alcance | Primero cuatro familias; después entidades individualmente, iniciando con fauna | Acordado | Este roadmap |
 | 2026-11-08 | Trigo silvestre | Se registra como ejemplo de flora, no fauna | Catalogado; desglose pendiente | `plant_southwest_asian_wild_wheat` |
-| 2026-11-08 | Repositorio | No modificar todavía catálogos, motor ni estructura de partidas | Vigente | Solo documentación |
+| 2026-11-08 | Reinicio de definiciones | Archivados cuatro JSON originales; activos vacíos; recurso integrado de biomas apunta temporalmente al archivo anterior | Aplicado en rama definitions | Consultar historial Git y carpeta old/ |
 
 ## 9. Próximo paso inmediato
 

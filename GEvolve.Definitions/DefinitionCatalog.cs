@@ -18,6 +18,10 @@ public sealed class DefinitionCatalog : IDisposable
             foreach (string file in Directory.EnumerateFiles(root, "*.json", SearchOption.AllDirectories))
             {
                 var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+                // Las copias archivadas en old/ no son definiciones activas.
+                if (relative.Split('/').Any(part =>
+                    string.Equals(part, "old", StringComparison.OrdinalIgnoreCase)))
+                    continue;
                 result._documents.Add(relative, JsonDocument.Parse(File.ReadAllText(file)));
             }
             if (result._documents.Count == 0) throw new InvalidDataException("No JSON definitions found.");
