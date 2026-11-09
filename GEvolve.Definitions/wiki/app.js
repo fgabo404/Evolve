@@ -206,6 +206,7 @@ const spawnFieldLabels = {
   meanAnnualRelativeHumidityPercent: ["Humedad relativa media anual", "Mean annual relative humidity"],
   absoluteLatitudeDegrees: ["Latitud absoluta", "Absolute latitude"],
   elevationMeters: ["Elevación", "Elevation"],
+  distanceBelowLocalTreelineMeters: ["Distancia por debajo del límite local de árboles", "Distance below local treeline"],
   soilSaturatedDuringGrowingSeason: ["Suelo saturado durante la temporada de crecimiento", "Soil saturated during growing season"],
   wetlandWaterType: ["Tipo de agua del humedal", "Wetland water type"],
   slopeDegrees: ["Pendiente", "Slope"]
@@ -214,7 +215,7 @@ const spawnUnits = {
   meanAnnualTemperatureC: "°C", annualPrecipitationMm: "mm",
   dryMonthThresholdMm: "mm", monthsMeanTemperatureAbove10C: "",
   meanAnnualRelativeHumidityPercent: "%", absoluteLatitudeDegrees: "°",
-  elevationMeters: "m", slopeDegrees: "°"
+  elevationMeters: "m", distanceBelowLocalTreelineMeters: "m", slopeDegrees: "°"
 };
 function spawnValue(key, value) {
   if (value == null) return tr("Pendiente de definir", "Pending definition");
