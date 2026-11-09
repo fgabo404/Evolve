@@ -3,20 +3,20 @@
 > **Rama de trabajo:** `worldgeneration`  
 > **Documento rector:** este archivo es la única hoja de ruta activa del generador.  
 > **Fecha de reorganización:** 2026-11-08  
-> **Estado:** R00 y R01 cerrados por auditoría y aprobación del director, con las limitaciones históricas documentadas. **R02 en curso**: pruebas automatizadas del laboratorio PASS en R01; revisión visual manual y contrato de snapshot pendientes. La suite general permanece en 17 PASS / 2 FAIL históricos aceptados para R01 (NO es PASS).
+> **Estado:** R00 y R01 cerrados con sus excepciones históricas documentadas. **R02 redefinido por decisión del director (2026-11-09): desconexión total del motor antiguo y reinicio limpio del flujo activo.** La implementación y validación del aislamiento están pendientes. Los resultados PASS anteriores corresponden al motor legado; la suite general histórica registró 17 PASS / 2 FAIL y no se considera PASS.
 
 ## Objetivo
 
-Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el código anterior y el laboratorio visual. No se reinicia el conocimiento ni se copian algoritmos indiscriminadamente. Cada componente antiguo se evalúa y, si conviene, se adapta al contrato nuevo.
+Desarrollar desde cero el generador oficial de mundos de Evolve por etapas. El código anterior queda archivado exclusivamente como referencia de consulta, sin ejecución, dependencia activa ni reutilización automática. Solo se rescatarán piezas concretas tras evaluación técnica y aprobación explícita. Se conserva la infraestructura compartida que no pertenece al generador legado, como `GEvolve.Engine/Grid/`.
 
 ## Arquitectura y reglas
 
 - **Nuevo motor:** `GEvolve.Engine/World/WorldGeneration/`. No usar nombres con números de versión.
-- **Motor anterior:** `GEvolve.Engine/World/worldgenerationold/`. Se conservan temporalmente los namespaces y APIs para que Game y las pruebas antiguas sigan funcionando. Sigue compilándose durante la transición.
+- **Motor anterior:** `GEvolve.Engine/World/worldgenerationold/`, archivo histórico de solo consulta. R01 conservó sus fuentes y temporalmente las compilaba; **R02 debe desconectarlo de Game, del laboratorio y del build activo**, sin borrarlo ni cambiar su contenido. No dejar rutas alternativas que lo ejecuten.
 - **Cuadrícula compartida:** `GEvolve.Engine/Grid/`; no duplicar geometría, celdas, vecinos ni wrap horizontal.
 - **Definitions / State:** conservar contratos y guardados actuales hasta una migración explícita, probada y aprobada.
-- **Laboratorio:** conservar `PangaeaLaboratory`, sus vistas, snapshots y renderizador; conectar gradualmente el nuevo generador sin sacrificar el anterior.
-- **Separación:** el código nuevo no invoca generadores ni algoritmos dentro de `worldgenerationold/`. Los elementos reutilizados se extraen/adaptan deliberadamente y se validan.
+- **Laboratorio:** reconstruir el flujo activo desde una interfaz mínima basada en la cuadrícula compartida; las etapas, vistas, comparador y snapshots del laboratorio antiguo no se trasladan por defecto. Preservar su implementación en Git/archivo histórico, pero no permitir ejecutarla desde el juego.
+- **Separación:** ni el juego activo ni el generador nuevo ni su laboratorio pueden invocar `worldgenerationold/`; excluir sus fuentes del ensamblado activo y separar los tests legados de las pruebas oficiales nuevas. No ocultar ni eliminar baselines o informes históricos.
 - **Semillas y capas:** generación determinista, identidad de celda estable, sin atribuir al océano valores de una etapa pendiente. Una sola elevación final oficial; campos parciales son diagnósticos.
 - **Proceso:** Arquitecto define contratos; Dev implementa; Auditor revisa; Director aprueba. No marcar un hito como validado sin evidencia.
 - **Comprobación:** el usuario ejecuta localmente compilación, pruebas y validación visual; no declarar aprobación automática.
@@ -43,13 +43,16 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 - [x] Excepción R01 **aprobada explícitamente por el director (2026-11-09)**: se aceptan para el alcance exclusivo del traslado los dos fallos históricos de baselines (`TectonicMotion`, `ContinentalGeology`). La suite general **sigue fallando: 17 PASS / 2 FAIL**. No se aprueban las nuevas elevaciones ni se actualizan baselines para ocultar discrepancias. El contrato/baselines de elevación queda como deuda técnica pendiente de revisión separada. Evidencia local comunicada por el usuario: `GEvolve.Tests/ValidationReports/R00-R01_20261109_041729114Z_167839a8/SUMMARY.md` (aún no publicada).
 - [x] Revisión del auditor concluida; aprobación explícita del director para cerrar R01 con la excepción anterior. No equivale a aprobación visual ni a aprobación de la suite general.
 
-### R02 — Laboratorio preservado
-**Estado:** en curso desde 2026-11-09, sin aprobación visual todavía. No modificar el generador histórico durante esta verificación.
-- [ ] Verificar apertura, semilla, selección de tamaño, ejecución manual por etapas, vistas, inspector y controles del laboratorio de Pangea.
-- [ ] Confirmar que la misma configuración/semilla conserva los resultados y las referencias históricas.
-- [ ] Definir con el arquitecto un contrato de snapshot para el generador nuevo, sin modificar todavía la interfaz antigua.
+### R02 — Desconexión del legado y laboratorio limpio
+**Estado:** pendiente de implementación. Alcance redefinido expresamente por el director el 2026-11-09; reemplaza la meta anterior de conservar activo el laboratorio histórico.
+- [ ] Desconectar todas las rutas activas de `GEvolve.Game` y de creación/regeneración de mundos que invoquen `GEvolve.Engine.World.WorldGenerationService` u otros algoritmos de `worldgenerationold/`. Sin fallback silencioso al legado.
+- [ ] Excluir las fuentes `worldgenerationold/**/*.cs` del build oficial mediante configuración explícita; conservarlas intactas y accesibles como archivo histórico. Adaptar las dependencias activas de Game y los tests para mantener compilación, sin reintroducir referencias al legado.
+- [ ] Sustituir el laboratorio activo por una interfaz mínima **sin etapas antiguas**, reutilizando solo `GEvolve.Engine/Grid/` para mostrar una cuadrícula hexagonal vacía, cambiar tamaño/semilla y navegar el mapa. Si el flujo «Crear mundo» aún no soporta el nuevo contrato, mostrarlo como no disponible; nunca generar automáticamente con el legado.
+- [ ] Distinguir tests oficiales del sistema nuevo y pruebas históricas archivadas; mantener resultados y baselines anteriores íntegros y dejar claro que los PASS de R01 corresponden al legado.
+- [ ] Verificar por inspección de referencias y diff que ninguna ruta ejecutable activa utiliza el motor antiguo. El usuario valida compilación, apertura del juego, cuadrícula vacía y ausencia de opciones obsoletas; el auditor revisa la evidencia y el director aprueba R02.
+- [ ] Definir con el arquitecto el contrato mínimo de snapshot de cuadrícula para R03, sin replicar `PangaeaGenerationSession` ni sus etapas.
 
-**Protocolo de validación R02:** ejecutar localmente `dotnet run --project GEvolve.Game`, entrar en **LABORATORIO DE PANGEA** y revisar apertura, tamaño y semilla, etapas manuales 01–08, disponibilidad de vistas, inspector, comparador BASE, zoom/desplazamiento y controles de reinicio/cancelación. Repetir la misma semilla y tamaño para observar estabilidad, y cambiar semilla/tamaño para verificar invalidación de capas. Registrar anomalías y evidencia visual; las pruebas automatizadas PASS de R01 no sustituyen esta revisión interactiva.
+**Criterio de aceptación:** Game y el laboratorio no generan geología, relieve, clima, biomas o recursos; el único resultado visible inicial es la cuadrícula, o una indicación explícita de funcionalidad todavía no implementada. Ninguna etapa antigua aparece habilitada. El código anterior permanece recuperable, pero no participa en ejecución ni build oficiales.
 
 ### R03 — Núcleo oficial mínimo
 - [ ] Definir entradas, estados temporales y salidas canónicas con el arquitecto.
@@ -116,6 +119,7 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 | 2026-11-09 UTC | Diagnóstico de Codex sobre regresión histórica; dictamen del auditor | `TectonicMotion`: 4 casos; `ContinentalGeology`: 12 mundos, incluidos los cuatro anteriores. Mismatches previos a R01 ya registrados en [P03-A4](../../../GEvolve.Tests/ValidationReports/P03-A4_20261106_140522345Z_f747ba65/SUMMARY.md). Codex informa comparación de hashes históricos 32/32 y equivalencia 40/40 contra informe previo; no se ha demostrado regresión nueva por el traslado. **Recomendada** excepción limitada para R01, pendiente de decisión del director; no aprobar calidad global de elevaciones ni modificar baselines. |
 | 2026-11-09 | Cierre de R00 aprobado por el director | Se acepta expresamente la incertidumbre sobre los tips desconocidos de ramas históricas desaparecidas, sin atribuirles preservación no probada. Auditoría de consolidación concluida; `develop` y `worldgeneration` sincronizadas en la revisión y `master` preservada. |
 | 2026-11-09 | Cierre de R01 aprobado por el director | Aprobado el aislamiento del código histórico con excepción explícita para dos fallos de baselines preexistentes. Compilación y pruebas focales PASS; general **17 PASS / 2 FAIL**. Revisión futura del contrato de elevaciones sin cambios a baselines ni algoritmos. Laboratorio visual pendiente para R02. |
-| 2026-11-09 | Inicio autorizado de R02 | Director solicita avanzar a R02. El auditor registra hito en curso y protocolo de validación visual; las tres casillas permanecen abiertas hasta recibir evidencia y definir el contrato de snapshot. |
+| 2026-11-09 | Inicio original de R02 (sustituido) | La validación visual del laboratorio histórico deja de ser objetivo porque el director decide abandonar su uso activo. |
+| 2026-11-09 | Redefinición autorizada de R02 | El director ordena aislar completamente `worldgenerationold/` y empezar el generador desde cero. El auditor confirma referencias activas en `GameSession` y `PangaeaLaboratory`, actualiza requisitos y deja toda implementación pendiente de Codex/Dev. Solo `Grid/` puede reutilizarse inicialmente. |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.
