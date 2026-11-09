@@ -10,7 +10,7 @@ Codex **no ejecuta** `dotnet build`, `dotnet run`, `dotnet test`, `dotnet restor
 
 ## Fuente de verdad y alcance
 
-Priorizar: (1) instrucciones explícitas de la tarea; (2) contratos y documentos oficiales vigentes; (3) [memoria operativa](.agents/PROJECT_MEMORY.md); (4) skills pertinentes; (5) código como implementación efectiva. Si la memoria discrepa de documentos o código, verificar el punto y corregirla; una nota antigua nunca autoriza cambiar código aprobado. Respetar [arquitectura](GEvolve.Engine/WORLD_GENERATION_ARCHITECTURE.md) y [roadmap](GEvolve.Engine/WORLD_GENERATION_ROADMAP.md). Preservar contratos públicos y partidas existentes salvo autorización, y no cambiar baselines o validadores para ocultar fallos. Evitar PNG, SVG, JPG, CSV, HTML, mapas externos, carpetas TEST y archivos temporales persistentes.
+Priorizar: (1) instrucciones explícitas de la tarea; (2) contratos y documentos oficiales vigentes; (3) [memoria operativa](.agents/PROJECT_MEMORY.md); (4) skills pertinentes; (5) código como implementación efectiva. Si la memoria discrepa de documentos o código, verificar el punto y corregirla; una nota antigua nunca autoriza cambiar código aprobado. Respetar [arquitectura](GEvolve.Engine/World/WorldGeneration/README.md) y [roadmap](GEvolve.Engine/World/WorldGeneration/ROADMAP.md). Preservar contratos públicos y partidas existentes salvo autorización, y no cambiar baselines o validadores para ocultar fallos. Evitar PNG, SVG, JPG, CSV, HTML, mapas externos, carpetas TEST y archivos temporales persistentes.
 
 ## Trabajo eficiente
 
