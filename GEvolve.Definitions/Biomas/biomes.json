@@ -83,6 +83,35 @@
           "name": {
             "es": "Subtropical",
             "en": "Subtropical"
+          },
+          "spawn": {
+            "required": {
+              "terrain": "land",
+              "monthsMeanTemperatureAbove10C": {
+                "min": 8
+              },
+              "annualPrecipitationMm": {
+                "min": 600
+              }
+            },
+            "preferred": {
+              "meanAnnualTemperatureC": {
+                "min": 14,
+                "max": 22
+              },
+              "annualPrecipitationMm": {
+                "min": 900,
+                "max": 2200
+              },
+              "elevationMeters": {
+                "min": 0,
+                "max": 1800
+              },
+              "absoluteLatitudeDegrees": {
+                "min": 20,
+                "max": 40
+              }
+            }
           }
         },
         {
@@ -90,6 +119,36 @@
           "name": {
             "es": "Templado",
             "en": "Temperate"
+          },
+          "spawn": {
+            "required": {
+              "terrain": "land",
+              "monthsMeanTemperatureAbove10C": {
+                "min": 4,
+                "max": 8
+              },
+              "annualPrecipitationMm": {
+                "min": 450
+              }
+            },
+            "preferred": {
+              "meanAnnualTemperatureC": {
+                "min": 4,
+                "max": 15
+              },
+              "annualPrecipitationMm": {
+                "min": 650,
+                "max": 1800
+              },
+              "elevationMeters": {
+                "min": 0,
+                "max": 2000
+              },
+              "absoluteLatitudeDegrees": {
+                "min": 30,
+                "max": 60
+              }
+            }
           }
         },
         {
@@ -97,6 +156,36 @@
           "name": {
             "es": "Boreal (taiga)",
             "en": "Boreal (taiga)"
+          },
+          "spawn": {
+            "required": {
+              "terrain": "land",
+              "monthsMeanTemperatureAbove10C": {
+                "min": 1,
+                "max": 3
+              },
+              "annualPrecipitationMm": {
+                "min": 200
+              }
+            },
+            "preferred": {
+              "meanAnnualTemperatureC": {
+                "min": -7,
+                "max": 5
+              },
+              "annualPrecipitationMm": {
+                "min": 300,
+                "max": 900
+              },
+              "elevationMeters": {
+                "min": 0,
+                "max": 1200
+              },
+              "absoluteLatitudeDegrees": {
+                "min": 50,
+                "max": 75
+              }
+            }
           }
         },
         {
@@ -104,6 +193,31 @@
           "name": {
             "es": "Pantano arbolado (Everglades)",
             "en": "Forested swamp (Everglades)"
+          },
+          "spawn": {
+            "required": {
+              "terrain": "land",
+              "soilSaturatedDuringGrowingSeason": true,
+              "wetlandWaterType": "freshwater"
+            },
+            "preferred": {
+              "annualPrecipitationMm": {
+                "min": 700,
+                "max": 2500
+              },
+              "meanAnnualTemperatureC": {
+                "min": 10,
+                "max": 28
+              },
+              "elevationMeters": {
+                "min": 0,
+                "max": 600
+              },
+              "slopeDegrees": {
+                "min": 0,
+                "max": 5
+              }
+            }
           }
         }
       ]
