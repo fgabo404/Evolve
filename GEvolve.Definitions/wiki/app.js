@@ -194,10 +194,71 @@ function groupedEntities(parent, edges, heading, relationTone = "documented") {
     entityCard(cards, entity, detail, relationTone);
   }
 }
+// Definitions are displayed as declared: required constraints are gates,
+// preferred ranges are favorable conditions, never executable spawn logic.
+const spawnFieldLabels = {
+  terrain: ["Terreno", "Terrain"],
+  meanAnnualTemperatureC: ["Temperatura media anual", "Mean annual temperature"],
+  annualPrecipitationMm: ["Precipitación anual", "Annual precipitation"],
+  dryMonthsPerYear: ["Meses secos por año", "Dry months per year"],
+  dryMonthThresholdMm: ["Umbral de mes seco", "Dry-month threshold"],
+  monthsMeanTemperatureAbove10C: ["Meses con temperatura media superior a 10 °C", "Months with mean temperature above 10 °C"],
+  meanAnnualRelativeHumidityPercent: ["Humedad relativa media anual", "Mean annual relative humidity"],
+  absoluteLatitudeDegrees: ["Latitud absoluta", "Absolute latitude"],
+  elevationMeters: ["Elevación", "Elevation"],
+  soilSaturatedDuringGrowingSeason: ["Suelo saturado durante la temporada de crecimiento", "Soil saturated during growing season"],
+  wetlandWaterType: ["Tipo de agua del humedal", "Wetland water type"],
+  slopeDegrees: ["Pendiente", "Slope"]
+};
+const spawnUnits = {
+  meanAnnualTemperatureC: "°C", annualPrecipitationMm: "mm",
+  dryMonthThresholdMm: "mm", monthsMeanTemperatureAbove10C: "",
+  meanAnnualRelativeHumidityPercent: "%", absoluteLatitudeDegrees: "°",
+  elevationMeters: "m", slopeDegrees: "°"
+};
+function spawnValue(key, value) {
+  if (value == null) return tr("Pendiente de definir", "Pending definition");
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const min = value.min, max = value.max, unit = spawnUnits[key] || "";
+    if (min !== undefined || max !== undefined) {
+      const display = (number) => String(number) + (unit ? " " + unit : "");
+      if (min != null && max != null) return display(min) + " – " + display(max);
+      if (min != null) return "≥ " + display(min);
+      if (max != null) return "≤ " + display(max);
+    }
+  }
+  return loc(value);
+}
+function spawnConstraintSection(area, name, constraints) {
+  const group = section(area, name);
+  if (!constraints || !Object.keys(constraints).length) {
+    note(group, tr("Sin parámetros definidos.", "No parameters defined."));
+    return;
+  }
+  const grid = append(group, element("div", "meta"));
+  for (const [key, value] of Object.entries(constraints)) {
+    const names = spawnFieldLabels[key];
+    field(grid, names ? tr(...names) : key, spawnValue(key, value), true);
+  }
+}
+function renderSpawnRules(area, rules) {
+  const group = section(area, tr("Requisitos de aparición del subbioma", "Subbiome spawn requirements"));
+  if (!rules) {
+    note(group, tr("Pendiente de definición. No se asumen condiciones predeterminadas.",
+      "Not yet defined. No default conditions are assumed."));
+    return;
+  }
+  note(group, tr("Reglas declarativas en revisión; no ejecutadas por el motor.",
+    "Draft declarative rules; not executed by the engine."));
+  spawnConstraintSection(group, tr("Obligatorios (required)", "Mandatory (required)"), rules.required);
+  spawnConstraintSection(group, tr("Favorables (preferred)", "Favorable (preferred)"), rules.preferred);
+}
 function renderWorld(area, node) {
   const value = node.value;
   if (Array.isArray(value.subbiomes)) {
     const group = section(area, tr("Subbiomas", "Subbiomes"));
+    const defined = value.subbiomes.filter(sub => sub.spawn).length;
+    note(group, tr("Con requisitos declarativos: ", "With declarative requirements: ") + defined + " / " + value.subbiomes.length);
     const grid = append(group, element("div", "relation-grid"));
     for (const sub of value.subbiomes) {
       const target = state.index.resolve("world", sub.id);
@@ -205,6 +266,7 @@ function renderWorld(area, node) {
     }
     return;
   }
+  renderSpawnRules(area, value.spawn);
   fieldGrid(section(area, tr("Hábitat", "Habitat")), [
     [tr("Altura", "Elevation"), value.elevationLevel ? value.elevationLevel.min + "–" + value.elevationLevel.max : null],
     [tr("Latitud", "Latitude"), value.latitudeDegrees ? value.latitudeDegrees.min + "°–" + value.latitudeDegrees.max + "° (" + value.latitudeDegrees.hemisphere + ")" : null]
