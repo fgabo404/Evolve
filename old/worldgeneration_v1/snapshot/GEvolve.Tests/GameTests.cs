@@ -1,0 +1,272 @@
+using System.Diagnostics;
+using System.Numerics;
+using GEvolve.Definitions.WorldGeneration.Configuration;
+using GEvolve.Engine.Grid;
+using GEvolve.Engine.World;
+using GEvolve.Engine.World.LandmassGeneration;
+using GEvolve.Game;
+using GEvolve.Game.Graphics;
+using GEvolve.Game.Screens;
+using GEvolve.State.Game;
+using GEvolve.State.Persistence;
+
+public static class GameTests
+{
+    public static void Run()
+    {
+        TextFieldEditingTests.Run();
+        var session = new GameSession();
+        Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
+            session.State.HexGrid is null, "Start at menu without generation");
+        Check(ScreenLayout.Buttons(session.Screen, 1280, 720).Select(button => button.Action)
+            .SequenceEqual([UiAction.Create, UiAction.Laboratory, UiAction.Options, UiAction.Exit]), "Main menu actions including Pangaea laboratory");
+        session.OpenOptions();
+        Check(session.Screen == GameScreen.Options && session.Grid is null, "Options screen");
+        session.ReturnToMenu();
+        session.OpenCreateWorld();
+        Check(session.Screen == GameScreen.CreateWorld && session.SelectedSize == GridSize.Small,
+            "Create screen defaults to Small");
+        Check(session.SelectedType == LandmassType.Pangaea &&
+            int.TryParse(session.SeedText, out _) && session.State.Landmass is null,
+            "Default world type and valid random initial seed");
+        var createButtons = ScreenLayout.Buttons(session.Screen, 1280, 720);
+        Check(createButtons.Count(button =>
+                button.Action is UiAction.SizeSelect or UiAction.TypeSelect) == 2 &&
+            !createButtons.Any(button => button.Action is UiAction.Small or UiAction.Medium or
+                UiAction.Large or UiAction.Enormous or UiAction.Continents or UiAction.Pangaea or
+                UiAction.SmallContinents or UiAction.Archipelagos),
+            "Create World exposes two selectors rather than eight separate buttons");
+        Check(ScreenLayout.DropdownOptions(GameScreen.CreateWorld, 1280, 720, UiAction.SizeSelect)
+            .Select(button => ScreenLayout.SizeFor(button.Action))
+            .SequenceEqual(Enum.GetValues<GridSize>()),
+            "World-size dropdown exposes four official sizes");
+        Check(SelectableWorldTypes.All.SequenceEqual(
+                new[] { LandmassType.Pangaea, LandmassType.Continents, LandmassType.Archipelagos }) &&
+            Enum.GetValues<LandmassType>().Length == 4 &&
+            (int)LandmassType.Continents == 0 &&
+            (int)LandmassType.Pangaea == 1 &&
+            (int)LandmassType.SmallContinents == 2 &&
+            (int)LandmassType.Archipelagos == 3 &&
+            !SelectableWorldTypes.IsSelectable(LandmassType.SmallContinents),
+            "Three public options and four stable persisted IDs");
+        foreach (var screen in new[] { GameScreen.CreateWorld, GameScreen.World })
+            Check(ScreenLayout.DropdownOptions(screen, 1280, 720, UiAction.TypeSelect)
+                .Select(button => ScreenLayout.TypeFor(button.Action))
+                .SequenceEqual(SelectableWorldTypes.All),
+                "Type dropdown exposes exactly three selectable types");
+        Check(ScreenLayout.TypeLabel(LandmassType.SmallContinents) ==
+                "Continentes pequeños (histórico)" &&
+            ScreenLayout.TypeLabel(LandmassType.Continents) == "Continentes",
+            "Historical worlds remain identifiable without masquerading as new options");
+        Check(Throws<ArgumentOutOfRangeException>(
+                () => session.ChooseType(LandmassType.SmallContinents)) &&
+            session.SelectedType == LandmassType.Pangaea,
+            "Cannot choose legacy SmallContinents for a new world");
+        Check(createButtons.Any(button => button.Action == UiAction.SeedField) &&
+            createButtons.Any(button => button.Action == UiAction.RandomSeed),
+            "Editable and random seed controls");
+        session.SetSeedText("2147483648");
+        Check(Throws<FormatException>(() => session.BeginGeneration()) &&
+            session.Screen == GameScreen.CreateWorld && session.Error is not null,
+            "Out-of-range seed is rejected without leaving the form");
+        session.RandomizeSeed();
+        Check(int.TryParse(session.SeedText, out _), "Random seed is a valid integer");
+        session.SetSeedText("-731");
+        session.ChooseType(LandmassType.Pangaea);
+        var request = session.BeginGeneration();
+        Check(session.Screen == GameScreen.Generating && request.Seed == -731 &&
+            request.Type == LandmassType.Pangaea && session.Grid is null,
+            "Generation begins without an implicit grid");
+        session.CompleteGeneration(new WorldGenerationService().Generate(request));
+        Check(session.Screen == GameScreen.World &&
+            session.State.Landmass?.Configuration == request,
+            "Background-style completion transfers Engine result into State");
+        session.ReturnToMenu();
+        session.OpenCreateWorld();
+
+        foreach (var size in Enum.GetValues<GridSize>())
+        {
+            session.ChooseSize(size);
+            var definition = HexGridDefinitions.Get(size);
+            var timer = Stopwatch.StartNew();
+            var grid = session.GenerateWorld();
+            timer.Stop();
+            Check(session.Screen == GameScreen.World && ReferenceEquals(grid, session.Grid),
+                "One Engine grid serves the world screen");
+            Check(session.State.HexGrid?.Definition == definition &&
+                session.State.Landmass?.Configuration.Size == size &&
+                grid.Cells.Count == definition.Columns * definition.Rows &&
+                definition.Orientation == GridOrientation.FlatTop, "Effective state and cell count");
+
+            var terrain = session.State.Landmass!;
+            Check(!terrain.TectonicPreviewOnly &&
+                terrain.PlateByCellId is { } plates &&
+                plates.Length == grid.Cells.Count &&
+                plates.Distinct().Count() == 16 &&
+                terrain.SurfaceByCellId.Any(value => value == 1) &&
+                terrain.SurfaceByCellId.Any(value => value == 0) &&
+                terrain.ElevationByCellId is { } elevations &&
+                elevations.Length == grid.Cells.Count &&
+                terrain.Climate?.BasePrecipitationMmByCellId is not null && terrain.Biomes is not null && terrain.SlopeByCellId is not null,
+                "Pangaea generates original geology followed by catalog ecology");
+            int landId = Array.IndexOf(terrain.SurfaceByCellId, (byte)1);
+            int oceanId = Array.IndexOf(terrain.SurfaceByCellId, (byte)0);
+            Check(session.SelectAt(grid.Cells[landId].Center)?.Id == landId &&
+                session.SelectAt(grid.Cells[oceanId].Center)?.Id == oceanId,
+                "Land and ocean remain individually selectable");
+
+            var cell = grid.Cells[definition.Columns * (definition.Rows / 2) + 2];
+            Check(session.SelectAt(cell.Center)?.Id == cell.Id, "Cell selection");
+            Vector2 repeated = cell.Center + new Vector2(
+                FlatHexGeometry.PeriodWidth(definition.Columns), 0);
+            Check(session.SelectAt(repeated)?.Id == cell.Id,
+                "Repeated visual cell preserves logical ID");
+
+            var camera = new MapCamera2D();
+            camera.Fit(definition.Columns, definition.Rows, 1280, 720);
+            Vector2 screen = camera.WorldToScreen(cell.Center);
+            Check(Vector2.Distance(camera.ScreenToWorld(screen), cell.Center) < .001f,
+                "Camera screen/world conversion");
+            float oldScale = camera.Scale;
+            camera.Zoom(8, new Vector2(640, 360));
+            Check(camera.Scale > oldScale && camera.VisibleRange().Count < grid.Cells.Count,
+                "Zoom culls cells outside the viewport");
+            float oldX = camera.X;
+            camera.Pan(100, 0);
+            Check(camera.X >= 0 && camera.X < FlatHexGeometry.PeriodWidth(definition.Columns) &&
+                camera.X != oldX, "Horizontal drag wraps camera");
+            camera.Pan(0, 100_000);
+            Check(FlatHexGeometry.CellAt(new Vector2(cell.Center.X, -20),
+                definition.Columns, definition.Rows) is null,
+                "North remains open");
+            Check(timer.ElapsedMilliseconds < (size == GridSize.Enormous ? 60_000 : 30_000),
+                "World generation remains within a generous smoke-test budget");
+            Console.WriteLine($"PASS: Game {size} ({grid.Cells.Count} cells, {timer.ElapsedMilliseconds} ms)");
+
+            session.ReturnToMenu();
+            Check(session.Screen == GameScreen.MainMenu && session.Grid is null &&
+                session.State.HexGrid is null && session.State.Landmass is null &&
+                session.SelectedCell is null,
+                "Returning to menu releases logical world");
+            session.OpenCreateWorld();
+        }
+
+        var resizing = new GameSession();
+        resizing.OpenCreateWorld();
+        resizing.ChooseType(LandmassType.Pangaea);
+        resizing.SetSeedText("42");
+        resizing.GenerateWorld();
+        var selectedSeed = resizing.State.Landmass!.Configuration.Seed;
+        var resizeConfig = resizing.BeginResize(GridSize.Medium);
+        Check(resizeConfig.Size == GridSize.Medium &&
+            resizeConfig.Type == LandmassType.Pangaea &&
+            resizeConfig.Seed == selectedSeed &&
+            resizing.Screen == GameScreen.Generating, "World view resize keeps seed and type");
+        resizing.CompleteGeneration(new WorldGenerationService().Generate(resizeConfig));
+        Check(resizing.Grid!.Cells.Count == HexGridDefinitions.Get(GridSize.Medium).Columns *
+                HexGridDefinitions.Get(GridSize.Medium).Rows &&
+            resizing.State.Landmass!.Configuration.Seed == selectedSeed,
+            "Resized world replaces logical state");
+        var worldButtons = ScreenLayout.Buttons(GameScreen.World, 1280, 720);
+        Check(worldButtons.Count(button =>
+                button.Action is UiAction.SizeSelect or UiAction.TypeSelect) == 2 &&
+            !worldButtons.Any(button => button.Action is UiAction.Small or UiAction.Medium or
+                UiAction.Large or UiAction.Enormous or UiAction.Continents or UiAction.Pangaea or
+                UiAction.SmallContinents or UiAction.Archipelagos),
+            "World map exposes size and landmass type selects");
+        Check(worldButtons.Any(button => button.Action == UiAction.ToggleTectonic) &&
+            worldButtons.Any(button => button.Action == UiAction.ToggleSurface) &&
+            worldButtons.Any(button => button.Action == UiAction.ToggleGrayscale),
+            "Stage 01 plates, stage 02 land and elevation are independently viewable");
+
+        // Change type directly in the world without returning to Create World;
+        // the original seed and plate IDs are preserved at the same resolution.
+        var beforeTypeChange = resizing.State.Landmass!;
+        byte[] oldPlates = beforeTypeChange.PlateByCellId!.ToArray();
+        byte[] oldSurface = beforeTypeChange.SurfaceByCellId.ToArray();
+        var changeType = resizing.BeginChangeType(LandmassType.Archipelagos);
+        Check(changeType.Type == LandmassType.Archipelagos &&
+            changeType.Size == GridSize.Medium &&
+            changeType.Seed == selectedSeed &&
+            resizing.Screen == GameScreen.Generating,
+            "Changing world type keeps size and seed during generation");
+        resizing.CompleteGeneration(new WorldGenerationService().Generate(changeType));
+        Check(resizing.State.Landmass!.Configuration.Type == LandmassType.Archipelagos &&
+            resizing.State.Landmass!.PlateByCellId!.SequenceEqual(oldPlates) &&
+            !resizing.State.Landmass.SurfaceByCellId.SequenceEqual(oldSurface),
+            "World type change regenerates land but keeps the universal tectonic plates");
+        Check(Throws<ArgumentOutOfRangeException>(
+                () => resizing.BeginChangeType(LandmassType.SmallContinents)) &&
+            Throws<ArgumentOutOfRangeException>(
+                () => resizing.BeginReconfigure(GridSize.Small, LandmassType.SmallContinents)) &&
+            resizing.State.Landmass!.Configuration.Type == LandmassType.Archipelagos,
+            "New reconfigurations cannot select the historical world type");
+        var changeBoth = resizing.BeginReconfigure(GridSize.Small, LandmassType.Continents);
+        Check(changeBoth.Size == GridSize.Small &&
+            changeBoth.Type == LandmassType.Continents &&
+            changeBoth.Seed == selectedSeed,
+            "Both dropdown selections can regenerate using the same seed");
+        resizing.CompleteGeneration(new WorldGenerationService().Generate(changeBoth));
+        Check(resizing.State.Landmass!.Configuration.Size == GridSize.Small &&
+            resizing.State.Landmass.Configuration.Type == LandmassType.Continents &&
+            resizing.State.Landmass.Configuration.Seed == selectedSeed &&
+            resizing.State.Landmass.SurfaceGenerationPending &&
+            resizing.State.Landmass.SurfaceByCellId.Length == 0 &&
+            resizing.State.Landmass.TectonicMotion is not null,
+            "Reconfiguration selects pending Continents with real tectonics and no surface");
+
+        // Historical generation and serialization remain supported although not selectable.
+        var historical = new WorldGenerationService().Generate(
+            LandmassProfiles.Create(GridSize.Small, LandmassType.SmallContinents, 2026));
+        string legacyPath = Path.Combine(Path.GetTempPath(), $"evolve-h05-legacy-{Guid.NewGuid():N}.json");
+        try
+        {
+            GameSaveStore.Save(legacyPath, new GameState
+            {
+                HexGrid = new HexGridState(historical.Grid.Definition),
+                Landmass = historical.Landmass
+            });
+            var loaded = GameSaveStore.Load(legacyPath).Landmass!;
+            Check(loaded.Configuration.Type == LandmassType.SmallContinents &&
+                loaded.Configuration == historical.Landmass.Configuration &&
+                loaded.SurfaceByCellId.SequenceEqual(historical.Landmass.SurfaceByCellId) &&
+                loaded.ElevationByCellId!.SequenceEqual(historical.Landmass.ElevationByCellId!) &&
+                ScreenLayout.TypeLabel(loaded.Configuration.Type).Contains("histórico"),
+                "Historical SmallContinents generation, persistence and labeling are preserved");
+        }
+        finally { if (File.Exists(legacyPath)) File.Delete(legacyPath); }
+
+        foreach (var (width, height) in new[] { (1280, 720), (800, 600), (640, 480) })
+        foreach (var screen in new[] { GameScreen.MainMenu, GameScreen.CreateWorld, GameScreen.Options, GameScreen.World })
+        {
+            foreach (var button in ScreenLayout.Buttons(screen, width, height))
+                Check(button.Bounds.X >= 0 && button.Bounds.Y >= 0 &&
+                    button.Bounds.X + button.Bounds.Width <= width &&
+                    button.Bounds.Y + button.Bounds.Height <= height,
+                    "Buttons fit the window");
+            foreach (var selector in new[] { UiAction.SizeSelect, UiAction.TypeSelect })
+            {
+                var options = ScreenLayout.DropdownOptions(screen, width, height, selector);
+                Check(options.Count == (screen is GameScreen.CreateWorld or GameScreen.World
+                    ? selector == UiAction.TypeSelect ? 3 : 4 : 0),
+                    "Dropdown counts match three world types and four sizes");
+                foreach (var option in options)
+                    Check(option.Bounds.X >= 0 && option.Bounds.Y >= 0 &&
+                        option.Bounds.X + option.Bounds.Width <= width &&
+                        option.Bounds.Y + option.Bounds.Height <= height,
+                        "All dropdown entries fit the window at every supported resolution");
+            }
+        }
+    }
+
+    private static void Check(bool condition, string message)
+    {
+        if (!condition) throw new InvalidOperationException(message);
+    }
+
+    private static bool Throws<T>(Action action) where T : Exception
+    {
+        try { action(); return false; }
+        catch (T) { return true; }
+    }
+}

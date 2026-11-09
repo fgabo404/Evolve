@@ -1,0 +1,60 @@
+
+namespace GEvolve.Definitions.WorldGeneration.Configuration;
+
+// Persisted numeric IDs are stable; SmallContinents remains supported for historical saves.
+public enum LandmassType { Continents = 0, Pangaea = 1, SmallContinents = 2, Archipelagos = 3 }
+
+/// <summary>Legacy save shape only; new Continents maps do not use surface parameters.</summary>
+public sealed record ContinentsParameters(double TargetLandFraction, int CoreCount,
+    int MinimumCoreDistance, double CoastRoughness, int NoiseFrequency,
+    double IslandFraction);
+public sealed record PangaeaParameters(double TargetLandFraction, double CoastRoughness,
+    int NoiseFrequency, double IslandFraction, double DirectionalVariation);
+public sealed record SmallContinentsParameters(double TargetLandFraction, int CoreCount,
+    double MaximumRadius, int CorridorWidth, double CoastRoughness, int NoiseFrequency,
+    double SecondaryIslandFraction);
+public sealed record ArchipelagosParameters(double TargetLandFraction, int ChainCount,
+    int StepsPerChain, double MinimumIslandRadius, double MaximumIslandRadius,
+    double CoastRoughness, int NoiseFrequency);
+
+/// <summary>Configuración efectiva: solo el bloque del algoritmo elegido está presente.</summary>
+public sealed record LandmassConfiguration(GridSize Size, LandmassType Type, int Seed,
+    string GeneratorVersion, ContinentsParameters? Continents = null,
+    PangaeaParameters? Pangaea = null,
+    SmallContinentsParameters? SmallContinents = null,
+    ArchipelagosParameters? Archipelagos = null);
+
+/// <summary>Perfiles experimentales de generación de masas terrestres.</summary>
+public static class LandmassProfiles
+{
+    public const string CurrentGeneratorVersion = "landmass-12";
+
+    public static LandmassConfiguration Create(GridSize size, LandmassType type, int seed)
+    {
+        _ = HexGridDefinitions.Get(size);
+        if (!Enum.IsDefined(type)) throw new ArgumentOutOfRangeException(nameof(type));
+        // The four profiles now cover more cells; keep geographic feature
+        // density proportional to area instead of reusing the old 7k/15k/50k profiles.
+        return type switch
+        {
+            LandmassType.Continents => new(size, type, seed, CurrentGeneratorVersion),
+            LandmassType.Pangaea => new(size, type, seed, CurrentGeneratorVersion,
+                Pangaea: new(.40, .58, 7, .0015, .32)),
+            LandmassType.SmallContinents => new(size, type, seed, CurrentGeneratorVersion,
+                SmallContinents: new(.30, size switch {
+                    GridSize.Small => 36, GridSize.Medium => 52,
+                    GridSize.Large => 76, _ => 124
+                }, size switch {
+                    GridSize.Small => 11.5, GridSize.Medium => 12.5,
+                    GridSize.Large => 13.5, _ => 14.5
+                }, 2, .38, 15, .004)),
+            LandmassType.Archipelagos => new(size, type, seed, CurrentGeneratorVersion,
+                Archipelagos: new(.20, size switch {
+                    GridSize.Small => 55, GridSize.Medium => 88,
+                    GridSize.Large => 128, _ => 220
+                }, 12, 1.2, 3.5, .35, 20)),
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+    }
+
+}

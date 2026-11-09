@@ -1,0 +1,131 @@
+[
+  {
+    "Size": "Small",
+    "Seed": 2026,
+    "LandCells": 2801,
+    "Counts": {
+      "polar_north": 850,
+      "marine": 4199,
+      "tundra": 253,
+      "mountain": 435,
+      "forest": 628,
+      "plains": 528,
+      "desert": 107
+    }
+  },
+  {
+    "Size": "Small",
+    "Seed": 42,
+    "LandCells": 2808,
+    "Counts": {
+      "marine": 4192,
+      "plains": 548,
+      "forest": 608,
+      "mountain": 681,
+      "desert": 52,
+      "tundra": 132,
+      "polar_south": 787
+    }
+  },
+  {
+    "Size": "Small",
+    "Seed": -731,
+    "LandCells": 2802,
+    "Counts": {
+      "polar_north": 192,
+      "marine": 4198,
+      "tundra": 157,
+      "mountain": 630,
+      "plains": 633,
+      "forest": 772,
+      "desert": 28,
+      "polar_south": 390
+    }
+  },
+  {
+    "Size": "Medium",
+    "Seed": 2026,
+    "LandCells": 6001,
+    "Counts": {
+      "marine": 8999,
+      "polar_north": 1578,
+      "tundra": 375,
+      "mountain": 1087,
+      "forest": 2031,
+      "plains": 852,
+      "desert": 78
+    }
+  },
+  {
+    "Size": "Medium",
+    "Seed": 42,
+    "LandCells": 6028,
+    "Counts": {
+      "marine": 8972,
+      "mountain": 1483,
+      "plains": 819,
+      "forest": 1101,
+      "desert": 53,
+      "tundra": 472,
+      "polar_south": 2100
+    }
+  },
+  {
+    "Size": "Medium",
+    "Seed": -731,
+    "LandCells": 6005,
+    "Counts": {
+      "marine": 8995,
+      "polar_north": 68,
+      "mountain": 1383,
+      "tundra": 389,
+      "plains": 1147,
+      "forest": 1665,
+      "desert": 39,
+      "polar_south": 1314
+    }
+  },
+  {
+    "Size": "Large",
+    "Seed": 2026,
+    "LandCells": 20000,
+    "Counts": {
+      "polar_north": 5876,
+      "marine": 30000,
+      "tundra": 1481,
+      "mountain": 3245,
+      "forest": 5847,
+      "plains": 3071,
+      "desert": 476,
+      "polar_south": 4
+    }
+  },
+  {
+    "Size": "Large",
+    "Seed": 42,
+    "LandCells": 20000,
+    "Counts": {
+      "marine": 30000,
+      "polar_north": 5763,
+      "mountain": 4674,
+      "tundra": 1525,
+      "plains": 3225,
+      "forest": 4606,
+      "desert": 207
+    }
+  },
+  {
+    "Size": "Large",
+    "Seed": -731,
+    "LandCells": 20003,
+    "Counts": {
+      "marine": 29997,
+      "polar_north": 6243,
+      "tundra": 1608,
+      "mountain": 2992,
+      "plains": 4048,
+      "forest": 5077,
+      "desert": 35
+    }
+  }
+]

@@ -1,0 +1,142 @@
+using GEvolve.Definitions.WorldGeneration.Configuration;
+using GEvolve.Engine.Grid;
+using GEvolve.Engine.World.LandmassGeneration;
+using GEvolve.Engine.World.LandmassGeneration.Shared;
+using GEvolve.Engine.World.Tectonics;
+using GEvolve.State.Game;
+
+namespace GEvolve.Engine.World;
+
+/// <summary>
+/// Stage 01 universal tectonics, then stage 02 surface and relief for finished world types.
+/// Continents currently stops after stage 01 with no surface.
+/// Pangaea continues through the existing climate and catalog biome stages.
+/// </summary>
+public sealed class WorldGenerationService
+{
+    private readonly PlateAwareElevationGenerator _relief = new();
+
+    /// <summary>Temporary staged Pangaea generation; partial data never enters saved worlds.</summary>
+    public PangaeaGenerationSession CreatePangaeaSession(LandmassConfiguration configuration) => new(configuration);
+
+    /// <summary>Opt-in detached BASE fields for numerical audits; normal generation never requests them.</summary>
+    public PangaeaGenerationSession CreatePangaeaSession(LandmassConfiguration configuration, bool captureBaseFields)
+        => new(configuration, captureBaseFields: captureBaseFields);
+
+    /// <summary>Generates a world using the official profile for the selected size, type and seed.</summary>
+    public GeneratedWorld Generate(GridSize size, LandmassType worldType, int seed = 2026)
+        => Generate(LandmassProfiles.Create(size, worldType, seed));
+
+    public GeneratedWorld Generate(LandmassConfiguration configuration)
+        => Generate(configuration, null);
+
+    /// <summary>Optional read-only selection evidence; no extra random stream or generation strategy.</summary>
+    public GeneratedWorld Generate(LandmassConfiguration configuration,
+        Action<PangaeaMountainRangeAudit>? captureMountainAudit)
+        => Generate(configuration, captureMountainAudit, includePangaeaEcology: true);
+
+    /// <summary>Same official pipeline through geology only, for geological references and specialized consumers.</summary>
+    public GeneratedWorld GenerateGeology(GridSize size, LandmassType type, int seed = 2026)
+        => GenerateGeology(LandmassProfiles.Create(size, type, seed));
+
+    public GeneratedWorld GenerateGeology(LandmassConfiguration configuration,
+        Action<PangaeaMountainRangeAudit>? captureMountainAudit = null)
+        => Generate(configuration, captureMountainAudit, includePangaeaEcology: false);
+
+    private GeneratedWorld Generate(LandmassConfiguration configuration,
+        Action<PangaeaMountainRangeAudit>? captureMountainAudit, bool includePangaeaEcology)
+    {
+        Validate(configuration);
+        if (configuration.Type == LandmassType.Pangaea)
+        {
+            var session = new PangaeaGenerationSession(configuration, recordDiagnostics: false,
+                captureAudit: captureMountainAudit is not null);
+            IEnumerable<PangaeaGenerationStage> stages = includePangaeaEcology
+                ? Enum.GetValues<PangaeaGenerationStage>() : PangaeaGenerationSession.GeologicalStages;
+            foreach (var stage in stages) session.Execute(stage);
+            var world = session.GetOwnedCompletedWorld();
+            if (captureMountainAudit is not null) captureMountainAudit(session.GetFinalAudit()!);
+            return world;
+        }
+        HexGrid grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
+        var topology = new HexTopology(grid);
+
+        // The same 16 plate IDs exist for every world type at the same size/seed.
+        byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
+        var tectonicMotion = new TectonicMotionGenerator().Generate(topology,
+            new LandmassState(configuration, [], 0) { PlateByCellId = plates, TectonicPreviewOnly = true });
+
+        if (configuration.Type == LandmassType.Continents)
+        {
+            // No continental surface exists yet. Keep the actual plates and motion only.
+            var pending = new LandmassState(configuration, [], 0)
+            {
+                PlateByCellId = plates,
+                TectonicMotion = tectonicMotion,
+                TectonicPreviewOnly = true,
+                SurfaceGenerationPending = true
+            };
+            return new(grid, pending, null);
+        }
+
+        IPlateAwareLandmassGenerator? landmassGenerator = configuration.Type switch
+        {
+            LandmassType.SmallContinents => new SmallContinentsGenerator(),
+            LandmassType.Archipelagos => new ArchipelagosGenerator(),
+            _ => throw new ArgumentOutOfRangeException(nameof(configuration))
+        };
+
+        LandmassStatistics? last = null;
+        for (int attempt = 0; attempt < 4; attempt++)
+        {
+            // Existing non-Pangaea distribution, profile validation and relief order.
+            byte[] surface = landmassGenerator!.Generate(topology, configuration, attempt, plates);
+            last = LandmassAnalysis.Analyze(topology, surface);
+            if (!LandmassProfileValidator.MeetsProfile(configuration.Type, last)) continue;
+            byte[] elevation = _relief.Generate(
+                topology, surface, plates, configuration.Type, configuration.Seed, attempt);
+
+            var terrain = new LandmassState(configuration, surface, attempt)
+            {
+                PlateByCellId = plates,
+                TectonicMotion = tectonicMotion,
+                ElevationByCellId = elevation
+            };
+            return new GeneratedWorld(grid, terrain, last
+                ?? throw new InvalidOperationException("Landmass statistics were not calculated."));
+        }
+
+        throw new InvalidOperationException(
+            $"Stage 02 {configuration.Type} did not meet the profile after four attempts " +
+            $"(land={last?.LandFraction:P1}, components={last?.ComponentCount}, " +
+            $"dominant={last?.DominantLandShare:P1}).");
+    }
+
+    /// <summary>Stage 01 alone, independent of the selected map type.</summary>
+    public GeneratedWorld GeneratePlatePreview(LandmassConfiguration configuration)
+    {
+        Validate(configuration);
+        HexGrid grid = HexGrid.Generate(HexGridDefinitions.Get(configuration.Size));
+        var topology = new HexTopology(grid);
+        byte[] plates = TectonicPlateGenerator.Generate(topology, configuration.Seed);
+
+        // Placeholder only: zero is not an actual ocean until stage 02 is run.
+        var preview = new LandmassState(configuration, new byte[topology.Count], 0)
+        {
+            PlateByCellId = plates,
+            TectonicPreviewOnly = true
+        };
+        preview = preview with { TectonicMotion = new TectonicMotionGenerator().Generate(topology, preview) };
+        return new GeneratedWorld(grid, preview,
+            new LandmassStatistics(0, topology.Count, [], 0));
+    }
+
+    internal static void Validate(LandmassConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        if (configuration != LandmassProfiles.Create(
+                configuration.Size, configuration.Type, configuration.Seed))
+            throw new ArgumentException("World configuration differs from official profile.",
+                nameof(configuration));
+    }
+}
