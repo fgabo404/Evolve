@@ -31,7 +31,7 @@ internal static class GridLaboratoryTests
     public static void Laboratory()
     {
         var session = new GameSession(); session.OpenCreateWorld();
-        Check(session.Screen == GameScreen.WorldUnavailable && session.Laboratory is null, "World creation has no generator or fallback");
+        Check(session.Screen == GameScreen.CreateWorld && session.Creation is { CanGenerate: false } && session.Laboratory is null, "World creation form has no generator or fallback");
         session.ReturnToMenu(); session.OpenLaboratory(); var lab = session.Laboratory!;
         Check(session.Screen == GameScreen.GridLaboratory && lab.Size == GridSize.Small && lab.Seed == 2026, "Fresh laboratory defaults");
         foreach (var size in Enum.GetValues<GridSize>())

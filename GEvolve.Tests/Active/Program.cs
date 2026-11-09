@@ -5,7 +5,7 @@ if (args.Any(a => a is not ("--all-suites" or "--grid-laboratory")))
 }
 Console.WriteLine("R02 OFFICIAL: cuadrícula y laboratorio limpio. Motor, tests y baselines geográficos históricos NO EJECUTADOS; los fallos anteriores no se declaran resueltos.");
 (string Name, Action Run)[] suites = [("Grid", GridLaboratoryTests.Grid), ("Laboratory", GridLaboratoryTests.Laboratory),
-    ("TextEditing", GridLaboratoryTests.TextEditing), ("LegacyIsolation", GridLaboratoryTests.Isolation)];
+    ("TextEditing", GridLaboratoryTests.TextEditing), ("LegacyIsolation", GridLaboratoryTests.Isolation), ("MenuNavigation", MenuNavigationTests.Run)];
 int failures = 0;
 foreach (var suite in suites)
 {

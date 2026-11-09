@@ -6,7 +6,9 @@ Ejecutar localmente desde la raíz, en worldgeneration:
 powershell -NoProfile -ExecutionPolicy Bypass -File .GEvolve.TestsValidationReportscommands.ps1 -ValidationSet GridLaboratory -Label R02 -IsolatedArtifacts
 ~~~
 
-El script activo captura build y las cuatro suites nuevas de GEvolve.Tests/Active, con streams completos, códigos reales, privacidad, directorio UTC y artefactos aislados. Codex no lo ejecuta. No inicia Game ni realiza validación visual. [Aislamiento y pendientes R02](R02_LEGACY_ISOLATION.md).
+El script activo captura build y las cinco suites oficiales de GEvolve.Tests/Active (Grid, Laboratory, TextEditing, LegacyIsolation y MenuNavigation), con streams completos, códigos reales, privacidad, directorio UTC y artefactos aislados. Codex no lo ejecuta. No inicia Game ni realiza validación visual. [Aislamiento y pendientes R02](R02_LEGACY_ISOLATION.md).
+
+[Restauración del menú y navegación](R02_MENU_RESTORATION.md): pruebas nuevas preparadas y revisadas estáticamente, sin ejecución por Codex. Los PASS del director previos a esta corrección siguen siendo evidencia anterior y no validan los cambios de interfaz actuales.
 
 Las pruebas geográficas anteriores permanecen intactas pero no se compilan ni ejecutan. Sus baselines e informes tampoco se alteran. Los resultados 17 PASS/2 FAIL del legado no se convierten en PASS ni se declaran corregidos al ejecutar la suite nueva. El runner rechaza expresamente los flags de suites históricas.
 

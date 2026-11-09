@@ -1,6 +1,8 @@
 # R02 — Laboratorio de cuadrícula
 
-El menú ofrece **LABORATORIO DE CUADRÍCULA**, **CREAR MUNDO - NO DISPONIBLE** y salir. Crear mundo muestra una indicación explícita; no genera ni carga geografía con el motor anterior.
+El inicio recupera el diseño original: título/version de Evolve, Civilization Simulator, fondo en dos franjas y cuatro opciones centradas en orden **Crear mundo, Laboratorio, Opciones y Salir**. Legacy se consulta exclusivamente como referencia visual y permanece excluido de Compile. Laboratorio abre la cuadrícula nueva; Opciones recupera su pantalla informativa y Volver; Salir cierra normalmente.
+
+**Crear mundo:** conserva el formulario original con selectores de tamaño/tipo, semilla editable, aleatoria, Generar mundo y Volver. Solo mantiene preferencias de interfaz de Definitions; no construye una configuración de motor, cuadrícula ni partida. Generar mundo está deshabilitado tanto en dibujo como en hit testing y se muestra un aviso permanente de no disponibilidad hasta el nuevo generador. No hay conexión ni fallback al legado.
 
 El laboratorio muestra solo la cuadrícula neutral de Engine/Grid, un campo int32 de semilla, semilla aleatoria y los cuatro tamaños oficiales. La semilla es metadato temporal: una cuadrícula vacía no depende de ella. No existen superficie, altura, océano, placas, montañas, clima, biomas, comparador ni etapas disponibles. No se persiste una partida parcial ni se modifica un guardado histórico.
 
@@ -19,6 +21,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationRe
 dotnet run --project GEvolve.Game
 ```
 
-El script solo compila y ejecuta las suites nuevas sin ventana; el segundo comando abre el juego para revisión manual y cierre normal. Revisar menú/no disponibilidad de Crear mundo, cuatro tamaños, límites de semilla, pegado, navegación, salida/reentrada y ausencia de controles antiguos. No usar --graphics-smoke ni pruebas visuales automatizadas: esas rutas ya no existen.
+El script solo compila y ejecuta las suites nuevas sin ventana; el segundo comando abre el juego para revisión manual y cierre normal. Revisar las cuatro opciones originales, formulario de creación con Generar deshabilitado, pantalla Opciones/Volver, salida y retorno por Escape; después, laboratorio con cuatro tamaños, límites de semilla, pegado, zoom/pan, salida/reentrada y ausencia de controles geográficos antiguos. No usar --graphics-smoke ni pruebas visuales automatizadas: esas rutas ya no existen.
 
 Implementado y revisado estáticamente; compilación, pruebas, apariencia y fluidez no evaluadas por Codex. R02 pendiente de auditoría y aprobación.

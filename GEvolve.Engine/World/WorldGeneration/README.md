@@ -5,7 +5,7 @@ Esta área sigue sin algoritmos. R02 reinicia el flujo activo con la cuadrícula
 - **Único plan activo:** [ROADMAP.md](ROADMAP.md).
 - **Archivo histórico:** [../worldgenerationold/](../worldgenerationold/), preservado y excluido explícitamente de Engine. No puede usarse como fallback.
 - **Infraestructura común:** GEvolve.Engine/Grid/ y su geometría, sin cambios. Definitions, State y guardados históricos conservan sus contratos.
-- **Game:** laboratorio vacío con tamaño, semilla de sesión, zoom y desplazamiento. Crear mundo indica no disponible. No hay etapas, capas o comparador geográficos.
+- **Game:** menú original Crear mundo/Laboratorio/Opciones/Salir restaurado sin legado. Crear mundo conserva su formulario de preferencias, pero Generar está deshabilitado y muestra no disponibilidad; Opciones conserva su pantalla informativa. El laboratorio mantiene solo cuadrícula, tamaño, semilla, zoom y desplazamiento; no hay etapas, capas o comparador geográficos.
 - **Pruebas oficiales:** GEvolve.Tests/Active/; las pruebas históricas se conservan en sus archivos originales fuera de Compile. Los resultados anteriores corresponden al legado.
 
 R00 y R01 fueron cerrados por el director con sus excepciones históricas registradas en el roadmap. **R02 implementado y revisado estáticamente; compilación, pruebas locales, revisión visual, auditoría y aprobación pendientes.** [Alcance y evidencia estática](../../../GEvolve.Tests/ValidationReports/R02_LEGACY_ISOLATION.md).
