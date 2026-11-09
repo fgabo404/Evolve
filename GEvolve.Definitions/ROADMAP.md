@@ -4,7 +4,7 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** D00 aprobado; D01 en curso con 8 biomas históricos y 21 subbiomas (Montaña adaptada a 2), sin spawn; fauna, flora y minerales vacíos  
+> **Estado:** D00 aprobado; D01 en curso con 8 biomas históricos y 21 subbiomas (Montaña adaptada a 2); Selva con primer spawn declarativo, restantes pendientes; fauna, flora y minerales vacíos  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
 
 ## 0. Reinicio controlado de los catálogos (2026-11-08)
@@ -21,7 +21,7 @@
 - En cada nueva entidad se decidirán los campos mínimos. Para biomas se ha acordado conceptualmente `Bioma → Subbioma → Spawn (condiciones ambientales)`; la gramática exacta de `spawn` queda pendiente de diseño. Los modelos tipados vendrán después.
 - No se borran IDs antiguos del historial: al reintroducir la misma entidad se conservará su identidad o se documentará una migración explícita. El reinicio del diseño no equivale a autorizar reutilización arbitraria de IDs.
 
-**Nuevo estado de D01:** se recuperó el catálogo histórico de 8 biomas y sus subbiomas sin condiciones ni relaciones; la única excepción es Montaña, que ahora tiene solo Montaña rocosa (`mountain_rocky`) y Cumbres (`mountain_summits`). Total activo: **21 subbiomas**. Los 8/22 anteriores siguen intactos en `old/`.
+**Nuevo estado de D01:** se recuperaron 8 biomas históricos y 21 subbiomas activos; Montaña tiene solo Montaña rocosa y Cumbres. El primer subbioma revisado es **Selva** (`forest_tropical`), con `spawn` declarativo propuesto; los otros 20 siguen sin `spawn`. El catálogo histórico permanece intacto en `old/`.
 
 ## 1. Objetivo y alcance
 
@@ -74,7 +74,9 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 ### D01 — Biomas y subbiomas (primero)
 - [x] Recuperar los 8 biomas históricos sin cambiar sus IDs; mantener `id` y `name`.
 - [x] Restaurar los subbiomas históricos sin `spawn`, salvo **Montaña**: solo `mountain_rocky` y `mountain_summits` (nuevo). Total: 21 subbiomas.
-- [ ] Revisar y aprobar el catálogo recuperado y la excepción Montaña antes de desarrollar spawn.
+- [x] Revisar y acordar mantener el catálogo histórico, salvo Montaña con dos subbiomas.
+- [x] Iniciar las definiciones ambientales solo en `forest_tropical` (nombre `Selva`; conservar ID).
+- [ ] Revisar y confirmar los parámetros iniciales de spawn de Selva antes de establecer reglas tipadas del motor.
 - [ ] Acordar jerarquía **bioma → subbioma**, separando clima/vegetación de rasgos superpuestos como relieve, costa, cuerpos de agua y humedales.
 - [ ] Revisar qué categorías conservar, renombrar, dividir o agregar, sin romper IDs existentes.
 - [ ] Definir condiciones necesarias y preferentes: temperatura, precipitación, humedad útil, estacionalidad, latitud, altitud, pendiente, suelo, hidrología y proximidad marina cuando aplique.
@@ -87,12 +89,12 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 
 ### D01 — Catálogo histórico recuperado con excepción Montaña
 
-Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos contienen **solo** `id` y `name` (es/en). No se incluyó `spawn`, condiciones ambientales, fauna, flora ni minerales.
+Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos conservan `id` y `name` (es/en); **únicamente `forest_tropical` incorpora `spawn`**, con requisitos y preferencias ambientales. Los otros 20 subbiomas no tienen `spawn` ni relaciones con fauna, flora o minerales.
 
 | Bioma | Subbiomas |
 |---|---|
 | Desierto (`desert`) | Arenoso (dunas) (`desert_sandy`); Rocoso (cañones y mesetas) (`desert_rocky`); Salar (`desert_salt_flat`) |
-| Bosque (`forest`) | Tropical (selva) (`forest_tropical`); Subtropical (`forest_subtropical`); Templado (`forest_temperate`); Boreal (taiga) (`forest_boreal`); Pantano arbolado (Everglades) (`forest_wooded_swamp`) |
+| Bosque (`forest`) | Selva (`forest_tropical`); Subtropical (`forest_subtropical`); Templado (`forest_temperate`); Boreal (taiga) (`forest_boreal`); Pantano arbolado (Everglades) (`forest_wooded_swamp`) |
 | Llanuras (`plains`) | Sabana (`plains_savanna`); Pradera (`plains_prairie`); Estepa (`plains_steppe`); Humedal abierto (Pantanal) (`plains_open_wetland`) |
 | Marino (`marine`) | Arrecife (`marine_reef`); Estuario o litoral (`marine_estuary_littoral`); Manglar (`marine_mangrove`); Océano abierto (alta mar) (`marine_open_ocean`) |
 | Tundra (`tundra`) | Tundra (`tundra_tundra`) |
@@ -104,7 +106,29 @@ Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos co
 
 Los 8 biomas históricos / 22 subbiomas siguen archivados íntegramente en `Biomas/old/biomes.json`. La nueva lista activa tiene 8 biomas / 21 subbiomas. La clasificación está en **revisión de diseño**; el motor antiguo continúa usando el archivo histórico integrado hasta una migración aprobada.
 
-**Pendiente:** aprobación del catálogo y, en una etapa posterior, requisitos de `spawn` y reconciliación de vínculos históricos.
+**Pendiente:** revisar la propuesta de `spawn` para Selva, definir una semántica tipada general para los demás subbiomas, y reconciliar vínculos históricos.
+
+### D01 — Selva (`forest_tropical`): primer spawn declarativo
+
+Se conserva el ID histórico, y se cambia el nombre visible a **Selva** (`Rainforest`). El `spawn` se configura de forma declarativa, **sin cambios en Engine ni modelos C#**.
+
+| Condición | Tipo | Rango o límite | Interpretación |
+|---|---|---|---|
+| Superficie | Obligatorio | `terrain: land` | No aparece como bioma de agua abierta |
+| Temperatura media anual | Obligatorio | 20–30 °C | Promedio anual, no temperatura del día |
+| Precipitación anual | Obligatorio | ≥ 1500 mm/año | No se define máximo de precipitación |
+| Estación seca | Obligatorio | ≤ 3 meses con lluvia < 60 mm/mes | Requiere datos mensuales; el umbral 60 mm es una convención de diseño compatible con criterios climáticos |
+| Altitud | Preferente | 0–1500 m s. n. m. | Fuera de esa banda no hay veto automático |
+| Precipitación óptima | Preferente | 2000–4000 mm/año | Más compatible dentro de la banda |
+| Humedad relativa media anual | Preferente | 75–90 % | Factor adicional, no condición excluyente |
+| Latitud absoluta | Preferente | 0–23,5° | Simetría norte/sur; la latitud sola no define el ecosistema |
+
+**Semántica propuesta de este primer JSON:** `required` contiene las condiciones de elegibilidad, `preferred` describe la banda favorable; un máximo omitido en la lluvia anual significa que **esta regla no establece un máximo**. Una preferencia no debe convertirse en condición de descarte. Si el motor no calcula alguna métrica requerida, no debe inventarla: esa integración permanece pendiente de diseño y pruebas.
+
+**Fuentes de referencia:** [FAO, Global Ecological Zoning](https://www.fao.org/4/ad652e/ad652e07.htm) (precipitación ≥1500 mm, distribución anual y ≤3 meses secos); [UK Met Office, Tropical Rainforest Climate](https://weather.metoffice.gov.uk/climate/climate-explained/climate-zones) (temperaturas ~20–30 °C y lluvia mensual); [USGS/USNVC](https://data.usgs.gov/usnvc-explorer/unitDetails/1298971) (elevaciones tropicales de tierras bajas hasta ~1000–1700 m según región); [National Geographic](https://education.nationalgeographic.org/resource/rain-forest/) (humedad y distribución tropical). Los límites son **valores iniciales de jugabilidad**, no una ley ecológica universal.
+
+**Estado:** primera propuesta aplicada, ajuste/confirmación del director y futura deserialización tipada pendientes.
+
 
 **Salida:** matriz de subbiomas con condiciones ambientales y relaciones candidatas revisadas.
 
@@ -220,9 +244,10 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | D01 — biomas principales | Se definen ocho biomas con `subbiomes: []`, sin spawn | Aplicado | [biomes.json](Biomas/biomes.json) |
 | 2026-11-08 | D01 — subbiomas iniciales | Se incorporaron 34 subbiomas como primera propuesta, sin spawn | Sustituido por restauración del catálogo histórico | [biomes.json](Biomas/biomes.json) |
 | 2026-11-08 | D01 — recuperación histórica con Montaña adaptada | Se recuperan los 8 biomas históricos; 21 subbiomas activos: Montaña rocosa y Cumbres reemplazan los 3 anteriores de Montaña | Aplicado; revisión del director pendiente | [biomes.json](Biomas/biomes.json) |
+| 2026-11-09 | D01 — Selva | `forest_tropical` cambia su nombre a Selva y recibe el primer `spawn` declarativo con clima, estación seca y preferencias de altitud, humedad y latitud | Propuesta aplicada; parámetros por confirmar | [biomes.json](Biomas/biomes.json) |
 
 ## 9. Próximo paso inmediato
 
-**D01 — Revisar los subbiomas enumerados; los requisitos de spawn se diseñarán por separado.**
+**D01 — Confirmar el spawn de Selva y continuar con los demás subbiomas uno a uno.**
 
-Revisar la lista recuperada de 21 subbiomas: conservar Desierto (arenoso, rocoso, salar) y los restantes grupos históricos; en Montaña mantener únicamente Montaña rocosa y Cumbres. El histórico de 22 se conserva en `old/`. **No añadir `spawn` hasta que se solicite expresamente**.
+Conservar los 21 subbiomas reconstruidos y confirmar los rangos iniciales de Selva (`forest_tropical`). **Los otros 20 permanecen sin spawn** y solo se definirán cuando se solicite. El histórico sigue conservado en `old/`.

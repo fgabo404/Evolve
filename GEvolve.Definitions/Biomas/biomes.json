@@ -40,8 +40,42 @@
         {
           "id": "forest_tropical",
           "name": {
-            "es": "Tropical (selva)",
-            "en": "Tropical (rainforest)"
+            "es": "Selva",
+            "en": "Rainforest"
+          },
+          "spawn": {
+            "required": {
+              "terrain": "land",
+              "meanAnnualTemperatureC": {
+                "min": 20,
+                "max": 30
+              },
+              "annualPrecipitationMm": {
+                "min": 1500
+              },
+              "dryMonthsPerYear": {
+                "max": 3,
+                "dryMonthThresholdMm": 60
+              }
+            },
+            "preferred": {
+              "elevationMeters": {
+                "min": 0,
+                "max": 1500
+              },
+              "annualPrecipitationMm": {
+                "min": 2000,
+                "max": 4000
+              },
+              "meanAnnualRelativeHumidityPercent": {
+                "min": 75,
+                "max": 90
+              },
+              "absoluteLatitudeDegrees": {
+                "min": 0,
+                "max": 23.5
+              }
+            }
           }
         },
         {
