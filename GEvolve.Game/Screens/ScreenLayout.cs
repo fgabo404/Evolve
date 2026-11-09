@@ -15,7 +15,8 @@ public enum UiAction
     LabViewGrid, LabViewPlates, LabViewCompression, LabViewExtension, LabViewShear,
     LabViewSurface, LabViewBase, LabViewSystems, LabViewContribution, LabViewFinal,
     LabShowHeights, LabViewMotion, LabTemperature, LabPrecipitation, LabBiomes,
-    LabViewTemperature, LabViewRainfall, LabViewMoisture, LabViewBiomes
+    LabViewTemperature, LabViewRainfall, LabViewMoisture, LabViewBiomes,
+    LabBaseVariant, LabBaseV0, LabBaseV1, LabBaseV4O, LabBaseV4U
 }
 
 public readonly record struct UiRect(float X, float Y, float Width, float Height)

@@ -1,5 +1,6 @@
 ﻿using GEvolve.Engine.World;
 using GEvolve.Game.Graphics;
+using GEvolve.Engine.World.Experimental;
 
 namespace GEvolve.Game.Screens;
 
@@ -8,12 +9,16 @@ public static class PangaeaLaboratoryLayout
 {
     public const float HeaderHeight = 42;
     public const float StatusTop = 586;
+    public static float ComparisonOffset(bool compareBase) => compareBase ? 46 : 0;
     public static float PanelWidth(int width) => width < 800 ? 240 : 280;
     public static UiRect Map(int width, int height) => new(PanelWidth(width), 0, width - PanelWidth(width), height);
     public static UiRect Inspector(int width, int height) => new(12, height - 190, PanelWidth(width) - 24, 136);
     public static UiRect ControlsViewport(int width, int height) => new(0, HeaderHeight, PanelWidth(width), Inspector(width, height).Y - HeaderHeight - 8);
-    public static float MaximumScroll(int width, int height, int statusLines = 3) => Math.Max(0,
-        StatusTop + Math.Max(3, statusLines) * 12 + 8 - (ControlsViewport(width, height).Y + ControlsViewport(width, height).Height));
+    public static float MaximumScroll(int width, int height, int statusLines = 3, bool compareBase = false) => Math.Max(0,
+        StatusTop + ComparisonOffset(compareBase) + Math.Max(3, statusLines) * 12 + 8 - (ControlsViewport(width, height).Y + ControlsViewport(width, height).Height));
+    private static readonly UiAction[] VariantActions = [UiAction.LabBaseV0, UiAction.LabBaseV1, UiAction.LabBaseV4O, UiAction.LabBaseV4U];
+    public static bool IsVariantAction(UiAction action) => VariantActions.Contains(action);
+    public static PangaeaBaseVariant Variant(UiAction action) => (PangaeaBaseVariant)Array.IndexOf(VariantActions, action);
     public static readonly PangaeaGenerationStage[] VisibleStages = [PangaeaGenerationStage.Plates,
         PangaeaGenerationStage.Surface, PangaeaGenerationStage.Base, PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final,
         PangaeaGenerationStage.Temperature, PangaeaGenerationStage.Precipitation, PangaeaGenerationStage.Biomes];
@@ -36,9 +41,10 @@ public static class PangaeaLaboratoryLayout
     public static PangaeaGenerationStage Stage(UiAction action) => (PangaeaGenerationStage)(Array.IndexOf(StageActions, action) + 1);
     public static UiAction ViewAction(MapViewMode view) => ViewActions[Array.IndexOf(Views, view)];
     public static MapViewMode View(UiAction action) => Views[Array.IndexOf(ViewActions, action)];
-    public static IReadOnlyList<UiButton> Buttons(int width, int height, float scroll = 0)
+    public static IReadOnlyList<UiButton> Buttons(int width, int height, float scroll = 0, bool compareBase = false)
     {
         float panel = PanelWidth(width), w = panel - 24;
+        float offset = ComparisonOffset(compareBase);
         var buttons = new List<UiButton>
         {
             new(UiAction.TypeSelect, "PANGEA - ÚNICO DISPONIBLE", new(12, 60 - scroll, w, 24)),
@@ -46,18 +52,19 @@ public static class PangaeaLaboratoryLayout
             new(UiAction.SeedField, "SEMILLA", new(12, 152 - scroll, w - 44, 26)),
             new(UiAction.RandomSeed, "ALEATORIA", new(panel - 48, 152 - scroll, 36, 26)),
             new(UiAction.LabView, "VISTA", new(12, 200 - scroll, w, 26)),
-            new(UiAction.LabRestart, "INICIAR / REINICIAR", new(12, 550 - scroll, w * .62f - 4, 26)),
-            new(UiAction.LabCancel, "CANCELAR", new(12 + w * .62f + 4, 550 - scroll, w * .38f - 4, 26)),
+            new(UiAction.LabRestart, "INICIAR / REINICIAR", new(12, 550 + offset - scroll, w * .62f - 4, 26)),
+            new(UiAction.LabCancel, "CANCELAR", new(12 + w * .62f + 4, 550 + offset - scroll, w * .38f - 4, 26)),
             new(UiAction.Back, "SALIR AL MENÚ", new(12, height - 42, w, 30))
         };
+        if (compareBase) buttons.Add(new(UiAction.LabBaseVariant, "VARIANTE BASE", new(12, 246 - scroll, w, 26)));
         for (int i = 0; i < VisibleStages.Length; i++)
-            buttons.Add(new(StageAction(VisibleStages[i]), $"{i + 1:00} - {StageLabels[i]}", new(12, 254 + i * 36 - scroll, w, 32)));
+            buttons.Add(new(StageAction(VisibleStages[i]), $"{i + 1:00} - {StageLabels[i]}", new(12, 254 + offset + i * 36 - scroll, w, 32)));
         return buttons;
     }
-    public static IEnumerable<UiButton> HitButtons(int width, int height, float scroll)
+    public static IEnumerable<UiButton> HitButtons(int width, int height, float scroll, bool compareBase = false)
     {
         var viewport = ControlsViewport(width, height);
-        foreach (var button in Buttons(width, height, scroll))
+        foreach (var button in Buttons(width, height, scroll, compareBase))
         {
             if (button.Action == UiAction.Back) { yield return button; continue; }
             var r = button.Bounds;
@@ -68,12 +75,14 @@ public static class PangaeaLaboratoryLayout
     }
     public static IReadOnlyList<UiButton> Dropdown(int width, int height, UiAction selector, PangaeaMapData? map, float scroll = 0)
     {
-        var anchor = Buttons(width, height, scroll).Single(b => b.Action == selector).Bounds;
+        if (selector == UiAction.LabBaseVariant && map?.Snapshot.Base is null) return [];
+        var anchor = Buttons(width, height, scroll, map?.Snapshot.Base is not null).Single(b => b.Action == selector).Bounds;
         (UiAction Action, string Text)[] options = selector switch
         {
             UiAction.TypeSelect => [(UiAction.Pangaea, "PANGEA - ÚNICO DISPONIBLE")],
             UiAction.SizeSelect => new[] { UiAction.Small, UiAction.Medium, UiAction.Large, UiAction.Enormous }
                 .Select(a => (a, ScreenLayout.SizeLabel(ScreenLayout.SizeFor(a)))).ToArray(),
+            UiAction.LabBaseVariant => VariantActions.Select(a => (a, PangaeaBaseComparison.Label(Variant(a)))).ToArray(),
             _ => (map?.AvailableViews ?? []).Select(v => (ViewAction(v), PangaeaMapData.ViewLabel(v))).ToArray()
         };
         if (options.Length == 0) return [];

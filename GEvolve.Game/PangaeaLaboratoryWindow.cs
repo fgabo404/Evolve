@@ -2,6 +2,7 @@
 using GEvolve.Engine.World;
 using GEvolve.Game.Graphics;
 using GEvolve.Game.Screens;
+using GEvolve.Engine.World.Experimental;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GEvolve.Game;
@@ -17,8 +18,8 @@ internal sealed partial class EvolveWindow
 
     private IEnumerable<UiButton> LaboratoryControls()
     {
-        foreach (var button in PangaeaLaboratoryLayout.HitButtons(ClientSize.X, ClientSize.Y, _laboratoryScroll)) yield return button;
-        if (_openDropdown is UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView)
+        foreach (var button in PangaeaLaboratoryLayout.HitButtons(ClientSize.X, ClientSize.Y, _laboratoryScroll, _laboratory?.CanCompareBase == true)) yield return button;
+        if (_openDropdown is UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView or UiAction.LabBaseVariant)
             foreach (var button in PangaeaLaboratoryLayout.Dropdown(ClientSize.X, ClientSize.Y, _openDropdown.Value, _laboratory?.Map, _laboratoryScroll))
                 yield return button;
     }
@@ -53,6 +54,7 @@ internal sealed partial class EvolveWindow
         if (PangaeaLaboratoryLayout.IsStageAction(action)) return lab.CanExecute(PangaeaLaboratoryLayout.Stage(action));
         if (action == UiAction.LabCancel) return lab.Busy;
         if (action == UiAction.LabView) return lab.Map is not null;
+        if (action == UiAction.LabBaseVariant || PangaeaLaboratoryLayout.IsVariantAction(action)) return lab.CanCompareBase;
         return true;
     }
     private void ActivateLaboratory(UiAction action)
@@ -63,10 +65,12 @@ internal sealed partial class EvolveWindow
         else if (PangaeaLaboratoryLayout.IsStageAction(action)) lab.Execute(PangaeaLaboratoryLayout.Stage(action));
         else if (PangaeaLaboratoryLayout.IsViewAction(action))
         { lab.ChooseView(PangaeaLaboratoryLayout.View(action)); _openDropdown = null; }
+        else if (PangaeaLaboratoryLayout.IsVariantAction(action))
+        { lab.ChooseBaseVariant(PangaeaLaboratoryLayout.Variant(action)); _openDropdown = null; }
         else switch (action)
         {
             case UiAction.Back: ReturnToMenu(); break;
-            case UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView:
+            case UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView or UiAction.LabBaseVariant:
                 _openDropdown = _openDropdown == action ? null : action; break;
             case UiAction.Pangaea: _openDropdown = null; break; // Explicitly the only supported laboratory type.
             case UiAction.Small or UiAction.Medium or UiAction.Large or UiAction.Enormous:
@@ -100,7 +104,7 @@ internal sealed partial class EvolveWindow
             _inspectorScroll = Math.Clamp(_inspectorScroll - (int)(amount * 3), 0, Math.Max(0, _inspectorLines - _inspectorVisibleLines));
         else if (PangaeaLaboratoryLayout.ControlsViewport(ClientSize.X, ClientSize.Y).Contains(pointer.X, pointer.Y))
             _laboratoryScroll = Math.Clamp(_laboratoryScroll - amount * 36, 0,
-                PangaeaLaboratoryLayout.MaximumScroll(ClientSize.X, ClientSize.Y, LaboratoryStatus().Count));
+                PangaeaLaboratoryLayout.MaximumScroll(ClientSize.X, ClientSize.Y, LaboratoryStatus().Count, _laboratory?.CanCompareBase == true));
         else if (LaboratoryMapContains(pointer)) _camera.Zoom(amount, pointer);
         _dirty = true;
     }
@@ -154,17 +158,19 @@ internal sealed partial class EvolveWindow
         _ui.Text("GENERACION DE MUNDO LAB", 12, 15, 1.5f, White, false);
         _ui.Flush(width, height); _ui.Clear();
         var status = LaboratoryStatus();
-        _laboratoryScroll = Math.Clamp(_laboratoryScroll, 0, PangaeaLaboratoryLayout.MaximumScroll(width, height, status.Count));
-        foreach (var (label, y) in new[] { ("TIPO MAPA", 46), ("TAMAÑO", 92), ("SEMILLA - CTRL V: PEGAR", 138), ("VISTA", 186), ("GENERACIÓN MANUAL", 238) })
+        float comparisonOffset = PangaeaLaboratoryLayout.ComparisonOffset(lab.CanCompareBase);
+        _laboratoryScroll = Math.Clamp(_laboratoryScroll, 0, PangaeaLaboratoryLayout.MaximumScroll(width, height, status.Count, lab.CanCompareBase));
+        foreach (var (label, y) in new[] { ("TIPO MAPA", 46f), ("TAMAÑO", 92f), ("SEMILLA - CTRL V: PEGAR", 138f), ("VISTA", 186f), ("GENERACIÓN MANUAL", 238 + comparisonOffset) })
             _ui.Text(label, 12, y - _laboratoryScroll, 1.15f, Muted, false);
-        foreach (var button in PangaeaLaboratoryLayout.Buttons(width, height, _laboratoryScroll).Where(b => b.Action != UiAction.Back)) DrawLaboratoryButton(button);
+        if (lab.CanCompareBase) _ui.Text("COMPARADOR BASE - EXPERIMENTAL", 12, 232 - _laboratoryScroll, 1.1f, Accent, false);
+        foreach (var button in PangaeaLaboratoryLayout.Buttons(width, height, _laboratoryScroll, lab.CanCompareBase).Where(b => b.Action != UiAction.Back)) DrawLaboratoryButton(button);
         for (int i = 0; i < status.Count; i++)
-            _ui.Text(status[i], 12, PangaeaLaboratoryLayout.StatusTop - _laboratoryScroll + i * 12, 1.1f,
+            _ui.Text(status[i], 12, PangaeaLaboratoryLayout.StatusTop + comparisonOffset - _laboratoryScroll + i * 12, 1.1f,
                 lab.Error is null ? Muted : new(1, .62f, .48f, 1), false);
         FlushLaboratoryClip(PangaeaLaboratoryLayout.ControlsViewport(width, height));
         DrawLaboratoryInspector();
         DrawLaboratoryButton(PangaeaLaboratoryLayout.Buttons(width, height).Single(b => b.Action == UiAction.Back));
-        if (_openDropdown is UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView)
+        if (_openDropdown is UiAction.TypeSelect or UiAction.SizeSelect or UiAction.LabView or UiAction.LabBaseVariant)
         foreach (var button in PangaeaLaboratoryLayout.Dropdown(width, height, _openDropdown.Value, lab.Map, _laboratoryScroll))
         {
             var r = button.Bounds; _ui.Rect(r.X, r.Y, r.Width, r.Height, new(.10f, .19f, .26f, 1));
@@ -202,6 +208,7 @@ internal sealed partial class EvolveWindow
             UiAction.SizeSelect => ScreenLayout.SizeLabel(lab.Size),
             UiAction.SeedField => lab.SeedText,
             UiAction.LabView => lab.Map is null ? "SIN CAPAS DISPONIBLES" : PangaeaMapData.ViewLabel(lab.View),
+            UiAction.LabBaseVariant => lab.PendingBaseVariant is { } pending ? "CALCULANDO " + pending : PangaeaBaseComparison.Label(lab.BaseVariant),
             _ => button.Text
         };
         float textPixel = Math.Min(1.4f, (r.Width - 12) / (Math.Max(1, text.Length) * 6));

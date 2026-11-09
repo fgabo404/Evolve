@@ -21,6 +21,7 @@ if (args.Contains("--pangaea-base-variants-controls")) { PangaeaBaseVariantContr
 if (args.Contains("--pangaea-base-variants")) { PangaeaBaseVariantTests.Run(); return 0; }
 if (args.Contains("--pangaea-lowland-variants")) { PangaeaBaseVariantTests.RunLowlands(); return 0; }
 if (args.Contains("--pangaea-lowland-controls")) { PangaeaBaseVariantControls.Run(); PangaeaRegionalLowlandVariants.Controls(); return 0; }
+if (args.Contains("--pangaea-base-comparator")) { PangaeaBaseComparatorTests.Run(); return 0; }
 if (args.Contains("--all-suites"))
 {
     (string Name, Action Run)[] suites = [

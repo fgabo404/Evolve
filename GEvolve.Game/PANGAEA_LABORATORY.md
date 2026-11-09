@@ -31,6 +31,20 @@ La cámara admite un origen de viewport explícito para ocupar el área real del
 
 ## Validación técnica
 
+### Comparador BASE P03-A.8.2c
+
+Tras completar 03 BASE aparece **COMPARADOR BASE - EXPERIMENTAL**, dentro de la columna desplazable: V0 — Oficial, V1 — Sin presión, V4O — Regional y V4U — Regional moderada. Seleccionar una opción lleva a ALTURAS BASE. Todas usan la misma escala absoluta 0–100, océano azul y las mismas condiciones de legibilidad de etiquetas. El inspector diferencia BASE OFICIAL MOTOR y BASE VISIBLE; las variantes no alimentan 04/05 ni las etapas ambientales.
+
+V0 es el valor inicial. El primer cálculo de cada alternativa ocurre en un worker sobre un snapshot separado; mientras termina, se conserva el mapa anterior y se indica CALCULANDO. Los siguientes cambios usan tres arrays de bytes como máximo en caché. Elegir otra vista muestra exclusivamente datos oficiales. Cambiar semilla/tamaño, reiniciar o repetir superficie/BASE elimina las variantes y restaura V0. Salir descarta toda la sesión. Cámara y selección se conservan al alternar variantes; el renderer actualiza sus datos sin reconstruir ni ajustar el viewport.
+
+El módulo optativo `Engine.World.Experimental.PangaeaBaseComparison` reutiliza Shape/Recover oficiales mediante acceso interno sin cambiar sus cuerpos. Solo calcula alturas desde fuentes previamente capturadas; no ejecuta el generador ni accede a persistencia. Las implementaciones anteriores de Tests permanecen como referencias independientes y se contrastan con hashes publicados en P03-A.8.2b. Game no depende de Tests ni utiliza reflexión. La captura de fuentes se activa únicamente para las sesiones del laboratorio; el automático no cambia.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet BaseVisualComparator -Label P03-A82c -IsolatedArtifacts
+```
+
+Incluye comparación exacta en 16 mundos/cuatro tamaños, controles de presentación sin GL, equivalencia 28+12, laboratorio y suite general. `BaseComparatorControls` limita la ejecución a build+comparador. No ejecuta Evolve gráficamente. **Comparador implementado, evaluación visual y selección pendientes.** No adopta ninguna variante ni inicia P03-A.8.3.
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationReports\commands.ps1 -ValidationSet PangaeaEcology -Label P09-1 -IsolatedArtifacts
 ```

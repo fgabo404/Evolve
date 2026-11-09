@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Numerics;
 using GEvolve.Engine.World;
+using GEvolve.Engine.World.Experimental;
 using GEvolve.Engine.World.BiomeGeneration;
 using GEvolve.State.Game;
 
@@ -11,9 +12,16 @@ public sealed class PangaeaMapData
 {
     public PangaeaGenerationSnapshot Snapshot { get; }
     public IReadOnlyList<MapViewMode> AvailableViews { get; }
-    public PangaeaMapData(PangaeaGenerationSnapshot snapshot)
+    public PangaeaBaseVariant BaseVariant { get; }
+    private readonly byte[]? _comparison;
+    public PangaeaMapData(PangaeaGenerationSnapshot snapshot, PangaeaBaseVariant baseVariant = PangaeaBaseVariant.V0,
+        byte[]? comparison = null)
     {
         if (snapshot.Grid is null) throw new ArgumentException("A generated grid is required.", nameof(snapshot));
+        if (!Enum.IsDefined(baseVariant) || baseVariant != PangaeaBaseVariant.V0 &&
+            (snapshot.Base is null || comparison?.Length != snapshot.Base.Length))
+            throw new ArgumentException("A current complete comparison field is required.", nameof(comparison));
+        BaseVariant = baseVariant; _comparison = baseVariant == PangaeaBaseVariant.V0 ? null : comparison;
         Snapshot = snapshot;
         var views = new List<MapViewMode> { MapViewMode.Grid };
         if (snapshot.Plates is not null) views.Add(MapViewMode.Tectonic);
@@ -47,7 +55,7 @@ public sealed class PangaeaMapData
         if (ocean) return new(.08f, .17f, .30f);
         if (view == MapViewMode.Geology)
             return s.Mountains!.InfluenceByCellId[id] == 0 ? new(.30f, .34f, .30f) : new(.60f, .38f, .17f);
-        if (view == MapViewMode.ElevationBase) return new(s.Base![id] / 100f);
+        if (view == MapViewMode.ElevationBase) return new(Height(id, view)!.Value / 100f);
         if (view == MapViewMode.ElevationFinal) return new(s.Elevations!.FinalByCellId.Span[id] / 100f);
         float fraction = Math.Clamp(s.Elevations!.ContributionByCellId.Span[id] / 25f, 0, 1);
         return Vector3.Lerp(new(.12f, .14f, .16f), new(1f, .65f, .12f), fraction);
@@ -55,14 +63,14 @@ public sealed class PangaeaMapData
     /// <summary>Only current data; null is distinct from a measured zero.</summary>
     public byte? Height(int id, MapViewMode view) => view switch
     {
-        MapViewMode.ElevationBase when Snapshot.Base is { } initial => initial[id],
+        MapViewMode.ElevationBase when Snapshot.Base is { } initial => (_comparison ?? initial)[id],
         MapViewMode.ElevationContribution when Snapshot.Elevations is { } fields => fields.ContributionByCellId.Span[id],
         MapViewMode.ElevationFinal when Snapshot.Elevations is { } fields => fields.FinalByCellId.Span[id],
         MapViewMode.ElevationBase or MapViewMode.ElevationContribution or MapViewMode.ElevationFinal => null,
         _ => Snapshot.Elevations is { } fields
             ? fields.FinalByCellId.Span[id] : Snapshot.Base is { } initial ? initial[id] : null,
     };
-    public IReadOnlyList<string> Inspect(int id)
+    public IReadOnlyList<string> Inspect(int id, MapViewMode view = MapViewMode.Grid)
     {
         var s = Snapshot; var cell = s.Grid!.Cells[id];
         string Missing(PangaeaGenerationStage stage) => s.Stages.Single(i => i.Stage == stage).Status switch
@@ -78,6 +86,12 @@ public sealed class PangaeaMapData
             "SUPERFICIE: " + (s.Surface is null ? Missing(PangaeaGenerationStage.Surface) : s.Surface[id] == 1 ? "TIERRA" : "OCÉANO"),
             "BASE: " + Value(s.Base, PangaeaGenerationStage.Base)
         };
+        if (view == MapViewMode.ElevationBase && s.Base is not null)
+        {
+            lines[4] = "BASE: OFICIAL MOTOR " + s.Base[id].ToString(CultureInfo.InvariantCulture);
+            lines.Insert(5, "BASE: VISIBLE " + PangaeaBaseComparison.Label(BaseVariant) + " = " + Height(id, view));
+            if (BaseVariant != PangaeaBaseVariant.V0) lines.Insert(6, "COMPARACIÓN EXPERIMENTAL; NO USADA POR FINAL.");
+        }
         if (s.Motion is { } motion && s.Plates is { } plates)
         {
             var movement = motion.Motions.Single(m => m.PlateId == plates[id]);

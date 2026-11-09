@@ -284,7 +284,7 @@ public sealed class PangaeaFromPlatesGenerator
     /// through 75, taper it to zero at 85, and never lower a structured summit.
     /// Thus P03-A.3's complete >=85 base mask and heights remain identical.
     /// </summary>
-    private static void RecoverRegionalShoulders(byte[] regional, byte[] structured)
+    internal static void RecoverRegionalShoulders(byte[] regional, byte[] structured)
     {
         for (int id = 0; id < regional.Length; id++)
         {
@@ -301,7 +301,7 @@ public sealed class PangaeaFromPlatesGenerator
     /// already sampled local detail and pressure, instead of broad noise alone.
     /// No new noise, RNG, land classification or tectonic field is introduced.
     /// </summary>
-    private static byte[] ShapeUpperRelief(byte[] surface, byte[] regional,
+    internal static byte[] ShapeUpperRelief(byte[] surface, byte[] regional,
         double[] detail, double[] uplift)
     {
         const int shoulder = 60;

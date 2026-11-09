@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using GEvolve.Definitions.WorldGeneration.Configuration;
 using GEvolve.Engine.Grid;
 using GEvolve.Engine.World;
+using GEvolve.Engine.World.Experimental;
 using GEvolve.Game.Graphics;
 
 namespace GEvolve.Game;
@@ -18,6 +19,13 @@ public sealed class PangaeaLaboratory : IDisposable
     private Work? _work;
     private PangaeaGenerationSnapshot? _snapshot;
     private bool _motionQueued;
+    private readonly Dictionary<PangaeaBaseVariant, byte[]> _baseComparisons = [];
+    private Task<byte[]>? _comparisonWork;
+    public PangaeaBaseVariant BaseVariant { get; private set; } = PangaeaBaseVariant.V0;
+    public PangaeaBaseVariant? PendingBaseVariant { get; private set; }
+    public bool ComparingBase => _comparisonWork is not null;
+    public bool CanCompareBase => _snapshot?.Base is not null;
+    public int CachedBaseVariants => _baseComparisons.Count;
     public GridSize Size { get; private set; } = GridSize.Small;
     public string SeedText { get; private set; } = "2026";
     public string? Error { get; private set; }
@@ -70,6 +78,7 @@ public sealed class PangaeaLaboratory : IDisposable
     }
     private void ClearSession()
     {
+        InvalidateBaseComparisons();
         AbandonWork(); _session = null; _snapshot = null; Stages = [];
         Map = null; SelectedCell = null; View = MapViewMode.Grid; Error = null;
         PresentationRevision++;
@@ -85,7 +94,8 @@ public sealed class PangaeaLaboratory : IDisposable
     {
         var configuration = LandmassProfiles.Create(Size, LandmassType.Pangaea, int.Parse(SeedText, CultureInfo.InvariantCulture));
         AbandonWork();
-        if (_session is null) _session = _service.CreatePangaeaSession(configuration);
+        InvalidateBaseComparisons();
+        if (_session is null) _session = _service.CreatePangaeaSession(configuration, captureBaseFields: true);
         else _session.Reset(configuration);
         SessionRevision++; Error = null;
         SelectedCell = null; View = MapViewMode.Grid;
@@ -125,6 +135,7 @@ public sealed class PangaeaLaboratory : IDisposable
     public void Execute(PangaeaGenerationStage stage)
     {
         if (!CanExecute(stage)) { Error = UnavailableReason(stage); return; }
+        if (stage <= PangaeaGenerationStage.Base) InvalidateBaseComparisons();
         var session = _session!;
         var cancellation = new CancellationTokenSource();
         try
@@ -153,7 +164,8 @@ public sealed class PangaeaLaboratory : IDisposable
     }
     public bool Update()
     {
-        if (_work is not { Task.IsCompleted: true } work) return false;
+        bool comparisonChanged = UpdateBaseComparison();
+        if (_work is not { Task.IsCompleted: true } work) return comparisonChanged;
         _work = null;
         bool runMotion = _motionQueued && work.Stage == PangaeaGenerationStage.Plates;
         _motionQueued = false;
@@ -204,7 +216,8 @@ public sealed class PangaeaLaboratory : IDisposable
     }
     private void UpdateMap()
     {
-        Map = _snapshot?.Grid is not null ? new(_snapshot) : null;
+        Map = _snapshot?.Grid is not null ? new(_snapshot, BaseVariant,
+            _baseComparisons.GetValueOrDefault(BaseVariant)) : null;
         if (Map is null) SelectedCell = null;
         if (Map is not null && !Map.AvailableViews.Contains(View)) View = Map.AvailableViews.Last();
         PresentationRevision++;
@@ -221,7 +234,53 @@ public sealed class PangaeaLaboratory : IDisposable
         SelectedCell = grid is not null && address is { } cell && grid.TryGet(cell, out var found) ? found : null;
         return SelectedCell;
     }
-    public IReadOnlyList<string> Inspect() => SelectedCell is { } cell && Map is { } map ? map.Inspect(cell.Id) : [];
+    public IReadOnlyList<string> Inspect() => SelectedCell is { } cell && Map is { } map ? map.Inspect(cell.Id, View) : [];
+
+    /// <summary>Only presentation changes. Cold computations use detached snapshots off the window thread.</summary>
+    public bool ChooseBaseVariant(PangaeaBaseVariant variant)
+    {
+        if (!Enum.IsDefined(variant)) throw new ArgumentOutOfRangeException(nameof(variant));
+        if (!CanCompareBase) return false;
+        ChooseView(MapViewMode.ElevationBase);
+        if (PendingBaseVariant == variant) return true;
+        AbandonComparison();
+        if (variant == PangaeaBaseVariant.V0 || _baseComparisons.ContainsKey(variant))
+        {
+            BaseVariant = variant; UpdateMap(); Notice = "COMPARADOR BASE: " + PangaeaBaseComparison.Label(variant);
+        }
+        else
+        {
+            var input = _snapshot!; //detached immutable snapshot, never the live session
+            PendingBaseVariant = variant;
+            _comparisonWork = Task.Run(() => PangaeaBaseComparison.Generate(input, variant));
+            Notice = "CALCULANDO " + PangaeaBaseComparison.Label(variant) + "; SE MANTIENE LA BASE VISIBLE ANTERIOR.";
+        }
+        return true;
+    }
+    private bool UpdateBaseComparison()
+    {
+        if (_comparisonWork is not { IsCompleted: true } task) return false;
+        var variant = PendingBaseVariant!.Value;
+        _comparisonWork = null; PendingBaseVariant = null;
+        try
+        {
+            _baseComparisons[variant] = task.GetAwaiter().GetResult();
+            BaseVariant = variant; UpdateMap();
+            Notice = "COMPARADOR BASE: " + PangaeaBaseComparison.Label(variant);
+        }
+        catch (Exception error) { Error = "COMPARADOR BASE: " + error.Message; }
+        return true;
+    }
+    private void AbandonComparison()
+    {
+        if (_comparisonWork is { } task)
+            _ = task.ContinueWith(t => { _ = t.Exception; }, TaskScheduler.Default);
+        _comparisonWork = null; PendingBaseVariant = null;
+    }
+    private void InvalidateBaseComparisons()
+    {
+        AbandonComparison(); _baseComparisons.Clear(); BaseVariant = PangaeaBaseVariant.V0;
+    }
     private static PangaeaGenerationSnapshot Prune(PangaeaGenerationSnapshot s, IReadOnlyList<PangaeaStageInfo> stages)
     {
         bool Has(PangaeaGenerationStage stage)
