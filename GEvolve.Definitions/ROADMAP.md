@@ -4,7 +4,7 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** D00 aprobado; D01 en curso con 8 biomas y 34 subbiomas definidos (sin spawn); fauna, flora y minerales vacíos  
+> **Estado:** D00 aprobado; D01 en curso con 8 biomas históricos y 21 subbiomas (Montaña adaptada a 2), sin spawn; fauna, flora y minerales vacíos  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
 
 ## 0. Reinicio controlado de los catálogos (2026-11-08)
@@ -21,7 +21,7 @@
 - En cada nueva entidad se decidirán los campos mínimos. Para biomas se ha acordado conceptualmente `Bioma → Subbioma → Spawn (condiciones ambientales)`; la gramática exacta de `spawn` queda pendiente de diseño. Los modelos tipados vendrán después.
 - No se borran IDs antiguos del historial: al reintroducir la misma entidad se conservará su identidad o se documentará una migración explícita. El reinicio del diseño no equivale a autorizar reutilización arbitraria de IDs.
 
-**Nuevo estado de D01:** hay 8 biomas y 34 subbiomas activos, cada subbioma únicamente con `id` y `name`; `spawn`, fauna, flora, minerales y condiciones ambientales siguen pendientes. Los 8/22 anteriores siguen archivados como referencia.
+**Nuevo estado de D01:** se recuperó el catálogo histórico de 8 biomas y sus subbiomas sin condiciones ni relaciones; la única excepción es Montaña, que ahora tiene solo Montaña rocosa (`mountain_rocky`) y Cumbres (`mountain_summits`). Total activo: **21 subbiomas**. Los 8/22 anteriores siguen intactos en `old/`.
 
 ## 1. Objetivo y alcance
 
@@ -72,9 +72,9 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 **Salida:** mapa de dependencias, vocabulario y validaciones documentados y **aprobados**; las reglas ejecutables siguen pendientes de implementación.
 
 ### D01 — Biomas y subbiomas (primero)
-- [x] Registrar 8 biomas principales con ID y nombre.
-- [x] Incorporar 34 subbiomas iniciales solo con `id` y `name`, **sin `spawn`**; revisión individual pendiente.
-- [ ] Revisar y afinar uno por uno los 34 subbiomas iniciales; utilizar los 8 biomas y 22 subbiomas archivados solo como referencia.
+- [x] Recuperar los 8 biomas históricos sin cambiar sus IDs; mantener `id` y `name`.
+- [x] Restaurar los subbiomas históricos sin `spawn`, salvo **Montaña**: solo `mountain_rocky` y `mountain_summits` (nuevo). Total: 21 subbiomas.
+- [ ] Revisar y aprobar el catálogo recuperado y la excepción Montaña antes de desarrollar spawn.
 - [ ] Acordar jerarquía **bioma → subbioma**, separando clima/vegetación de rasgos superpuestos como relieve, costa, cuerpos de agua y humedales.
 - [ ] Revisar qué categorías conservar, renombrar, dividir o agregar, sin romper IDs existentes.
 - [ ] Definir condiciones necesarias y preferentes: temperatura, precipitación, humedad útil, estacionalidad, latitud, altitud, pendiente, suelo, hidrología y proximidad marina cuando aplique.
@@ -85,42 +85,26 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 - [ ] Definir escenarios de prueba conceptuales y criterios visuales de plausibilidad terrestre.
 - [ ] Aprobar el contrato del catálogo antes de pedir cambios de clasificación al motor.
 
-### Biomas principales registrados en D01
+### D01 — Catálogo histórico recuperado con excepción Montaña
 
-| ID | Nombre | Tipo general |
-|---|---|---|
-| `desert` | Desierto | Terrestre árido |
-| `forest` | Bosque | Terrestre arbolado |
-| `grassland` | Pastizales y sabanas | Terrestre herbáceo/abierto |
-| `shrubland` | Matorrales | Terrestre arbustivo |
-| `tundra` | Tundra | Terrestre frío con vegetación baja |
-| `polar_nival` | Hielos y regiones nivales | Hielo/nieve persistente |
-| `freshwater` | Agua dulce | Acuático continental |
-| `marine` | Marino y costero | Acuático marino, litoral y salobre |
-
-Los ocho grupos son una clasificación simplificada para Evolve, no una taxonomía científica literal. Montañas, acantilados, dunas, salares y latitud polar serán atributos del entorno; no son biomas principales. Se mantienen IDs heredados cuando representan el mismo concepto, sin restaurar subbiomas antiguos automáticamente.
-
-**Pendiente:** revisar los nombres y límites ecológicos de estos subbiomas; diseñar `spawn` y manejo de solapamientos **posteriormente** y conciliar los vínculos y pruebas históricas.
-
-### D01 — Subbiomas iniciales (sin spawn)
+Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos contienen **solo** `id` y `name` (es/en). No se incluyó `spawn`, condiciones ambientales, fauna, flora ni minerales.
 
 | Bioma | Subbiomas |
 |---|---|
-| Desierto (`desert`) | Desierto cálido (`desert_hot`); Desierto frío (`desert_cold`); Desierto costero (`desert_coastal`) |
-| Bosque (`forest`) | Bosque tropical húmedo (selva) (`forest_tropical`); Bosque tropical seco (`forest_tropical_dry`); Bosque subtropical (`forest_subtropical`); Bosque templado (`forest_temperate`); Bosque boreal (taiga) (`forest_boreal`); Bosque nublado (`forest_cloud`) |
-| Pastizales y sabanas (`grassland`) | Sabana (`plains_savanna`); Pradera (`plains_prairie`); Estepa (`plains_steppe`); Pastizal alpino (`grassland_alpine`) |
-| Matorrales (`shrubland`) | Matorral mediterráneo (`shrubland_mediterranean`); Matorral xerófilo (`shrubland_xeric`); Brezal templado (`shrubland_temperate_heath`); Matorral montano (`shrubland_montane`) |
-| Tundra (`tundra`) | Tundra ártica (`tundra_arctic`); Tundra alpina (`tundra_alpine`); Tundra subantártica (`tundra_subantarctic`) |
-| Hielos y regiones nivales (`polar_nival`) | Manto de hielo continental (`polar_nival_ice_sheet`); Zona nival y nieves persistentes (`polar_nival_snowfield`) |
-| Agua dulce (`freshwater`) | Ríos y arroyos (`freshwater_river`); Lagos y lagunas de agua dulce (`freshwater_lake`); Marismas y humedales herbáceos de agua dulce (`freshwater_marsh`); Pantanos arbolados de agua dulce (`freshwater_swamp`); Turberas (`freshwater_peatland`) |
-| Marino y costero (`marine`) | Océano abierto (`marine_open_ocean`); Aguas costeras y plataforma continental (`marine_coastal_shelf`); Arrecifes (`marine_reef`); Estuarios (`marine_estuary`); Manglares (`marine_mangrove`); Praderas marinas (`marine_seagrass`); Mares polares (`marine_polar_sea`) |
+| Desierto (`desert`) | Arenoso (dunas) (`desert_sandy`); Rocoso (cañones y mesetas) (`desert_rocky`); Salar (`desert_salt_flat`) |
+| Bosque (`forest`) | Tropical (selva) (`forest_tropical`); Subtropical (`forest_subtropical`); Templado (`forest_temperate`); Boreal (taiga) (`forest_boreal`); Pantano arbolado (Everglades) (`forest_wooded_swamp`) |
+| Llanuras (`plains`) | Sabana (`plains_savanna`); Pradera (`plains_prairie`); Estepa (`plains_steppe`); Humedal abierto (Pantanal) (`plains_open_wetland`) |
+| Marino (`marine`) | Arrecife (`marine_reef`); Estuario o litoral (`marine_estuary_littoral`); Manglar (`marine_mangrove`); Océano abierto (alta mar) (`marine_open_ocean`) |
+| Tundra (`tundra`) | Tundra (`tundra_tundra`) |
+| Montaña (`mountain`) | Montaña rocosa (`mountain_rocky`); Cumbres (`mountain_summits`) |
+| Polo Norte (`polar_north`) | Hielo polar (`polar_north_ice`) |
+| Polo Sur (`polar_south`) | Hielo polar (`polar_south_ice`) |
 
-Cada subbioma nuevo contiene **solo** `id` y `name` (`es`/`en`). No incluye `spawn`, condiciones climáticas, requisitos topográficos ni listas de flora, fauna o minerales.
+**Único cambio deliberado respecto al histórico:** Montaña deja de tener `mountain_alpine` y `mountain_cliffs` y conserva `mountain_rocky`, que se presenta como Montaña rocosa. Se incorpora `mountain_summits` (Cumbres). Los IDs eliminados del catálogo activo permanecen en `old/`; no se reasignan. Los ecosistemas forestales permanecen en Bosque.
 
-Se conservaron deliberadamente diez IDs históricos para conceptos equivalentes: `forest_tropical`, `forest_subtropical`, `forest_temperate`, `forest_boreal`, `plains_savanna`, `plains_prairie`, `plains_steppe`, `marine_open_ocean`, `marine_reef`, `marine_mangrove`. Los datos históricos de esas entradas **no** se han migrado. El prefijo `plains_` se retiene por estabilidad de identidad, aunque su nuevo bioma padre es `grassland`.
+Los 8 biomas históricos / 22 subbiomas siguen archivados íntegramente en `Biomas/old/biomes.json`. La nueva lista activa tiene 8 biomas / 21 subbiomas. La clasificación está en **revisión de diseño**; el motor antiguo continúa usando el archivo histórico integrado hasta una migración aprobada.
 
-Los antiguos desiertos por sustrato (arenoso, rocoso y salar), el relieve montañoso y los polos norte/sur quedan como referencias para características ambientales y geográficas posteriores, no como subbiomas duplicados.
-
+**Pendiente:** aprobación del catálogo y, en una etapa posterior, requisitos de `spawn` y reconciliación de vínculos históricos.
 
 **Salida:** matriz de subbiomas con condiciones ambientales y relaciones candidatas revisadas.
 
@@ -234,10 +218,11 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | Reinicio de definiciones | Archivados cuatro JSON originales; activos vacíos; recurso integrado de biomas apunta temporalmente al archivo anterior | Aplicado en rama definitions | Consultar historial Git y carpeta old/ |
 | 2026-11-08 | D00 — contratos base | Se documentan dependencias, vocabulario y validaciones | **Aprobado y cerrado** | [D00_CONTRATOS.md](D00_CONTRATOS.md) |
 | 2026-11-08 | D01 — biomas principales | Se definen ocho biomas con `subbiomes: []`, sin spawn | Aplicado | [biomes.json](Biomas/biomes.json) |
-| 2026-11-08 | D01 — subbiomas iniciales | Se incorporan 34 subbiomas con ID y nombre, sin spawn ni relaciones | Aplicado; revisión individual pendiente | [biomes.json](Biomas/biomes.json) |
+| 2026-11-08 | D01 — subbiomas iniciales | Se incorporaron 34 subbiomas como primera propuesta, sin spawn | Sustituido por restauración del catálogo histórico | [biomes.json](Biomas/biomes.json) |
+| 2026-11-08 | D01 — recuperación histórica con Montaña adaptada | Se recuperan los 8 biomas históricos; 21 subbiomas activos: Montaña rocosa y Cumbres reemplazan los 3 anteriores de Montaña | Aplicado; revisión del director pendiente | [biomes.json](Biomas/biomes.json) |
 
 ## 9. Próximo paso inmediato
 
 **D01 — Revisar los subbiomas enumerados; los requisitos de spawn se diseñarán por separado.**
 
-Revisar y pulir la lista inicial de 34 subbiomas con el director, uno por uno. Los antiguos 22 se conservan en `old/` y los vínculos con fauna, flora y minerales se reconstruirán posteriormente. **No añadir `spawn` hasta que se solicite expresamente**.
+Revisar la lista recuperada de 21 subbiomas: conservar Desierto (arenoso, rocoso, salar) y los restantes grupos históricos; en Montaña mantener únicamente Montaña rocosa y Cumbres. El histórico de 22 se conserva en `old/`. **No añadir `spawn` hasta que se solicite expresamente**.

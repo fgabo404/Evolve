@@ -8,24 +8,24 @@
       },
       "subbiomes": [
         {
-          "id": "desert_hot",
+          "id": "desert_sandy",
           "name": {
-            "es": "Desierto cálido",
-            "en": "Hot desert"
+            "es": "Arenoso (dunas)",
+            "en": "Sandy (dunes)"
           }
         },
         {
-          "id": "desert_cold",
+          "id": "desert_rocky",
           "name": {
-            "es": "Desierto frío",
-            "en": "Cold desert"
+            "es": "Rocoso (cañones y mesetas)",
+            "en": "Rocky (canyons and plateaus)"
           }
         },
         {
-          "id": "desert_coastal",
+          "id": "desert_salt_flat",
           "name": {
-            "es": "Desierto costero",
-            "en": "Coastal desert"
+            "es": "Salar",
+            "en": "Salt flat"
           }
         }
       ]
@@ -40,52 +40,45 @@
         {
           "id": "forest_tropical",
           "name": {
-            "es": "Bosque tropical húmedo (selva)",
-            "en": "Tropical rainforest"
-          }
-        },
-        {
-          "id": "forest_tropical_dry",
-          "name": {
-            "es": "Bosque tropical seco",
-            "en": "Tropical dry forest"
+            "es": "Tropical (selva)",
+            "en": "Tropical (rainforest)"
           }
         },
         {
           "id": "forest_subtropical",
           "name": {
-            "es": "Bosque subtropical",
-            "en": "Subtropical forest"
+            "es": "Subtropical",
+            "en": "Subtropical"
           }
         },
         {
           "id": "forest_temperate",
           "name": {
-            "es": "Bosque templado",
-            "en": "Temperate forest"
+            "es": "Templado",
+            "en": "Temperate"
           }
         },
         {
           "id": "forest_boreal",
           "name": {
-            "es": "Bosque boreal (taiga)",
-            "en": "Boreal forest (taiga)"
+            "es": "Boreal (taiga)",
+            "en": "Boreal (taiga)"
           }
         },
         {
-          "id": "forest_cloud",
+          "id": "forest_wooded_swamp",
           "name": {
-            "es": "Bosque nublado",
-            "en": "Cloud forest"
+            "es": "Pantano arbolado (Everglades)",
+            "en": "Forested swamp (Everglades)"
           }
         }
       ]
     },
     {
-      "id": "grassland",
+      "id": "plains",
       "name": {
-        "es": "Pastizales y sabanas",
-        "en": "Grasslands and savannas"
+        "es": "Llanuras",
+        "en": "Plains"
       },
       "subbiomes": [
         {
@@ -110,47 +103,47 @@
           }
         },
         {
-          "id": "grassland_alpine",
+          "id": "plains_open_wetland",
           "name": {
-            "es": "Pastizal alpino",
-            "en": "Alpine grassland"
+            "es": "Humedal abierto (Pantanal)",
+            "en": "Open wetland (Pantanal)"
           }
         }
       ]
     },
     {
-      "id": "shrubland",
+      "id": "marine",
       "name": {
-        "es": "Matorrales",
-        "en": "Shrublands"
+        "es": "Marino",
+        "en": "Marine"
       },
       "subbiomes": [
         {
-          "id": "shrubland_mediterranean",
+          "id": "marine_reef",
           "name": {
-            "es": "Matorral mediterráneo",
-            "en": "Mediterranean shrubland"
+            "es": "Arrecife",
+            "en": "Reef"
           }
         },
         {
-          "id": "shrubland_xeric",
+          "id": "marine_estuary_littoral",
           "name": {
-            "es": "Matorral xerófilo",
-            "en": "Xeric shrubland"
+            "es": "Estuario o litoral",
+            "en": "Estuary or littoral"
           }
         },
         {
-          "id": "shrubland_temperate_heath",
+          "id": "marine_mangrove",
           "name": {
-            "es": "Brezal templado",
-            "en": "Temperate heathland"
+            "es": "Manglar",
+            "en": "Mangrove"
           }
         },
         {
-          "id": "shrubland_montane",
+          "id": "marine_open_ocean",
           "name": {
-            "es": "Matorral montano",
-            "en": "Montane shrubland"
+            "es": "Océano abierto (alta mar)",
+            "en": "Open ocean (high seas)"
           }
         }
       ]
@@ -163,149 +156,65 @@
       },
       "subbiomes": [
         {
-          "id": "tundra_arctic",
+          "id": "tundra_tundra",
           "name": {
-            "es": "Tundra ártica",
-            "en": "Arctic tundra"
-          }
-        },
-        {
-          "id": "tundra_alpine",
-          "name": {
-            "es": "Tundra alpina",
-            "en": "Alpine tundra"
-          }
-        },
-        {
-          "id": "tundra_subantarctic",
-          "name": {
-            "es": "Tundra subantártica",
-            "en": "Subantarctic tundra"
+            "es": "Tundra",
+            "en": "Tundra"
           }
         }
       ]
     },
     {
-      "id": "polar_nival",
+      "id": "mountain",
       "name": {
-        "es": "Hielos y regiones nivales",
-        "en": "Ice and nival regions"
+        "es": "Montaña",
+        "en": "Mountain"
       },
       "subbiomes": [
         {
-          "id": "polar_nival_ice_sheet",
+          "id": "mountain_rocky",
           "name": {
-            "es": "Manto de hielo continental",
-            "en": "Continental ice sheet"
+            "es": "Montaña rocosa",
+            "en": "Rocky mountain"
           }
         },
         {
-          "id": "polar_nival_snowfield",
+          "id": "mountain_summits",
           "name": {
-            "es": "Zona nival y nieves persistentes",
-            "en": "Nival zone and persistent snowfields"
+            "es": "Cumbres",
+            "en": "Summits"
           }
         }
       ]
     },
     {
-      "id": "freshwater",
+      "id": "polar_north",
       "name": {
-        "es": "Agua dulce",
-        "en": "Freshwater"
+        "es": "Polo Norte",
+        "en": "North Pole"
       },
       "subbiomes": [
         {
-          "id": "freshwater_river",
+          "id": "polar_north_ice",
           "name": {
-            "es": "Ríos y arroyos",
-            "en": "Rivers and streams"
-          }
-        },
-        {
-          "id": "freshwater_lake",
-          "name": {
-            "es": "Lagos y lagunas de agua dulce",
-            "en": "Freshwater lakes and ponds"
-          }
-        },
-        {
-          "id": "freshwater_marsh",
-          "name": {
-            "es": "Marismas y humedales herbáceos de agua dulce",
-            "en": "Freshwater marshes"
-          }
-        },
-        {
-          "id": "freshwater_swamp",
-          "name": {
-            "es": "Pantanos arbolados de agua dulce",
-            "en": "Freshwater forested swamps"
-          }
-        },
-        {
-          "id": "freshwater_peatland",
-          "name": {
-            "es": "Turberas",
-            "en": "Peatlands"
+            "es": "Hielo polar",
+            "en": "Polar ice"
           }
         }
       ]
     },
     {
-      "id": "marine",
+      "id": "polar_south",
       "name": {
-        "es": "Marino y costero",
-        "en": "Marine and coastal"
+        "es": "Polo Sur",
+        "en": "South Pole"
       },
       "subbiomes": [
         {
-          "id": "marine_open_ocean",
+          "id": "polar_south_ice",
           "name": {
-            "es": "Océano abierto",
-            "en": "Open ocean"
-          }
-        },
-        {
-          "id": "marine_coastal_shelf",
-          "name": {
-            "es": "Aguas costeras y plataforma continental",
-            "en": "Coastal and continental shelf waters"
-          }
-        },
-        {
-          "id": "marine_reef",
-          "name": {
-            "es": "Arrecifes",
-            "en": "Reefs"
-          }
-        },
-        {
-          "id": "marine_estuary",
-          "name": {
-            "es": "Estuarios",
-            "en": "Estuaries"
-          }
-        },
-        {
-          "id": "marine_mangrove",
-          "name": {
-            "es": "Manglares",
-            "en": "Mangroves"
-          }
-        },
-        {
-          "id": "marine_seagrass",
-          "name": {
-            "es": "Praderas marinas",
-            "en": "Seagrass meadows"
-          }
-        },
-        {
-          "id": "marine_polar_sea",
-          "name": {
-            "es": "Mares polares",
-            "en": "Polar seas"
+            "es": "Hielo polar",
+            "en": "Polar ice"
           }
         }
       ]
