@@ -4,7 +4,7 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** catálogos originales archivados; nuevos catálogos vacíos; pendiente D01  
+> **Estado:** D00 documentado (aprobación pendiente); catálogos nuevos vacíos; D01 pendiente  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
 
 ## 0. Reinicio controlado de los catálogos (2026-11-08)
@@ -64,11 +64,12 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 - [x] Crear la rama `definitions` desde `develop`.
 - [x] Crear este roadmap específico, sin reemplazar el roadmap de generación mundial.
 - [x] Registrar el inventario inicial.
-- [ ] Levantar dependencias entre `biomes.json`, `fauna.json`, `flora.json`, `minerals.json`, `resources.json` y tecnologías.
-- [ ] Documentar vocabulario canónico: entidad, especie, grupo taxonómico, subbioma, población, depósito, recurso, proceso, condición y efecto.
-- [ ] Establecer validaciones mínimas y criterio de cierre de una entidad.
+- [x] Levantar dependencias entre `biomes.json`, `fauna.json`, `flora.json`, `minerals.json`, `resources.json` y tecnologías. Ver [D00_CONTRATOS.md](D00_CONTRATOS.md#2-mapa-de-dependencias).
+- [x] Documentar vocabulario canónico: entidad, especie, grupo taxonómico, subbioma, población, depósito, recurso, proceso, condición y efecto. Ver [D00_CONTRATOS.md](D00_CONTRATOS.md#3-vocabulario-canónico).
+- [x] Establecer validaciones mínimas y criterio de cierre de una entidad. Ver [D00_CONTRATOS.md](D00_CONTRATOS.md#4-validaciones-mínimas-y-criterio-de-cierre).
+- [ ] **Aprobación del director:** revisar y aprobar los contratos documentados para cerrar formalmente D00.
 
-**Salida:** diccionario de conceptos, contratos y mapa de dependencias aprobados.
+**Salida:** mapa de dependencias, vocabulario y validaciones **documentados**; aprobación pendiente. No confundir documentación con reglas de ejecución implementadas.
 
 ### D01 — Biomas y subbiomas (primero)
 - [ ] Reconstruir uno por uno los biomas y subbiomas nuevos; utilizar los 8 biomas y 22 subbiomas archivados solo como referencia.
@@ -192,6 +193,7 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | Alcance | Primero cuatro familias; después entidades individualmente, iniciando con fauna | Acordado | Este roadmap |
 | 2026-11-08 | Trigo silvestre | Se registra como ejemplo de flora, no fauna | Catalogado; desglose pendiente | `plant_southwest_asian_wild_wheat` |
 | 2026-11-08 | Reinicio de definiciones | Archivados cuatro JSON originales; activos vacíos; recurso integrado de biomas apunta temporalmente al archivo anterior | Aplicado en rama definitions | Consultar historial Git y carpeta old/ |
+| 2026-11-08 | D00 — contratos base | Se documentan dependencias, términos y criterios de cierre sin modificar catálogos | Documentado; pendiente aprobación del director | [D00_CONTRATOS.md](D00_CONTRATOS.md) |
 
 ## 9. Próximo paso inmediato
 
