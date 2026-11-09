@@ -236,10 +236,18 @@ function spawnConstraintSection(area, name, constraints) {
     return;
   }
   const grid = append(group, element("div", "meta"));
-  for (const [key, value] of Object.entries(constraints)) {
+  function renderConstraint(key, value) {
     const names = spawnFieldLabels[key];
     field(grid, names ? tr(...names) : key, spawnValue(key, value), true);
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      // Nested metadata (e.g. dryMonthThresholdMm) must not disappear when
+      // the parent constraint also has a min/max interval.
+      for (const [childKey, childValue] of Object.entries(value)) {
+        if (childKey !== "min" && childKey !== "max") renderConstraint(childKey, childValue);
+      }
+    }
   }
+  for (const [key, value] of Object.entries(constraints)) renderConstraint(key, value);
 }
 function renderSpawnRules(area, rules) {
   const group = section(area, tr("Requisitos de aparición del subbioma", "Subbiome spawn requirements"));
