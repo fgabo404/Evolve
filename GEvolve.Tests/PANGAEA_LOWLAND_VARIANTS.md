@@ -56,4 +56,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.Tests\ValidationRe
 
 BaseLowlandControls ejecuta build+controles; BaseLowlandComparison build+comparación; BaseLowlandVariants añade equivalencia, laboratorio y general. Las mediciones del núcleo excluyen captura y análisis; se registran aparte costes costeros, muestras de memoria y entradas oficiales. No se infiere memoria retenida de las asignaciones GC.
 
-**P03-A.8.2b: calibración experimental completada; selección y aprobación visual pendientes.** El código está preparado para validar; la evidencia real se publica separadamente al terminar. No se sustituye BASE oficial ni se inicia P03-A.8.3.
+**P03-A.8.2b: calibración experimental completada; selección y aprobación visual pendientes.** Build, 176 comparaciones, equivalencia y laboratorio PASS; general 17 PASS/2 FAIL históricos sin cambios. [Informe y evidencia canónica](ValidationReports/P03-A82b_20261108_234756449Z_a6c3ecc0/REPORT.md). V4O merece evaluación visual frente a V4U, sin selección ni adopción. No se sustituye BASE oficial ni se inicia P03-A.8.3.

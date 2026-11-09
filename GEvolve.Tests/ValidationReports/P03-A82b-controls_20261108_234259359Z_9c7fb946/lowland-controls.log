@@ -1,0 +1,11 @@
+Command: dotnet run --project GEvolve.Tests --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A82b-controls_20261108_234259359Z_9c7fb946 -- --pangaea-lowland-controls
+Started UTC: 2026-11-08T23:43:10.9944847Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 5.554
+
+=== STDOUT (complete) ===
+BASE_VARIANT_CONTROLS_PASS: V0 byte-exact F/G/H; immutable shared inputs; one-factor parent chain; fixed amplitude; monotone C1 summit treatment; ocean/land validity; eight laboratory actions; no official mutation or adoption
+LOWLAND_CONTROLS_PASS: independent offset/scale; monotone upper curve; varied coastal heights; high/steep/outside protection; no fixed flat coastal strip
+
+=== STDERR (complete) ===

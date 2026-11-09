@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-08:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 publicada; experimentación P03-A.8.1/.8.2 implementada con selección/aprobación visual pendientes; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
+> **Estado al 2026-11-08:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 publicada; calibración experimental P03-A.8.2b completada con selección/aprobación visual pendientes; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
 
 ## Objetivo
 
@@ -317,3 +317,13 @@ V1 es el control más prometedor para continuar investigando la retirada de pres
 No se aprueba P03-A, no se sustituye el método oficial ni se inicia P03-A.8.3 o posteriores. Una nueva decisión del usuario es necesaria antes de continuar o exponer variantes a evaluación visual en Evolve. Esta entrega solo ofrece comparación numérica; no guarda ni renderiza mapas experimentales.
 
 Validación final P03-A.8: build 0 errores/advertencias; controles y 60 comparaciones PASS; equivalencia/sesiones 28+12 y laboratorio cuatro tamaños PASS. General 17 PASS/2 FAIL históricos con los mismos 32 registros de hashes de P03-A.7.4; referencias intactas. El fallo inicial de import de Tests se conserva por separado. Ninguna variante adoptada; selección y aprobación visual pendientes.
+
+## P03-A.8.2b — Calibración regional de BASE y tierras bajas
+
+**P03-A.8.2b — Calibración experimental completada; selección y aprobación visual pendientes.**
+
+Implementación exclusivamente en Tests: 47c7c7da9eab52ecadbf99a7aa87603186a7e4a2. Se conservan V0/V1/V1T/V2/V3 y sus 60 hashes/métricas; VP/VS separan presión en potencial y soporte; V4O/V4S/V4U separan desplazamiento, escala y compresión; V4C investiga costa contextual sin cambiar la máscara. [Informe comparativo completo](../GEvolve.Tests/ValidationReports/P03-A82b_20261108_234756449Z_a6c3ecc0/REPORT.md): tres semillas obligatorias y control independiente 42, cuatro tamaños, 176 comparaciones y 1387 máscaras.
+
+Build, controles, variantes, equivalencia/sesiones y laboratorio PASS. General 17 PASS/2 FAIL históricos; los 32 registros de discrepancias de elevación y los 40 de equivalencia por etapas coinciden exactamente con P03-A.8. Código productivo, H04, superficie/costas, sistemas, FINAL, clima/biomas, persistencia, catálogos, UI y baselines intactos.
+
+V4O merece evaluación visual futura frente a V4U: referencia vertical fija sin forzar máximos 100. No se selecciona ni adopta ninguna. V4C reduce salto medio al océano, pero aumenta candidatos de uniformidad/terrazas en 10/12 casos principales; no se recomienda como solución costera final. La semilla de control no se usó para reajustar parámetros. No se aprueba P03-A ni se inicia P03-A.8.3. Exponer variantes y aprobar su apariencia requieren una nueva decisión del usuario; no se ejecutó Game ni se generaron imágenes.

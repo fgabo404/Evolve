@@ -1,0 +1,26 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A82b-controls_20261108_234259359Z_9c7fb946
+Started UTC: 2026-11-08T23:43:00.5728842Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 10.378
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 98 ms).
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 95 ms).
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 99 ms).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 1.39 sec).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 1.39 sec).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82b-controls_20261108_234259359Z_9c7fb946\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82b-controls_20261108_234259359Z_9c7fb946\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82b-controls_20261108_234259359Z_9c7fb946\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82b-controls_20261108_234259359Z_9c7fb946\bin\GEvolve.Game\debug\GEvolve.Game.dll
+  GEvolve.Tests -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82b-controls_20261108_234259359Z_9c7fb946\bin\GEvolve.Tests\debug\GEvolve.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.11
+
+=== STDERR (complete) ===
