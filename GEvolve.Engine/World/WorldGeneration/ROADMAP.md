@@ -3,7 +3,7 @@
 > **Rama de trabajo:** `worldgeneration`  
 > **Documento rector:** este archivo es la única hoja de ruta activa del generador.  
 > **Fecha de reorganización:** 2026-11-08  
-> **Estado:** R00–R01 sin aprobación formal. R01: reorganización y pruebas focales verificadas; auditor recomienda excepción limitada para dos fallos de baselines anteriores a R01, pendiente de aprobación del director. Suite general sigue en 17 PASS / 2 FAIL. R00: puntas históricas desconocidas pendientes de resolución o aceptación explícita. Validación visual pendiente para R02.
+> **Estado:** R00 cerrado por auditoría y aprobación del director, con limitación histórica aceptada sobre puntas de ramas desaparecidas. R01 pendiente de aprobación de excepción limitada por dos fallos de baselines preexistentes (suite general 17 PASS / 2 FAIL). Validación visual pendiente para R02.
 
 ## Objetivo
 
@@ -29,8 +29,8 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 - [x] Incorporar al historial de `worldgeneration` el commit del antiguo scaffold, sin conservar sus nombres V2 en el árbol operativo.
 - [x] Sincronizar `develop` por avance rápido con `worldgeneration` (sin alterar `master`).
 - [x] Verificar que los tips locales `worldgenerator` y `worldgeneration_pangea` son ancestros de `worldgeneration`; sus referencias remotas ya no existen. No eliminar sus referencias locales ni ninguna rama de respaldo.
-- [ ] Identificar con evidencia las puntas finales de `worldgeneration_v2` y ramas de respaldo desaparecidas; el scaffold y C1 conocidos son alcanzables, pero esto no demuestra que no hubiera commits posteriores desconocidos.
-- [ ] Revisión del auditor y aprobación del director de R00. `origin/definitions` contiene trabajo separado y queda fuera de esta consolidación; no declarar todo el repositorio integrado.
+- [x] Documentar y aceptar formalmente la limitación histórica: no es posible certificar las puntas finales de `worldgeneration_v2` y ramas de respaldo desaparecidas. Los commits conocidos de scaffold y C1 son alcanzables; no se afirma que posibles commits desconocidos estén preservados. El director acepta esta incertidumbre para cerrar R00 (2026-11-09).
+- [x] Revisión del auditor y aprobación del director de R00, con la limitación anterior aceptada. `origin/definitions` contiene trabajo separado y queda fuera de esta consolidación; no declarar todo el repositorio integrado.
 
 ### R01 — Aislamiento del generador antiguo
 - [x] Trasladar 34 fuentes C# de `GEvolve.Engine/World/` a `World/worldgenerationold/` conservando contenido y namespaces.
@@ -111,5 +111,6 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 | 2026-11-09 UTC | Revisión estática R01 y corrección de referencias | 34/34 blobs idénticos, siete enlaces reparados y guardia de validación alineada |
 | 2026-11-09 UTC | Validación local R00–R01 comunicada por el usuario | Build, comparador, Pangea por etapas y laboratorio automatizado PASS; suite general: 17 PASS / 2 FAIL (`TectonicMotion` y `ContinentalGeology`, mismos fallos de baselines registrados antes de la reorganización). Informe local `R00-R01_20261109_041729114Z_167839a8/SUMMARY.md`; pendiente de publicación y aprobación. No acredita validación visual de la ventana. |
 | 2026-11-09 UTC | Diagnóstico de Codex sobre regresión histórica; dictamen del auditor | `TectonicMotion`: 4 casos; `ContinentalGeology`: 12 mundos, incluidos los cuatro anteriores. Mismatches previos a R01 ya registrados en [P03-A4](../../../GEvolve.Tests/ValidationReports/P03-A4_20261106_140522345Z_f747ba65/SUMMARY.md). Codex informa comparación de hashes históricos 32/32 y equivalencia 40/40 contra informe previo; no se ha demostrado regresión nueva por el traslado. **Recomendada** excepción limitada para R01, pendiente de decisión del director; no aprobar calidad global de elevaciones ni modificar baselines. |
+| 2026-11-09 | Cierre de R00 aprobado por el director | Se acepta expresamente la incertidumbre sobre los tips desconocidos de ramas históricas desaparecidas, sin atribuirles preservación no probada. Auditoría de consolidación concluida; `develop` y `worldgeneration` sincronizadas en la revisión y `master` preservada. R01 continúa pendiente de aprobación independiente. |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.
