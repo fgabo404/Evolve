@@ -40,6 +40,7 @@ public static class PangaeaBaseComparatorTests
         lab.ExecutePlatesAndMotion(); Wait(lab); Run(lab, PangaeaGenerationStage.Surface); Run(lab, PangaeaGenerationStage.Base);
         Check(lab.CanCompareBase && lab.BaseVariant == PangaeaBaseVariant.V0 && lab.CachedBaseVariants == 0, "BASE enables clean V0 default");
         var snapshot = lab.Map!.Snapshot;
+        var surface = snapshot.Surface ?? throw new InvalidOperationException("Completed surface required");
         var input = PangaeaBaseVariants.Input.From(snapshot);
         var context = new PangaeaBaseVariantMetrics.Context(new HexTopology(official.Grid), official.Landmass, false);
         string frozen = Hash(snapshot), dag = Hash(lab.Stages);
@@ -74,7 +75,7 @@ public static class PangaeaBaseComparatorTests
             for (int id = 0; id < old.Length; id++)
             {
                 Check(map.Height(id, MapViewMode.ElevationBase) == old[id] && (snapshot.Surface![id] == 0 ? old[id] == 0 : old[id] is >= 1 and <= 100), "Visible heights preserve ocean/mask");
-                Check(map.Color(id, MapViewMode.ElevationBase) == (snapshot.Surface[id] == 0 ? new Vector3(.08f, .17f, .30f) : new Vector3(old[id] / 100f)), "Shared absolute 0..100 palette, unchanged blue ocean");
+                Check(map.Color(id, MapViewMode.ElevationBase) == (surface[id] == 0 ? new Vector3(.08f, .17f, .30f) : new Vector3(old[id] / 100f)), "Shared absolute 0..100 palette, unchanged blue ocean");
             }
             Check(lab.Inspect().Any(l => l.StartsWith("BASE: VISIBLE " + PangaeaBaseComparison.Label(variant), StringComparison.Ordinal)) &&
                 lab.Inspect().Contains("BASE: OFICIAL MOTOR " + snapshot.Base![selected!.Value.Id]), "Inspector distinguishes visible experimental field from official motor");
@@ -99,6 +100,8 @@ public static class PangaeaBaseComparatorTests
         foreach (var stage in new[] { PangaeaGenerationStage.MountainSystems, PangaeaGenerationStage.Final,
             PangaeaGenerationStage.Temperature, PangaeaGenerationStage.Precipitation, PangaeaGenerationStage.Biomes }) Run(lab, stage);
         var complete = lab.Map!.Snapshot;
+        var completedBase = complete.Base ?? throw new InvalidOperationException("Completed BASE required");
+        string completedHash = Hash(complete);
         Check(complete.Base!.SequenceEqual(official.PangaeaElevations!.BaseByCellId.ToArray()) &&
             complete.Elevations!.FinalByCellId.Span.SequenceEqual(official.PangaeaElevations.FinalByCellId.Span) &&
             Hash(complete.Climate) == Hash(official.Landmass.Climate) && Hash(complete.Biomes) == Hash(official.Landmass.Biomes) &&
@@ -110,12 +113,12 @@ public static class PangaeaBaseComparatorTests
             foreach (var view in officialMap.AvailableViews.Where(v => v != MapViewMode.ElevationBase))
             {
                 lab.ChooseView(view);
-                for (int id = 0; id < complete.Base.Length; id += 37)
+                for (int id = 0; id < completedBase.Length; id += 37)
                     Check(lab.Map!.Height(id, view) == officialMap.Height(id, view) && lab.Map.Color(id, view) == officialMap.Color(id, view), "Non-BASE views remain official");
                 Check(!lab.Inspect().Any(l => l.StartsWith("BASE: VISIBLE", StringComparison.Ordinal)), "Other views show official inspector");
             }
         }
-        Check(Hash(complete) == Hash(lab.Map!.Snapshot) && officialHash == Hash(official.Landmass), "Completed official state unchanged after all variants/views");
+        Check(completedHash == Hash(lab.Map!.Snapshot) && officialHash == Hash(official.Landmass), "Completed official state unchanged after all variants/views");
         Persist(official, officialHash);
         // Re-executing BASE or surface discards all variants synchronously, including unfinished work.
         Run(lab, PangaeaGenerationStage.Base);
