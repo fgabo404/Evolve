@@ -13,7 +13,7 @@ El menú muestra Mundo, Animales, Plantas, Minerales, Recursos y Tecnologías. L
 
 Tecnologías abre el árbol desde `Technologies/agriculture.tech.json`. Esta versión contiene una sola tecnología: **Lenguaje** (`language`, orden 0). Desde ella salen tres ramas visuales planificadas: **Agricultura**, **Domesticación** y **Otras tecnologías**. Las cajas de rama no son tecnologías, requisitos ni capacidades jugables. Las demás tecnologías se incorporarán una por una con requisitos explícitos que desciendan de Lenguaje. El archivo anterior, `agriculture.technologies.json`, permanece intacto como referencia.
 
-`technology-roadmap.js` crea puntos y ramas desde el JSON cargado por `fetch()`. Las líneas hacia las cajas indican clasificación visual; las conexiones entre tecnologías futuras procederán solo de `prerequisites`. `order` desempata posiciones y nunca crea dependencias. El mapa conserva desplazamiento, zoom, búsqueda, URLs con hash y el historial. Un punto seleccionado abre un panel de solo lectura; los campos sin decisión de diseño se muestran como pendientes.
+`technology-roadmap.js` crea puntos y ramas desde el JSON activo (por `fetch()` con servidor HTTP o desde `offline-data.js` con `file://`). Las líneas hacia las cajas indican clasificación visual; las conexiones entre tecnologías futuras procederán solo de `prerequisites`. `order` desempata posiciones y nunca crea dependencias. El mapa conserva desplazamiento, zoom, búsqueda, URLs con hash y el historial. Un punto seleccionado abre un panel de solo lectura; los campos sin decisión de diseño se muestran como pendientes.
 
 `catalog-index.js` construye un índice común por tipo e ID, resuelve alias históricos de animales, plantas y minerales, indexa tags de recursos y genera enlaces entrantes y salientes sin listas manuales duplicadas. Las relaciones proceden de los nuevos `spawn[]`, `fauna[]`, `flora[]`, `minerals[]`, `resources[]`, además de `sourceBindings`, `processingLinks` y referencias explícitas de tecnologías. Una ficha de recurso muestra fuentes, procesos en ambos sentidos y ramas posteriores; los nodos de procesos muestran entradas, auxiliares, salidas y subproductos. Las referencias sin destino aparecen en un panel al pie. Ningún proceso candidato se ejecuta como receta.
 
@@ -38,4 +38,12 @@ La prueba usa los JSON reales y las API nativas de Node.js. Comprueba el índice
 
 ## Nuevos catálogos de juego
 
-La Wiki consume `Biomas/biomes.json`, `Animals/animals.json`, `Resources/flora.json` y `Minerals/minerals.json`. Mundo incluye ocho biomas principales con fichas para sus 22 subbiomas. Los enlaces funcionan en ambas direcciones: subbioma → entidad, entidad → subbioma y entidad → recurso → proceso. No se carga ningún JSON de `Old/` ni los catálogos biológicos auxiliares.
+La Wiki consume `Biomas/biomes.json`, `Resources/fauna.json`, `Resources/flora.json` y `Resources/minerals.json`. Mundo incluye ocho biomas principales con fichas para sus 21 subbiomas en reconstrucción. Los enlaces entre subbiomas, entidades y recursos se crean solo cuando los catálogos activos contienen IDs reales. Las listas actuales de fauna, flora y minerales están vacías por decisión del proceso de reconstrucción. No se carga ningún JSON de `Old/` ni los catálogos biológicos auxiliares.
+
+## Reglas declarativas de mecánicas (rama `definitions`)
+
+En Mundo → Bosque → Subbioma, la Wiki muestra los parámetros `spawn.required` (condiciones obligatorias) y `spawn.preferred` (bandas favorables), con etiquetas legibles y unidades. Los cinco bosques tienen reglas propuestas; los otros 16 subbiomas muestran «Pendiente de definición» sin heredar valores ficticios.
+
+Estas condiciones todavía **no son reglas ejecutadas por Engine**: son definiciones declarativas en revisión. La carpeta `Mechanics/` solo tiene un README, sin contratos JSON aprobados; no se crea una sección de mecánicas inexistentes ni se interpretan documentos como reglas. Cuando exista un catálogo de mecánicas aprobado, podrá añadirse como fuente de lectura sin alterar el motor.
+
+El archivo `offline-data.js` debe regenerarse cuando cambien los JSON activos; actualmente refleja exactamente los seis archivos de esta rama. La prueba `node wiki/tests/wiki.test.js` verifica también esa sincronía y el estado parcial de los catálogos.
