@@ -98,6 +98,9 @@ $steps = @(
     @{ Name = 'build'; Arguments = @('build') },
     @{ Name = 'grid-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
 )
+$artifactsDirectory = 'GEvolve.Tests/bin/ValidationArtifacts/' + $runId
+$results = @()
+$buildFailed = $false
 if ($IsolatedArtifacts) {
     foreach ($step in $steps) {
         if ($step.Arguments[0] -eq 'build') {
