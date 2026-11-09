@@ -3,7 +3,7 @@
 > **Rama de trabajo:** `worldgeneration`  
 > **Documento rector:** este archivo es la única hoja de ruta activa del generador.  
 > **Fecha de reorganización:** 2026-11-08  
-> **Estado:** R00 y R01 cerrados por auditoría y aprobación del director. R00 mantiene documentada la limitación aceptada del historial de ramas desaparecidas. R01 se cierra con excepción limitada y aprobada para dos fallos preexistentes de baselines (suite general: 17 PASS / 2 FAIL; NO se declara PASS). R02 es el siguiente hito; validación visual pendiente.
+> **Estado:** R00 y R01 cerrados por auditoría y aprobación del director, con las limitaciones históricas documentadas. **R02 en curso**: pruebas automatizadas del laboratorio PASS en R01; revisión visual manual y contrato de snapshot pendientes. La suite general permanece en 17 PASS / 2 FAIL históricos aceptados para R01 (NO es PASS).
 
 ## Objetivo
 
@@ -44,9 +44,12 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 - [x] Revisión del auditor concluida; aprobación explícita del director para cerrar R01 con la excepción anterior. No equivale a aprobación visual ni a aprobación de la suite general.
 
 ### R02 — Laboratorio preservado
+**Estado:** en curso desde 2026-11-09, sin aprobación visual todavía. No modificar el generador histórico durante esta verificación.
 - [ ] Verificar apertura, semilla, selección de tamaño, ejecución manual por etapas, vistas, inspector y controles del laboratorio de Pangea.
 - [ ] Confirmar que la misma configuración/semilla conserva los resultados y las referencias históricas.
-- [ ] Definir un contrato de snapshot para el generador nuevo, sin modificar todavía la interfaz antigua.
+- [ ] Definir con el arquitecto un contrato de snapshot para el generador nuevo, sin modificar todavía la interfaz antigua.
+
+**Protocolo de validación R02:** ejecutar localmente `dotnet run --project GEvolve.Game`, entrar en **LABORATORIO DE PANGEA** y revisar apertura, tamaño y semilla, etapas manuales 01–08, disponibilidad de vistas, inspector, comparador BASE, zoom/desplazamiento y controles de reinicio/cancelación. Repetir la misma semilla y tamaño para observar estabilidad, y cambiar semilla/tamaño para verificar invalidación de capas. Registrar anomalías y evidencia visual; las pruebas automatizadas PASS de R01 no sustituyen esta revisión interactiva.
 
 ### R03 — Núcleo oficial mínimo
 - [ ] Definir entradas, estados temporales y salidas canónicas con el arquitecto.
@@ -113,5 +116,6 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 | 2026-11-09 UTC | Diagnóstico de Codex sobre regresión histórica; dictamen del auditor | `TectonicMotion`: 4 casos; `ContinentalGeology`: 12 mundos, incluidos los cuatro anteriores. Mismatches previos a R01 ya registrados en [P03-A4](../../../GEvolve.Tests/ValidationReports/P03-A4_20261106_140522345Z_f747ba65/SUMMARY.md). Codex informa comparación de hashes históricos 32/32 y equivalencia 40/40 contra informe previo; no se ha demostrado regresión nueva por el traslado. **Recomendada** excepción limitada para R01, pendiente de decisión del director; no aprobar calidad global de elevaciones ni modificar baselines. |
 | 2026-11-09 | Cierre de R00 aprobado por el director | Se acepta expresamente la incertidumbre sobre los tips desconocidos de ramas históricas desaparecidas, sin atribuirles preservación no probada. Auditoría de consolidación concluida; `develop` y `worldgeneration` sincronizadas en la revisión y `master` preservada. |
 | 2026-11-09 | Cierre de R01 aprobado por el director | Aprobado el aislamiento del código histórico con excepción explícita para dos fallos de baselines preexistentes. Compilación y pruebas focales PASS; general **17 PASS / 2 FAIL**. Revisión futura del contrato de elevaciones sin cambios a baselines ni algoritmos. Laboratorio visual pendiente para R02. |
+| 2026-11-09 | Inicio autorizado de R02 | Director solicita avanzar a R02. El auditor registra hito en curso y protocolo de validación visual; las tres casillas permanecen abiertas hasta recibir evidencia y definir el contrato de snapshot. |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.
