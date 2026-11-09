@@ -4,7 +4,7 @@
 > **Rama de origen:** `worldgenerator`  
 > **Base limpia validada:** `a58d5689c17f1fea045066c10a400dbbe9a35976` — `refactor(worldgen): revert experimental continents generation and preserve pangaea`  
 > **Documento general:** [WORLD_GENERATION_ROADMAP.md](WORLD_GENERATION_ROADMAP.md)  
-> **Estado al 2026-11-08:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 publicada; calibración experimental P03-A.8.2b completada con selección/aprobación visual pendientes; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
+> **Estado al 2026-11-08:** Laboratorio reorganizado en columna izquierda fija y mapa protagonista, cinco acciones geológicas secuenciales más 06–08 ecológicas P09.1 en Game, reinicio inmediato por semilla/tamaño y alturas integradas sin interruptor. Geología P03-A.7.1 conservada; continuación FINAL → clima → biomas en la misma sesión. P09.1 es integración inicial pendiente de calibración y aprobación visual del usuario. P03-A.7.3 planificado; auditoría BASE P03-A.7.4 publicada; comparador BASE P03-A.8.2c implementado con evaluación visual y selección pendientes; P03-A.6 sigue pendiente de revisión visual. P03-A no aprobado; baselines históricos intactos.
 
 ## Objetivo
 
@@ -327,3 +327,13 @@ Implementación exclusivamente en Tests: 47c7c7da9eab52ecadbf99a7aa87603186a7e4a
 Build, controles, variantes, equivalencia/sesiones y laboratorio PASS. General 17 PASS/2 FAIL históricos; los 32 registros de discrepancias de elevación y los 40 de equivalencia por etapas coinciden exactamente con P03-A.8. Código productivo, H04, superficie/costas, sistemas, FINAL, clima/biomas, persistencia, catálogos, UI y baselines intactos.
 
 V4O merece evaluación visual futura frente a V4U: referencia vertical fija sin forzar máximos 100. No se selecciona ni adopta ninguna. V4C reduce salto medio al océano, pero aumenta candidatos de uniformidad/terrazas en 10/12 casos principales; no se recomienda como solución costera final. La semilla de control no se usó para reajustar parámetros. No se aprueba P03-A ni se inicia P03-A.8.3. Exponer variantes y aprobar su apariencia requieren una nueva decisión del usuario; no se ejecutó Game ni se generaron imágenes.
+## P03-A.8.2c — Comparador visual de BASE
+
+**P03-A.8.2c — Comparador visual implementado, evaluación visual y selección pendientes.**
+
+Implementación 18856b46ed5a9c14bceca750d9b40bd0b2d8a848: V0/V1/V4O/V4U en la barra lateral después de BASE; escala absoluta 0–100, océano azul, etiquetas legibles e inspector visible/oficial. El módulo puro optativo Engine.World.Experimental comparte Shape/Recover sin cambiar sus cuerpos ni fórmulas oficiales; Game no depende de Tests ni usa reflexión. Se conservan las referencias matemáticas y 64 hashes P03-A.8.2b.
+
+Cálculo perezoso en worker sobre snapshot separado, caché temporal de tres campos, sin regeneración ni desplazamiento de cámara. Semilla/tamaño, reinicio y superficie/BASE repetidas restablecen V0 y descartan resultados obsoletos. No se reemplaza snapshot.Base, no se modifica DAG ni orden de botones; 04/05, ecología y otras vistas siguen oficiales. No hay opción de mundo nueva ni datos experimentales persistidos.
+
+[Informe técnico, pruebas y mediciones](../GEvolve.Tests/ValidationReports/P03-A82c_20261109_012037805Z_58713af4/REPORT.md). El usuario realizará la comparación visual dentro de Evolve; Codex no ejecuta ventana/GL, capturas ni automatización visual. Ninguna variante adoptada, P03-A sin aprobación y P03-A.8.3 no iniciado.
+Validación completa sobre 18856b4: build y 64 campos/16 mundos, equivalencia 28+12 y laboratorio PASS; general 17 PASS/2 FAIL históricos, idénticos 32 registros de elevación y 40 de equivalencia. Las dos advertencias de nulabilidad de las pruebas nuevas se corrigen en 8d20b2522713b71dddaceede7376fdef02c9cb78 sin cambiar código productivo; evidencia focalizada posterior enlazada en el informe.

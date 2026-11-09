@@ -1,0 +1,31 @@
+Command: dotnet build --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A82c_20261109_012037805Z_58713af4
+Started UTC: 2026-11-09T01:20:37.9959145Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 3.642
+
+=== STDOUT (complete) ===
+  Determining projects to restore...
+  Restored <REPO>\GEvolve.State\GEvolve.State.csproj (in 96 ms).
+  Restored <REPO>\GEvolve.Definitions\GEvolve.Definitions.csproj (in 94 ms).
+  Restored <REPO>\GEvolve.Engine\GEvolve.Engine.csproj (in 96 ms).
+  Restored <REPO>\GEvolve.Game\GEvolve.Game.csproj (in 264 ms).
+  Restored <REPO>\GEvolve.Tests\GEvolve.Tests.csproj (in 265 ms).
+  GEvolve.Definitions -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82c_20261109_012037805Z_58713af4\bin\GEvolve.Definitions\debug\GEvolve.Definitions.dll
+  GEvolve.State -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82c_20261109_012037805Z_58713af4\bin\GEvolve.State\debug\GEvolve.State.dll
+  GEvolve.Engine -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82c_20261109_012037805Z_58713af4\bin\GEvolve.Engine\debug\GEvolve.Engine.dll
+  GEvolve.Game -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82c_20261109_012037805Z_58713af4\bin\GEvolve.Game\debug\GEvolve.Game.dll
+<REPO>\GEvolve.Tests\PangaeaBaseComparatorTests.cs(77,68): warning CS8602: Dereference of a possibly null reference. [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+<REPO>\GEvolve.Tests\PangaeaBaseComparatorTests.cs(113,39): warning CS8602: Dereference of a possibly null reference. [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+  GEvolve.Tests -> <REPO>\GEvolve.Tests\bin\ValidationArtifacts\P03-A82c_20261109_012037805Z_58713af4\bin\GEvolve.Tests\debug\GEvolve.Tests.dll
+
+Build succeeded.
+
+<REPO>\GEvolve.Tests\PangaeaBaseComparatorTests.cs(77,68): warning CS8602: Dereference of a possibly null reference. [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+<REPO>\GEvolve.Tests\PangaeaBaseComparatorTests.cs(113,39): warning CS8602: Dereference of a possibly null reference. [<REPO>\GEvolve.Tests\GEvolve.Tests.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.37
+
+=== STDERR (complete) ===

@@ -1,0 +1,20 @@
+Command: dotnet run --project GEvolve.Tests --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A82c_20261109_012037805Z_58713af4 -- --pangaea-laboratory
+Started UTC: 2026-11-09T01:23:29.5238226Z
+Status: PASS
+Native exit code: 0
+Duration seconds: 15.410
+
+=== STDOUT (complete) ===
+LAB_LABELS_PASS Small: glyph metrics, geometry-based fit, exact ink centering, viewport culling, all eligible cells/no samples, contrast, non-overlap, pan/zoom, E/O seam and N/S bounds
+LAB_CASE_PASS Small: sequential UI/unchanged engine DAG; integrated heights and >90 surface; sidebar/viewport/hit testing; cache; random/manual/size reset; exact automatic equivalence
+LAB_LABELS_PASS Medium: glyph metrics, geometry-based fit, exact ink centering, viewport culling, all eligible cells/no samples, contrast, non-overlap, pan/zoom, E/O seam and N/S bounds
+LAB_CASE_PASS Medium: sequential UI/unchanged engine DAG; integrated heights and >90 surface; sidebar/viewport/hit testing; cache; random/manual/size reset; exact automatic equivalence
+LAB_LABELS_PASS Large: glyph metrics, geometry-based fit, exact ink centering, viewport culling, all eligible cells/no samples, contrast, non-overlap, pan/zoom, E/O seam and N/S bounds
+LAB_CASE_PASS Large: sequential UI/unchanged engine DAG; integrated heights and >90 surface; sidebar/viewport/hit testing; cache; random/manual/size reset; exact automatic equivalence
+LAB_LABELS_PASS Enormous: glyph metrics, geometry-based fit, exact ink centering, viewport culling, all eligible cells/no samples, contrast, non-overlap, pan/zoom, E/O seam and N/S bounds
+LAB_CASE_PASS Enormous: sequential UI/unchanged engine DAG; integrated heights and >90 surface; sidebar/viewport/hit testing; cache; random/manual/size reset; exact automatic equivalence
+LAB_ASYNC_PASS: reset during group/size worker, discarded obsolete results, cancelled H04 chain blocked, error/recovery, immediate selection clear
+LAB_SEEDS_PASS: signed random seeds, immediate complete reset/selection clear, initial grid only, boundary editing, no confirmation or full generation
+LAB_PASS: four sizes; fixed sidebar/map viewport; five geological actions preserved, three ecological controls reachable; immediate seed/size/random reset; always-integrated numeric heights; surface >90; original geological equivalence. NO window/GL/visual approval.
+
+=== STDERR (complete) ===

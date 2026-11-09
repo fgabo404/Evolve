@@ -1,0 +1,7 @@
+Command: dotnet run --project GEvolve.Tests --artifacts-path GEvolve.Tests/bin/ValidationArtifacts/P03-A82c-precheck_20261109_011724368Z_91580f80 -- --pangaea-base-comparator
+Started UTC: 2026-11-09T01:17:33.6017669Z
+Status: SKIPPED
+Native exit code: N/A
+Duration seconds: 0.000
+
+SKIPPED: dotnet build failed; dependent validation was not started.
