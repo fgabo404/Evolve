@@ -108,7 +108,6 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 | 2026-11-08 | Construir etapas nuevas solo cuando se necesiten | Aprobado como criterio arquitectónico |
 | 2026-11-09 UTC | Verificación Git R00 sobre 772d4e34b596fe7db524b047aced16fd55ba76d2 | develop/worldgeneration sincronizadas al inicio, master preservada; trabajo separado en definitions y puntas históricas ausentes documentados en el [informe](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md). R00 no aprobado |
 | 2026-11-09 UTC | Revisión estática R01 y corrección de referencias | 34/34 blobs idénticos, siete enlaces reparados y guardia de validación alineada |
-
 | 2026-11-09 UTC | Validación local R00–R01 comunicada por el usuario | Build, comparador, Pangea por etapas y laboratorio automatizado PASS; suite general: 17 PASS / 2 FAIL (`TectonicMotion` y `ContinentalGeology`, mismos fallos de baselines registrados antes de la reorganización). Informe local `R00-R01_20261109_041729114Z_167839a8/SUMMARY.md`; pendiente de publicación, análisis de fallos y aprobación. No acredita validación visual de la ventana. |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.
