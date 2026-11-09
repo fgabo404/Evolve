@@ -7,11 +7,11 @@
 
 ## 1. Estado y fuente de verdad
 
-Los cuatro catálogos están **activos y en reconstrucción**. D01 ha incorporado los ocho biomas principales:
+Los cuatro catálogos están **activos y en reconstrucción**. D01 ha incorporado ocho biomas y 34 subbiomas, sin requisitos de spawn:
 
 | Catálogo activo | Campo raíz | Archivo original conservado |
 |---|---|---|
-| `Biomas/biomes.json` | Ocho biomas; cada uno tiene `subbiomes: []` | `Biomas/old/biomes.json` |
+| `Biomas/biomes.json` | Ocho biomas y 34 subbiomas (`id`, `name`; sin `spawn`) | `Biomas/old/biomes.json` |
 | `Resources/fauna.json` | `animals: []` | `Resources/old/fauna.json` |
 | `Resources/flora.json` | `plants: []` | `Resources/old/flora.json` |
 | `Resources/minerals.json` | `minerals: []` | `Resources/old/minerals.json` |

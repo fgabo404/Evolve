@@ -4,7 +4,7 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** D00 aprobado; D01 iniciado con 8 biomas definidos, subbiomas pendientes; los otros tres catálogos vacíos  
+> **Estado:** D00 aprobado; D01 en curso con 8 biomas y 34 subbiomas definidos (sin spawn); fauna, flora y minerales vacíos  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
 
 ## 0. Reinicio controlado de los catálogos (2026-11-08)
@@ -21,7 +21,7 @@
 - En cada nueva entidad se decidirán los campos mínimos. Para biomas se ha acordado conceptualmente `Bioma → Subbioma → Spawn (condiciones ambientales)`; la gramática exacta de `spawn` queda pendiente de diseño. Los modelos tipados vendrán después.
 - No se borran IDs antiguos del historial: al reintroducir la misma entidad se conservará su identidad o se documentará una migración explícita. El reinicio del diseño no equivale a autorizar reutilización arbitraria de IDs.
 
-**Nuevo estado de D01:** hay 8 biomas principales nuevos; cada uno contiene `subbiomes: []`. No se han creado subbiomas ni requisitos de spawn. Los 8/22 anteriores siguen archivados como referencia.
+**Nuevo estado de D01:** hay 8 biomas y 34 subbiomas activos, cada subbioma únicamente con `id` y `name`; `spawn`, fauna, flora, minerales y condiciones ambientales siguen pendientes. Los 8/22 anteriores siguen archivados como referencia.
 
 ## 1. Objetivo y alcance
 
@@ -72,8 +72,9 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 **Salida:** mapa de dependencias, vocabulario y validaciones documentados y **aprobados**; las reglas ejecutables siguen pendientes de implementación.
 
 ### D01 — Biomas y subbiomas (primero)
-- [x] Registrar 8 biomas principales con ID, nombre y subbiomas vacíos; sin requisitos de spawn.
-- [ ] Reconstruir uno por uno los biomas y subbiomas nuevos; utilizar los 8 biomas y 22 subbiomas archivados solo como referencia.
+- [x] Registrar 8 biomas principales con ID y nombre.
+- [x] Incorporar 34 subbiomas iniciales solo con `id` y `name`, **sin `spawn`**; revisión individual pendiente.
+- [ ] Revisar y afinar uno por uno los 34 subbiomas iniciales; utilizar los 8 biomas y 22 subbiomas archivados solo como referencia.
 - [ ] Acordar jerarquía **bioma → subbioma**, separando clima/vegetación de rasgos superpuestos como relieve, costa, cuerpos de agua y humedales.
 - [ ] Revisar qué categorías conservar, renombrar, dividir o agregar, sin romper IDs existentes.
 - [ ] Definir condiciones necesarias y preferentes: temperatura, precipitación, humedad útil, estacionalidad, latitud, altitud, pendiente, suelo, hidrología y proximidad marina cuando aplique.
@@ -99,7 +100,27 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 
 Los ocho grupos son una clasificación simplificada para Evolve, no una taxonomía científica literal. Montañas, acantilados, dunas, salares y latitud polar serán atributos del entorno; no son biomas principales. Se mantienen IDs heredados cuando representan el mismo concepto, sin restaurar subbiomas antiguos automáticamente.
 
-**Pendiente:** diseñar subbiomas, `spawn` y manejo de solapamientos, y conciliar la wiki y sus pruebas históricas.
+**Pendiente:** revisar los nombres y límites ecológicos de estos subbiomas; diseñar `spawn` y manejo de solapamientos **posteriormente** y conciliar los vínculos y pruebas históricas.
+
+### D01 — Subbiomas iniciales (sin spawn)
+
+| Bioma | Subbiomas |
+|---|---|
+| Desierto (`desert`) | Desierto cálido (`desert_hot`); Desierto frío (`desert_cold`); Desierto costero (`desert_coastal`) |
+| Bosque (`forest`) | Bosque tropical húmedo (selva) (`forest_tropical`); Bosque tropical seco (`forest_tropical_dry`); Bosque subtropical (`forest_subtropical`); Bosque templado (`forest_temperate`); Bosque boreal (taiga) (`forest_boreal`); Bosque nublado (`forest_cloud`) |
+| Pastizales y sabanas (`grassland`) | Sabana (`plains_savanna`); Pradera (`plains_prairie`); Estepa (`plains_steppe`); Pastizal alpino (`grassland_alpine`) |
+| Matorrales (`shrubland`) | Matorral mediterráneo (`shrubland_mediterranean`); Matorral xerófilo (`shrubland_xeric`); Brezal templado (`shrubland_temperate_heath`); Matorral montano (`shrubland_montane`) |
+| Tundra (`tundra`) | Tundra ártica (`tundra_arctic`); Tundra alpina (`tundra_alpine`); Tundra subantártica (`tundra_subantarctic`) |
+| Hielos y regiones nivales (`polar_nival`) | Manto de hielo continental (`polar_nival_ice_sheet`); Zona nival y nieves persistentes (`polar_nival_snowfield`) |
+| Agua dulce (`freshwater`) | Ríos y arroyos (`freshwater_river`); Lagos y lagunas de agua dulce (`freshwater_lake`); Marismas y humedales herbáceos de agua dulce (`freshwater_marsh`); Pantanos arbolados de agua dulce (`freshwater_swamp`); Turberas (`freshwater_peatland`) |
+| Marino y costero (`marine`) | Océano abierto (`marine_open_ocean`); Aguas costeras y plataforma continental (`marine_coastal_shelf`); Arrecifes (`marine_reef`); Estuarios (`marine_estuary`); Manglares (`marine_mangrove`); Praderas marinas (`marine_seagrass`); Mares polares (`marine_polar_sea`) |
+
+Cada subbioma nuevo contiene **solo** `id` y `name` (`es`/`en`). No incluye `spawn`, condiciones climáticas, requisitos topográficos ni listas de flora, fauna o minerales.
+
+Se conservaron deliberadamente diez IDs históricos para conceptos equivalentes: `forest_tropical`, `forest_subtropical`, `forest_temperate`, `forest_boreal`, `plains_savanna`, `plains_prairie`, `plains_steppe`, `marine_open_ocean`, `marine_reef`, `marine_mangrove`. Los datos históricos de esas entradas **no** se han migrado. El prefijo `plains_` se retiene por estabilidad de identidad, aunque su nuevo bioma padre es `grassland`.
+
+Los antiguos desiertos por sustrato (arenoso, rocoso y salar), el relieve montañoso y los polos norte/sur quedan como referencias para características ambientales y geográficas posteriores, no como subbiomas duplicados.
+
 
 **Salida:** matriz de subbiomas con condiciones ambientales y relaciones candidatas revisadas.
 
@@ -212,10 +233,11 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | Trigo silvestre | Se registra como ejemplo de flora, no fauna | Catalogado; desglose pendiente | `plant_southwest_asian_wild_wheat` |
 | 2026-11-08 | Reinicio de definiciones | Archivados cuatro JSON originales; activos vacíos; recurso integrado de biomas apunta temporalmente al archivo anterior | Aplicado en rama definitions | Consultar historial Git y carpeta old/ |
 | 2026-11-08 | D00 — contratos base | Se documentan dependencias, vocabulario y validaciones | **Aprobado y cerrado** | [D00_CONTRATOS.md](D00_CONTRATOS.md) |
-| 2026-11-08 | D01 — biomas principales | Se definen ocho biomas con `subbiomes: []`, sin spawn | Iniciado; subbiomas pendientes | [biomes.json](Biomas/biomes.json) |
+| 2026-11-08 | D01 — biomas principales | Se definen ocho biomas con `subbiomes: []`, sin spawn | Aplicado | [biomes.json](Biomas/biomes.json) |
+| 2026-11-08 | D01 — subbiomas iniciales | Se incorporan 34 subbiomas con ID y nombre, sin spawn ni relaciones | Aplicado; revisión individual pendiente | [biomes.json](Biomas/biomes.json) |
 
 ## 9. Próximo paso inmediato
 
-**D01 — Definir la taxonomía y las condiciones de los biomas y subbiomas.**
+**D01 — Revisar los subbiomas enumerados; los requisitos de spawn se diseñarán por separado.**
 
-Primera decisión a aprobar: si la clasificación principal será por **ecosistema/clima/vegetación**, dejando relieve, litoral, hidrología y rasgos geológicos como capas complementarias cuando corresponda. Después, revisar uno a uno los 22 subbiomas existentes y decidir qué se mantiene o corrige, preservando el enlace con flora, fauna y minerales.
+Revisar y pulir la lista inicial de 34 subbiomas con el director, uno por uno. Los antiguos 22 se conservan en `old/` y los vínculos con fauna, flora y minerales se reconstruirán posteriormente. **No añadir `spawn` hasta que se solicite expresamente**.
