@@ -1,17 +1,17 @@
 # D00 — Contratos, dependencias y trazabilidad
 
 > **Rama:** `definitions` · **Fecha:** 2026-11-08  
-> **Estado:** documentado, **pendiente de aprobación del director**.  
+> **Estado:** **aprobado por el director el 2026-11-08** (D00).  
 > **Alcance:** diseño de datos, no implementación de reglas nuevas.  
 > **Roadmap rector:** [ROADMAP.md](ROADMAP.md).
 
 ## 1. Estado y fuente de verdad
 
-Los cuatro catálogos en reconstrucción están **activos pero vacíos**:
+Los cuatro catálogos están **activos y en reconstrucción**. D01 ha incorporado los ocho biomas principales:
 
 | Catálogo activo | Campo raíz | Archivo original conservado |
 |---|---|---|
-| `Biomas/biomes.json` | `biomes: []` | `Biomas/old/biomes.json` |
+| `Biomas/biomes.json` | Ocho biomas; cada uno tiene `subbiomes: []` | `Biomas/old/biomes.json` |
 | `Resources/fauna.json` | `animals: []` | `Resources/old/fauna.json` |
 | `Resources/flora.json` | `plants: []` | `Resources/old/flora.json` |
 | `Resources/minerals.json` | `minerals: []` | `Resources/old/minerals.json` |
@@ -110,9 +110,9 @@ Cuando exista contrato JSON tipado, agregar pruebas de deserialización y rechaz
 
 ## 5. Decisiones aún pendientes de aprobación
 
-- Aprobar este vocabulario y las reglas mínimas como contrato D00.
+- **Aprobado:** vocabulario y reglas mínimas como contrato D00 por decisión explícita del director (2026-11-08).
 - Diseñar en D01 el esquema definitivo `Bioma → Subbioma → spawn`, incluidas unidades ambientales, requisitos obligatorios/preferentes y selección cuando varios subbiomas sean compatibles.
 - Decidir, al diseñar cada catálogo, qué propiedades específicas requieren fauna, flora y geología; no copiar automáticamente el esquema anterior.
 - Reconciliar los vínculos de `resources.json` con cada entidad nueva antes de habilitar acciones.
 
-El documento **no aprueba por sí mismo** ninguna mecánica ni convierte guías históricas en datos ejecutables.
+La aprobación de D00 no aprueba automáticamente nuevas mecánicas, subbiomas ni requisitos de spawn, ni convierte guías históricas en datos ejecutables.

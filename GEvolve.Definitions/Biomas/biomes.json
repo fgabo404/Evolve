@@ -1,3 +1,68 @@
 {
-  "biomes": []
+  "biomes": [
+    {
+      "id": "desert",
+      "name": {
+        "es": "Desierto",
+        "en": "Desert"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "forest",
+      "name": {
+        "es": "Bosque",
+        "en": "Forest"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "grassland",
+      "name": {
+        "es": "Pastizales y sabanas",
+        "en": "Grasslands and savannas"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "shrubland",
+      "name": {
+        "es": "Matorrales",
+        "en": "Shrublands"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "tundra",
+      "name": {
+        "es": "Tundra",
+        "en": "Tundra"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "polar_nival",
+      "name": {
+        "es": "Hielos y regiones nivales",
+        "en": "Ice and nival regions"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "freshwater",
+      "name": {
+        "es": "Agua dulce",
+        "en": "Freshwater"
+      },
+      "subbiomes": []
+    },
+    {
+      "id": "marine",
+      "name": {
+        "es": "Marino y costero",
+        "en": "Marine and coastal"
+      },
+      "subbiomes": []
+    }
+  ]
 }

@@ -4,7 +4,7 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** D00 documentado (aprobación pendiente); catálogos nuevos vacíos; D01 pendiente  
+> **Estado:** D00 aprobado; D01 iniciado con 8 biomas definidos, subbiomas pendientes; los otros tres catálogos vacíos  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
 
 ## 0. Reinicio controlado de los catálogos (2026-11-08)
@@ -21,7 +21,7 @@
 - En cada nueva entidad se decidirán los campos mínimos. Para biomas se ha acordado conceptualmente `Bioma → Subbioma → Spawn (condiciones ambientales)`; la gramática exacta de `spawn` queda pendiente de diseño. Los modelos tipados vendrán después.
 - No se borran IDs antiguos del historial: al reintroducir la misma entidad se conservará su identidad o se documentará una migración explícita. El reinicio del diseño no equivale a autorizar reutilización arbitraria de IDs.
 
-**Nuevo estado de D01:** construir las definiciones de bioma y subbioma una por una. Los antiguos 8/22 son referencia, no las entidades activas ni una cantidad obligatoria.
+**Nuevo estado de D01:** hay 8 biomas principales nuevos; cada uno contiene `subbiomes: []`. No se han creado subbiomas ni requisitos de spawn. Los 8/22 anteriores siguen archivados como referencia.
 
 ## 1. Objetivo y alcance
 
@@ -67,11 +67,12 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 - [x] Levantar dependencias entre `biomes.json`, `fauna.json`, `flora.json`, `minerals.json`, `resources.json` y tecnologías. Ver [D00_CONTRATOS.md](D00_CONTRATOS.md#2-mapa-de-dependencias).
 - [x] Documentar vocabulario canónico: entidad, especie, grupo taxonómico, subbioma, población, depósito, recurso, proceso, condición y efecto. Ver [D00_CONTRATOS.md](D00_CONTRATOS.md#3-vocabulario-canónico).
 - [x] Establecer validaciones mínimas y criterio de cierre de una entidad. Ver [D00_CONTRATOS.md](D00_CONTRATOS.md#4-validaciones-mínimas-y-criterio-de-cierre).
-- [ ] **Aprobación del director:** revisar y aprobar los contratos documentados para cerrar formalmente D00.
+- [x] **Aprobación del director:** contratos D00 aprobados explícitamente el 2026-11-08.
 
-**Salida:** mapa de dependencias, vocabulario y validaciones **documentados**; aprobación pendiente. No confundir documentación con reglas de ejecución implementadas.
+**Salida:** mapa de dependencias, vocabulario y validaciones documentados y **aprobados**; las reglas ejecutables siguen pendientes de implementación.
 
 ### D01 — Biomas y subbiomas (primero)
+- [x] Registrar 8 biomas principales con ID, nombre y subbiomas vacíos; sin requisitos de spawn.
 - [ ] Reconstruir uno por uno los biomas y subbiomas nuevos; utilizar los 8 biomas y 22 subbiomas archivados solo como referencia.
 - [ ] Acordar jerarquía **bioma → subbioma**, separando clima/vegetación de rasgos superpuestos como relieve, costa, cuerpos de agua y humedales.
 - [ ] Revisar qué categorías conservar, renombrar, dividir o agregar, sin romper IDs existentes.
@@ -82,6 +83,23 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 - [ ] Revalidar qué flora, fauna y minerales son **candidatos** a cada subbioma; evitar que el bioma por sí solo determine depósitos geológicos.
 - [ ] Definir escenarios de prueba conceptuales y criterios visuales de plausibilidad terrestre.
 - [ ] Aprobar el contrato del catálogo antes de pedir cambios de clasificación al motor.
+
+### Biomas principales registrados en D01
+
+| ID | Nombre | Tipo general |
+|---|---|---|
+| `desert` | Desierto | Terrestre árido |
+| `forest` | Bosque | Terrestre arbolado |
+| `grassland` | Pastizales y sabanas | Terrestre herbáceo/abierto |
+| `shrubland` | Matorrales | Terrestre arbustivo |
+| `tundra` | Tundra | Terrestre frío con vegetación baja |
+| `polar_nival` | Hielos y regiones nivales | Hielo/nieve persistente |
+| `freshwater` | Agua dulce | Acuático continental |
+| `marine` | Marino y costero | Acuático marino, litoral y salobre |
+
+Los ocho grupos son una clasificación simplificada para Evolve, no una taxonomía científica literal. Montañas, acantilados, dunas, salares y latitud polar serán atributos del entorno; no son biomas principales. Se mantienen IDs heredados cuando representan el mismo concepto, sin restaurar subbiomas antiguos automáticamente.
+
+**Pendiente:** diseñar subbiomas, `spawn` y manejo de solapamientos, y conciliar la wiki y sus pruebas históricas.
 
 **Salida:** matriz de subbiomas con condiciones ambientales y relaciones candidatas revisadas.
 
@@ -193,7 +211,8 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | Alcance | Primero cuatro familias; después entidades individualmente, iniciando con fauna | Acordado | Este roadmap |
 | 2026-11-08 | Trigo silvestre | Se registra como ejemplo de flora, no fauna | Catalogado; desglose pendiente | `plant_southwest_asian_wild_wheat` |
 | 2026-11-08 | Reinicio de definiciones | Archivados cuatro JSON originales; activos vacíos; recurso integrado de biomas apunta temporalmente al archivo anterior | Aplicado en rama definitions | Consultar historial Git y carpeta old/ |
-| 2026-11-08 | D00 — contratos base | Se documentan dependencias, términos y criterios de cierre sin modificar catálogos | Documentado; pendiente aprobación del director | [D00_CONTRATOS.md](D00_CONTRATOS.md) |
+| 2026-11-08 | D00 — contratos base | Se documentan dependencias, vocabulario y validaciones | **Aprobado y cerrado** | [D00_CONTRATOS.md](D00_CONTRATOS.md) |
+| 2026-11-08 | D01 — biomas principales | Se definen ocho biomas con `subbiomes: []`, sin spawn | Iniciado; subbiomas pendientes | [biomes.json](Biomas/biomes.json) |
 
 ## 9. Próximo paso inmediato
 
