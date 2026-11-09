@@ -1,14 +1,14 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
-    [string]$Label = 'P03-A4',
-    [ValidateSet('Worldgen', 'TectonicAudit', 'TectonicCalibration', 'StagedPangaea', 'LaboratoryPangaea', 'LaboratoryControls', 'PangaeaEcology', 'EcologyControls', 'TextInputs', 'BaseAuditReference', 'BaseReliefAudit', 'BaseAuditControls', 'BaseVariantControls', 'BaseRegionalVariants', 'BaseRegionalComparison', 'BaseLowlandControls', 'BaseLowlandVariants', 'BaseLowlandComparison', 'BaseVisualComparator', 'BaseComparatorControls')]
-    [string]$ValidationSet = 'Worldgen',
+    [string]$Label = 'R02',
+    [ValidateSet('GridLaboratory')]
+    [string]$ValidationSet = 'GridLaboratory',
     [switch]$IsolatedArtifacts
 )
 
 # Run from the repository root. This script never commits, pushes, deletes reports,
-# changes application code, or launches the interactive game.
+# changes application code, or launches the interactive game. Only the clean R02 suites run.
 $ErrorActionPreference = 'Stop'
 $repoRoot = (& git rev-parse --show-toplevel 2>$null | Out-String).Trim()
 if ($LASTEXITCODE -ne 0) { throw 'Run this script in the Evolve repository.' }
@@ -96,128 +96,8 @@ try {
 catch { $sdk = Protect-Log $_.Exception.Message }
 $steps = @(
     @{ Name = 'build'; Arguments = @('build') },
-    @{ Name = 'pangaea-elevations'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-elevations') },
-    @{ Name = 'mountain-ranges'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--mountain-ranges') },
-    @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
+    @{ Name = 'grid-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
 )
-if ($ValidationSet -eq 'TectonicAudit') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'tectonic-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-tectonic-audit') }
-    )
-}
-$results = @()
-if ($ValidationSet -eq 'TectonicCalibration') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'pangaea-elevations'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-elevations') },
-        @{ Name = 'mountain-ranges'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--mountain-ranges') },
-        @{ Name = 'tectonic-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-tectonic-audit') },
-        @{ Name = 'pangaea-uplift'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-uplift') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-}
-$buildFailed = $false
-if ($ValidationSet -eq 'StagedPangaea') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'pangaea-elevations'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-elevations') },
-        @{ Name = 'mountain-ranges'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--mountain-ranges') },
-        @{ Name = 'tectonic-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-tectonic-audit') },
-        @{ Name = 'pangaea-uplift'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-uplift') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-}
-if ($ValidationSet -eq 'LaboratoryPangaea') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-}
-if ($ValidationSet -eq 'LaboratoryControls') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') }
-    )
-}
-$artifactsDirectory = 'GEvolve.Tests/bin/ValidationArtifacts/' + $runId
-if ($ValidationSet -in @('PangaeaEcology', 'EcologyControls')) {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'pangaea-ecology'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-ecology') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-    if ($ValidationSet -eq 'EcologyControls') { $steps = @($steps | Select-Object -First 3) }
-}
-if ($ValidationSet -eq 'TextInputs') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'game-inputs'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites', '--suite=Game') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') }
-    )
-}
-if ($ValidationSet -eq 'BaseAuditReference') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'base-reference'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-base-reference') }
-    )
-}
-if ($ValidationSet -eq 'BaseVariantControls') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'base-variant-controls'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-base-variants-controls') }
-    )
-}
-if ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'base-audit'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-base-audit') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-    if ($ValidationSet -eq 'BaseAuditControls') { $steps = @($steps | Select-Object -First 2) }
-}
-if ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'base-variants'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-base-variants') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-    if ($ValidationSet -eq 'BaseRegionalComparison') { $steps = @($steps | Select-Object -First 2) }
-}
-if ($ValidationSet -eq 'BaseLowlandControls') {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'lowland-controls'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-lowland-controls') }
-    )
-}
-if ($ValidationSet -in @('BaseLowlandVariants', 'BaseLowlandComparison')) {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'lowland-variants'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-lowland-variants') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-    if ($ValidationSet -eq 'BaseLowlandComparison') { $steps = @($steps | Select-Object -First 2) }
-}
-if ($ValidationSet -in @('BaseVisualComparator', 'BaseComparatorControls')) {
-    $steps = @(
-        @{ Name = 'build'; Arguments = @('build') },
-        @{ Name = 'base-comparator'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-base-comparator') },
-        @{ Name = 'pangaea-staged'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-staged') },
-        @{ Name = 'pangaea-laboratory'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--pangaea-laboratory') },
-        @{ Name = 'all-suites'; Arguments = @('run', '--project', 'GEvolve.Tests', '--', '--all-suites') }
-    )
-    if ($ValidationSet -eq 'BaseComparatorControls') { $steps = @($steps | Select-Object -First 2) }
-}
 if ($IsolatedArtifacts) {
     foreach ($step in $steps) {
         if ($step.Arguments[0] -eq 'build') {
@@ -306,18 +186,11 @@ if ($warnings.Count -eq 0) { $summary.Add('No warning lines were emitted.') }
 else { $summary.Add('```text'); foreach ($warning in $warnings) { $summary.Add($warning) }; $summary.Add('```') }
 $summary.Add('')
 $summary.Add('## Actual diagnostic and regression evidence')
-$diagnosticName = if ($ValidationSet -eq 'BaseLowlandControls') { 'lowland-controls' } elseif ($ValidationSet -in @('BaseLowlandVariants', 'BaseLowlandComparison')) { 'lowland-variants' } elseif ($ValidationSet -in @('BaseRegionalVariants', 'BaseRegionalComparison')) { 'base-variants' } elseif ($ValidationSet -eq 'BaseVariantControls') { 'base-variant-controls' } elseif ($ValidationSet -eq 'BaseAuditReference') { 'base-reference' } elseif ($ValidationSet -in @('BaseReliefAudit', 'BaseAuditControls')) { 'base-audit' } elseif ($ValidationSet -eq 'TextInputs') { 'game-inputs' } elseif ($ValidationSet -in @('PangaeaEcology', 'EcologyControls')) { 'pangaea-ecology' } elseif ($ValidationSet -in @('LaboratoryPangaea', 'LaboratoryControls')) { 'pangaea-laboratory' } elseif ($ValidationSet -eq 'StagedPangaea') { 'pangaea-staged' } elseif ($ValidationSet -eq 'TectonicAudit') { 'tectonic-audit' } elseif ($ValidationSet -eq 'TectonicCalibration') { 'pangaea-uplift' } else { 'pangaea-elevations' }
-if ($ValidationSet -in @('BaseVisualComparator', 'BaseComparatorControls')) { $diagnosticName = 'base-comparator' }
-$diagnostic = ($results | Where-Object { $_.Name -eq $diagnosticName }).Text
-$excerpts = @($diagnostic -split '\r?\n' | Where-Object {
-    $_ -match '^COMPARATOR_(PASS|CASE_PASS)|^LOWLAND_CONTROLS_PASS|^BASE_VARIANT_.*PASS|^BASE_(REFERENCE_PASS|MORPH_CONTROLS_PASS|CASE_PASS|AUDIT_PASS)|^INPUT_EDIT_PASS:|^ECOLOGY_(ENV|CASE_PASS|SESSION_PASS|PASS)|^LAB_(CASE_PASS|ASYNC_PASS|SEEDS_PASS|PASS)|^STAGED_(CASE_PASS|GRAPH_PASS|OTHER_PASS|ASYNC_PASS|PASS)|^UPLIFT_COUNTS |^UPLIFT_PASS:|^AUDIT_ENV |^AUDIT_CASE |^AUDIT_COUNTS |^AUDIT_SURFACE |^AUDIT_PASS:|^P03-A\.[46] |^  recovered base cells=|^  SYSTEMS |^  MOUNTAIN P03-A\.[46] FINAL:|^  SHA256|^  P03-A\.3 BASE correlations:'
-})
-if ($excerpts.Count -eq 0) { $summary.Add('No diagnostic records were reached/emitted. No metrics are invented.') }
-else { $summary.Add('Selected actual records; complete emitted output is in ' + $diagnosticName + '.log.'); $summary.Add('```text'); foreach ($line in $excerpts) { $summary.Add($line) }; $summary.Add('```') }
-$mountainRecords = @((($results | Where-Object { $_.Name -eq 'mountain-ranges' }).Text -split '\r?\n') | Where-Object { $_ -match '^P03-A |^PASS:' })
-if ($mountainRecords.Count -gt 0) { $summary.Add('```text'); foreach ($line in $mountainRecords) { $summary.Add($line) }; $summary.Add('```') }
-$regressions = @((($results | Where-Object { $_.Name -eq 'all-suites' }).Text -split '\r?\n') | Where-Object { $_ -match '^SUITE (PASS|FAIL):|BASELINE MISMATCH|baseline.*differ' } | Select-Object -Unique)
-if ($regressions.Count -gt 0) { $summary.Add('```text'); foreach ($line in $regressions) { $summary.Add($line) }; $summary.Add('```') }
+$diagnostic = ($results | Where-Object { $_.Name -eq 'grid-laboratory' }).Text
+$records = @($diagnostic -split '\r?\n' | Where-Object { $_ -match '^R02 OFFICIAL:|^SUITE (PASS|FAIL):' })
+if ($records.Count -eq 0) { $summary.Add('No official R02 records emitted. No results inferred.') }
+else { $summary.Add('~~~text'); foreach ($record in $records) { $summary.Add($record) }; $summary.Add('~~~') }
+$summary.Add('Historical geographical tests and baselines are archived and NOT EXECUTED. Earlier 17 PASS / 2 FAIL is not reclassified or resolved by this run.')
 $summary.Add('')
 $summary.Add('## Capture, privacy and retention')
 $summary.Add('- Both streams are complete in separate labeled sections; cross-stream chronology is not asserted.')
@@ -327,7 +200,7 @@ $summary.Add('- Review all files for additional sensitive data before publishing
 $summary.Add('- Keep milestone/failure reports and one canonical report per commit/SDK. Review routine successes manually after five; remove only redundant successes after review, never automatically. Git retains published history. See [retention policy](../README.md).')
 $summary.Add('')
 $summary.Add('## Manual game validation and repeat command')
-$summary.Add('The Game entry point creates EvolveWindow and calls window.Run(); it is interactive and was not launched. After a successful build, run `dotnet run --project GEvolve.Game`, inspect the required worlds and BASE/APORTE/FINAL/RELIEVE/PLACAS views, then close the window normally. Visual approval is not implied by these reports.')
+$summary.Add('The Game entry point creates EvolveWindow and calls window.Run(); it is interactive and was not launched. After a successful build, run `dotnet run --project GEvolve.Game`, inspect only the empty hex grid, seed, four sizes, zoom/pan and the unavailable world-creation message, then close the window normally. Visual approval is not implied by these reports.')
 $summary.Add('')
 $summary.Add('From the repository root, repeat this exact script snapshot:')
 $summary.Add('```powershell')

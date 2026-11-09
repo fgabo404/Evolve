@@ -1,3 +1,5 @@
+**ARCHIVO HISTÓRICO DESDE R02:** esta interfaz y sus algoritmos están desconectados y no se compilan. Sus comandos/capas describen el legado. Guía vigente: [laboratorio de cuadrícula](GRID_LABORATORY.md). No reactivar esta ruta.
+
 # Laboratorio de Pangea — Panel lateral y flujo secuencial
 
 El laboratorio está integrado en Game y mantiene el motor y los datos geográficos existentes. La validación automatizada es exclusivamente de código; la inspección y aprobación visual corresponden al usuario. No se ejecutan ventanas, contextos GL, capturas ni automatización gráfica desde Codex.

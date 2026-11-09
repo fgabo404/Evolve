@@ -3,7 +3,7 @@
 > **Rama de trabajo:** `worldgeneration`  
 > **Documento rector:** este archivo es la única hoja de ruta activa del generador.  
 > **Fecha de reorganización:** 2026-11-08  
-> **Estado:** R00 y R01 cerrados con sus excepciones históricas documentadas. **R02 redefinido por decisión del director (2026-11-09): desconexión total del motor antiguo y reinicio limpio del flujo activo.** La implementación y validación del aislamiento están pendientes. Los resultados PASS anteriores corresponden al motor legado; la suite general histórica registró 17 PASS / 2 FAIL y no se considera PASS.
+> **Estado:** R00 y R01 cerrados con sus excepciones históricas documentadas. **R02 redefinido por decisión del director (2026-11-09): desconexión total del motor antiguo y reinicio limpio del flujo activo.** Implementación R02 y revisión estática realizadas; compilación, pruebas locales, revisión visual, auditoría y aprobación pendientes. R02 no aprobado. Los resultados PASS anteriores corresponden al motor legado; la suite general histórica registró 17 PASS / 2 FAIL y no se considera PASS.
 
 ## Objetivo
 
@@ -44,12 +44,13 @@ Desarrollar desde cero el generador oficial de mundos de Evolve por etapas. El c
 - [x] Revisión del auditor concluida; aprobación explícita del director para cerrar R01 con la excepción anterior. No equivale a aprobación visual ni a aprobación de la suite general.
 
 ### R02 — Desconexión del legado y laboratorio limpio
-**Estado:** pendiente de implementación. Alcance redefinido expresamente por el director el 2026-11-09; reemplaza la meta anterior de conservar activo el laboratorio histórico.
-- [ ] Desconectar todas las rutas activas de `GEvolve.Game` y de creación/regeneración de mundos que invoquen `GEvolve.Engine.World.WorldGenerationService` u otros algoritmos de `worldgenerationold/`. Sin fallback silencioso al legado.
-- [ ] Excluir las fuentes `worldgenerationold/**/*.cs` del build oficial mediante configuración explícita; conservarlas intactas y accesibles como archivo histórico. Adaptar las dependencias activas de Game y los tests para mantener compilación, sin reintroducir referencias al legado.
-- [ ] Sustituir el laboratorio activo por una interfaz mínima **sin etapas antiguas**, reutilizando solo `GEvolve.Engine/Grid/` para mostrar una cuadrícula hexagonal vacía, cambiar tamaño/semilla y navegar el mapa. Si el flujo «Crear mundo» aún no soporta el nuevo contrato, mostrarlo como no disponible; nunca generar automáticamente con el legado.
-- [ ] Distinguir tests oficiales del sistema nuevo y pruebas históricas archivadas; mantener resultados y baselines anteriores íntegros y dejar claro que los PASS de R01 corresponden al legado.
-- [ ] Verificar por inspección de referencias y diff que ninguna ruta ejecutable activa utiliza el motor antiguo. El usuario valida compilación, apertura del juego, cuadrícula vacía y ausencia de opciones obsoletas; el auditor revisa la evidencia y el director aprueba R02.
+**Estado:** implementado y revisado estáticamente; validación local y aprobación pendientes. Alcance redefinido expresamente por el director el 2026-11-09; reemplaza la meta anterior de conservar activo el laboratorio histórico. [Evidencia y archivos](../../../GEvolve.Tests/ValidationReports/R02_LEGACY_ISOLATION.md).
+- [x] Desconectar todas las rutas activas de `GEvolve.Game` y de creación/regeneración de mundos que invoquen `GEvolve.Engine.World.WorldGenerationService` u otros algoritmos de `worldgenerationold/`. Sin fallback silencioso al legado.
+- [x] Excluir las fuentes `worldgenerationold/**/*.cs` del build oficial mediante configuración explícita; conservarlas intactas y accesibles como archivo histórico. Adaptar las dependencias activas de Game y los tests para mantener compilación, sin reintroducir referencias al legado.
+- [x] Sustituir el laboratorio activo por una interfaz mínima **sin etapas antiguas**, reutilizando solo `GEvolve.Engine/Grid/` para mostrar una cuadrícula hexagonal vacía, cambiar tamaño/semilla y navegar el mapa. Si el flujo «Crear mundo» aún no soporta el nuevo contrato, mostrarlo como no disponible; nunca generar automáticamente con el legado.
+- [x] Distinguir tests oficiales del sistema nuevo y pruebas históricas archivadas; mantener resultados y baselines anteriores íntegros y dejar claro que los PASS de R01 corresponden al legado.
+- [x] Revisar estáticamente las exclusiones y referencias activas. No se ejecutó .NET; la ausencia en ensamblados se comprobará también con las pruebas oficiales de aislamiento.
+- [ ] Validación local por el usuario: compilación, pruebas oficiales, apertura del juego, cuadrícula vacía y ausencia de opciones obsoletas; revisión del auditor y aprobación del director de R02.
 - [ ] Definir con el arquitecto el contrato mínimo de snapshot de cuadrícula para R03, sin replicar `PangaeaGenerationSession` ni sus etapas.
 
 **Criterio de aceptación:** Game y el laboratorio no generan geología, relieve, clima, biomas o recursos; el único resultado visible inicial es la cuadrícula, o una indicación explícita de funcionalidad todavía no implementada. Ninguna etapa antigua aparece habilitada. El código anterior permanece recuperable, pero no participa en ejecución ni build oficiales.

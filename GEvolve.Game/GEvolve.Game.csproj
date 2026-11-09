@@ -11,6 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="..\GEvolve.Definitions\GEvolve.Definitions.csproj" />
     <ProjectReference Include="..\GEvolve.Engine\GEvolve.Engine.csproj" />
-    <ProjectReference Include="..\GEvolve.State\GEvolve.State.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Historical UI/renderers are retained verbatim, never compiled into Game. -->
+    <Compile Remove="Legacy/**/*.cs" />
   </ItemGroup>
 </Project>

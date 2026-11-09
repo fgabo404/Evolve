@@ -1,14 +1,15 @@
 # WorldGeneration — Generador oficial de mundos de Evolve
 
-Esta es el área de construcción del generador de mundos. Inicialmente **no contiene algoritmos**: se añadirán módulos cuando sus contratos estén diseñados, implementados y auditados.
+Esta área sigue sin algoritmos. R02 reinicia el flujo activo con la cuadrícula compartida; no implementa R03 ni un generador alternativo.
 
-- **Plan activo único:** [ROADMAP.md](ROADMAP.md).
-- **Referencia histórica:** [../worldgenerationold/](../worldgenerationold/) con el generador anterior, cuyos namespaces y dependencias se conservan temporalmente.
-- **Infraestructura común:** `GEvolve.Engine/Grid/`; contratos del juego en Definitions/State y visualización en Game.
-- **Laboratorio:** se conserva el de Pangea; se integrará por etapas al nuevo motor.
+- **Único plan activo:** [ROADMAP.md](ROADMAP.md).
+- **Archivo histórico:** [../worldgenerationold/](../worldgenerationold/), preservado y excluido explícitamente de Engine. No puede usarse como fallback.
+- **Infraestructura común:** GEvolve.Engine/Grid/ y su geometría, sin cambios. Definitions, State y guardados históricos conservan sus contratos.
+- **Game:** laboratorio vacío con tamaño, semilla de sesión, zoom y desplazamiento. Crear mundo indica no disponible. No hay etapas, capas o comparador geográficos.
+- **Pruebas oficiales:** GEvolve.Tests/Active/; las pruebas históricas se conservan en sus archivos originales fuera de Compile. Los resultados anteriores corresponden al legado.
 
-Organización futura, solo cuando exista código: `Core`, `Tectonics`, `Crust/Strategies`, `Relief`, `Surface`, `Climate`, `Hydrology`, `Biomes`, `Ecology`, `Validation`, `Diagnostics`.
+R00 y R01 fueron cerrados por el director con sus excepciones históricas registradas en el roadmap. **R02 implementado y revisado estáticamente; compilación, pruebas locales, revisión visual, auditoría y aprobación pendientes.** [Alcance y evidencia estática](../../../GEvolve.Tests/ValidationReports/R02_LEGACY_ISOLATION.md).
 
-**Reglas:** no importar algoritmos antiguos sin revisión; no recrear estados equivalentes innecesarios; cada etapa declara dependencias y produce datos verificables; el generador nuevo no llama a `worldgenerationold`.
+La presentación usa directamente HexGrid como dato espacial temporal, sin un snapshot geográfico ni un estado guardable. El contrato arquitectónico de snapshot para R03 sigue pendiente de definición y aprobación. No se duplica PangaeaGenerationSession.
 
-**R00–R01:** [verificación Git y estática](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md). La igualdad de blobs y la inclusión de fuentes se revisan sin ejecutar .NET; compilación, regresiones y evaluación visual siguen pendientes del usuario, además de revisión/aprobación. Los resultados antiguos del laboratorio no certifican el motor nuevo.
+**Reglas:** ninguna ruta activa invoca el archivo histórico. Solo se rescatarán piezas concretas después de revisión y autorización explícitas; nunca mediante una opción de compilación o ejecución que reactive el motor anterior.

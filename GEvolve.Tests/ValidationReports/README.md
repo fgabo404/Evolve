@@ -1,3 +1,21 @@
+# Validación oficial R02
+
+Ejecutar localmente desde la raíz, en worldgeneration:
+
+~~~powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .GEvolve.TestsValidationReportscommands.ps1 -ValidationSet GridLaboratory -Label R02 -IsolatedArtifacts
+~~~
+
+El script activo captura build y las cuatro suites nuevas de GEvolve.Tests/Active, con streams completos, códigos reales, privacidad, directorio UTC y artefactos aislados. Codex no lo ejecuta. No inicia Game ni realiza validación visual. [Aislamiento y pendientes R02](R02_LEGACY_ISOLATION.md).
+
+Las pruebas geográficas anteriores permanecen intactas pero no se compilan ni ejecutan. Sus baselines e informes tampoco se alteran. Los resultados 17 PASS/2 FAIL del legado no se convierten en PASS ni se declaran corregidos al ejecutar la suite nueva. El runner rechaza expresamente los flags de suites históricas.
+
+La copia pre-R02 del script se conserva en ../Legacy/commands.ps1 como referencia, fuera del flujo activo; los snapshots de informes son inmutables. Usar únicamente el script actual para validar R02. La política de conservación y privacidad que sigue continúa vigente.
+
+## Referencia histórica de validaciones anteriores
+
+Los sets y comandos descritos a continuación pertenecen al motor archivado; no están disponibles en el script activo R02.
+
 # Validation reports
 
 Run from the repository root on `worldgeneration`:
