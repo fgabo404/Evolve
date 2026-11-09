@@ -27,8 +27,8 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 - [x] Identificar ramas `master`, `develop`, `worldgenerator`, `worldgeneration_pangea`, `worldgeneration_v2` y respaldo histórico.
 - [x] Crear la rama `worldgeneration` desde la base funcional más reciente de Pangea.
 - [x] Incorporar al historial de `worldgeneration` el commit del antiguo scaffold, sin conservar sus nombres V2 en el árbol operativo.
-- [ ] Sincronizar `develop` por avance rápido con `worldgeneration`.
-- [ ] Retirar las ramas experimentales anteriores después de verificar que sus commits son alcanzables desde la nueva rama.
+- [x] Sincronizar `develop` por avance rápido con `worldgeneration` (sin alterar `master`).
+- [ ] Retirar las ramas experimentales anteriores. El historial de las ramas antiguas es alcanzable desde `worldgeneration`; la eliminación de referencias remotas requiere una acción Git que no está expuesta por la integración actual.
 
 ### R01 — Aislamiento del generador antiguo
 - [x] Trasladar 34 fuentes C# de `GEvolve.Engine/World/` a `World/worldgenerationold/` conservando contenido y namespaces.
@@ -101,6 +101,7 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 | 2026-11-08 | Conservar namespaces antiguos tras mover archivos | Aplicado en reorganización; pendiente de compilación local |
 | 2026-11-08 | Mantener el laboratorio y Grid compartidos | Sin cambios funcionales previstos |
 | 2026-11-08 | Una sola hoja de ruta sin sufijos de versión | Este archivo |
+| 2026-11-08 | Sincronizar `develop` con `worldgeneration` | Avance rápido aplicado; `master` permanece inalterada |
 | 2026-11-08 | Construir etapas nuevas solo cuando se necesiten | Aprobado como criterio arquitectónico |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.
