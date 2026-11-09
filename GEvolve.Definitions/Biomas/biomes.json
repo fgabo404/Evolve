@@ -79,42 +79,6 @@
           }
         },
         {
-          "id": "forest_subtropical",
-          "name": {
-            "es": "Subtropical",
-            "en": "Subtropical"
-          },
-          "spawn": {
-            "required": {
-              "terrain": "land",
-              "monthsMeanTemperatureAbove10C": {
-                "min": 8
-              },
-              "annualPrecipitationMm": {
-                "min": 600
-              }
-            },
-            "preferred": {
-              "meanAnnualTemperatureC": {
-                "min": 14,
-                "max": 22
-              },
-              "annualPrecipitationMm": {
-                "min": 900,
-                "max": 2200
-              },
-              "elevationMeters": {
-                "min": 0,
-                "max": 1800
-              },
-              "absoluteLatitudeDegrees": {
-                "min": 20,
-                "max": 40
-              }
-            }
-          }
-        },
-        {
           "id": "forest_temperate",
           "name": {
             "es": "Templado",

@@ -4,7 +4,7 @@
 > **Rama de trabajo:** `definitions` (creada desde `develop`)  
 > **Origen Git:** `772d4e34b596fe7db524b047aced16fd55ba76d2` — `docs(worldgen): record synchronized development branch and pending cleanup`  
 > **Fecha de inicio:** 2026-11-08  
-> **Estado:** D00 aprobado; D01 en curso con 8 biomas y 21 subbiomas; los 5 de Bosque tienen `spawn` declarativo, los otros 16 pendientes; fauna, flora y minerales vacíos  
+> **Estado:** D00 aprobado; D01 en curso con 8 biomas y 20 subbiomas; los 4 de Bosque tienen `spawn` declarativo, los otros 16 pendientes; fauna, flora y minerales vacíos  
 > **Ubicación:** `GEvolve.Definitions/ROADMAP.md`
 
 ## 0. Reinicio controlado de los catálogos (2026-11-08)
@@ -21,7 +21,7 @@
 - En cada nueva entidad se decidirán los campos mínimos. Para biomas se ha acordado conceptualmente `Bioma → Subbioma → Spawn (condiciones ambientales)`; la gramática exacta de `spawn` queda pendiente de diseño. Los modelos tipados vendrán después.
 - No se borran IDs antiguos del historial: al reintroducir la misma entidad se conservará su identidad o se documentará una migración explícita. El reinicio del diseño no equivale a autorizar reutilización arbitraria de IDs.
 
-**Nuevo estado de D01:** se conservan 8 biomas y 21 subbiomas activos; Montaña solo tiene Montaña rocosa y Cumbres. Los 5 subbiomas de **Bosque** cuentan ya con `spawn` declarativo (`required` y `preferred`); los otros 16 siguen sin `spawn`. El catálogo histórico permanece intacto en `old/`.
+**Nuevo estado de D01:** se conservan 8 biomas y 20 subbiomas activos; Montaña solo tiene Montaña rocosa y Cumbres. Los 4 subbiomas de **Bosque** cuentan con `spawn` declarativo (`required` y `preferred`); los otros 16 siguen sin `spawn`. **Subtropical** (`forest_subtropical`) se retiró del catálogo activo por decisión del director, sin reasignar su ID. El catálogo histórico permanece intacto en `old/`.
 
 ## 1. Objetivo y alcance
 
@@ -76,7 +76,8 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 - [x] Restaurar los subbiomas históricos sin `spawn`, salvo **Montaña**: solo `mountain_rocky` y `mountain_summits` (nuevo). Total: 21 subbiomas.
 - [x] Revisar y acordar mantener el catálogo histórico, salvo Montaña con dos subbiomas.
 - [x] Iniciar las definiciones ambientales en `forest_tropical` (nombre `Selva`; conservar ID).
-- [x] Añadir `spawn.required` y `spawn.preferred` a `forest_subtropical`, `forest_temperate`, `forest_boreal` y `forest_wooded_swamp`, sin modificar otros biomas.
+- [x] Añadir `spawn.required` y `spawn.preferred` a `forest_subtropical`, `forest_temperate`, `forest_boreal` y `forest_wooded_swamp`, sin modificar otros biomas (hito histórico; Subtropical se retiró después).
+- [x] Retirar `forest_subtropical` del catálogo activo, conservando el ID únicamente en el historial y archivo `old/`.
 - [ ] Validar con el director los umbrales del conjunto Bosque y la resolución de solapamientos antes de tipar reglas en Engine.
 - [ ] Revisar y confirmar los parámetros iniciales de spawn de Selva antes de establecer reglas tipadas del motor.
 - [ ] Acordar jerarquía **bioma → subbioma**, separando clima/vegetación de rasgos superpuestos como relieve, costa, cuerpos de agua y humedales.
@@ -91,12 +92,12 @@ Los números describen el **archivo histórico anterior al reinicio**, no el con
 
 ### D01 — Catálogo histórico recuperado con excepción Montaña
 
-Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos conservan `id` y `name` (es/en); **los 5 subbiomas de `forest` incorporan `spawn`**, con requisitos y preferencias ambientales. Los otros 16 subbiomas no tienen `spawn`; aún no se han agregado relaciones con fauna, flora o minerales.
+Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos conservan `id` y `name` (es/en); **los 4 subbiomas actuales de `forest` incorporan `spawn`**, con requisitos y preferencias ambientales. Los otros 16 subbiomas no tienen `spawn`; aún no se han agregado relaciones con fauna, flora o minerales.
 
 | Bioma | Subbiomas |
 |---|---|
 | Desierto (`desert`) | Arenoso (dunas) (`desert_sandy`); Rocoso (cañones y mesetas) (`desert_rocky`); Salar (`desert_salt_flat`) |
-| Bosque (`forest`) | Selva (`forest_tropical`); Subtropical (`forest_subtropical`); Templado (`forest_temperate`); Boreal (taiga) (`forest_boreal`); Pantano arbolado (Everglades) (`forest_wooded_swamp`) |
+| Bosque (`forest`) | Selva (`forest_tropical`); Templado (`forest_temperate`); Boreal (taiga) (`forest_boreal`); Pantano arbolado (Everglades) (`forest_wooded_swamp`) |
 | Llanuras (`plains`) | Sabana (`plains_savanna`); Pradera (`plains_prairie`); Estepa (`plains_steppe`); Humedal abierto (Pantanal) (`plains_open_wetland`) |
 | Marino (`marine`) | Arrecife (`marine_reef`); Estuario o litoral (`marine_estuary_littoral`); Manglar (`marine_mangrove`); Océano abierto (alta mar) (`marine_open_ocean`) |
 | Tundra (`tundra`) | Tundra (`tundra_tundra`) |
@@ -106,9 +107,9 @@ Se mantiene la estructura acordada `Bioma → Subbiomas`. Todos los elementos co
 
 **Único cambio deliberado respecto al histórico:** Montaña deja de tener `mountain_alpine` y `mountain_cliffs` y conserva `mountain_rocky`, que se presenta como Montaña rocosa. Se incorpora `mountain_summits` (Cumbres). Los IDs eliminados del catálogo activo permanecen en `old/`; no se reasignan. Los ecosistemas forestales permanecen en Bosque.
 
-Los 8 biomas históricos / 22 subbiomas siguen archivados íntegramente en `Biomas/old/biomes.json`. La nueva lista activa tiene 8 biomas / 21 subbiomas. La clasificación está en **revisión de diseño**; el motor antiguo continúa usando el archivo histórico integrado hasta una migración aprobada.
+Los 8 biomas históricos / 22 subbiomas siguen archivados íntegramente en `Biomas/old/biomes.json`. La nueva lista activa tiene 8 biomas / 20 subbiomas (cuatro en Bosque, tras retirar Subtropical). La clasificación está en **revisión de diseño**; el motor antiguo continúa usando el archivo histórico integrado hasta una migración aprobada.
 
-**Pendiente:** revisar y aprobar los parámetros de los cinco bosques, resolver solapamientos, diseñar un contrato C# tipado general y reconciliar vínculos históricos.
+**Pendiente:** revisar y aprobar los parámetros de los cuatro bosques, resolver solapamientos, diseñar un contrato C# tipado general y reconciliar vínculos históricos.
 
 ### D01 — Selva (`forest_tropical`): primer spawn declarativo
 
@@ -132,22 +133,21 @@ Se conserva el ID histórico, y se cambia el nombre visible a **Selva** (`Rainfo
 **Estado:** primera propuesta aplicada, ajuste/confirmación del director y futura deserialización tipada pendientes.
 
 
-### D01 — Spawn aplicado a los cinco subbiomas de Bosque (2026-11-09)
+### D01 — Spawn en los cuatro subbiomas activos de Bosque (2026-11-09)
 
-Se conserva íntegra la primera propuesta de Selva. A los cuatro subbiomas restantes se añadió el mismo esquema `spawn.required` / `spawn.preferred` sin crear especies, vegetación ni mineralizaciones. Los campos se interpretan como **reglas declarativas iniciales**, no como límites científicos universales.
+Se conserva íntegra la primera propuesta de Selva. El esquema `spawn.required` / `spawn.preferred` queda aplicado a Templado, Boreal y Pantano arbolado. **Subtropical fue retirado posteriormente por decisión del director**. No se han creado especies, vegetación ni mineralizaciones; los campos se interpretan como **reglas declarativas iniciales**, no como límites científicos universales.
 
 | Subbioma | `required` | `preferred` |
 |---|---|---|
-| Subtropical (`forest_subtropical`) | Terreno terrestre; ≥8 meses con temperatura media mensual >10 °C; ≥600 mm/año | Temperatura media anual 14–22 °C; lluvia 900–2200 mm/año; altitud 0–1800 m; latitud absoluta 20–40° |
 | Templado (`forest_temperate`) | Terreno terrestre; 4–8 meses con temperatura media mensual >10 °C; ≥450 mm/año | Temperatura media anual 4–15 °C; lluvia 650–1800 mm/año; altitud 0–2000 m; latitud absoluta 30–60° |
 | Boreal (`forest_boreal`) | Terreno terrestre; 1–3 meses con temperatura media mensual >10 °C; ≥200 mm/año | Temperatura media anual −7 a 5 °C; lluvia 300–900 mm/año; altitud 0–1200 m; latitud absoluta 50–75° |
 | Pantano arbolado (`forest_wooded_swamp`) | Terreno terrestre; suelo saturado durante la temporada de crecimiento; humedal de agua dulce | Lluvia 700–2500 mm/año; temperatura media anual 10–28 °C; altitud 0–600 m; pendiente 0–5° |
 
 **Convenciones del JSON:** `monthsMeanTemperatureAbove10C` es la cantidad de meses con temperatura media mensual estrictamente mayor que 10 °C (de 0 a 12). `soilSaturatedDuringGrowingSeason` exige saturación del suelo durante la temporada de crecimiento, no inundación todos los días. `wetlandWaterType: freshwater` restringe la regla actual a humedal de agua dulce y deja los manglares en su subbioma marino. `absoluteLatitudeDegrees` evita duplicar hemisferio N/S.
 
-**Procedencia:** [FAO — Global Ecological Zones](https://www.fao.org/4/Y4171E/Y4171E52.htm) describe subtrópicos (≥8 meses cálidos), templados (4–8 meses) y boreales (<4 meses), y distingue formaciones forestales según humedad; [EPA — Classification and Types of Wetlands](https://www.epa.gov/wetlands/classification-and-types-wetlands) describe suelos saturados e inundaciones estacionales en pantanos arbolados. **Los valores numéricos de precipitación, altitud, latitud y temperatura anual son parámetros orientativos elegidos para Evolve**, no umbrales oficiales de la FAO o EPA.
+**Procedencia:** [FAO — Global Ecological Zones](https://www.fao.org/4/Y4171E/Y4171E52.htm) describe zonas templadas (4–8 meses cálidos) y boreales (<4 meses), y distingue formaciones forestales según humedad; [EPA — Classification and Types of Wetlands](https://www.epa.gov/wetlands/classification-and-types-wetlands) describe suelos saturados e inundaciones estacionales en pantanos arbolados. **Los valores numéricos de precipitación, altitud, latitud y temperatura anual son parámetros orientativos elegidos para Evolve**, no umbrales oficiales de la FAO o EPA.
 
-**Advertencias de integración:** existen solapamientos (p. ej. el mes cálido número 8 puede cumplir subtropical y templado; un pantano arbolado puede coincidir climáticamente con otros bosques). Las reglas de prioridad/desempate, la definición física de humedad edáfica y los datos mensuales que necesita Engine siguen **pendientes**. No se han creado modelos C# ni se ha activado la clasificación. Los otros 16 subbiomas permanecen sin `spawn`.
+**Advertencias de integración:** existen solapamientos (p. ej. un pantano arbolado puede coincidir climáticamente con otros bosques). Las reglas de prioridad/desempate, la definición física de humedad edáfica y los datos mensuales que necesita Engine siguen **pendientes**. No se han creado modelos C# ni se ha activado la clasificación. Los otros 16 subbiomas permanecen sin `spawn`.
 
 **Estado:** datos JSON aplicados, pendientes de validación ecológica, contrato tipado y pruebas.
 
@@ -267,10 +267,11 @@ Cada entidad se revisará con esta estructura lógica (no implica que todos los 
 | 2026-11-08 | D01 — subbiomas iniciales | Se incorporaron 34 subbiomas como primera propuesta, sin spawn | Sustituido por restauración del catálogo histórico | [biomes.json](Biomas/biomes.json) |
 | 2026-11-08 | D01 — recuperación histórica con Montaña adaptada | Se recuperan los 8 biomas históricos; 21 subbiomas activos: Montaña rocosa y Cumbres reemplazan los 3 anteriores de Montaña | Aplicado; revisión del director pendiente | [biomes.json](Biomas/biomes.json) |
 | 2026-11-09 | D01 — Selva | `forest_tropical` cambia su nombre a Selva y recibe el primer `spawn` declarativo con clima, estación seca y preferencias de altitud, humedad y latitud | Propuesta aplicada; parámetros por confirmar | [biomes.json](Biomas/biomes.json) |
-| 2026-11-09 | D01 — Bosques | Los otros cuatro subbiomas de bosque reciben `spawn.required` y `spawn.preferred`; el pantano exige hidrología de humedal | Aplicado; rangos por revisar y tipar | [biomes.json](Biomas/biomes.json) |
+| 2026-11-09 | D01 — Bosques | Los otros cuatro subbiomas de bosque recibieron `spawn.required` y `spawn.preferred`; el pantano exige hidrología de humedal | Hito histórico; Subtropical se retiró posteriormente | [biomes.json](Biomas/biomes.json) |
+| 2026-11-09 | D01 — Retiro de Subtropical | `forest_subtropical` se elimina del catálogo activo por decisión del director, sin renombrar ni reasignar el ID; quedan 8 biomas y 20 subbiomas, cuatro bosques con `spawn` | Aplicado; documentación, wiki y pruebas actualizadas | [biomes.json](Biomas/biomes.json) |
 
 ## 9. Próximo paso inmediato
 
-**D01 — Revisar los criterios de spawn de los cinco bosques y continuar con los demás biomas.**
+**D01 — Revisar los criterios de spawn de los cuatro bosques y continuar con los demás biomas.**
 
-Conservar los 21 subbiomas reconstruidos y revisar las reglas iniciales de los 5 bosques. **Los otros 16 permanecen sin `spawn`** hasta su diseño individual. El histórico sigue conservado en `old/`.
+Conservar los 20 subbiomas activos y revisar las reglas iniciales de los 4 bosques. **Los otros 16 permanecen sin `spawn`** hasta su diseño individual. El histórico sigue conservado en `old/`.

@@ -24,8 +24,8 @@ const list = (value) => Array.isArray(value) ? value : [];
 const subbiomes = data.world.biomes.flatMap(biome => list(biome.subbiomes));
 
 assert.equal(data.world.biomes.length, 8);
-assert.equal(subbiomes.length, 21);
-assert.equal(index.list("world").length, 29);
+assert.equal(subbiomes.length, 20);
+assert.equal(index.list("world").length, 28);
 assert.equal(index.list("animals").length, data.animals.animals.length);
 assert.equal(index.list("plants").length, data.plants.plants.length);
 assert.equal(index.list("minerals").length, data.minerals.minerals.length);
@@ -64,13 +64,14 @@ for (const [type, field] of [["animals", "fauna"], ["plants", "flora"], ["minera
 }
 const forests = data.world.biomes.find(b => b.id === "forest");
 assert(forests);
-assert.equal(forests.subbiomes.length, 5);
+assert.equal(forests.subbiomes.length, 4);
+assert(!subbiomes.some(sub => sub.id === "forest_subtropical"), "removed subbiome must not reappear");
 for (const sub of forests.subbiomes) {
   assert(sub.spawn, "missing forest spawn rules: " + sub.id);
   assert(sub.spawn.required && Object.keys(sub.spawn.required).length > 0);
   assert(sub.spawn.preferred && Object.keys(sub.spawn.preferred).length > 0);
 }
-assert.equal(subbiomes.filter(sub => sub.spawn).length, 5);
+assert.equal(subbiomes.filter(sub => sub.spawn).length, 4);
 assert.equal(subbiomes.filter(sub => !sub.spawn).length, 16);
 assert.equal(data.animals.animals.length, 0, "the rebuilt fauna catalog must remain empty for now");
 assert.equal(data.plants.plants.length, 0, "the rebuilt flora catalog must remain empty for now");
@@ -97,5 +98,5 @@ const html = fs.readFileSync(path.join(wiki, "index.html"), "utf8");
 assert(html.includes("offline-data.js"), "offline mode must load current catalog snapshot");
 assert(index.resolve("technologies", data.technologies.rootTechnologyId));
 assert(index.resolve("resources", "RES#000047"));
-console.log("PASS: active catalogs, 8 biomes, 21 subbiomes, 5 forest spawn definitions, 16 pending");
+console.log("PASS: active catalogs, 8 biomes, 20 subbiomes, 4 forest spawn definitions, 16 pending");
 console.log("PASS: references, offline snapshot, local paths and Wiki spawn UI");
