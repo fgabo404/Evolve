@@ -3,7 +3,7 @@
 > **Rama de trabajo:** `worldgeneration`  
 > **Documento rector:** este archivo es la única hoja de ruta activa del generador.  
 > **Fecha de reorganización:** 2026-11-08  
-> **Estado:** aislamiento verificado estáticamente; compilación/pruebas locales, revisión del auditor y aprobación pendientes. R00–R01 no aprobados.
+> **Estado:** R00–R01 sin aprobación formal. Compilación y validaciones focales locales PASS; suite general 17 PASS / 2 FAIL históricos de baselines. Pendientes: resolución o aceptación formal de fallos, verificación visual y aprobación del director.
 
 ## Objetivo
 
@@ -38,7 +38,8 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 - [x] Archivar documentación técnica antigua y eliminar los roadmaps anteriores de la rama de trabajo.
 - [x] Crear `WorldGeneration/` con documentación básica y esta hoja de ruta, sin implementar algoritmos.
 - [x] Verificación estática: 34 pares de blobs Git idénticos, namespaces conservados, fuentes originales retiradas de sus rutas previas, inclusión SDK sin exclusiones nuevas y enlaces corregidos; [evidencia](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md).
-- [ ] Compilación y pruebas locales por el usuario: demostrar que no cambió el comportamiento.
+- [x] Compilación local y pruebas focales verificadas por el usuario sobre `d6abbc4ee9651e14b1f6783e5c9f7f4865c06c42`: build PASS (0 advertencias), comparador PASS, Pangea por etapas PASS y laboratorio automatizado PASS (2026-11-09 UTC).
+- [ ] Cerrar la suite general: 17 suites PASS, 2 FAIL por diferencias de baselines (`TectonicMotion`: 4 casos; `ContinentalGeology`: 12 casos). Los mismos dos conjuntos de fallos constan en informes anteriores a R01; investigar y resolver, o documentar una excepción explícitamente aprobada sin modificar baselines para ocultarlos. Evidencia local comunicada por el usuario: `GEvolve.Tests/ValidationReports/R00-R01_20261109_041729114Z_167839a8/SUMMARY.md` (aún no publicada).
 - [ ] Revisión del auditor y aprobación del director.
 
 ### R02 — Laboratorio preservado
@@ -100,12 +101,14 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 
 | Fecha | Decisión | Estado / evidencia |
 |---|---|---|
-| 2026-11-08 | Conservar namespaces antiguos tras mover archivos | Aplicado en reorganización; pendiente de compilación local |
+| 2026-11-08 | Conservar namespaces antiguos tras mover archivos | Aplicado; compilación local PASS sobre `d6abbc4e` el 2026-11-09 UTC |
 | 2026-11-08 | Mantener el laboratorio y Grid compartidos | Sin cambios funcionales previstos |
 | 2026-11-08 | Una sola hoja de ruta sin sufijos de versión | Este archivo |
 | 2026-11-08 | Sincronizar `develop` con `worldgeneration` | Avance rápido aplicado; `master` permanece inalterada |
 | 2026-11-08 | Construir etapas nuevas solo cuando se necesiten | Aprobado como criterio arquitectónico |
 | 2026-11-09 UTC | Verificación Git R00 sobre 772d4e34b596fe7db524b047aced16fd55ba76d2 | develop/worldgeneration sincronizadas al inicio, master preservada; trabajo separado en definitions y puntas históricas ausentes documentados en el [informe](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md). R00 no aprobado |
-| 2026-11-09 UTC | Revisión estática R01 y corrección de referencias | 34/34 blobs idénticos, siete enlaces reparados y guardia de validación alineada; compilación/pruebas locales y aprobación pendientes |
+| 2026-11-09 UTC | Revisión estática R01 y corrección de referencias | 34/34 blobs idénticos, siete enlaces reparados y guardia de validación alineada |
+
+| 2026-11-09 UTC | Validación local R00–R01 comunicada por el usuario | Build, comparador, Pangea por etapas y laboratorio automatizado PASS; suite general: 17 PASS / 2 FAIL (`TectonicMotion` y `ContinentalGeology`, mismos fallos de baselines registrados antes de la reorganización). Informe local `R00-R01_20261109_041729114Z_167839a8/SUMMARY.md`; pendiente de publicación, análisis de fallos y aprobación. No acredita validación visual de la ventana. |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.
