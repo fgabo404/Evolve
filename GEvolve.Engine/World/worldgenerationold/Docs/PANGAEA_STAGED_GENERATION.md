@@ -1,5 +1,8 @@
 # P03-A.7.1 — Motor de Pangea por etapas
 
+**Contexto R01:** documento histórico; sus rutas y decisiones técnicas describen el generador anterior. El [único roadmap activo](../../WorldGeneration/ROADMAP.md) rige la transición en worldgeneration.
+
+
 ## Auditoría inicial, anterior a la refactorización
 
 Punto de partida verificado: `0da9da7546f811f320fde5fe8b6ba399e7a6c811`, rama `worldgeneration_pangea`. Esta entrega implementa solo motor temporal, dependencias, invalidación y equivalencia. No contiene pantalla de laboratorio, controles nuevos, comparación visual ni auditoría geomorfológica integral.
@@ -76,7 +79,7 @@ El modo automático usa la misma sesión internamente, omitiendo hashes de etapa
 - La retención de muestras añade memoria proporcional a los pasos válidos de la propagación existente; evita repetir selección o cambiar la influencia al componer BASE nueva. Su cantidad se registrará en las pruebas.
 - Cancelar no interrumpe un generador a mitad de sus bucles; impide publicar su resultado y mantiene seguro el reinicio. No se introduce un hilo gráfico en Engine.
 - Los hashes y metadatos de ejecución son infraestructura de P03-A.7.1. ANTES/DESPUÉS, histogramas enriquecidos y comparación visual pertenecen a P03-A.7.3.
-- P03-A.7.2 incorpora la [interfaz de Game](../GEvolve.Game/PANGAEA_LABORATORY.md), con botones habilitados por el grafo, estado de trabajo, selección de vistas compatibles y datos intermedios explícitos. Reutiliza esta API sin cambiar Engine; queda pendiente de aprobación visual del usuario.
+- P03-A.7.2 incorpora la [interfaz de Game](../../../../GEvolve.Game/PANGAEA_LABORATORY.md), con botones habilitados por el grafo, estado de trabajo, selección de vistas compatibles y datos intermedios explícitos. Reutiliza esta API sin cambiar Engine; queda pendiente de aprobación visual del usuario.
 - P03-A.7.4 realizará la auditoría integral utilizando el laboratorio funcional. P03-A sigue sin aprobación y P03-B no comienza.
 
 ## Continuación vigente P09.1

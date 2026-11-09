@@ -1,6 +1,8 @@
 # Validation reports
 
-Run from the repository root on `worldgeneration_pangea`:
+Run from the repository root on `worldgeneration`:
+
+The [single active roadmap](../../GEvolve.Engine/World/WorldGeneration/ROADMAP.md) governs R00–R01. See the [Git/static audit](R00-R01_GIT_AUDIT.md); no .NET commands were run for that audit. Historical report scripts retain their original branch guards; use the current top-level script on the active branch.
 
 ```powershell
 .\GEvolve.Tests\ValidationReports\commands.ps1

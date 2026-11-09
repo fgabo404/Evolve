@@ -19,6 +19,8 @@ La columna izquierda contiene, en este orden: **GENERACION DE MUNDO LAB**, tipo 
 - Clic selecciona un hexágono; arrastrar mueve el mapa y rueda sobre él hace zoom. El inspector inferior izquierdo muestra identificador, coordenadas, BASE/APORTE/FINAL y datos de placas/esfuerzos/sistemas disponibles. Añade latitud, pendiente (niveles por paso hexagonal), temperatura (°C), lluvia (mm/año), índice de humedad 0–100, IDs de bioma/subbioma y estado de clasificación. No es humedad relativa atmosférica. Sin etapa vigente muestra pendiente/invalidado, no valores supuestos. BIOMAS usa la paleta existente por categoría; gris significa ausencia explícita de coincidencia. Rueda dentro del inspector para leer todos los detalles, con un tamaño de letra fijo; pendiente/invalidado y cero real se distinguen.
 - **CANCELAR** solicita descarte cooperativo. Los bucles internos pueden terminar antes de observarlo; H04 en cola no comienza después de cancelar. **INICIAR / REINICIAR** reintenta una cuadrícula cancelada. **SALIR AL MENÚ** o Escape abandona la sesión temporal.
 
+**Transición R00–R01:** el laboratorio actual consume el generador histórico de worldgenerationold, con APIs y namespaces conservados. La rama operativa es worldgeneration; el [roadmap único](../GEvolve.Engine/World/WorldGeneration/ROADMAP.md) rige el nuevo motor. Los resultados P03/P09 de esta guía son evidencia del legado y no aprueban R00–R01 ni el motor nuevo.
+
 ## Arquitectura
 
 `PangaeaLaboratory` controla exclusivamente la experiencia de Game y utiliza `WorldGenerationService.CreatePangaeaSession`. La secuencia se comprueba en el controlador, además de bloquear los botones; no modifica Engine. Un cambio de configuración cancela/abandona el trabajo, borra datos y selección, y evita publicar terminaciones obsoletas. Una revisión local de sesión impide reutilizar recursos de otra semilla/tamaño aunque las revisiones internas vuelvan a comenzar.
@@ -55,4 +57,4 @@ Incluye build, `--pangaea-ecology`, `--pangaea-laboratory`, `--pangaea-staged` y
 
 La apariencia, fluidez, portapapeles, dado y lectura real de etiquetas/scroll quedan pendientes de revisión manual. Los estados parciales no son partidas guardables. P03-A permanece sin aprobación; P03-A.7.3, P03-A.7.4 y P03-B no se inician con este rediseño.
 
-P09.1 integra los componentes climáticos y el catálogo existentes sin calibrarlos ni modificar geología. La distribución de biomas queda pendiente de calibración y aprobación visual. No genera flora, fauna ni minerales. Véase [auditoría y arquitectura de integración](../GEvolve.Engine/PANGAEA_ECOLOGY_INTEGRATION.md).
+P09.1 integra los componentes climáticos y el catálogo existentes sin calibrarlos ni modificar geología. La distribución de biomas queda pendiente de calibración y aprobación visual. No genera flora, fauna ni minerales. Véase [auditoría y arquitectura de integración](../GEvolve.Engine/World/worldgenerationold/Docs/PANGAEA_ECOLOGY_INTEGRATION.md).

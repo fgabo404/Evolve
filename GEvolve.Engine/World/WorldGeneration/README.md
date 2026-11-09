@@ -10,3 +10,5 @@ Esta es el área de construcción del generador de mundos. Inicialmente **no con
 Organización futura, solo cuando exista código: `Core`, `Tectonics`, `Crust/Strategies`, `Relief`, `Surface`, `Climate`, `Hydrology`, `Biomes`, `Ecology`, `Validation`, `Diagnostics`.
 
 **Reglas:** no importar algoritmos antiguos sin revisión; no recrear estados equivalentes innecesarios; cada etapa declara dependencias y produce datos verificables; el generador nuevo no llama a `worldgenerationold`.
+
+**R00–R01:** [verificación Git y estática](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md). La igualdad de blobs y la inclusión de fuentes se revisan sin ejecutar .NET; compilación, regresiones y evaluación visual siguen pendientes del usuario, además de revisión/aprobación. Los resultados antiguos del laboratorio no certifican el motor nuevo.

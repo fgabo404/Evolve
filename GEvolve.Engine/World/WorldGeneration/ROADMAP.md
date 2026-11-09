@@ -3,7 +3,7 @@
 > **Rama de trabajo:** `worldgeneration`  
 > **Documento rector:** este archivo es la única hoja de ruta activa del generador.  
 > **Fecha de reorganización:** 2026-11-08  
-> **Estado:** aislamiento de código completado; verificación local y auditoría pendientes.
+> **Estado:** aislamiento verificado estáticamente; compilación/pruebas locales, revisión del auditor y aprobación pendientes. R00–R01 no aprobados.
 
 ## Objetivo
 
@@ -24,18 +24,20 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 ## Roadmap técnico
 
 ### R00 — Consolidación de ramas e inventario
-- [x] Identificar ramas `master`, `develop`, `worldgenerator`, `worldgeneration_pangea`, `worldgeneration_v2` y respaldo histórico.
+- [x] Inventariar referencias locales/remotas actuales e identificar el scaffold histórico V2; límites de referencias desaparecidas documentados en el [informe Git](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md).
 - [x] Crear la rama `worldgeneration` desde la base funcional más reciente de Pangea.
 - [x] Incorporar al historial de `worldgeneration` el commit del antiguo scaffold, sin conservar sus nombres V2 en el árbol operativo.
 - [x] Sincronizar `develop` por avance rápido con `worldgeneration` (sin alterar `master`).
-- [ ] Retirar las ramas experimentales anteriores. El historial de las ramas antiguas es alcanzable desde `worldgeneration`; la eliminación de referencias remotas requiere una acción Git que no está expuesta por la integración actual.
+- [x] Verificar que los tips locales `worldgenerator` y `worldgeneration_pangea` son ancestros de `worldgeneration`; sus referencias remotas ya no existen. No eliminar sus referencias locales ni ninguna rama de respaldo.
+- [ ] Identificar con evidencia las puntas finales de `worldgeneration_v2` y ramas de respaldo desaparecidas; el scaffold y C1 conocidos son alcanzables, pero esto no demuestra que no hubiera commits posteriores desconocidos.
+- [ ] Revisión del auditor y aprobación del director de R00. `origin/definitions` contiene dos commits de trabajo separado y queda fuera de esta consolidación; no declarar todo el repositorio integrado.
 
 ### R01 — Aislamiento del generador antiguo
 - [x] Trasladar 34 fuentes C# de `GEvolve.Engine/World/` a `World/worldgenerationold/` conservando contenido y namespaces.
 - [x] Preservar la geometría compartida en `GEvolve.Engine/Grid/`.
 - [x] Archivar documentación técnica antigua y eliminar los roadmaps anteriores de la rama de trabajo.
 - [x] Crear `WorldGeneration/` con documentación básica y esta hoja de ruta, sin implementar algoritmos.
-- [ ] Auditoría estática de referencias, namespaces y archivos del proyecto.
+- [x] Verificación estática: 34 pares de blobs Git idénticos, namespaces conservados, fuentes originales retiradas de sus rutas previas, inclusión SDK sin exclusiones nuevas y enlaces corregidos; [evidencia](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md).
 - [ ] Compilación y pruebas locales por el usuario: demostrar que no cambió el comportamiento.
 - [ ] Revisión del auditor y aprobación del director.
 
@@ -103,5 +105,7 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 | 2026-11-08 | Una sola hoja de ruta sin sufijos de versión | Este archivo |
 | 2026-11-08 | Sincronizar `develop` con `worldgeneration` | Avance rápido aplicado; `master` permanece inalterada |
 | 2026-11-08 | Construir etapas nuevas solo cuando se necesiten | Aprobado como criterio arquitectónico |
+| 2026-11-09 UTC | Verificación Git R00 sobre 772d4e34b596fe7db524b047aced16fd55ba76d2 | develop/worldgeneration sincronizadas al inicio, master preservada; trabajo separado en definitions y puntas históricas ausentes documentados en el [informe](../../../GEvolve.Tests/ValidationReports/R00-R01_GIT_AUDIT.md). R00 no aprobado |
+| 2026-11-09 UTC | Revisión estática R01 y corrección de referencias | 34/34 blobs idénticos, siete enlaces reparados y guardia de validación alineada; compilación/pruebas locales y aprobación pendientes |
 
 **Para actualizarlo:** modificar las casillas del hito afectado, añadir commit y evidencia real en el registro y anotar cambios de contrato. Nunca duplicar el roadmap en otro directorio.

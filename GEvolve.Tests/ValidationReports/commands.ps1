@@ -17,7 +17,7 @@ if ([IO.Path]::GetFullPath((Get-Location).Path).TrimEnd('\', '/') -ne $repoRoot.
     throw 'Run commands.ps1 from the repository root.'
 }
 $branch = (& git branch --show-current | Out-String).Trim()
-if ($branch -ne 'worldgeneration_pangea') { throw 'Expected branch worldgeneration_pangea.' }
+if ($branch -ne 'worldgeneration') { throw 'Expected branch worldgeneration.' }
 $validatedSha = (& git rev-parse HEAD | Out-String).Trim()
 $validatedSubject = (& git log -1 --format=%s | Out-String).Trim()
 & git diff --quiet HEAD -- GEvolve.Definitions GEvolve.State GEvolve.Engine GEvolve.Game GEvolve.Tests ':!GEvolve.Tests/ValidationReports'

@@ -1,5 +1,8 @@
 # P09.1 — Auditoría e integración inicial de ecología de Pangea
 
+**Contexto R01:** documento histórico; sus rutas y decisiones técnicas describen el generador anterior. El [único roadmap activo](../../WorldGeneration/ROADMAP.md) rige la transición en worldgeneration.
+
+
 ## Auditoría anterior a la integración
 
 Antes de P09.1, el orquestador terminaba Pangea en FINAL y dejaba pendientes las capas ambientales. La sesión temporal conservaba siete operaciones geológicas y exportaba snapshots aislados. Los componentes ambientales ya existían y no requieren duplicación:
@@ -31,6 +34,6 @@ Desde la raíz: `powershell -NoProfile -ExecutionPolicy Bypass -File .\GEvolve.T
 
 P09.1 es integración inicial, pendiente de calibración y aprobación visual. No aprueba la distribución ni P03-A, ni inicia flora/fauna/minerales.
 
-Evidencia P09.1: [informe técnico y distribución por mundo](../GEvolve.Tests/ValidationReports/P09-1_20261108_032515779Z_96457619/REPORT.md), [comandos, SHA y resultados](../GEvolve.Tests/ValidationReports/P09-1_20261108_032515779Z_96457619/SUMMARY.md). Código de integración: `fa3bf8b0a591ae8e4ed1fd201135d4cf6c9ebc5a`. El informe conserva los prechecks y mide el sesgo seco y los fallbacks climáticos sin modificar el clasificador. Pendiente de calibración y aprobación visual.
+Evidencia P09.1: [informe técnico y distribución por mundo](../../../../GEvolve.Tests/ValidationReports/P09-1_20261108_032515779Z_96457619/REPORT.md), [comandos, SHA y resultados](../../../../GEvolve.Tests/ValidationReports/P09-1_20261108_032515779Z_96457619/SUMMARY.md). Código de integración: `fa3bf8b0a591ae8e4ed1fd201135d4cf6c9ebc5a`. El informe conserva los prechecks y mide el sesgo seco y los fallbacks climáticos sin modificar el clasificador. Pendiente de calibración y aprobación visual.
 
 Validación del commit de integración: build (0 errores/advertencias), ecología (16 mundos), laboratorio (cuatro tamaños) y equivalencia geológica (28 Pangea + 12 controles) PASS. Suite general: 17 PASS / 2 FAIL históricos (TectonicMotion 4 y ContinentalGeology 12 discrepancias de elevación), con los mismos hashes del informe anterior; baselines intactos. Aridez terrestre 89.49–96.01%, cero celdas sin clasificación y cero océanos incorrectos en la muestra. No se recalibra. Resultados completos en el informe P09.1 enlazado.
