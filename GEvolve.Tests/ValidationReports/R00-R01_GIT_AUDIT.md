@@ -109,7 +109,7 @@ Archivos modificados en esta corrección:
 
 ## D. Publicación y comprobaciones finales
 
-Commit previsto: fix(worldgen): resolve R00-R01 audit findings and align repository references. El SHA completo y resultado efectivo de publicación se entregan tras crearlo.
+Commit de corrección publicado: c9c06d2b2d1cc27428440d19971f45c245e7bd6a, fix(worldgen): resolve R00-R01 audit findings and align repository references.
 
 Se comprobará de nuevo el remoto antes de publicar. Solo se permite avance rápido de develop hacia el commit de corrección, sin descartar commits ajenos, y se verificará igualdad de origin/develop y origin/worldgeneration. Rama de trabajo final prevista: worldgeneration; master debe seguir en 710f9fc56ecdfd18b96210967acf0fdf9f9ba284. Si las referencias cambian o divergen, se detiene esa sincronización y se informa; nunca se fuerza. El swap se conserva sin stage y se vuelve a comprobar su hash.
 
@@ -135,3 +135,11 @@ No se ejecutó ninguno en esta entrega. Las suites históricas registraban dos f
 
 El usuario revisará interactivamente apertura, semilla, tamaños, controles, vistas, inspector y comparador del laboratorio dentro de Evolve y decidirá la aprobación visual. La revisión final del auditor y aprobación del director de R00/R01 siguen pendientes. La conservación de puntas históricas desconocidas y el trabajo aparte de definitions son límites explícitos del inventario.
 Comprobación previa al commit: 37 enlaces relativos de los documentos principales resuelven a rutas existentes; cero enlaces rotos. El script difiere de 772d4e3 únicamente en la guardia de rama y el parser PowerShell informa cero errores. git diff --check sin errores. SHA256 del swap vuelve a coincidir con el registrado al inicio. Estos son resultados estáticos, no ejecución de validaciones .NET.
+
+## Resultado Git comprobado después de la corrección
+
+El commit c9c06d2b2d1cc27428440d19971f45c245e7bd6a se publicó en origin/worldgeneration. develop local avanzó sin cambiar de worktree mediante git fetch . refs/heads/worldgeneration:refs/heads/develop (sin force) y se publicó normalmente en origin/develop. Las cuatro referencias coincidieron con c9c06d2; master local/remoto continuó en 710f9fc56ecdfd18b96210967acf0fdf9f9ba284. Rama inicial y final: worldgeneration. Solo quedó el swap autorizado sin seguimiento, con su SHA256 intacto.
+
+El fetch previo a publicar observó un avance externo de origin/definitions desde bd2cda64f943281288aeb06d74738acc882bb278 a 7e888470a163e380768ac302e1cb752a5f89e670. Por tanto, el inventario de dos commits de la sección A es exclusivamente la foto del primer fetch, no una afirmación sobre el número final de commits de esa rama activa. No se integró ni modificó ese trabajo. El roadmap evita fijar un conteo obsoleto.
+
+Esta precisión y el resultado de sincronización se registran en un commit documental posterior; su SHA final se entrega al usuario y ambas ramas de desarrollo se vuelven a sincronizar por avance rápido. No cambia código ni amplía verificaciones a ejecución de .NET. R00–R01 siguen sin aprobación.

@@ -30,7 +30,7 @@ Desarrollar el generador oficial de mundos de Evolve por etapas, conservando el 
 - [x] Sincronizar `develop` por avance rápido con `worldgeneration` (sin alterar `master`).
 - [x] Verificar que los tips locales `worldgenerator` y `worldgeneration_pangea` son ancestros de `worldgeneration`; sus referencias remotas ya no existen. No eliminar sus referencias locales ni ninguna rama de respaldo.
 - [ ] Identificar con evidencia las puntas finales de `worldgeneration_v2` y ramas de respaldo desaparecidas; el scaffold y C1 conocidos son alcanzables, pero esto no demuestra que no hubiera commits posteriores desconocidos.
-- [ ] Revisión del auditor y aprobación del director de R00. `origin/definitions` contiene dos commits de trabajo separado y queda fuera de esta consolidación; no declarar todo el repositorio integrado.
+- [ ] Revisión del auditor y aprobación del director de R00. `origin/definitions` contiene trabajo separado y queda fuera de esta consolidación; no declarar todo el repositorio integrado.
 
 ### R01 — Aislamiento del generador antiguo
 - [x] Trasladar 34 fuentes C# de `GEvolve.Engine/World/` a `World/worldgenerationold/` conservando contenido y namespaces.
