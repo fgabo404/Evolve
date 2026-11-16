@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- Única versión pública de Evolve; .NET deriva las versiones del ensamblado. -->
-    <Version>0.0.1</Version>
-  </PropertyGroup>
-</Project>
