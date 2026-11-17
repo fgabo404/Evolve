@@ -18,6 +18,12 @@
     <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.9.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="assets/fonts/MonocraftAtlas.bin" LogicalName="Evolve.Game.MonocraftAtlas" />
+    <None Update="assets/fonts/Monocraft.ttf;assets/fonts/OFL-1.1.txt;assets/fonts/README.md"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <Target Name="ValidateGameVersion" BeforeTargets="PrepareForBuild">
     <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(GameDisplayVersion)', '^v[0-9]+\.[0-9]+\.[0-9]{2,}$'))"
            Text="The root VERSION file must use vMajor.Minor.Patch with at least two patch digits." />

@@ -5,9 +5,12 @@ using OpenTK.Windowing.Desktop;
 
 namespace Evolve.Game;
 
-// Owns the UI-01 window and solid background without introducing simulation logic.
+// Owns the native window and menu graphics without introducing simulation logic.
 internal sealed class EvolveWindow : GameWindow
 {
+    private readonly MainMenuPresentation menu = new();
+    private PixelMenuRenderer? renderer;
+
     // Configure the native window and graphics context required by the minimal UI.
     public EvolveWindow()
         : base(
@@ -16,6 +19,7 @@ internal sealed class EvolveWindow : GameWindow
             {
                 Title = "Evolve",
                 ClientSize = new Vector2i(1280, 720),
+                MinimumClientSize = new Vector2i(400, 300),
                 API = ContextAPI.OpenGL,
                 APIVersion = new Version(3, 3),
                 Profile = ContextProfile.Core,
@@ -30,15 +34,33 @@ internal sealed class EvolveWindow : GameWindow
         base.OnLoad();
 
         VSync = VSyncMode.On;
-        GL.ClearColor(0.035f, 0.075f, 0.16f, 1.0f);
+        GL.ClearColor(MainMenuStyle.Background);
+        renderer = new PixelMenuRenderer();
     }
 
-    // Clear each back buffer before presenting it so the background stays solid.
+    // Skip minimized framebuffers and redraw the menu at the current physical size.
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
 
+        if (FramebufferSize.X <= 0 || FramebufferSize.Y <= 0)
+        {
+            return;
+        }
+
         GL.Clear(ClearBufferMask.ColorBufferBit);
+        if (renderer is not null)
+        {
+            menu.Draw(renderer, FramebufferSize.X, FramebufferSize.Y);
+        }
         SwapBuffers();
+    }
+
+    // Delete menu resources while the graphics context is still available.
+    protected override void OnUnload()
+    {
+        renderer?.Dispose();
+        renderer = null;
+        base.OnUnload();
     }
 }
