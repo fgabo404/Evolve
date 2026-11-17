@@ -6,45 +6,34 @@ namespace Evolve.Game;
 // Batches menu rectangles and local bitmap glyphs without a general UI framework.
 internal sealed class PixelMenuRenderer : IDisposable
 {
-    private const int AtlasWidth = 128;
-    private const int AtlasHeight = 96;
-    private const int GlyphWidth = 8;
-    private const int GlyphHeight = 16;
-    private const int VertexSize = 8;
+    private const int VertexSize = 6;
     private readonly List<float> vertices = new();
     private int program;
     private int vertexArray;
     private int vertexBuffer;
-    private int atlasTexture;
     private int viewportUniform;
 
     private const string VertexShaderSource = """
         #version 330 core
         layout(location = 0) in vec2 position;
-        layout(location = 1) in vec2 texturePosition;
-        layout(location = 2) in vec4 vertexColor;
+        layout(location = 1) in vec4 vertexColor;
         uniform vec2 viewportSize;
-        out vec2 atlasPosition;
         out vec4 tint;
         void main()
         {
             vec2 normalized = position / viewportSize;
             gl_Position = vec4(normalized.x * 2.0 - 1.0, 1.0 - normalized.y * 2.0, 0.0, 1.0);
-            atlasPosition = texturePosition;
             tint = vertexColor;
         }
         """;
 
     private const string FragmentShaderSource = """
         #version 330 core
-        in vec2 atlasPosition;
         in vec4 tint;
-        uniform sampler2D fontAtlas;
         out vec4 outputColor;
         void main()
         {
-            float coverage = texture(fontAtlas, atlasPosition).r;
-            outputColor = vec4(tint.rgb, tint.a * coverage);
+            outputColor = tint;
         }
         """;
 
@@ -60,28 +49,9 @@ internal sealed class PixelMenuRenderer : IDisposable
             GL.BindVertexArray(vertexArray);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, VertexSize * sizeof(float), 0);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, VertexSize * sizeof(float), 2 * sizeof(float));
-            GL.VertexAttribPointer(2, 4, VertexAttribPointerType.Float, false, VertexSize * sizeof(float), 4 * sizeof(float));
+            GL.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, VertexSize * sizeof(float), 2 * sizeof(float));
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
-            GL.EnableVertexAttribArray(2);
-
-            using var stream = typeof(PixelMenuRenderer).Assembly
-                .GetManifestResourceStream("Evolve.Game.MonocraftAtlas")
-                ?? throw new InvalidOperationException("The embedded Monocraft atlas is missing.");
-            var pixels = new byte[AtlasWidth * AtlasHeight];
-            stream.ReadExactly(pixels);
-            atlasTexture = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, atlasTexture);
-            GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R8, AtlasWidth, AtlasHeight,
-                0, PixelFormat.Red, PixelType.UnsignedByte, pixels);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-            GL.UseProgram(program);
-            GL.Uniform1(GL.GetUniformLocation(program, "fontAtlas"), 0);
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.Disable(EnableCap.DepthTest);
@@ -104,59 +74,62 @@ internal sealed class PixelMenuRenderer : IDisposable
         GL.Uniform2(viewportUniform, (float)width, (float)height);
     }
 
-    // Sample the atlas's dedicated white texel to share one batch with the text.
-    public void Rectangle(int x, int y, int width, int height, Color4 color)
+    // Glyph pixels and menu surfaces share the existing colored triangle batch.
+    public void Rectangle(float x, float y, float width, float height, Color4 color)
     {
-        float u = (AtlasWidth - 0.5f) / AtlasWidth;
-        float v = (AtlasHeight - 0.5f) / AtlasHeight;
-        Quad(x, y, width, height, u, v, u, v, color);
+        Vertex(x, y, color);
+        Vertex(x + width, y, color);
+        Vertex(x + width, y + height, color);
+        Vertex(x, y, color);
+        Vertex(x + width, y + height, color);
+        Vertex(x, y + height, color);
     }
 
-    // Each cell advances by eight pixels; whole-number scaling avoids blurred strokes.
-    public void CenteredText(string text, int center, int y, int scale, Color4 color)
+    // Preserve UiRenderer.Text's five lit columns, six-pixel advance and centering.
+    public void CenteredText(string text, float center, float y, float pixel, Color4 color)
     {
-        int x = center - text.Length * GlyphWidth * scale / 2;
-        foreach (char character in text)
+        float left = center - (text.Length * LegacyBitmapFont.Advance - 1) * pixel / 2;
+        for (int index = 0; index < text.Length; index++)
         {
-            int index = (character is >= ' ' and <= '~' ? character : '?') - ' ';
-            float u = index % 16 * GlyphWidth / (float)AtlasWidth;
-            float v = index / 16 * GlyphHeight / (float)AtlasHeight;
-            Quad(x, y, GlyphWidth * scale, GlyphHeight * scale, u, v,
-                u + GlyphWidth / (float)AtlasWidth, v + GlyphHeight / (float)AtlasHeight, color);
-            x += GlyphWidth * scale;
+            ReadOnlySpan<byte> rows = LegacyBitmapFont.Rows(text[index]);
+            for (int row = 0; row < rows.Length; row++)
+            {
+                for (int column = 0; column < LegacyBitmapFont.Width; column++)
+                {
+                    if ((rows[row] & (1 << (LegacyBitmapFont.Width - 1 - column))) != 0)
+                    {
+                        Rectangle(left + (index * LegacyBitmapFont.Advance + column) * pixel,
+                            y + row * pixel, pixel, pixel, color);
+                    }
+                }
+            }
         }
     }
 
-    // Upload the composed menu once and preserve submission order for bevels and shadows.
+    // Use the legacy thin border without highlights or beveled inner surfaces.
+    public void Border(float x, float y, float width, float height, float thickness, Color4 color)
+    {
+        Rectangle(x, y, width, thickness, color);
+        Rectangle(x, y + height - thickness, width, thickness, color);
+        Rectangle(x, y, thickness, height, color);
+        Rectangle(x + width - thickness, y, thickness, height, color);
+    }
+
+    // Upload the composed menu once and preserve submission order for borders and shadows.
     public void End()
     {
         float[] data = vertices.ToArray();
-        GL.ActiveTexture(TextureUnit.Texture0);
-        GL.BindTexture(TextureTarget.Texture2D, atlasTexture);
         GL.BindVertexArray(vertexArray);
         GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
         GL.BufferData(BufferTarget.ArrayBuffer, data.Length * sizeof(float), data, BufferUsageHint.StreamDraw);
         GL.DrawArrays(PrimitiveType.Triangles, 0, data.Length / VertexSize);
     }
 
-    // Expand one top-left rectangle into two triangles using the same winding.
-    private void Quad(int x, int y, int width, int height, float u0, float v0, float u1, float v1, Color4 color)
-    {
-        Vertex(x, y, u0, v0, color);
-        Vertex(x + width, y, u1, v0, color);
-        Vertex(x + width, y + height, u1, v1, color);
-        Vertex(x, y, u0, v0, color);
-        Vertex(x + width, y + height, u1, v1, color);
-        Vertex(x, y + height, u0, v1, color);
-    }
-
-    // Match the position, texture and color attribute layout declared by the shader.
-    private void Vertex(float x, float y, float u, float v, Color4 color)
+    // Match the position and color attribute layout declared by the shader.
+    private void Vertex(float x, float y, Color4 color)
     {
         vertices.Add(x);
         vertices.Add(y);
-        vertices.Add(u);
-        vertices.Add(v);
         vertices.Add(color.R);
         vertices.Add(color.G);
         vertices.Add(color.B);
@@ -217,10 +190,9 @@ internal sealed class PixelMenuRenderer : IDisposable
     // Release every GPU handle before OpenTK destroys the owning context.
     public void Dispose()
     {
-        if (atlasTexture != 0) GL.DeleteTexture(atlasTexture);
         if (vertexBuffer != 0) GL.DeleteBuffer(vertexBuffer);
         if (vertexArray != 0) GL.DeleteVertexArray(vertexArray);
         if (program != 0) GL.DeleteProgram(program);
-        atlasTexture = vertexBuffer = vertexArray = program = 0;
+        vertexBuffer = vertexArray = program = 0;
     }
 }

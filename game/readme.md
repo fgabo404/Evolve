@@ -48,22 +48,37 @@ buttons: `INICIAR`, `LAB`, `OPCIONES`, `SALIR`. No actions, hover states, keyboa
 navigation or additional screens are implemented. Close using X or Alt+F4.
 
 - `MainMenuPresentation.cs` composes the visual elements.
-- `MainMenuStyle.cs` defines the blue palette.
-- `MainMenuLayout.cs` centers and scales the menu using whole framebuffer pixels.
+- `MainMenuStyle.cs` preserves the legacy muted blue-gray palette.
+- `MainMenuLayout.cs` preserves the legacy button proportions and adapts short windows.
 - `PixelMenuRenderer.cs` batches colored rectangles and bitmap text with OpenGL
   3.3 and releases its GPU resources when the window unloads.
-- `assets/fonts/` contains local Monocraft assets, upstream attribution,
-  OFL-1.1 license and the reproducible atlas export script.
+- `LegacyBitmapFont.cs` contains the original custom 5x7 glyphs with six-pixel
+  character advance, including Spanish accented capitals and uppercase
+  normalization. Unsupported characters keep their advance but draw no pixels,
+  matching the original renderer.
 
 The initial client size remains 1280 x 720. A 400 x 300 minimum keeps the layout
-readable. Integer scale changes are intentional; text uses nearest filtering
-without antialiasing. The embedded atlas covers printable ASCII, including all
-current labels and version characters, and falls back to `?` for other glyphs.
-No font installation or asset download is required at runtime.
+readable. Glyphs are solid rectangles in the same batch as the buttons, without
+textures, font rasterization or antialiasing. The original fractional pixel sizes
+are retained at normal window sizes; small windows scale the composition to fit.
+No external font assets, font installation or runtime download are required.
+
+The visual reference is `worldgeneration` commit
+`ef35e9f8865b02081c8f532a298a314e01091a8d`:
+
+- `GEvolve.Game/Graphics/UiRenderer.cs`: glyph shapes, spacing and text centering.
+- `GEvolve.Game/Program.cs`: background band, button fill, border and shadow.
+- `GEvolve.Game/Screens/GridLaboratoryLayout.cs`: main-menu button width,
+  height, spacing and placement.
+
+At 1280 x 720 the original formulas yield 360-pixel-wide buttons, approximately
+51-pixel height and 14-pixel gaps. Borders use the original 1.5-pixel thickness;
+shadows retain the 3 x 4 offset. The title is only `EVOLVE`; the assembly version
+occupies the former subtitle position. No legacy screens or navigation are imported.
 
 Use the PowerShell restore, build and run commands above. The Auditor should
 check the title, exact version against root `VERSION`, button order, white text,
-beveled blue borders, centering and absence of overlap at 400 x 300, 800 x 600,
+thin blue-gray borders, subtle shadows, centering and absence of overlap at 400 x 300, 800 x 600,
 1280 x 720 and maximized size, including high-DPI displays. Verify minimize /
 restore and native close. Static buttons intentionally do not respond to input.
 
