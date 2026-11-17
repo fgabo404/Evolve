@@ -85,3 +85,18 @@ After completing an explicitly authorized implementation task:
 Never use force push or overwrite remote changes. If pushing fails, report the
 issue instead of forcing synchronization. Do not claim publication succeeded
 without remote verification.
+
+## Game versioning
+
+- The root `VERSION` file is the single source of truth for the displayed game
+  version. Use `vMajor.Minor.Patch`, with at least two patch digits.
+- Initialize this system at `v0.0.01`. Every subsequent authorized commit that
+  changes the project must increment the patch value: `v0.0.02`, `v0.0.03`, and
+  so on. Update `VERSION` in the same commit, including documentation changes.
+- Derive .NET version properties from `VERSION`; never duplicate hardcoded
+  game version strings in source code or project configuration.
+- Preserve the exact display string, including `v` and leading zeros, in
+  `AssemblyInformationalVersion`. Read that metadata for the in-game version.
+- Numeric assembly and file versions may be normalized for .NET compatibility;
+  never use them as the display string or append a Git SHA to the display value.
+- Keep the displayed version synchronized with `VERSION` on every build.

@@ -17,10 +17,11 @@ ventana y el repintado del fondo. El cierre nativo (X o Alt+F4 en Windows)
 finaliza el bucle; OpenTK libera la ventana y su contexto mediante `Dispose`.
 No se crean recursos gráficos adicionales ni referencias a otros módulos.
 
-La versión se define únicamente en la propiedad `Version` de
-`Evolve.Game.csproj`; el SDK genera los metadatos del ensamblado a partir de
-ella. El título, la versión visible, los botones y Monocraft corresponden a
-UI-02 y todavía no se incluyen.
+The root `VERSION` file supplies all game version metadata through
+`Evolve.Game.csproj`. `GameVersion.Display` reads `AssemblyInformationalVersion`
+to preserve the exact prefix and leading zeros; numeric assembly and file
+versions are normalized independently. Rebuild after changing `VERSION`.
+Visible version text and menu presentation belong to UI-02.
 
 ### Validación del responsable / Auditor
 
