@@ -10,9 +10,14 @@ repository, regardless of the module or roadmap being worked on.
 
 ## Language
 
+- Use Spanish for all communication with the project owner, including
+  explanations, progress reports, implementation summaries, audit responses
+  and commit descriptions presented in chat.
 - Use English for all internal project content: source code, identifiers,
   class, method, variable and file names, code comments, technical
-  documentation, roadmaps, internal messages and logs.
+  documentation, roadmaps, internal messages, logs and commit messages.
+- Keep actual Git commit messages in English; describe their purpose in Spanish
+  when reporting them to the project owner.
 - Player-facing text may use other languages according to the game's design.
 - Migrate existing non-English documentation only when separately authorized;
   do not translate older documents as an incidental part of another task.
