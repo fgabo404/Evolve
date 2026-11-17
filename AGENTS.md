@@ -68,3 +68,20 @@ repository, regardless of the module or roadmap being worked on.
 - Respect task-specific restrictions on builds, tests and execution.
 - Never claim that tests passed without execution evidence. State what was
   actually checked and which validation remains pending.
+
+## Git publication
+
+After completing an explicitly authorized implementation task:
+
+1. Review every modified file and confirm that the changes stay within scope.
+2. Create a commit with a descriptive English message.
+3. Automatically execute `git push origin architecture`, including any pending
+   authorized local commits.
+4. Verify that publication succeeded by checking that the complete local commit
+   SHA matches the `architecture` branch SHA on GitHub.
+5. Report the commit message and complete SHA to the project owner in Spanish,
+   preserving the actual English commit message when quoting it.
+
+Never use force push or overwrite remote changes. If pushing fails, report the
+issue instead of forcing synchronization. Do not claim publication succeeded
+without remote verification.
