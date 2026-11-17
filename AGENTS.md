@@ -13,7 +13,7 @@ repository, regardless of the module or roadmap being worked on.
 - Use Spanish for all communication with the project owner, including
   explanations, progress reports, implementation summaries, audit responses
   and commit descriptions presented in chat.
-- Use English for all internal project content: source code, identifiers,
+- Use English for all internal project content: prompts, source code, identifiers,
   class, method, variable and file names, code comments, technical
   documentation, roadmaps, internal messages, logs and commit messages.
 - Keep actual Git commit messages in English; describe their purpose in Spanish
