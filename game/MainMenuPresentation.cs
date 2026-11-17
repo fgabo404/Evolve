@@ -12,8 +12,13 @@ internal sealed class MainMenuPresentation
         float scale = layout.Scale;
 
         renderer.Begin(width, height);
-        renderer.Rectangle(0, height * .72f, width, height * .28f, MainMenuStyle.BackgroundBand);
-        renderer.Rectangle(0, height * .72f, width, 2 * scale, MainMenuStyle.BackgroundDivider);
+        // Anchor the empty footer to the bottom and keep its divider below button shadows.
+        float buttonsBottom = layout.ButtonTop + ButtonLabels.Length * layout.ButtonHeight
+            + (ButtonLabels.Length - 1) * layout.ButtonGap + 4 * scale;
+        float footerTop = Math.Min(height, Math.Max(height * .88f, buttonsBottom));
+        float footerHeight = height - footerTop;
+        renderer.Rectangle(0, footerTop, width, footerHeight, MainMenuStyle.BackgroundBand);
+        renderer.Rectangle(0, footerTop, width, Math.Min(2 * scale, footerHeight), MainMenuStyle.BackgroundDivider);
 
         renderer.CenteredText("EVOLVE", layout.Center, layout.TitleTop, layout.TitlePixel, MainMenuStyle.Text);
         renderer.CenteredText(GameVersion.Display, layout.Center, layout.VersionTop, layout.VersionPixel, MainMenuStyle.VersionText);
