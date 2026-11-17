@@ -11,7 +11,7 @@ redimensionable titulada `Evolve`, de 1280 × 720 píxeles iniciales, con fondo
 azul oscuro sólido. Requiere el SDK de .NET 10 y un controlador gráfico con
 soporte para OpenGL 3.3.
 
-`Program.cs` inicia la aplicación y garantiza la disposición de la ventana al
+`EvolveEntryPoint.cs` inicia la aplicación y garantiza la disposición de la ventana al
 terminar el bucle. `EvolveWindow.cs` contiene únicamente la configuración de la
 ventana y el repintado del fondo. El cierre nativo (X o Alt+F4 en Windows)
 finaliza el bucle; OpenTK libera la ventana y su contexto mediante `Dispose`.

@@ -5,8 +5,10 @@ using OpenTK.Windowing.Desktop;
 
 namespace Evolve.Game;
 
+// Owns the UI-01 window and solid background without introducing simulation logic.
 internal sealed class EvolveWindow : GameWindow
 {
+    // Configure the native window and graphics context required by the minimal UI.
     public EvolveWindow()
         : base(
             new GameWindowSettings { UpdateFrequency = 60 },
@@ -22,6 +24,7 @@ internal sealed class EvolveWindow : GameWindow
     {
     }
 
+    // Initialize graphics state after OpenTK has made the context available.
     protected override void OnLoad()
     {
         base.OnLoad();
@@ -30,6 +33,7 @@ internal sealed class EvolveWindow : GameWindow
         GL.ClearColor(0.035f, 0.075f, 0.16f, 1.0f);
     }
 
+    // Clear each back buffer before presenting it so the background stays solid.
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
