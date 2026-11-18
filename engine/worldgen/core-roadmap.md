@@ -4,7 +4,7 @@
 **Integration branch:** `world`  
 **Working branch:** `world-core`
 
-**Status:** CORE-01 and CORE-02 accepted; CORE-03 implemented pending review; CORE-04..05 not authorized.
+**Status:** CORE-01, CORE-02 and CORE-03 accepted; CORE-04 authorized; CORE-05 not authorized.
 
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
@@ -21,8 +21,8 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 | --- | --- | --- | --- |
 | **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Accepted by project owner — 2026-11-18 |
 | **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Accepted by project owner — 2026-11-18 |
-| **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Implemented — pending review and owner acceptance |
-| **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Not started |
+| **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Accepted by project owner — 2026-11-18 |
+| **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Authorized — pending implementation |
 | **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Not started |
 
 **Execution rule:** work on only the individually authorized increment. Do not advance from CORE-01 to CORE-02 merely because its code is complete; wait for explicit owner approval.
@@ -78,9 +78,9 @@ These decisions must be resolved **before or within a separately authorized CORE
 
 **Roadmap status:** approved. CORE-01 was accepted by the project owner on
 2026-11-18 following developer test evidence and an architectural source review.
-CORE-02 was accepted by the project owner on 2026-11-18, following the
-reported headless test results and architectural source review. CORE-03 is the
-only authorized next increment; CORE-04..05 remain pending separate approval.
+CORE-02 and CORE-03 were accepted by the project owner on 2026-11-18 following
+reported headless test results and architectural source reviews. CORE-04 is the
+only authorized next increment; CORE-05 remains pending separate approval.
 No merge into `world` or geographic layer development is authorized.
 
 ## CORE-01 delivery record
@@ -168,8 +168,9 @@ UI change or `WorldState` integration is included.
 
 The exact signatures, operation-error policy and scope limits are recorded in
 [CORE-03 contracts](core-contracts.md#14-core-03-sequential-execution-contract).
-Only CORE-03 is marked implemented, pending review and owner acceptance. This
-record does not close the roadmap, authorize CORE-04 or merge into `world`.
+CORE-03 was subsequently accepted by the project owner on 2026-11-18 after
+review of its source and reported developer test evidence. CORE-04 is now
+authorized as the next increment; no merge into `world` is authorized.
 
 Development evidence for `v0.0.19`: 15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03
 and 16/16 menu checks passed. Both Release builds reported zero warnings/errors,
@@ -177,3 +178,24 @@ and whitespace verification passed. The compiled product version and generated
 informational version matched root `VERSION`. Environment limitations and exact
 execution contracts are recorded in section 14 of the contracts document.
 No GUI validation or independent audit acceptance is claimed.
+
+## CORE-04 authorization record
+
+The project owner accepted CORE-03 and authorized CORE-04 on 2026-11-18.
+The implementation scope is deterministic per-stage PRNG streams derived from
+main seed and stable stage identity; documented stable seed mixing and algorithm
+version behavior; `RebuildFrom(stage)` discarding that stage and all downstream
+outputs; and real same-context cross-thread operation exclusivity, including
+through different orchestrator instances. Existing forward execution modes
+must retain their single shared runner, failure isolation and retry semantics.
+
+The CORE-04 implementation must restore execution eligibility after an explicit
+rebuild, preserving the valid completed prefix and ensuring no previously
+published downstream result can become visible or eligible. Concurrent
+operations on a shared context must not interleave, even when initiated through
+different orchestrators. Single-stage deterministic reruns must reproduce the
+same result under identical versions, settings and prerequisite data.
+
+Use test-only deterministic layer executors and headless tests. Do not implement
+real geographic layers, the Laboratory UI, WorldState integration or
+`FinalizeWorld` (CORE-05). No integration into `world` is authorized yet.

@@ -538,7 +538,7 @@ documented alongside the CORE-03 implementation.
 
 ## 14. CORE-03 sequential execution contract
 
-**Status:** implemented, pending review and owner acceptance. CORE-01/02 remain
+**Status:** accepted by project owner on 2026-11-18. CORE-01/02 also remain
 accepted. This section supersedes their execution deferrals only; registration,
 configuration, immutable storage and public context inspection remain intact.
 
@@ -653,3 +653,43 @@ the authorized invocation with that access succeeded. Direct reflection from
 the installed PowerShell runtime could not resolve System.Runtime 10.0.0.0;
 version verification instead used the compiled file's ProductVersion and the
 generated assembly attribute. No GUI validation was performed or claimed.
+
+## 15. CORE-03 acceptance and CORE-04 authorization
+
+CORE-03 was accepted by the project owner on 2026-11-18 after the reported
+15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03 and 16/16 menu check results,
+Release builds and architectural source review. This acceptance does not imply
+that a second independent test run was performed.
+
+CORE-04 is authorized on `world-core` to implement the existing approved
+invariants of deterministic stage-level PRNG, reproducible execution across
+modes and rebuilds, downstream result invalidation and exclusive same-context
+operation access across threads and orchestrator instances.
+
+Implementation must define and document a stable, versioned PRNG and stage seed
+derivation not based on process-randomized hashes, process ambient RNG, clock or
+thread scheduling. The layer input contract may be minimally extended to
+provide an isolated deterministic stream; the stream for stage N must not be
+consumed by other stages. Identical seed, settings, version and validated inputs
+must produce equal output values through `RunAll`, sequential `RunNext`,
+`RunUntil` and rebuilding the same stage. Versioning must be recorded without
+confusing root game VERSION with the algorithm compatibility contract.
+
+`RebuildFrom(stage)` must atomically invalidate/discard all results from that
+stage through Biomes, preserve only valid predecessors, restore forward
+eligibility starting at that stage, and avoid exposing or using stale data.
+Define precise statuses for previously completed, failed and pending downstream
+slots. Reject rebuild while a context is being executed; ensure a rebuilt draft
+can resume via the existing shared forward runner. A new main seed or
+world-size change creates a new context rather than altering metadata in place.
+
+Context-level cross-thread exclusivity must be real, not just the current
+synchronous Running snapshot check. Competing operations from the same or
+another orchestrator should be rejected without corrupting an active stage.
+Inspecting progress and completed data must yield coherent observations under
+the chosen ownership model. No mutable inputs/results escape externally.
+
+CORE-05 (`FinalizeWorld` and final result/state boundary), real geographic
+algorithms, UI modifications and player saves remain unauthorized. Document
+exact new C# signatures, determinism test vectors and error semantics in the
+CORE-04 delivery. All earlier core and menu regressions must remain valid.
