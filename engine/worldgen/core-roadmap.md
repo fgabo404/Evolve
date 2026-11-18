@@ -4,7 +4,7 @@
 **Integration branch:** `world`  
 **Working branch:** `world-core`
 
-**Status:** CORE-01 accepted; CORE-02 implemented pending acceptance; CORE-03..05 not authorized.
+**Status:** CORE-01 and CORE-02 accepted; CORE-03 authorized; CORE-04..05 not authorized.
 
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
@@ -20,8 +20,8 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 | Increment | Scope | Evidence / exit gate | Status |
 | --- | --- | --- | --- |
 | **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Accepted by project owner — 2026-11-18 |
-| **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Implemented — pending review and owner acceptance |
-| **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Not started |
+| **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Accepted by project owner — 2026-11-18 |
+| **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Authorized — pending implementation |
 | **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Not started |
 | **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Not started |
 
@@ -78,9 +78,10 @@ These decisions must be resolved **before or within a separately authorized CORE
 
 **Roadmap status:** approved. CORE-01 was accepted by the project owner on
 2026-11-18 following developer test evidence and an architectural source review.
-CORE-02 is implemented and awaits review and acceptance; CORE-03..05 remain
-pending separate approval. No merge into `world` or geographic layer development
-is authorized.
+CORE-02 was accepted by the project owner on 2026-11-18, following the
+reported headless test results and architectural source review. CORE-03 is the
+only authorized next increment; CORE-04..05 remain pending separate approval.
+No merge into `world` or geographic layer development is authorized.
 
 ## CORE-01 delivery record
 
@@ -128,5 +129,21 @@ CORE-05 finalization are not implemented or authorized by this delivery.
 Development evidence: 15/15 CORE-01, 19/19 CORE-02 and 16/16 existing menu checks
 passed. Engine and game Release builds completed with zero warnings/errors;
 `git diff --check` passed; the compiled display version matched `v0.0.17`.
-No GUI, real layer or orchestrator execution was performed. CORE-02 remains
-subject to owner review and acceptance.
+No GUI, real layer or orchestrator execution was performed. This development
+evidence and architectural source review supported the owner's CORE-02 acceptance,
+without claiming an independently executed audit.
+
+## CORE-03 authorization record
+
+The owner authorized CORE-03 on 2026-11-18 after accepting CORE-02.
+The authorized scope is the single `WorldGenerationOrchestrator` execution path,
+`CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`, prerequisite enforcement,
+atomic validated publication, failure diagnostics and retry using test-only
+executors. No real geographic layer or Laboratory UI is authorized.
+
+The developer must extend the currently identity-only `IWorldGenerationLayer`
+with a narrow executable contract while preserving validated stage registration
+and CORE-01/02 behaviors. All consumers of a stage's inputs are read-only.
+CORE-04's PRNG, operational rebuild/downstream invalidation, and full concurrency
+strategy are deferred; CORE-05 finalization is deferred. Acceptance requires
+new headless tests and unchanged CORE-01/02/menu regression results.

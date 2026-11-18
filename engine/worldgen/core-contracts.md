@@ -507,3 +507,28 @@ game Release builds each reported zero warnings and errors. Whitespace checking
 passed, and the compiled game informational version matched `v0.0.17`.
 These are headless logic/build results, not GUI validation, geographic
 generation, orchestrator execution or independent audit acceptance.
+
+## 13. CORE-02 acceptance and CORE-03 authorization
+
+CORE-02 was accepted by the project owner on 2026-11-18 after reviewing the
+reported 15/15 CORE-01, 19/19 CORE-02 and 16/16 menu checks, Release builds,
+and the source-level architectural review. These are developer-executed checks
+and an architectural code review, not an independently executed audit.
+
+CORE-03 is authorized on `world-core` to implement the sequential engine
+orchestrator. The execution contract must have one shared stage runner for
+`RunNext`, `RunAll` and `RunUntil`; precondition checking against the same
+context; read-only earlier results; atomic publish on valid candidate results;
+failed/invalid candidate results recorded as `Failed` with no candidate exposed;
+and retry of the eligible failed stage. Test-only deterministic layer executors
+may be added or adapted under `tests/worldgen/`.
+
+`IWorldGenerationLayer` currently exposes identity only. CORE-03 may extend it
+with the minimum needed invocation contract without introducing a PRNG, a
+second generator, UI operations or a mutable reference escape hatch. The
+existing registration guarantees must remain intact.
+
+CORE-04 (seed streams, rebuild/invalidation and full operation exclusivity)
+and CORE-05 (final result and state integration) are **not authorized** by this
+approval. Exact invocation signatures and error-result representation must be
+documented alongside the CORE-03 implementation.
