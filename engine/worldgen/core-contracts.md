@@ -373,3 +373,18 @@ verified as `v0.0.15`. The world-generation check dependency manifest contained
 only its own project and the engine/definitions libraries, with no OpenTK.
 No GUI, context or geographic execution was performed; these checks are not
 independent audit or owner acceptance.
+
+## 11. CORE-01 acceptance and CORE-02 authorization
+
+The project owner accepted CORE-01 on 2026-11-18 after reviewing the reported
+15/15 core checks, 16/16 existing menu checks, clean Release builds, and a
+separate architectural source review. Those checks were performed by the
+developer and reproduced in the user's console output; no new independent
+auditor execution is claimed.
+
+CORE-02, `GenerationContext`, is authorized as the next increment on
+`world-core`. Implementation must preserve the CORE-01 public contracts,
+keep temporary state separate from `WorldState` and save files, provide
+read-only completed-layer inspection and protect against mutable aliasing.
+CORE-03 execution, CORE-04 determinism/rebuild, and CORE-05 finalization
+remain explicitly unauthorized.
