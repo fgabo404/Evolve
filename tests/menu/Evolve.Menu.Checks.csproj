@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../game/MainMenuActivationKey.cs" Link="Production/MainMenuActivationKey.cs" />
+    <Compile Include="../../game/MainMenuButton.cs" Link="Production/MainMenuButton.cs" />
+    <Compile Include="../../game/MainMenuInteraction.cs" Link="Production/MainMenuInteraction.cs" />
+    <Compile Include="../../game/MainMenuLayout.cs" Link="Production/MainMenuLayout.cs" />
+  </ItemGroup>
+</Project>

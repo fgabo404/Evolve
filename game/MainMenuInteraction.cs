@@ -6,6 +6,7 @@ internal sealed class MainMenuInteraction
     public const int ButtonCount = 4;
     private MainMenuButton? pointerPress;
     private MainMenuButton? keyboardPress;
+    private MainMenuActivationKey? activationKey;
 
     public MainMenuButton? HoveredButton { get; private set; }
     public MainMenuButton? SelectedButton { get; private set; }
@@ -20,6 +21,7 @@ internal sealed class MainMenuInteraction
         HoveredButton = button;
         SelectedButton = null;
         keyboardPress = null;
+        activationKey = null;
     }
 
     // Remember the button that owned the initial left press, including a press outside buttons.
@@ -47,17 +49,21 @@ internal sealed class MainMenuInteraction
         SelectedButton = (MainMenuButton)((index + direction + ButtonCount) % ButtonCount);
     }
 
-    // Keep the pressed appearance until the matching activation key is released.
-    public void PressSelection()
+    // Ignore OS repeats and overlapping activation keys until the original key is released.
+    public void PressSelection(MainMenuActivationKey key, bool isRepeat = false)
     {
+        if (isRepeat || activationKey is not null) return;
         CancelPendingPress();
+        activationKey = key;
         SelectedButton ??= HoveredButton ?? MainMenuButton.Start;
         keyboardPress = SelectedButton;
     }
 
     // Selection changes or cancellation invalidate the original keyboard press.
-    public MainMenuButton? ReleaseSelection()
+    public MainMenuButton? ReleaseSelection(MainMenuActivationKey key)
     {
+        if (activationKey != key) return null;
+        activationKey = null;
         MainMenuButton? pressed = keyboardPress;
         keyboardPress = null;
         return pressed is not null && pressed == SelectedButton ? pressed : null;
@@ -76,6 +82,7 @@ internal sealed class MainMenuInteraction
     {
         pointerPress = null;
         keyboardPress = null;
+        activationKey = null;
     }
 
     // Focus loss restores the approved idle appearance without discarding the last notice.

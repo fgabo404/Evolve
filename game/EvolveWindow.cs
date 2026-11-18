@@ -12,7 +12,6 @@ internal sealed class EvolveWindow : GameWindow
     private readonly MainMenuPresentation menu = new();
     private readonly MainMenuInteraction interaction = new();
     private PixelMenuRenderer? renderer;
-    private Keys? activationKey;
     private bool pointerInside;
 
     // Configure the native window and graphics context required by the minimal UI.
@@ -82,7 +81,6 @@ internal sealed class EvolveWindow : GameWindow
         base.OnMouseMove(args);
         pointerInside = true;
         if (!IsFocused) return;
-        activationKey = null;
         interaction.MovePointer(HitTestPointer());
     }
 
@@ -108,7 +106,6 @@ internal sealed class EvolveWindow : GameWindow
         base.OnMouseDown(args);
         if (!IsFocused || args.Button != MouseButton.Left) return;
         pointerInside = true;
-        activationKey = null;
         interaction.PressPointer(HitTestPointer());
     }
 
@@ -128,13 +125,12 @@ internal sealed class EvolveWindow : GameWindow
 
         if (args.Key is Keys.Up or Keys.Down)
         {
-            activationKey = null;
             interaction.MoveSelection(args.Key == Keys.Up ? -1 : 1);
         }
-        else if ((args.Key is Keys.Enter or Keys.Space) && !args.IsRepeat && activationKey is null)
+        else if (args.Key is Keys.Enter or Keys.Space)
         {
-            activationKey = args.Key;
-            interaction.PressSelection();
+            interaction.PressSelection(args.Key == Keys.Enter
+                ? MainMenuActivationKey.Enter : MainMenuActivationKey.Space, args.IsRepeat);
         }
     }
 
@@ -142,9 +138,9 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnKeyUp(KeyboardKeyEventArgs args)
     {
         base.OnKeyUp(args);
-        if (!IsFocused || activationKey != args.Key) return;
-        activationKey = null;
-        ActivateButton(interaction.ReleaseSelection());
+        if (!IsFocused || args.Key is not (Keys.Enter or Keys.Space)) return;
+        ActivateButton(interaction.ReleaseSelection(args.Key == Keys.Enter
+            ? MainMenuActivationKey.Enter : MainMenuActivationKey.Space));
     }
 
     // The input model supplies notices; only the native window owns graceful shutdown.
@@ -162,7 +158,6 @@ internal sealed class EvolveWindow : GameWindow
         base.OnFocusedChanged(args);
         if (!args.IsFocused)
         {
-            activationKey = null;
             interaction.ResetInput();
         }
     }
@@ -184,7 +179,6 @@ internal sealed class EvolveWindow : GameWindow
     // Cancel both input sources while allowing keyboard selection and footer notices to persist.
     private void CancelPendingInput()
     {
-        activationKey = null;
         interaction.CancelPendingPress();
         interaction.UpdateHover(null);
     }

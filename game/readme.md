@@ -38,8 +38,9 @@ fondo cubre el área al redimensionar, minimizar y restaurar, y que X y Alt+F4
 cierran la aplicación limpiamente (en ejecuciones separadas). Tras cada cierre,
 `$LASTEXITCODE` debe ser `0` y no debe quedar un proceso de Evolve activo.
 
-Build, runtime and visual acceptance remain pending Auditor validation and
-project owner approval. The roadmap is unchanged.
+The project owner has accepted UI-01 through UI-03. UI-04 verification evidence
+and remaining manual checks are recorded in `audit.md`; final independent audit
+and roadmap acceptance remain pending. The roadmap is unchanged.
 
 ## UI-02 — Main menu presentation
 
@@ -98,7 +99,10 @@ $actualVersion -ceq $expectedVersion
 
 `MainMenuInteraction.cs` owns pointer presses, keyboard selection and footer
 notices without OpenGL or window dependencies. `MainMenuButton.cs` identifies
-the four approved actions in display order. `MainMenuLayout.ButtonY` is shared
+the four approved actions in display order. `MainMenuActivationKey.cs` identifies
+Enter and Space without referencing OpenTK. The interaction model tracks their
+matching releases, repeats and cancellation; the window only translates native
+key events. `MainMenuLayout.ButtonY` is shared
 by drawing and hit detection; gaps and shadows do not count as button bounds.
 `EvolveWindow.cs` converts cursor positions from client coordinates to framebuffer
 pixels using the current size ratio on each axis, including high-DPI windows.
@@ -142,5 +146,26 @@ Build and run with the PowerShell commands above, then manually validate:
 6. In separate runs, activate `SALIR` with mouse, Enter and Space. Confirm clean
    termination, `$LASTEXITCODE` equal to `0` and no remaining Evolve process.
 
-No builds, tests or runtime validation were executed during implementation.
-UI-04 remains outside this delivery.
+## UI-04 — Automated verification and audit preparation
+
+Run the GPU-independent executable test suite from the repository root:
+
+```powershell
+dotnet run --project .\tests\menu\Evolve.Menu.Checks.csproj --configuration Release
+$LASTEXITCODE
+```
+
+This suite links the actual production interaction and layout source files into
+its test executable. It introduces no packages, GPU dependencies, public test
+hooks or duplicate menu implementation. It is a console suite, so use `dotnet run`
+rather than `dotnet test`; a failed check produces a nonzero exit code.
+
+The checks cover pointer ownership, invalid releases, feedback, circular
+navigation, Enter/Space release matching and repeat suppression, cancellation,
+input-source changes, unavailable notices, exit requests and layout hit bounds.
+Native event delivery, real DPI changes, OpenGL cleanup and visual output must
+still be checked manually using the checklist above.
+
+See `audit.md` for executed commands, results, technical review and known
+limitations. UI-04 prepares evidence for the independent Auditor; it does not
+constitute the Auditor's approval or final roadmap acceptance.
