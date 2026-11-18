@@ -1,6 +1,6 @@
 # World Generation Tests
 
-**Status:** CORE-01 through CORE-04 headless checks implemented.
+**Status:** CORE-01 through CORE-05 headless checks implemented.
 
 ## Run the current checks
 
@@ -13,7 +13,7 @@ suite returns `0` only when every named check passes, otherwise `1`. It referenc
 the actual engine library, which references definitions, with no linked core
 copy, OpenTK dependency or test framework. Use `dotnet run`, not `dotnet test`.
 
-`WorldGenerationCheckEntryPoint.cs` runs all four suites regardless of earlier
+`WorldGenerationCheckEntryPoint.cs` runs all five suites regardless of earlier
 failures and combines their process results:
 
 | File | Responsibility | Named checks |
@@ -22,10 +22,12 @@ failures and combines their process results:
 | `GenerationContextChecks.cs` | Metadata, initial Pending states, exclusive ownership, unavailable data, alias protection, immutable progress/failure observations, safe internal transitions and restricted test access. | 19 |
 | `WorldGenerationOrchestratorChecks.cs` | Actual production execution, prerequisites, targets, mode equivalence, failures, retry, read-only inputs, Running rejection and deferred scope. | 17 |
 | `DeterministicGenerationChecks.cs` | Versioned vectors, stage streams, replay, suffix rebuild and cross-thread exclusivity. | 8 |
+| `WorldGenerationFinalizationChecks.cs` | Completion gates, stable immutable results, repeat capture, exclusion and lease recovery. | 10 |
 
 The CORE-01 layer-boundary assertion now checks the authorized CORE-03 extension.
 The CORE-02 deferred-scope assertion permits orchestration outside the context
-while still rejecting CORE-05 operations. Other prior checks remain in place.
+while finalization remains exclusively on the orchestrator. Other prior checks
+remain in place.
 
 ## Test-only data and executors
 
@@ -63,7 +65,7 @@ the actual `WorldGenerationOrchestrator`.
   or proof of CORE-04 operation exclusivity.
 - Invalid arguments, outcome construction, independent contexts and rejection of
   invalidated storage preserve existing data. No implicit rebuild is performed.
-- `FinalizeWorld` remains absent; PRNG and rebuild coverage is documented below.
+- Finalization is now covered by the CORE-05 suite below.
   Actual compiled dependencies remain headless.
 
 ## Regression and remaining coverage
@@ -76,13 +78,13 @@ git diff --check
 ```
 
 CORE-04 covers PRNG reproducibility, operation exclusivity and rebuild/invalidation
-as detailed below. Future increments must verify complete-world finalization. Geographic
+as detailed below. CORE-05 verifies complete-world finalization. Geographic
 layers separately own topology, tectonics, landmass connectivity, elevation,
 hydrology, climate, biome and performance checks. No real world, Laboratory
 screen or GPU validation is performed here.
 
-CORE-04 awaits review and owner acceptance; these checks do not constitute an
-independent audit or authorize later increments.
+CORE-05 awaits independent audit and final owner acceptance; these checks do not
+constitute an independent audit or authorize later increments.
 
 **General roadmap:** [World Generation Roadmap](../../engine/worldgen/roadmap.md)  
 **Architecture:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
@@ -101,8 +103,35 @@ attempts all forward modes and rebuilding through two orchestrator instances.
 All competing calls reject; observations expose no partial buffer. A second
 context completes independently before releasing the first. Timeouts bound
 test failures rather than relying on sleeps. CORE-03's reentrant guards remain
-covered. Finalization remains absent.
+covered. CORE-05 finalization coverage is documented below.
 
 Earlier CORE-03 concurrency/rebuild deferral notes above are historical coverage
-limits, superseded by this suite. Future coverage still includes CORE-05,
-geographic layer correctness and performance; no GPU or geographic data is used.
+limits, superseded by the CORE-04/05 suites. Future coverage includes geographic
+layer correctness and performance; no GPU or geographic data is used.
+
+## CORE-05 coverage
+
+Ten checks in `WorldGenerationFinalizationChecks.cs` exercise the production
+FinalizeWorld and immutable result. Every incomplete prefix, failed stage,
+invalidated suffix and Running identity is rejected without context mutation.
+Malformed internal result tables are rejected by the real constructor. Complete
+results share immutable buffers and metadata, survive every suffix rebuild and
+regeneration, and cannot expose source-array or reference-table mutation.
+Repeated finalization runs no additional executor.
+
+A real worker thread executes layers while another orchestrator attempts
+finalization; the layer also attempts reentrant finalization. Both reject, while
+a separate context can generate and finalize. A friend-only test holds the
+existing operation lease and verifies rejection of all competing operation kinds,
+including finalization and rebuilding. It does not instrument or pause inside
+FinalizeWorld. Invalid arguments and completion-gate rejection release the
+lease for subsequent generation, rebuilding and finalization.
+
+Earlier checks for absent finalization adapt only to the authorized boundary:
+context still has no public finalizer or mutation, and the orchestrator is the
+sole finalization owner. The original registration/storage/execution/PRNG/rebuild
+and headless-dependency coverage remains active. All five suites must pass for
+process exit code zero; no test framework, OpenTK or new package is required.
+
+These are development checks. Independent audit, final owner acceptance, real
+geographic validation and any active-state integration remain outside this task.

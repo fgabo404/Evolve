@@ -1,6 +1,6 @@
 # World Generation Engine
 
-**Status:** CORE-01 through CORE-03 accepted; CORE-04 implemented, pending review and owner acceptance.
+**Status:** CORE-01 through CORE-04 accepted; CORE-05 implemented, pending independent audit and owner acceptance.
 
 ## Responsibility
 
@@ -29,6 +29,8 @@ active state, save storage or test dependency belongs here.
 - `WorldGenerationOrchestrator`: `CreateGeneration`, `RunNext`, `RunUntil` and
   `RunAll`. All forward modes use one synchronous stage runner for prerequisite
   validation, invocation, ownership validation, atomic publication and retry.
+- `WorldGenerationResult`: immutable request/version metadata and eight completed
+  historical buffers captured by `FinalizeWorld`, stable across later rebuilding.
 - `AssemblyVisibility.cs`: restricted named friend access for the existing
   headless checks, without adding public storage mutation APIs.
 
@@ -59,8 +61,10 @@ operation. Previously retrieved immutable results remain historical observations
 
 The production core contains no layer executors; eight neutral fake executors
 live exclusively in `tests/worldgen/`. Real algorithms belong to separately
-authorized layer roadmaps. Finalization and WorldState integration remain
-unimplemented. See [CORE-04 signatures and vectors](core-contracts.md#16-core-04-deterministic-streams-and-exclusive-rebuild).
+authorized layer roadmaps. Finalization requires eight Completed results with
+matching ownership, holds the same operation lease, and changes no context state.
+It copies only eight buffer references; repeated calls never execute layers.
+WorldState integration remains unimplemented. See [CORE-04 signatures and vectors](core-contracts.md#16-core-04-deterministic-streams-and-exclusive-rebuild).
 
 Published buffers accept unmanaged values only. Future reference-rich outputs
 require a separately approved immutable contract. No world is copied per stage,
@@ -91,6 +95,21 @@ or geographic data. See [test coverage](../../tests/worldgen/readme.md).
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-CORE-04 is accepted and CORE-05 is authorized for implementation only.
+CORE-05 is implemented, pending independent audit and final owner acceptance.
 Final WG-CORE acceptance, state/UI integration and merging `world-core` into
 `world` require separate review and project-owner approval.
+
+## Finalization boundary
+
+Call `orchestrator.FinalizeWorld(context)` after successful completion. The result
+exposes `Request`, `RandomAlgorithmVersion` and `GetLayerData(stage)`, with no
+public mutation. Pending, Failed, Running, Invalidated or inconsistent outputs
+reject with InvalidOperationException. An active operation rejects finalization,
+including through another orchestrator or reentrant call. Null context and
+unknown result stage IDs use the existing argument-exception conventions.
+
+The result retains immutable historical data, independently of subsequent
+RebuildFrom calls; it is not automatically installed into active state or saved.
+RandomAlgorithmVersion captures PRNG compatibility, not the game's display
+version or yet-unimplemented geographic algorithm versions. Exact signatures and
+limits are in [CORE-05 contracts](core-contracts.md#18-core-05-finalization-contract).

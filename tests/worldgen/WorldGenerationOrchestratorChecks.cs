@@ -30,7 +30,7 @@ internal static class WorldGenerationOrchestratorChecks
             ("explicit outcome factories enforce candidate or diagnostic", ResultContract),
             ("contexts remain independent through the same orchestrator", IndependentContexts),
             ("invalidated storage does not trigger an implicit rebuild", NoImplicitRebuild),
-            ("finalization remains deferred", DeferredScope)
+            ("finalization belongs only to the orchestrator", FinalizationBoundary)
         ];
 
         int failures = 0;
@@ -336,12 +336,12 @@ internal static class WorldGenerationOrchestratorChecks
             "Implicit reconstruction or invalidation occurred.");
     }
 
-    private static void DeferredScope()
+    private static void FinalizationBoundary()
     {
         var types = typeof(WorldGenerationOrchestrator).Assembly.GetExportedTypes();
-        Require(!types.SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
-            .Any(method => method.Name is "FinalizeWorld"), "CORE-05 operation introduced.");
-        Require(!types.Any(type => type.Name == "WorldGenerationResult"), "Finalized world introduced.");
+        var owners = types.Where(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Any(method => method.Name == "FinalizeWorld")).ToArray();
+        Require(owners.SequenceEqual([typeof(WorldGenerationOrchestrator)]), "Unexpected finalization owner.");
     }
 
     // Exercise each public forward mode, including a target before an active stage.

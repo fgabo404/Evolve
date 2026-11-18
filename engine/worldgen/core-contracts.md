@@ -14,8 +14,10 @@ The **approved** system behavior is sequential execution of eight stages by one 
 
 The project owner approved this technical design on 2026-11-18 and accepted
 the CORE-01 surface in section 10 and CORE-02 storage surface in section 12.
-CORE-03 implements sequential execution as documented in section 14, pending
-review and owner acceptance. PRNG, rebuild and finalization remain deferred.
+CORE-03 execution and CORE-04 deterministic rebuilding are accepted (sections
+14 and 16). CORE-05 finalization is implemented in section 18, pending independent
+audit and owner acceptance. Historical delivery sections retain their original
+scope and evidence; later sections supersede earlier implementation deferrals.
 
 - `definitions/worldgen/` owns configuration/value definitions; no generation algorithms.
 - `engine/worldgen/` owns the orchestrator, lifecycle and generation draft.
@@ -47,7 +49,8 @@ The initial contract is a fixed, ordered pipeline of eight stages. A stage can r
 
 The following signatures record the approved conceptual design. CORE-02 provides
 inspection (section 12), and CORE-03 provides synchronous forward execution
-(section 14). Rebuild, PRNG and finalization remain deferred.
+(section 14). CORE-04 adds PRNG/rebuild (section 16), and CORE-05 adds
+finalization (section 18). The conceptual signatures below are resolved there.
 
 These are **logical signatures**, not literal finalized C# syntax:
 
@@ -250,11 +253,10 @@ demonstrates layer execution, determinism, finalization or performance behavior.
 - Metrics, diagnostics, checkpoints and memory/performance budgets.
 - Integration with actual Grid later, without adding any geography algorithm to WG-CORE.
 
-**Status:** CORE-01 and CORE-02 accepted by the project owner. CORE-03 is
-implemented on `world-core`, pending review and acceptance. CORE-04 and CORE-05
-remain unimplemented and require separate authorization. Sections 10 through 13
-preserve the earlier delivery and authorization records; section 14 defines the
-current execution surface.
+**Status:** CORE-01 through CORE-04 accepted by the project owner. CORE-05 is
+implemented on `world-core`, pending independent audit and final acceptance.
+Sections 10 through 17 preserve earlier delivery and authorization records;
+section 18 defines the finalization boundary without authorizing integration.
 
 ## 10. CORE-01 implemented C# contract
 
@@ -817,3 +819,80 @@ repeat finalization, concurrent/reentrant rejection and preservation of
 CORE-01..04 regressions. No new real geographic executors, UI, save system or
 merge is authorized. After development the roadmap remains pending independent
 audit and owner acceptance before any integration into `world`.
+
+## 18. CORE-05 finalization contract
+
+**Status:** implemented, pending independent audit and owner acceptance.
+All earlier contracts remain intact except the explicitly authorized extensions.
+
+### Public C# additions
+
+- `WorldGenerationResult WorldGenerationOrchestrator.FinalizeWorld(GenerationContext context)`.
+- `public sealed class WorldGenerationResult` exposes get-only
+  `GenerationRequest Request`, get-only `string RandomAlgorithmVersion` and
+  `LayerData GetLayerData(GenerationStage stage)`. No public constructor,
+  setters, context handle, mutable collection or backing-array accessor exists.
+
+Request preserves the immutable main seed, world type and dimensionless size.
+RandomAlgorithmVersion captures the existing CORE-04 compatibility identifier.
+It is not the game's display VERSION, a geographic layer algorithm manifest or
+a serialization format. No fabricated layer versions or duplicate game version
+string is introduced. Future geographic algorithms must separately define any
+additional reproducibility metadata they need.
+
+### Gate, ownership and error policy
+
+Finalization acquires the same context-wide operation lease as execution and
+rebuilding, releases it in finally, and makes no stage transition or context
+mutation. Every one of the eight stages must be Completed with a non-null
+published result owned by its exact canonical identity. The result constructor
+validates the complete ordered reference table before exposing a result.
+
+Null context throws ArgumentNullException. Incomplete, Failed, Running,
+Invalidated, missing or mismatched data throws InvalidOperationException.
+Active operations, including reentrant attempts and operations through a second
+orchestrator, reject immediately via the existing lease. Invalid result lookup
+IDs throw ArgumentOutOfRangeException. Rejections preserve all context data,
+progress and diagnostics; later valid operations can still acquire the lease.
+
+The only data copied is the small eight-reference table. Already immutable
+LayerData buffers and immutable request metadata are safely shared. The result
+retains no context, so later suffix rebuilding cannot change its lookups.
+Previously finalized data remains an intentionally historical snapshot while new
+context queries discard invalidated data. Repeated finalization creates another
+small result wrapper sharing the same valid buffers; it never runs a layer,
+caches a result in the context or marks the context terminal.
+
+The lease makes progress validation and result capture coherent against public
+execution/rebuild/finalize operations. Short storage locks retain the CORE-04
+observation policy. No new locking scheme, active-state integration, UI, save
+snapshot, geography or additional dependency is introduced.
+
+### Verification
+
+`WorldGenerationFinalizationChecks.cs` adds ten headless checks: valid completion
+without mutation or world copies; all incomplete prefixes; Failed, Invalidated
+and Running at every identity; malformed internal result tables; historical
+snapshots across all eight rebuild suffixes and regeneration; metadata/buffer
+immutability and source isolation; repeat finalization without execution;
+real worker-thread execution with competing and reentrant finalization;
+independent-context progress; and invalid argument/lease recovery.
+
+A separate restricted friend test holds the exact context lease used by
+finalization and checks that every operation rejects from another thread.
+It does not add a test hook or claim to pause inside the short FinalizeWorld
+method itself. The malformed-table checks invoke the actual internal result
+constructor, without reflection-based context corruption or public mutators.
+All existing CORE-01..04 checks continue; former finalization-absence assertions
+now enforce that only the orchestrator owns finalization and context remains
+read-only. Regression commands remain those in section 10 and the READMEs.
+
+Independent audit and final WG-CORE owner acceptance remain outstanding.
+No integration or merge into world is authorized by this delivery.
+
+Development evidence for v0.0.23: 15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03,
+8/8 CORE-04 and 10/10 CORE-05 checks passed (69 total). All 16 menu checks
+passed. Explicit engine and game Release builds each reported zero warnings and
+errors; git diff --check passed. Compiled game ProductVersion matched root
+VERSION. These results do not claim geographic/GUI validation, independent
+audit or final owner acceptance.

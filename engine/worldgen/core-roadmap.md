@@ -4,7 +4,7 @@
 **Integration branch:** `world`  
 **Working branch:** `world-core`
 
-**Status:** CORE-01 through CORE-04 accepted; CORE-05 authorized, pending implementation and independent audit.
+**Status:** CORE-01 through CORE-04 accepted; CORE-05 implemented, pending independent audit and final owner acceptance.
 
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
@@ -23,7 +23,7 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 | **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Accepted by project owner — 2026-11-18 |
 | **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Accepted by project owner — 2026-11-18 |
 | **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Accepted by project owner — 2026-11-18 |
-| **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Authorized — pending implementation |
+| **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Implemented — pending independent audit and owner acceptance |
 
 **Execution rule:** work on only the individually authorized increment. Do not advance from CORE-01 to CORE-02 merely because its code is complete; wait for explicit owner approval.
 
@@ -237,3 +237,25 @@ and concurrency boundaries, and document exact signatures and tests. No real
 geography, Laboratory UI, `state/world` implementation, persistence or merging
 into `world` is authorized. Independent audit and separate owner acceptance
 remain required before WG-CORE can be considered finished/integrated.
+
+## CORE-05 delivery record
+
+Implemented `FinalizeWorld(context)` and immutable `WorldGenerationResult`.
+Only eight Completed, available and correctly owned outputs can be captured
+under the existing context-wide operation lease. Finalization changes no context
+state and runs no layer. The result owns a small reference table, sharing
+immutable buffers and request metadata; historical results survive later
+rebuilding and regeneration. The PRNG compatibility identifier is captured
+without introducing geographic version metadata or copying the world.
+
+Ten new headless checks complement all 59 existing core checks. The exact API,
+errors, ownership and concurrency test limits are documented in
+[CORE-05 contracts](core-contracts.md#18-core-05-finalization-contract).
+CORE-05 is implemented only; independent audit and final owner acceptance remain
+pending. This record does not close or accept WG-CORE, authorize a merge into
+world or start geographic, state, saves or UI development.
+
+Development validation for v0.0.23: 69/69 core checks and 16/16 menu checks passed;
+engine and game Release builds each completed with zero warnings/errors.
+Whitespace checking passed and compiled ProductVersion matched VERSION.
+Independent audit and owner acceptance remain pending.

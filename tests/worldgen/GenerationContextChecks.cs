@@ -333,9 +333,8 @@ internal static class GenerationContextChecks
     private static void DeferredExecution()
     {
         var core = typeof(GenerationContext).Assembly;
-        Require(!core.GetExportedTypes().SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            .Any(method => method.Name is "FinalizeWorld"),
-            "A CORE-05 operation was introduced.");
+        Require(!typeof(GenerationContext).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Any(method => method.Name == "FinalizeWorld"), "Finalization must remain outside context.");
         Require(core.GetReferencedAssemblies().All(reference => reference.Name?.StartsWith("System", StringComparison.Ordinal) == true ||
             reference.Name == typeof(WorldGenerationSettings).Assembly.GetName().Name), "Context introduced a graphics or UI dependency.");
     }

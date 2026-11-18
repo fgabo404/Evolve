@@ -43,6 +43,24 @@ public sealed class WorldGenerationOrchestrator
         finally { context.ExitOperation(); }
     }
 
+    // Capture completed immutable buffers under the same lease used by execution and rebuilding.
+    public WorldGenerationResult FinalizeWorld(GenerationContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        context.EnterOperation();
+        try
+        {
+            var progress = context.GetProgress();
+            var stages = Enum.GetValues<GenerationStage>();
+            if (stages.Any(stage => progress.GetStatus(stage) != GenerationStageStatus.Completed))
+                throw new InvalidOperationException("Finalization requires eight completed stages.");
+            return new WorldGenerationResult(context.Request, stages.Select(stage =>
+                context.GetLayerData(stage)
+                    ?? throw new InvalidOperationException("A completed stage has no published result.")));
+        }
+        finally { context.ExitOperation(); }
+    }
+
     // Hold exclusivity for the entire bulk operation, including gaps between stages.
     private GenerationProgress Advance(GenerationContext context, GenerationStage target, bool singleStage)
     {
