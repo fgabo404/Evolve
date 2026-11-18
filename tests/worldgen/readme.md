@@ -83,8 +83,9 @@ layers separately own topology, tectonics, landmass connectivity, elevation,
 hydrology, climate, biome and performance checks. No real world, Laboratory
 screen or GPU validation is performed here.
 
-CORE-05 awaits independent audit and final owner acceptance; these checks do not
-constitute an independent audit or authorize later increments.
+CORE-05 and WG-CORE were formally accepted after the independent auditor
+reported APPROVED. These development checks alone are not the independent audit
+and do not authorize integration or later increments.
 
 **General roadmap:** [World Generation Roadmap](../../engine/worldgen/roadmap.md)  
 **Architecture:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
@@ -133,5 +134,6 @@ sole finalization owner. The original registration/storage/execution/PRNG/rebuil
 and headless-dependency coverage remains active. All five suites must pass for
 process exit code zero; no test framework, OpenTK or new package is required.
 
-These are development checks. Independent audit, final owner acceptance, real
-geographic validation and any active-state integration remain outside this task.
+These are development checks. Independent audit and owner acceptance were
+subsequently completed for WG-CORE; real geographic validation and active-state
+integration remain outside this task.

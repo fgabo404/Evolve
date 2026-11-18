@@ -15,8 +15,8 @@ The **approved** system behavior is sequential execution of eight stages by one 
 The project owner approved this technical design on 2026-11-18 and accepted
 the CORE-01 surface in section 10 and CORE-02 storage surface in section 12.
 CORE-03 execution and CORE-04 deterministic rebuilding are accepted (sections
-14 and 16). CORE-05 finalization is implemented in section 18, pending independent
-audit and owner acceptance. Historical delivery sections retain their original
+14 and 16). CORE-05 finalization was accepted following independent audit approval;
+the formal closure record is in section 19. Historical delivery sections retain their original
 scope and evidence; later sections supersede earlier implementation deferrals.
 
 - `definitions/worldgen/` owns configuration/value definitions; no generation algorithms.
@@ -822,7 +822,7 @@ audit and owner acceptance before any integration into `world`.
 
 ## 18. CORE-05 finalization contract
 
-**Status:** implemented, pending independent audit and owner acceptance.
+**Status:** accepted by the project owner on 2026-11-18, following independent audit approval.
 All earlier contracts remain intact except the explicitly authorized extensions.
 
 ### Public C# additions
@@ -887,8 +887,9 @@ All existing CORE-01..04 checks continue; former finalization-absence assertions
 now enforce that only the orchestrator owns finalization and context remains
 read-only. Regression commands remain those in section 10 and the READMEs.
 
-Independent audit and final WG-CORE owner acceptance remain outstanding.
-No integration or merge into world is authorized by this delivery.
+The independent auditor subsequently reported APPROVED and the project owner
+formally accepted CORE-05 and WG-CORE. No integration or merge into `world` is
+authorized by this delivery.
 
 Development evidence for v0.0.23: 15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03,
 8/8 CORE-04 and 10/10 CORE-05 checks passed (69 total). All 16 menu checks
@@ -896,3 +897,20 @@ passed. Explicit engine and game Release builds each reported zero warnings and
 errors; git diff --check passed. Compiled game ProductVersion matched root
 VERSION. These results do not claim geographic/GUI validation, independent
 audit or final owner acceptance.
+
+## 19. WG-CORE formal acceptance
+
+On 2026-11-18 the project owner accepted CORE-05 and closed WG-CORE after the
+independent auditor's **APPROVED** verdict. The earlier document-status
+observations were resolved in commit `2cafdc8daab89a556d70bd286800385ecf854678`
+(`v0.0.24`); the audited code baseline was
+`52ea44b98881fb2e88301fb5a339596d4d346cc1` (`v0.0.23`).
+
+The auditor reported 69/69 core checks and 16/16 menu checks passed, successful
+Release engine and game builds, and a clean diff. No critical or major defects
+or pending blocking observations were reported. This record does not claim a
+new execution by the Architect.
+
+Formal acceptance covers the implemented headless orchestration foundation,
+not real geographic algorithms, Laboratory UI, persistent saves, active
+`WorldState` integration, branch merging or WG-00 authorization.

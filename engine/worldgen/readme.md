@@ -1,6 +1,6 @@
 # World Generation Engine
 
-**Status:** CORE-01 through CORE-04 accepted; CORE-05 implemented, pending independent audit and owner acceptance.
+**Status:** CORE-01 through CORE-05 formally accepted; WG-CORE closed after independent audit approval (2026-11-18).
 
 ## Responsibility
 
@@ -95,9 +95,9 @@ or geographic data. See [test coverage](../../tests/worldgen/readme.md).
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-CORE-05 is implemented, pending independent audit and final owner acceptance.
-Final WG-CORE acceptance, state/UI integration and merging `world-core` into
-`world` require separate review and project-owner approval.
+CORE-05 and WG-CORE were formally accepted by the owner following the auditor's
+APPROVED verdict. State/UI integration, WG-00 and merging `world-core` into
+`world` remain unauthorized and require separate owner approval.
 
 ## Finalization boundary
 
