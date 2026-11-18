@@ -1,5 +1,7 @@
+// Starts the graphical application and owns the native window lifetime.
+// Runs EvolveWindow and disposes it when the application loop ends.
+
 using Evolve.Game;
 
-// Start the graphical application and dispose its window and context when the loop ends.
 using var window = new EvolveWindow();
 window.Run();

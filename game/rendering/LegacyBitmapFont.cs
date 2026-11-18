@@ -1,6 +1,8 @@
+// Provides the legacy custom 5x7 bitmap glyphs and character metrics.
+// Supplies local font data to PixelMenuRenderer without external font dependencies.
+
 namespace Evolve.Game;
 
-// Preserves the custom 5x7 glyphs from worldgeneration's UiRenderer, without its UI framework.
 internal static class LegacyBitmapFont
 {
     public const int Width = 5;

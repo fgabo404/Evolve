@@ -1,3 +1,6 @@
+// Owns the OpenTK window, native input events and menu graphics lifetime.
+// Connects menu interaction and presentation to the renderer without simulation logic.
+
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -6,7 +9,6 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Evolve.Game;
 
-// Owns the native window and menu graphics without introducing simulation logic.
 internal sealed class EvolveWindow : GameWindow
 {
     private readonly MainMenuPresentation menu = new();

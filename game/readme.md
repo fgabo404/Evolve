@@ -4,6 +4,31 @@ Contiene la interfaz gráfica, la presentación del mundo, los menús y la inter
 
 No implementa reglas ni cálculos de simulación.
 
+## Source organization
+
+- The root contains `Evolve.Game.csproj`, `EvolveEntryPoint.cs`, `EvolveWindow.cs`
+  and `GameVersion.cs`: project configuration, startup, native window/event
+  coordination and assembly version access.
+- `menu/` contains button/key identities, interaction state, shared layout,
+  presentation and styling. `EvolveWindow` connects these components to native
+  input and the renderer.
+- `rendering/` contains `PixelMenuRenderer.cs` and `LegacyBitmapFont.cs`: the
+  existing OpenGL batch and local 5x7 font data used by menu presentation.
+- `readme.md`, `roadmap.md` and `audit.md` stay in the root of `game/`.
+- `../tests/menu/` links production sources from `menu/` for GPU-independent
+  verification; it does not contain a duplicate menu implementation.
+
+All C# namespaces remain unchanged. The existing SDK project discovers the
+relocated sources automatically. Every C# source file begins with an English
+`//` purpose and responsibility header, as required by root `AGENTS.md`.
+
+Reorganization validation: the 16 menu checks passed, the Release build completed
+with zero warnings and errors, and `git diff --check` reported no whitespace
+errors. A source comparison confirmed that all 13 C# files in `game/` and
+`tests/menu/` retain their non-comment contents. Built display metadata matches
+root `VERSION`. No GUI or visual validation was performed for this structural
+change; native input, DPI behavior and GPU cleanup remain manual checks.
+
 ## UI-01 — Proyecto gráfico mínimo
 
 Proyecto ejecutable C# / .NET 10 con OpenTK 4.9.4. Abre una ventana
@@ -48,12 +73,12 @@ The menu displays `EVOLVE`, the assembly informational version and four buttons:
 `INICIAR`, `LAB`, `OPCIONES`, `SALIR`. UI-03 adds input feedback and unavailable
 notices to this presentation. Close using `SALIR`, X or Alt+F4.
 
-- `MainMenuPresentation.cs` composes the visual elements.
-- `MainMenuStyle.cs` preserves the legacy muted blue-gray palette.
-- `MainMenuLayout.cs` preserves the legacy button proportions and adapts short windows.
-- `PixelMenuRenderer.cs` batches colored rectangles and bitmap text with OpenGL
+- `menu/MainMenuPresentation.cs` composes the visual elements.
+- `menu/MainMenuStyle.cs` preserves the legacy muted blue-gray palette.
+- `menu/MainMenuLayout.cs` preserves the legacy button proportions and adapts short windows.
+- `rendering/PixelMenuRenderer.cs` batches colored rectangles and bitmap text with OpenGL
   3.3 and releases its GPU resources when the window unloads.
-- `LegacyBitmapFont.cs` contains the original custom 5x7 glyphs with six-pixel
+- `rendering/LegacyBitmapFont.cs` contains the original custom 5x7 glyphs with six-pixel
   character advance, including Spanish accented capitals and uppercase
   normalization. Unsupported characters keep their advance but draw no pixels,
   matching the original renderer.
@@ -97,9 +122,9 @@ $actualVersion -ceq $expectedVersion
 
 ## UI-03 — Main menu interaction
 
-`MainMenuInteraction.cs` owns pointer presses, keyboard selection and footer
-notices without OpenGL or window dependencies. `MainMenuButton.cs` identifies
-the four approved actions in display order. `MainMenuActivationKey.cs` identifies
+`menu/MainMenuInteraction.cs` owns pointer presses, keyboard selection and footer
+notices without OpenGL or window dependencies. `menu/MainMenuButton.cs` identifies
+the four approved actions in display order. `menu/MainMenuActivationKey.cs` identifies
 Enter and Space without referencing OpenTK. The interaction model tracks their
 matching releases, repeats and cancellation; the window only translates native
 key events. `MainMenuLayout.ButtonY` is shared

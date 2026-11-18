@@ -1,9 +1,11 @@
+// Renders colored rectangles and bitmap text in one OpenGL batch.
+// Uses LegacyBitmapFont glyphs and owns the GPU resources managed by EvolveWindow.
+
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace Evolve.Game;
 
-// Batches menu rectangles and local bitmap glyphs without a general UI framework.
 internal sealed class PixelMenuRenderer : IDisposable
 {
     private const int VertexSize = 6;

@@ -1,8 +1,10 @@
+// Defines the approved blue-gray main-menu palette and interaction colors.
+// Supplies presentation styling separately from layout and input behavior.
+
 using OpenTK.Mathematics;
 
 namespace Evolve.Game;
 
-// Matches the unselected main-menu colors in worldgeneration's Program.DrawButton.
 internal static class MainMenuStyle
 {
     public static readonly Color4 Background = new(0.055f, 0.10f, 0.16f, 1f);

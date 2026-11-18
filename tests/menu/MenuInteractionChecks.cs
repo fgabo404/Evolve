@@ -1,8 +1,10 @@
+// Verifies production main-menu interaction and layout without creating a window.
+// Exercises input scenarios and reports failures through the executable check runner.
+
 using Evolve.Game;
 
 namespace Evolve.Menu.Checks;
 
-// Uses the actual linked production sources; failures print diagnostics and return a nonzero exit code.
 internal static class MenuInteractionChecks
 {
     // Keep a small named suite instead of adding a test framework dependency.

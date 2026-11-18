@@ -1,6 +1,8 @@
+// Composes the approved main-menu visuals and footer notices.
+// Uses layout, style and interaction state to submit drawing to PixelMenuRenderer.
+
 namespace Evolve.Game;
 
-// Presents the approved menu design using interaction state owned outside the renderer.
 internal sealed class MainMenuPresentation
 {
     private static readonly string[] ButtonLabels = ["INICIAR", "LAB", "OPCIONES", "SALIR"];

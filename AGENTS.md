@@ -13,7 +13,8 @@ repository, regardless of the module or roadmap being worked on.
 - Use Spanish for all communication with the project owner, including
   explanations, progress reports, implementation summaries, audit responses
   and commit descriptions presented in chat.
-- Use English for all internal project content: prompts, source code, identifiers,
+- Write development prompts in Spanish as well.
+- Use English for all internal project content: source code, identifiers,
   class, method, variable and file names, code comments, technical
   documentation, roadmaps, internal messages, logs and commit messages.
 - Keep actual Git commit messages in English; describe their purpose in Spanish
@@ -26,6 +27,13 @@ repository, regardless of the module or roadmap being worked on.
 
 - Use only `//` for code comments. Do not use block comments or XML
   documentation comments such as `/// <summary>`.
+- Every C# source file must begin with an English `//` comment explaining its
+  main purpose, responsibility within the system and relationship to other
+  components when relevant. Place this header before `using` directives,
+  namespaces or top-level statements, including in entry points and tests.
+- Apply this convention to all new C# files and keep existing file headers
+  accurate when changing their responsibilities. Avoid repeating the header
+  as a redundant class comment.
 - Document the purpose of classes, methods and important logic blocks.
 - Explain why code exists or how non-obvious logic works.
 - Avoid unnecessary or redundant comments that merely repeat the code.

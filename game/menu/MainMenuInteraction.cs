@@ -1,6 +1,8 @@
+// Manages mouse and keyboard interaction state for the main menu.
+// Tracks selection, activation and footer notices without depending on OpenGL.
+
 namespace Evolve.Game;
 
-// Tracks menu input and unavailable notices without depending on OpenGL or window APIs.
 internal sealed class MainMenuInteraction
 {
     public const int ButtonCount = 4;

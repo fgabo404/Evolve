@@ -10,11 +10,11 @@ add screens or simulation, or modify the architecture and roadmap documents.
 | --- | --- |
 | `EvolveEntryPoint.cs` | Start the native loop and dispose the window. |
 | `EvolveWindow.cs` | Translate native input, convert client coordinates to framebuffer pixels, manage graphics lifetime and close requests. |
-| `MainMenuInteraction.cs` | Track mouse/keyboard ownership, selection, matching activation-key releases, cancellation, notices and exit intent. |
-| `MainMenuActivationKey.cs`, `MainMenuButton.cs` | Identify activation keys and the four existing menu actions without OpenTK. |
-| `MainMenuLayout.cs` | Calculate approved geometry and shared button row positions for rendering and hit detection. |
-| `MainMenuPresentation.cs`, `MainMenuStyle.cs` | Compose the approved design, input feedback and footer notice. |
-| `LegacyBitmapFont.cs`, `PixelMenuRenderer.cs` | Render the existing local 5x7 glyphs and colored triangles in one OpenGL batch. |
+| `menu/MainMenuInteraction.cs` | Track mouse/keyboard ownership, selection, matching activation-key releases, cancellation, notices and exit intent. |
+| `menu/MainMenuActivationKey.cs`, `menu/MainMenuButton.cs` | Identify activation keys and the four existing menu actions without OpenTK. |
+| `menu/MainMenuLayout.cs` | Calculate approved geometry and shared button row positions for rendering and hit detection. |
+| `menu/MainMenuPresentation.cs`, `menu/MainMenuStyle.cs` | Compose the approved design, input feedback and footer notice. |
+| `rendering/LegacyBitmapFont.cs`, `rendering/PixelMenuRenderer.cs` | Render the existing local 5x7 glyphs and colored triangles in one OpenGL batch. |
 | `GameVersion.cs`, `Evolve.Game.csproj`, root `VERSION` | Preserve exact display metadata while deriving normalized numeric versions. |
 | `../tests/menu/` | Exercise linked production interaction and layout sources without OpenGL or third-party test packages. |
 

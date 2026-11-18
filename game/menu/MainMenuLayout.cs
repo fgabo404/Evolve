@@ -1,6 +1,8 @@
+// Calculates the approved main-menu geometry and button hit bounds.
+// Shares row positions between presentation and interaction while adapting to window size.
+
 namespace Evolve.Game;
 
-// Adapts worldgeneration's main-menu proportions without importing its screen layout.
 internal readonly record struct MainMenuLayout(
     float Center, float TitleTop, float TitlePixel, float VersionPixel,
     float ButtonLeft, float ButtonTop, float ButtonWidth, float ButtonHeight,

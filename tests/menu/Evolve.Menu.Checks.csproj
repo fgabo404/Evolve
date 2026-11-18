@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../game/MainMenuActivationKey.cs" Link="Production/MainMenuActivationKey.cs" />
-    <Compile Include="../../game/MainMenuButton.cs" Link="Production/MainMenuButton.cs" />
-    <Compile Include="../../game/MainMenuInteraction.cs" Link="Production/MainMenuInteraction.cs" />
-    <Compile Include="../../game/MainMenuLayout.cs" Link="Production/MainMenuLayout.cs" />
+    <Compile Include="../../game/menu/MainMenuActivationKey.cs" Link="Production/MainMenuActivationKey.cs" />
+    <Compile Include="../../game/menu/MainMenuButton.cs" Link="Production/MainMenuButton.cs" />
+    <Compile Include="../../game/menu/MainMenuInteraction.cs" Link="Production/MainMenuInteraction.cs" />
+    <Compile Include="../../game/menu/MainMenuLayout.cs" Link="Production/MainMenuLayout.cs" />
   </ItemGroup>
 </Project>

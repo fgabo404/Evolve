@@ -11,7 +11,8 @@ The lightweight console suite prints each named result and returns `0` for a
 passing suite or `1` when any check fails. It uses `dotnet run`, not `dotnet test`.
 
 `Evolve.Menu.Checks.csproj` links the production `MainMenuInteraction`,
-`MainMenuLayout`, `MainMenuButton` and `MainMenuActivationKey` source files.
+`MainMenuLayout`, `MainMenuButton` and `MainMenuActivationKey` source files from
+`../../game/menu/`.
 There is no copied menu implementation, graphics dependency or test package.
 `MenuCheckEntryPoint.cs` launches the suite; `MenuInteractionChecks.cs` contains
 the input scenarios and assertions.

@@ -1,8 +1,10 @@
+// Reads the exact game display version from assembly informational metadata.
+// Exposes the value generated from root VERSION to the menu presentation.
+
 using System.Reflection;
 
 namespace Evolve.Game;
 
-// Reads the exact display version embedded from the root VERSION file at build time.
 internal static class GameVersion
 {
     public static string Display { get; } = ReadDisplayVersion();
