@@ -3,7 +3,7 @@
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
 **Planned delivery branch:** `world-core` (not created)  
-**Status:** TECHNICAL PROPOSAL — owner approval required before implementation  
+**Status:** APPROVED TECHNICAL DESIGN — 2026-11-18; exact C# signatures resolved in CORE-01  
 **Approved behavioral foundation:** [WG-CORE architecture](core-architecture.md)  
 **Delivery plan:** [WG-CORE roadmap](core-roadmap.md)
 
@@ -11,7 +11,7 @@
 
 The **approved** system behavior is sequential execution of eight stages by one `WorldGenerationOrchestrator`, over a temporary `GenerationContext`, with atomic publication of validated results, deterministic replay, strict prerequisites, downward invalidation and completion-only finalization.
 
-This document translates that behavior into **proposed engineering contracts**, not implemented APIs and not additional decisions already approved by the project owner.
+The project owner approved this technical design on 2026-11-18. It translates approved behavior into engineering contracts; **exact C# signatures and implementation details are decisions for the separately authorized CORE-01 stage**, not existing code.
 
 - `definitions/worldgen/` owns configuration/value definitions; no generation algorithms.
 - `engine/worldgen/` owns the orchestrator, lifecycle and generation draft.
@@ -239,4 +239,4 @@ These are **planned acceptance checks**, not executed tests or proof of performa
 - Metrics, diagnostics, checkpoints and memory/performance budgets.
 - Integration with actual Grid later, without adding any geography algorithm to WG-CORE.
 
-**Status:** contract draft prepared; behavior approved earlier; no source code implemented and no branch `world-core` created.
+**Status:** technical design approved by project owner. CORE-01 is authorized as the next implementation increment on the dedicated `world-core` branch. No source code was implemented by this documentation commit.

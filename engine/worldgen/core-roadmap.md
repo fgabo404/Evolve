@@ -2,8 +2,8 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
-**Planned working branch:** `world-core` (not created)  
-**Status:** DRAFT FOR OWNER APPROVAL — no implementation authorized  
+**Working branch:** `world-core` (created after this approval commit)  
+**Status:** APPROVED BY PROJECT OWNER — 2026-11-18; CORE-01 authorized, CORE-02..05 not authorized  
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
 
@@ -74,4 +74,4 @@ Every increment receives its own test evidence and accepted Git commit, with roo
 
 These decisions must be resolved **before or within a separately authorized CORE-01 design gate**, not silently coded as developer assumptions.
 
-**Roadmap status:** planning only; neither `world-core` nor any C# implementation has been created.
+**Roadmap status:** approved. Only CORE-01 is authorized; CORE-02..05 require separate owner approval. The `world-core` branch is created from the approved documentation commit; no C# implementation is part of this approval commit.

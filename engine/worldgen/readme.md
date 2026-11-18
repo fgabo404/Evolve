@@ -20,10 +20,10 @@ No OpenGL, rendering, menu code, file-save handling or parallel generator implem
 ## Documents
 
 - [Approved WG-CORE architecture](core-architecture.md)
-- [Proposed technical contracts](core-contracts.md)
-- [Proposed WG-CORE implementation roadmap](core-roadmap.md)
+- [Approved technical design](core-contracts.md)
+- [Approved WG-CORE implementation roadmap](core-roadmap.md)
 - [Overall roadmap](roadmap.md)
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-The WG-CORE functional design is approved. Technical contracts and a staged implementation roadmap have been drafted for project-owner review, but no source implementation or `world-core` branch exists yet.
+The project owner approved WG-CORE's technical design and staged roadmap, authorizing CORE-01 only on `world-core`. No source code is added by this documentation approval.

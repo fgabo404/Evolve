@@ -4,9 +4,9 @@
 **Integration branch:** `world`  
 **Planned implementation branch:** `world-core` (not created)  
 **Design status:** APPROVED BY PROJECT OWNER — 2026-11-18  
-**Implementation status:** NOT STARTED; no code or .NET contracts have been implemented  
+**Implementation status:** CORE-01 authorized as next increment; no code implemented by approval  
 **Parent documents:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md) · [General Roadmap](roadmap.md)
-**Next planning artifacts:** [Technical contract proposal](core-contracts.md) · [WG-CORE implementation roadmap](core-roadmap.md)
+**Technical artifacts:** [Approved technical design](core-contracts.md) · [Approved WG-CORE roadmap](core-roadmap.md)
 
 ## 1. Purpose and architectural boundary
 
@@ -222,6 +222,6 @@ These are **future validation gates, not test results**. No engine, stage or UI 
 
 The approved design does **not yet determine**: exact C# API signatures; settings DTOs and dependency direction between assemblies; stage result representation; resource ownership/copy semantics; concurrency primitives; cancellation and asynchronous execution; failure recovery details; checkpoint storage; exact derivation of stage seeds; internal event/progress notification mechanism; or user-interface layout.
 
-A [technical contract draft](core-contracts.md) and a [detailed implementation roadmap](core-roadmap.md) now propose how to resolve these decisions. They are **pending owner approval**; they do not supersede the approved behavioral design or authorize code. No branch `world-core` has been created yet.
+The owner has **approved** the [technical design](core-contracts.md) and [implementation roadmap](core-roadmap.md), and authorized **CORE-01 only**. Exact C# signatures and implementation details belong to CORE-01, with later increments gated separately. The `world-core` branch is created from this approved baseline.
 
 **Design approved. Implementation remains pending.**
