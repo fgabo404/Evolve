@@ -116,6 +116,9 @@ Reefs should not be finalized solely by this landmass stage: their ecological/ma
 
 ## 5. Orchestrator responsibilities and progression rules
 
+**WG-CORE's formal design is approved.** See [WG-CORE: Orchestrator and Generation Context](engine/worldgen/core-architecture.md). This approval covers the functional contract, state invariants, context ownership and determinism principles, but does not authorize implementation.
+
+
 The `WorldGenerationOrchestrator`:
 
 - Accepts approved generation settings, world type and seed.
@@ -287,7 +290,7 @@ The following points require separate discussion and owner approval:
 8. How climate-dependent discharge and lakes are finalized without violating stage order.
 9. Climate time resolution, wind/moisture model and biome-classification rules.
 10. Intermediate result/checkpoint representation, memory/performance budgets and error recovery.
-11. Formal orchestrator/context/stage contracts, .NET assembly boundaries and Laboratory presentation controls.
+11. WG-CORE's functional orchestration/context contract is approved in `engine/worldgen/core-architecture.md`; exact C# signatures, .NET assembly boundaries and Laboratory presentation controls still require design.
 12. Detailed stage-by-stage implementation tasks and acceptance tests; the general outline and per-layer roadmap placeholders are recorded under `engine/worldgen/`.
 
 ## 12. Development governance and next design steps
@@ -296,10 +299,9 @@ This architecture remains **an approved preliminary design only**. The general r
 
 Recommended design order:
 
-1. Define the `WorldGenerationOrchestrator` contract and the stage transition/invalidation rules.
-2. Define the `GenerationContext` data ownership and the intermediate-result boundary.
-3. Specify **Stage 00 — Hex Grid**: projection, three map sizes, coordinates, neighbors and wrap.
-4. Define later layers **one at a time**, approving their contracts and validations before implementation.
+1. Translate the approved [WG-CORE architecture](engine/worldgen/core-architecture.md) into a separately authorized implementation roadmap and precise C# contracts.
+2. Specify **Stage 00 — Hex Grid**: projection, three map sizes, coordinates, neighbors and wrap.
+3. Define later layers **one at a time**, approving their contracts and validations before implementation.
 
 All future source code must follow root `AGENTS.md`, including English `//` file-purpose headers. Development prompts and project-owner communication remain in Spanish. Future authorized commits must increment root `VERSION`; `world` is the integration branch, and each layer will use a dedicated, separately authorized working branch. See `engine/worldgen/roadmap.md`.
 

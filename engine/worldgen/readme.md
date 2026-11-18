@@ -19,8 +19,9 @@ No OpenGL, rendering, menu code, file-save handling or parallel generator implem
 
 ## Documents
 
+- [Approved WG-CORE architecture](core-architecture.md)
 - [Overall roadmap](roadmap.md)
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-All implementation contracts remain subject to stage-specific approval.
+The WG-CORE functional design is approved; exact C# signatures and implementation contracts remain subject to separate authorization. No source implementation exists yet.
