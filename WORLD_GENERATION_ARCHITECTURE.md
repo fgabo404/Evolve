@@ -116,7 +116,7 @@ Reefs should not be finalized solely by this landmass stage: their ecological/ma
 
 ## 5. Orchestrator responsibilities and progression rules
 
-**WG-CORE's formal design is approved.** See [WG-CORE: Orchestrator and Generation Context](engine/worldgen/core-architecture.md). This approval covers the functional contract, state invariants, context ownership and determinism principles, but does not authorize implementation.
+**WG-CORE's formal behavioral design is approved.** See [WG-CORE: Orchestrator and Generation Context](engine/worldgen/core-architecture.md). A [technical contract draft](engine/worldgen/core-contracts.md) and [implementation roadmap proposal](engine/worldgen/core-roadmap.md) await owner approval; neither document authorizes implementation.
 
 
 The `WorldGenerationOrchestrator`:
@@ -299,7 +299,7 @@ This architecture remains **an approved preliminary design only**. The general r
 
 Recommended design order:
 
-1. Translate the approved [WG-CORE architecture](engine/worldgen/core-architecture.md) into a separately authorized implementation roadmap and precise C# contracts.
+1. Review and explicitly approve the proposed [WG-CORE technical contracts](engine/worldgen/core-contracts.md) and [implementation roadmap](engine/worldgen/core-roadmap.md) before developing CORE-01.
 2. Specify **Stage 00 — Hex Grid**: projection, three map sizes, coordinates, neighbors and wrap.
 3. Define later layers **one at a time**, approving their contracts and validations before implementation.
 

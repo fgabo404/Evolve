@@ -15,7 +15,7 @@ This roadmap is deliberately **high-level**. Detailed scope, algorithms, accepta
 
 | Stage | Workstream | Planned branch | Main scope |
 | --- | --- | --- | --- |
-| [WG-CORE](core-architecture.md) | Core | `world-core` | **Architecture approved; implementation pending.** Orchestrator, GenerationContext, stage contract, strict progression and invalidation |
+| [WG-CORE](core-roadmap.md) | Core | `world-core` | **Architecture approved; implementation roadmap proposed.** Orchestrator, GenerationContext, strict execution and invalidation |
 | [WG-00](layers/grid/roadmap.md) | Hex Grid | `world-grid` | Define a continuous east/west hex map with polar north/south limits, three configurable sizes and a proposed 2:1 equirectangular geographic representation. |
 | [WG-01](layers/tectonics/roadmap.md) | Tectonic Plates | `world-tectonics` | Generate geologically useful tectonic plates and convergent/divergent/transform boundary relationships. |
 | [WG-02](layers/landmasses/roadmap.md) | Landmasses | `world-landmasses` | Support Pangea, 2–4 continents, archipelagos and real-Earth geography with plate-informed land configuration. |
@@ -65,4 +65,4 @@ flowchart TD
 
 No C# implementation, new projects, standalone window, additional generator, geographic algorithms or new stage-specific requirements are authorized merely by creating this roadmap. Unresolved technical decisions remain in the [architecture document](../../WORLD_GENERATION_ARCHITECTURE.md).
 
-**Current status:** WG-CORE architectural design approved and documented in [core-architecture.md](core-architecture.md). Its implementation and all other development stages remain pending.
+**Current status:** WG-CORE behavior is approved in [core-architecture.md](core-architecture.md). The [technical contract proposal](core-contracts.md) and [detailed core roadmap](core-roadmap.md) are pending owner acceptance. No development stage has started.

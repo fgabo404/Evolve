@@ -6,6 +6,7 @@
 **Design status:** APPROVED BY PROJECT OWNER — 2026-11-18  
 **Implementation status:** NOT STARTED; no code or .NET contracts have been implemented  
 **Parent documents:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md) · [General Roadmap](roadmap.md)
+**Next planning artifacts:** [Technical contract proposal](core-contracts.md) · [WG-CORE implementation roadmap](core-roadmap.md)
 
 ## 1. Purpose and architectural boundary
 
@@ -221,6 +222,6 @@ These are **future validation gates, not test results**. No engine, stage or UI 
 
 The approved design does **not yet determine**: exact C# API signatures; settings DTOs and dependency direction between assemblies; stage result representation; resource ownership/copy semantics; concurrency primitives; cancellation and asynchronous execution; failure recovery details; checkpoint storage; exact derivation of stage seeds; internal event/progress notification mechanism; or user-interface layout.
 
-Such decisions require an explicit WG-CORE implementation plan and project-owner authorization. No branch `world-core` has been created yet.
+A [technical contract draft](core-contracts.md) and a [detailed implementation roadmap](core-roadmap.md) now propose how to resolve these decisions. They are **pending owner approval**; they do not supersede the approved behavioral design or authorize code. No branch `world-core` has been created yet.
 
 **Design approved. Implementation remains pending.**
