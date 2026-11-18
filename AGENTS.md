@@ -6,7 +6,6 @@ repository, regardless of the module or roadmap being worked on.
 - Repository: `fgabo404/Evolve`
 - Working branch: `architecture`
 - Architecture: `architecture.MD`
-- Current UI roadmap: `game/roadmap.md`
 
 ## Language
 
@@ -59,8 +58,11 @@ repository, regardless of the module or roadmap being worked on.
 
 ## Roadmap workflow
 
-- Identify and read the applicable roadmap and relevant module documentation
-  before development. For UI work, read `game/readme.md` and `game/roadmap.md`.
+- Identify and read the applicable roadmap, when one exists, and relevant module
+  documentation before development. For UI work, read `game/readme.md` and any
+  task-specific roadmap authorized for that work.
+- Completed roadmaps may be retired with owner approval; their history remains
+  in Git. Their retirement does not authorize new development or a new roadmap.
 - Implement only the explicitly authorized stage, one stage at a time.
 - Do not advance to another stage without approval.
 - Do not modify the architecture or roadmap without authorization.

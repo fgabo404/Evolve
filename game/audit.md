@@ -172,10 +172,12 @@ assertion that the Auditor independently tested or reviewed `v0.0.07`.
 Historical evidence and the manual checklist above remain available. DPI,
 native events and real resource release are not marked as verified by closure.
 
-The `v0.0.08` closure changes only documentation and root `VERSION`. The approved
-interface decisions are recorded in `roadmap.md`, including the single
-`EvolveWindow` policy for future screens. No navigation, new screen, source-code
-change or observation-related correction is implemented in this delivery.
+The `v0.0.08` closure changed only documentation and root `VERSION`. Approved
+interface decisions, including the single `EvolveWindow` policy for future
+screens, were recorded in the completed roadmap and are now maintained in
+`readme.md`. The retired roadmap remains in Git history. No navigation, new
+screen, source-code change or observation-related correction was implemented
+in that closure.
 
 ### Closure validation performed by development
 
@@ -190,7 +192,21 @@ git diff --check
 Results: 16/16 checks passed; Release build succeeded with zero warnings and
 errors; whitespace verification passed. Built informational metadata was read
 from `Evolve.Game.dll` and matched root `VERSION` exactly: `v0.0.08`.
-The change list was restricted to `roadmap.md`, `audit.md`, `readme.md` and root
-`VERSION`; no C# source, project or test code was changed. These are development
-validation results, not a new Auditor execution. No manual GPU, DPI or native
+The change list was restricted to the interface roadmap (retired after closure),
+`audit.md`, `readme.md` and root `VERSION`; no C# source, project or test code was
+changed. These are development validation results, not a new Auditor execution.
+No manual GPU, DPI or native
 event verification was performed for this closure.
+
+## Completed roadmap retirement
+
+After official closure, the project owner authorized deletion of the completed
+interface roadmap without moving it or retaining a working-tree copy. The
+closure document remains available in Git at commit
+`e55644686a83dec18be47078b23c978ae29b6305`.
+
+The approved interface decisions are maintained in `readme.md`. All historical
+audit evidence, the verdict and observation dispositions above remain valid;
+retirement does not mark pending DPI, native-event or GPU resource-release
+checks as completed. No replacement roadmap or new development is authorized
+by this retirement.

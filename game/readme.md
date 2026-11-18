@@ -14,7 +14,7 @@ No implementa reglas ni cálculos de simulación.
   input and the renderer.
 - `rendering/` contains `PixelMenuRenderer.cs` and `LegacyBitmapFont.cs`: the
   existing OpenGL batch and local 5x7 font data used by menu presentation.
-- `readme.md`, `roadmap.md` and `audit.md` stay in the root of `game/`.
+- `readme.md` and `audit.md` stay in the root of `game/`.
 - `../tests/menu/` links production sources from `menu/` for GPU-independent
   verification; it does not contain a duplicate menu implementation.
 
@@ -28,6 +28,20 @@ errors. A source comparison confirmed that all 13 C# files in `game/` and
 `tests/menu/` retain their non-comment contents. Built display metadata matches
 root `VERSION`. No GUI or visual validation was performed for this structural
 change; native input, DPI behavior and GPU cleanup remain manual checks.
+
+## Approved interface decisions
+
+- Evolve uses C# / .NET 10 and OpenTK 4.9.4 for the graphical application.
+- The entire application runs within one main window, `EvolveWindow`. Future
+  menus, laboratories and game screens must be presented inside that same
+  window; this policy does not implement navigation or additional screens.
+- `game/` owns presentation and player interaction, independently of simulation
+  rules. Its `menu/` and `rendering/` responsibilities are described above.
+- C# source files begin with English `//` documentation according to root
+  `AGENTS.md`. Root `VERSION` remains the only source of game version metadata.
+
+These decisions preserve the approved interface structure only; they do not
+define the physical organization of other modules.
 
 ## UI-01 — Proyecto gráfico mínimo
 
@@ -66,8 +80,10 @@ cierran la aplicación limpiamente (en ejecuciones separadas). Tras cada cierre,
 The project owner has accepted UI-01 through UI-04 and officially closed the
 base-interface roadmap. The independent audit returned **APPROVE WITH
 OBSERVATIONS** for `v0.0.06`; the owner subsequently approved the `v0.0.07`
-structural reorganization. See `roadmap.md` for the closure and approved interface
-decisions, and `audit.md` for historical evidence and remaining manual checks.
+structural reorganization. The completed roadmap has been retired without a
+replacement; its history remains available in Git. Approved interface decisions
+are recorded above, and `audit.md` retains closure evidence and outstanding
+manual checks. Future independent roadmaps require separate owner authorization.
 
 ## UI-02 — Main menu presentation
 
