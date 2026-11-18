@@ -12,10 +12,10 @@
 
 The **approved** system behavior is sequential execution of eight stages by one `WorldGenerationOrchestrator`, over a temporary `GenerationContext`, with atomic publication of validated results, deterministic replay, strict prerequisites, downward invalidation and completion-only finalization.
 
-The project owner approved this technical design on 2026-11-18. CORE-01 now
-implements the limited contract surface documented in section 10, subject to
-owner acceptance. The broader execution behavior below remains a design for
-later separately authorized increments, not an existing implementation.
+The project owner approved this technical design on 2026-11-18 and accepted
+the CORE-01 surface in section 10. CORE-02 now implements the temporary context
+and read-only storage surface in section 12, subject to acceptance. The broader
+execution behavior below remains a design for later authorized increments.
 
 - `definitions/worldgen/` owns configuration/value definitions; no generation algorithms.
 - `engine/worldgen/` owns the orchestrator, lifecycle and generation draft.
@@ -45,8 +45,8 @@ The initial contract is a fixed, ordered pipeline of eight stages. A stage can r
 
 ## 3. Candidate data and execution contracts
 
-These execution operations are deferred. CORE-01 introduces no functional
-context, orchestrator, execution method or placeholder result type.
+These execution operations are deferred. CORE-02 implements context/progress
+inspection as documented in section 12, but no orchestrator or execution method.
 
 These are **logical signatures**, not literal finalized C# syntax:
 
@@ -235,8 +235,9 @@ The first WG-CORE test harness should use test-only fake layers and **must not**
 16. No reference to OpenTK, window APIs or GPU-dependent execution in the core tests.
 
 These are planned acceptance checks for the complete WG-CORE. CORE-01 verifies
-only the registration/configuration subset recorded in section 10; it does not
-demonstrate context, execution, determinism, finalization or performance behavior.
+registration/configuration (section 10); CORE-02 verifies temporary storage,
+progress observations and alias protection (section 12). Neither increment
+demonstrates layer execution, determinism, finalization or performance behavior.
 
 ## 9. Decisions awaiting detailed owner approval
 
@@ -248,8 +249,8 @@ demonstrate context, execution, determinism, finalization or performance behavio
 - Metrics, diagnostics, checkpoints and memory/performance budgets.
 - Integration with actual Grid later, without adding any geography algorithm to WG-CORE.
 
-**Status:** technical design approved by the project owner. CORE-01 is implemented
-on `world-core`, pending review and acceptance. CORE-02 through CORE-05 remain
+**Status:** CORE-01 accepted by the project owner. CORE-02 is implemented on
+`world-core`, pending review and acceptance. CORE-03 through CORE-05 remain
 unimplemented and require separate authorization.
 
 ## 10. CORE-01 implemented C# contract
@@ -265,9 +266,10 @@ unimplemented and require separate authorization.
 All three projects target `net10.0`, enable nullable reference checking and
 implicit framework usings, and introduce no NuGet packages. The two production
 projects are libraries; the test project is an executable, following the existing
-menu-check convention. No solution, shared UI project, friend assembly, linked
-production-source copy or additional abstraction is required. Existing game and
-menu-test projects, and the state/save modules, are unchanged.
+menu-check convention. CORE-01 required no solution, shared UI project, friend
+assembly or linked production-source copy. CORE-02 adds only the restricted
+friend grant documented below; the project dependency direction is unchanged.
+Existing game/menu-test projects and state/save modules remain unchanged.
 
 ### Stable identities
 
@@ -338,9 +340,10 @@ later orchestrator's operation-result or execution-failure model.
 `IWorldGenerationLayer` deliberately has no `Execute` method in CORE-01.
 Read-only input views, isolated candidate output, stream ownership and result
 validation require the actual CORE-02/CORE-03 context and execution design.
-There is no empty context, no-op execution, `object` payload, throwing execution
-stub, random implementation, lifecycle state machine or final-world result.
-Later signatures must extend this boundary through their authorized increment.
+CORE-01 introduced no empty context, no-op execution, `object` payload, throwing
+execution stub, random implementation or final-world result. CORE-02 adds the
+actual storage lifecycle below without changing the layer interface. Later
+execution signatures must extend it through their authorized increment.
 
 Exactly eight metadata-only fake implementations live in
 `tests/worldgen/FakeWorldGenerationLayers.cs`. They cover all eight identities;
@@ -388,3 +391,119 @@ keep temporary state separate from `WorldState` and save files, provide
 read-only completed-layer inspection and protect against mutable aliasing.
 CORE-03 execution, CORE-04 determinism/rebuild, and CORE-05 finalization
 remain explicitly unauthorized.
+
+## 12. CORE-02 context and read-only storage contract
+
+### Public C# surface
+
+All new production types remain in `Evolve.Engine.WorldGeneration` and introduce
+no packages or project references. CORE-01 types and signatures are unchanged.
+
+| Type | Implemented explicit members |
+| --- | --- |
+| `GenerationStageStatus` | `Pending = 0`, `Running = 1`, `Completed = 2`, `Failed = 3`, `Invalidated = 4`. No `Blocked` storage state. |
+| `public sealed class GenerationContext` | `GenerationContext(GenerationRequest request)`; `GenerationRequest Request { get; }`; `GenerationProgress GetProgress()`; `LayerData? GetLayerData(GenerationStage stage)`. |
+| `public sealed class GenerationProgress` | `GenerationStageStatus GetStatus(GenerationStage stage)`; `string? GetFailure(GenerationStage stage)`; `GenerationStage? LastCompletedStage { get; }`; `GenerationStage? NextStage { get; }`. No public constructor or mutators. |
+| `public abstract class LayerData` | `GenerationStage Stage { get; }`; a `private protected` constructor restricts derived implementations to engine/trusted friend code. |
+| `public sealed class LayerData<T> : LayerData, IReadOnlyList<T> where T : unmanaged` | `LayerData(GenerationStage stage, IEnumerable<T> values)`; `IReadOnlyList<T> Values { get; }`; `int Count { get; }`; get-only `T this[int index]`; normal generic/non-generic enumeration. |
+
+The context retains the already immutable sealed `GenerationRequest` and sealed
+settings. Seed, world type and map size are read through `Request`; there is no
+second metadata store, session randomness, geometry parameter or new default.
+
+### Single authoritative state and immutable observations
+
+The context owns one private table with eight immutable slot records. Each
+record holds its status, published data and optional failure diagnostic together.
+All eight slots begin `Pending`, with no data or diagnostics. Public callers
+can only inspect the context; no arbitrary state setter is available.
+
+`GetProgress` copies only the eight small status/diagnostic records into private
+snapshot arrays, never the world or layer buffers. Snapshots expose lookups, not
+mutable arrays, collections or live views. Old observations do not change after
+later storage transitions. They are observations, not a second writable source
+of progress truth.
+
+`LastCompletedStage` ends the contiguous `Completed` prefix from Grid. `NextStage`
+is the first non-completed slot after that prefix, including `Failed` or
+`Invalidated`; it is null if every stage is completed or any slot is `Running`.
+This is derived progress information, not an execution command or a substitute
+for CORE-03's prerequisite checks.
+
+### Output ownership and mutable-alias protection
+
+`LayerData<T>` copies its source sequence once into a privately owned array.
+The `unmanaged` constraint permits scalar/value-only records and prevents normal
+C# callers from hiding mutable managed arrays, lists or reference objects inside
+an element. The class is sealed. The public abstract base has a restricted
+constructor, so ordinary external consumers cannot supply arbitrary mutable subclasses.
+No `object` payload, generic shallow-copy callback or serialization format is used.
+
+The public value view implements only read-only list/enumeration interfaces;
+it is not an array or mutable collection wrapper, and supplies no backing-array
+accessor. Indexing and iteration return values by copy. Changes to original
+arrays/lists, including structured test values, cannot change captured data.
+Consumers cannot cast the value view to `IList<T>` or a non-generic collection
+to recover a writable container. Reflection, unsafe memory manipulation and
+trusted engine/friend-assembly internals are not public mutation contracts.
+
+Publication retains the immutable buffer rather than copying it again. A slot
+accepts only data with the same immutable stage identity. Another stage cannot
+overwrite or claim that slot. Inspection returns that same immutable result;
+it never duplicates a complete world for each stage. More complex future
+geographical outputs requiring managed references need their own explicitly
+approved immutable contract; they must not bypass this constraint via `object`.
+
+`GetLayerData` returns null for `Pending`, `Running`, `Failed` or `Invalidated`
+slots. A candidate constructed outside the context is not published automatically.
+Discarded results cannot be retrieved through new context queries. Previously
+held immutable observations/results remain historical references; this storage
+boundary does not revoke references or implement Laboratory cache invalidation.
+
+### Restricted internal preparation methods
+
+Only engine-internal code and the specifically named test friend can call:
+
+| Method | Storage transition / invariant |
+| --- | --- |
+| `MarkRunning(GenerationStage stage)` | Only `Pending`, `Failed` or `Invalidated` → `Running`; clears that slot's data and diagnostic. |
+| `Publish(GenerationStage stage, LayerData data)` | Only `Running` → `Completed`; requires matching ownership and replaces state/data in one immutable slot record. |
+| `MarkFailed(GenerationStage stage, string diagnostic)` | Only `Running` → `Failed`; requires a nonblank diagnostic and publishes no candidate. |
+| `InvalidateStage(GenerationStage stage)` | Only `Completed` → `Invalidated`; drops only that slot's published reference. No downstream cascade or rebuild. |
+
+Arguments and transitions are checked before replacing a slot, so rejection
+preserves its previous valid state and all other slots. Undefined stage IDs
+throw `ArgumentOutOfRangeException`; null requests, candidates and value sources
+throw `ArgumentNullException`; ownership mismatch/blank diagnostics throw
+`ArgumentException`; invalid transitions throw `InvalidOperationException`.
+
+These are storage preparation primitives, not layer execution, retry workflows,
+prerequisite enforcement or an alternate orchestrator. They do not choose the
+next layer, run an algorithm or automatically invalidate downstream stages.
+Calls must be serialized by engine ownership; concurrent access, operation
+exclusivity, cancellation and full execution transactions are not guaranteed by
+CORE-02. CORE-03/CORE-04 must supply their approved operational policies.
+
+`AssemblyVisibility.cs` grants `InternalsVisibleTo` only to the existing
+`Evolve.WorldGeneration.Checks` assembly. This allows direct tests of real
+storage methods without adding public mutators or a fake orchestration path.
+No production project references tests, OpenTK, game, active state or saves.
+
+### Validation and remaining scope
+
+`tests/worldgen/GenerationContextChecks.cs` uses these internal methods directly
+as storage tests. `FakeLayerValue.cs` contains a neutral unmanaged sample value
+only; there is no geographic algorithm, test-only context or simulated runner.
+The accepted CORE-01 check suite and metadata-only fake layers remain unchanged.
+
+Run all regression commands from section 10. Real layer execution, `RunNext`,
+`RunAll`, `RunUntil`, orchestrator APIs, PRNG, automatic downstream invalidation,
+operational rebuild, `FinalizeWorld`, state integration and GUI changes remain
+unimplemented. No acceptance of CORE-02 or authorization of CORE-03 is implied.
+
+Executed development regression: 15/15 unchanged CORE-01 checks, 19/19 new
+CORE-02 storage checks and 16/16 menu checks passed. The explicit engine and
+game Release builds each reported zero warnings and errors. Whitespace checking
+passed, and the compiled game informational version matched `v0.0.17`.
+These are headless logic/build results, not GUI validation, geographic
+generation, orchestrator execution or independent audit acceptance.

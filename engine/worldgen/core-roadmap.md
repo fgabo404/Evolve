@@ -4,7 +4,8 @@
 **Integration branch:** `world`  
 **Working branch:** `world-core`
 
-**Status:** APPROVED BY PROJECT OWNER — 2026-11-18; CORE-01 accepted, CORE-02 authorized; CORE-03..05 not authorized  
+**Status:** CORE-01 accepted; CORE-02 implemented pending acceptance; CORE-03..05 not authorized.
+
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
 
@@ -19,7 +20,7 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 | Increment | Scope | Evidence / exit gate | Status |
 | --- | --- | --- | --- |
 | **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Accepted by project owner — 2026-11-18 |
-| **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Authorized — pending implementation |
+| **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Implemented — pending review and owner acceptance |
 | **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Not started |
 | **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Not started |
 | **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Not started |
@@ -77,8 +78,9 @@ These decisions must be resolved **before or within a separately authorized CORE
 
 **Roadmap status:** approved. CORE-01 was accepted by the project owner on
 2026-11-18 following developer test evidence and an architectural source review.
-CORE-02 is authorized as the only next increment; CORE-03..05 remain pending
-separate approval. No merge into `world` or geographic layer development is authorized.
+CORE-02 is implemented and awaits review and acceptance; CORE-03..05 remain
+pending separate approval. No merge into `world` or geographic layer development
+is authorized.
 
 ## CORE-01 delivery record
 
@@ -103,3 +105,28 @@ whitespace verification passed. The compiled display version is `v0.0.15`.
 The commands and coverage are recorded in `core-contracts.md`. This evidence supported the owner's subsequent acceptance; it is **development
 validation and architectural source review**, not a new independent audit.
 CORE-02 authorization does not authorize later increments.
+
+## CORE-02 delivery record
+
+`GenerationContext` retains immutable request metadata and one private table of
+stage status, data and diagnostic records. `GenerationProgress` derives immutable
+observations from that table. `LayerData<T>` owns a copied unmanaged value buffer
+for one stage and exposes only read-only values; no complete world copy is made
+for each stage. The five approved lifecycle states are represented explicitly.
+
+Only restricted engine-internal storage transitions can prepare a slot, publish
+matching data, record failure or discard one published result. The existing
+headless check assembly receives a named friend grant to test these methods
+directly. They are not an orchestrator, prerequisite gate, execution/retry mode
+or automatic invalidation system. Calls are not advertised as thread-safe.
+
+Exact signatures, alias-protection constraints and remaining operational scope
+are recorded in [CORE-02 contracts](core-contracts.md#12-core-02-context-and-read-only-storage-contract).
+CORE-01 contracts remain unchanged. CORE-03 execution, CORE-04 PRNG/rebuild and
+CORE-05 finalization are not implemented or authorized by this delivery.
+
+Development evidence: 15/15 CORE-01, 19/19 CORE-02 and 16/16 existing menu checks
+passed. Engine and game Release builds completed with zero warnings/errors;
+`git diff --check` passed; the compiled display version matched `v0.0.17`.
+No GUI, real layer or orchestrator execution was performed. CORE-02 remains
+subject to owner review and acceptance.
