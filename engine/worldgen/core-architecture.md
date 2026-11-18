@@ -2,9 +2,10 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
-**Planned implementation branch:** `world-core` (not created)  
+**Implementation branch:** `world-core`\
 **Design status:** APPROVED BY PROJECT OWNER — 2026-11-18  
-**Implementation status:** CORE-01 authorized as next increment; no code implemented by approval  
+**Implementation status:** CORE-01 through CORE-04 accepted; CORE-05 implemented\
+**Audit status:** APPROVED WITH OBSERVATIONS, as reported by the project owner; observations and final CORE-05 acceptance remain subject to separate disposition\
 **Parent documents:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md) · [General Roadmap](roadmap.md)
 **Technical artifacts:** [Approved technical design](core-contracts.md) · [Approved WG-CORE roadmap](core-roadmap.md)
 
@@ -53,7 +54,7 @@ The orchestrator owns the stage registry/order, eligibility checks, execution li
 | `GetLayerData(stage)` | Expose **read-only** results for a successfully completed, non-invalidated stage. |
 | `FinalizeWorld()` | Produce a complete world result only after all eight stages have completed and passed validation. |
 
-These operation names describe the **approved functional design**; exact C# signatures, return types, error models, cancellation and async semantics remain implementation-contract decisions.
+These operation names describe the **approved functional design**. Implemented C# signatures, return types and error models are recorded in [technical contracts](core-contracts.md); cancellation and async semantics remain outside the implemented scope.
 
 ### Execution modes and entry-point rules
 
@@ -91,7 +92,7 @@ The following invariants are approved:
 5. **Read-only completion.** Later layers consume earlier validated outputs without modifying the owners' data in place.
 6. **Finalization gate.** Only a world with all eight stages completed and validated can produce a final world result for `state/world/`.
 
-The chosen atomic-result storage strategy, cancellation semantics, retry behavior and data memory budgets will be defined before implementation.
+At design approval, atomic-result storage, cancellation, retry behavior and data memory budgets were implementation decisions. The implemented storage and retry contracts are recorded in [technical contracts](core-contracts.md); cancellation and data memory budgets remain outside the implemented scope.
 
 ## 4. GenerationContext — logical contract
 
@@ -111,7 +112,7 @@ These data names are **conceptual**, not a commitment to eight concrete class na
 - Reuse grid/cell identifiers instead of copying the entire map after every stage.
 - Completed data is exposed to later layers and Laboratory presentation as **read-only**.
 - Intermediate results stay inspectable while valid. They are not automatically persisted as game saves.
-- Full snapshots, checkpoint persistence, structural sharing, deep copies, memory limits and cleanup policies are not yet specified.
+- Full snapshots, checkpoint persistence, structural sharing, deep copies, memory limits and cleanup policies were unspecified at design approval. Implemented immutable buffer ownership and finalization snapshot contracts are recorded in [technical contracts](core-contracts.md); other items remain outside the implemented scope.
 - Partial data is **not** silently promoted into `WorldState`.
 
 ### Conceptual data flow
@@ -161,7 +162,7 @@ WorldSeed
 
 Example: `RebuildFrom(Elevation)` preserves Grid, Tectonics and Landmasses; it invalidates Elevation, Landforms, Hydrology, Climate and Biomes. Changing the main seed, map size or a global setting that affects the grid starts a **new generation session from Grid**.
 
-The exact seed-derivation function and algorithm-version strategy remain pending engineering design.
+The seed-derivation function and algorithm-version strategy were pending at design approval. The accepted CORE-04 implementation is documented in [technical contracts](core-contracts.md#16-core-04-deterministic-streams-and-exclusive-rebuild).
 
 ## 6. Laboratory integration
 
@@ -178,7 +179,7 @@ Laboratory overlays, navigation design, renderer classes and interactive control
 
 ## 7. Planned source organization
 
-These are **candidate source files only**. No C# file, interface or project is created by approving this design.
+The following is the **historical candidate source organization**, preserved from design approval. It is not the current file inventory; approving the design itself created no C# file, interface or project. Implemented types and project boundaries are recorded in [technical contracts](core-contracts.md).
 
 ```text
 engine/worldgen/
@@ -202,9 +203,9 @@ engine/worldgen/
     └── biomes/
 ```
 
-Final class/interface decomposition and method signatures are subject to the WG-CORE implementation contract. New C# files must follow the English `//` file-purpose comment policy in `AGENTS.md`.
+Implemented class/interface decomposition and method signatures are recorded in the WG-CORE implementation contract. New C# files must follow the English `//` file-purpose comment policy in `AGENTS.md`.
 
-## 8. WG-CORE acceptance criteria for a future implementation
+## 8. WG-CORE acceptance criteria
 
 WG-CORE can be accepted only after tests and technical review demonstrate:
 
@@ -216,12 +217,12 @@ WG-CORE can be accepted only after tests and technical review demonstrate:
 6. The engine executes and can be validated **without OpenTK or GPU dependencies**.
 7. `FinalizeWorld()` fails or remains unavailable until every stage is valid.
 
-These are **future validation gates, not test results**. No engine, stage or UI implementation has been executed as part of this design approval.
+These criteria preserve the original validation gates; the design approval itself supplied no execution evidence. CORE-01 through CORE-04 are now accepted and CORE-05 is implemented. The independent audit is **APPROVED WITH OBSERVATIONS**, as reported by the project owner. This status update does not resolve observations or imply final CORE-05 acceptance; implementation evidence is recorded in the [technical contracts](core-contracts.md) and [core roadmap](core-roadmap.md).
 
 ## 9. Remaining engineering decisions
 
-The approved design does **not yet determine**: exact C# API signatures; settings DTOs and dependency direction between assemblies; stage result representation; resource ownership/copy semantics; concurrency primitives; cancellation and asynchronous execution; failure recovery details; checkpoint storage; exact derivation of stage seeds; internal event/progress notification mechanism; or user-interface layout.
+At original approval, the design did **not determine**: exact C# API signatures; settings DTOs and dependency direction between assemblies; stage result representation; resource ownership/copy semantics; concurrency primitives; cancellation and asynchronous execution; failure recovery details; checkpoint storage; exact derivation of stage seeds; internal event/progress notification mechanism; or user-interface layout. Implemented API, project boundaries, immutable ownership, concurrency, retry and deterministic seed derivation are now recorded in [technical contracts](core-contracts.md). The remaining items are outside the implemented WG-CORE scope.
 
-The owner has **approved** the [technical design](core-contracts.md) and [implementation roadmap](core-roadmap.md), and authorized **CORE-01 only**. Exact C# signatures and implementation details belong to CORE-01, with later increments gated separately. The `world-core` branch is created from this approved baseline.
+The owner has **approved** the [technical design](core-contracts.md) and [implementation roadmap](core-roadmap.md). CORE-01 through CORE-04 are accepted; CORE-05 is implemented on `world-core`. The independent audit is **APPROVED WITH OBSERVATIONS**, as reported by the project owner. Observations and final CORE-05 acceptance remain subject to separate disposition. Integration into `world` and subsequent work require separate authorization.
 
-**Design approved. Implementation remains pending.**
+**Design approved. CORE-01 through CORE-04 accepted; CORE-05 implemented. Audit APPROVED WITH OBSERVATIONS.**

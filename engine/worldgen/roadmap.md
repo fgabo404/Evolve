@@ -2,7 +2,7 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
-**Status:** PLANNING — approved preliminary architecture; implementation stages not yet authorized  
+**Status:** WG-CORE: CORE-01 through CORE-04 accepted; CORE-05 implemented; independent audit APPROVED WITH OBSERVATIONS, as reported by the project owner. Geographic layers remain pending separate authorization.\
 **Source of truth:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
 ## Goal
@@ -15,7 +15,7 @@ This roadmap is deliberately **high-level**. Detailed scope, algorithms, accepta
 
 | Stage | Workstream | Planned branch | Main scope |
 | --- | --- | --- | --- |
-| [WG-CORE](core-roadmap.md) | Core | `world-core` | **Architecture and roadmap approved; CORE-01 authorized.** Orchestrator, GenerationContext, strict execution and invalidation |
+| [WG-CORE](core-roadmap.md) | Core | `world-core` | **CORE-01 through CORE-04 accepted; CORE-05 implemented; audit APPROVED WITH OBSERVATIONS.** Orchestrator, GenerationContext, strict execution and invalidation |
 | [WG-00](layers/grid/roadmap.md) | Hex Grid | `world-grid` | Define a continuous east/west hex map with polar north/south limits, three configurable sizes and a proposed 2:1 equirectangular geographic representation. |
 | [WG-01](layers/tectonics/roadmap.md) | Tectonic Plates | `world-tectonics` | Generate geologically useful tectonic plates and convergent/divergent/transform boundary relationships. |
 | [WG-02](layers/landmasses/roadmap.md) | Landmasses | `world-landmasses` | Support Pangea, 2–4 continents, archipelagos and real-Earth geography with plate-informed land configuration. |
@@ -48,8 +48,8 @@ flowchart TD
 
 - Every layer owns its internal `layers/<layer>/roadmap.md`; its **detailed plan must be designed and approved separately**.
 - Every layer is developed in a **dedicated Git branch** from the current `world` integration baseline, after preceding approved work has been integrated.
-- The names above are **proposals, not branches created by this documentation task**. They use `world-grid`, etc., rather than `world/grid`: a ref named `world` already exists, so a Git branch name beginning with `world/` would conflict.
-- The cross-cutting core and Laboratory workstreams also have proposed dedicated branches. Their implementation order and increments need approval.
+- `world-core` is the existing core implementation branch. Other names above remain **proposals, not branches created by this documentation task**. They use `world-grid`, etc., rather than `world/grid`: a ref named `world` already exists, so a Git branch name beginning with `world/` would conflict.
+- The core increments have been implemented on `world-core`. The Laboratory workstream retains a proposed dedicated branch; its implementation order and increments need separate approval.
 - Only owner-approved work may be committed; accepted work is then integrated into `world` through an explicitly approved integration action. `develop` remains unaffected until separately authorized.
 - The general roadmap documents progress; no layer advances before its immediate predecessor is valid and successfully completed in the **same** generation context.
 
@@ -65,4 +65,4 @@ flowchart TD
 
 No C# implementation, new projects, standalone window, additional generator, geographic algorithms or new stage-specific requirements are authorized merely by creating this roadmap. Unresolved technical decisions remain in the [architecture document](../../WORLD_GENERATION_ARCHITECTURE.md).
 
-**Current status:** WG-CORE behavior, [technical design](core-contracts.md) and [detailed roadmap](core-roadmap.md) are approved by the project owner. CORE-01 is the **only authorized implementation increment**, on `world-core`. All later increments and geographic layers remain pending.
+**Current status:** WG-CORE behavior, [technical design](core-contracts.md) and [detailed roadmap](core-roadmap.md) are approved by the project owner. CORE-01 through CORE-04 are accepted; CORE-05 is implemented on `world-core`. The independent audit is **APPROVED WITH OBSERVATIONS**, as reported by the project owner. Observations remain subject to their separate disposition; this status update does not resolve them or imply final CORE-05 acceptance. Integration into `world`, geographic layers and Laboratory implementation remain subject to separate authorization.
