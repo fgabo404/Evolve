@@ -63,9 +63,11 @@ fondo cubre el área al redimensionar, minimizar y restaurar, y que X y Alt+F4
 cierran la aplicación limpiamente (en ejecuciones separadas). Tras cada cierre,
 `$LASTEXITCODE` debe ser `0` y no debe quedar un proceso de Evolve activo.
 
-The project owner has accepted UI-01 through UI-03. UI-04 verification evidence
-and remaining manual checks are recorded in `audit.md`; final independent audit
-and roadmap acceptance remain pending. The roadmap is unchanged.
+The project owner has accepted UI-01 through UI-04 and officially closed the
+base-interface roadmap. The independent audit returned **APPROVE WITH
+OBSERVATIONS** for `v0.0.06`; the owner subsequently approved the `v0.0.07`
+structural reorganization. See `roadmap.md` for the closure and approved interface
+decisions, and `audit.md` for historical evidence and remaining manual checks.
 
 ## UI-02 — Main menu presentation
 
@@ -191,6 +193,8 @@ input-source changes, unavailable notices, exit requests and layout hit bounds.
 Native event delivery, real DPI changes, OpenGL cleanup and visual output must
 still be checked manually using the checklist above.
 
-See `audit.md` for executed commands, results, technical review and known
-limitations. UI-04 prepares evidence for the independent Auditor; it does not
-constitute the Auditor's approval or final roadmap acceptance.
+See `audit.md` for executed commands, results, technical review, the independent
+audit verdict and accepted observation dispositions. The base-interface roadmap
+is **CLOSED — Approved by the project owner.** DPI, native-event and real GPU
+resource-release checks without sufficient evidence remain manual limitations;
+closure does not imply that those checks have been executed.

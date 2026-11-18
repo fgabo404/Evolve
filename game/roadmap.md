@@ -2,8 +2,16 @@
 
 **Rama:** `architecture`  
 **Área:** `game/`  
-**Estado general:** PROPUESTA — pendiente de aprobación del responsable del proyecto  
+**Estado general:** CLOSED — Approved by the project owner.
+
 **Fecha:** 2026-11-16
+
+**Closure date:** 2026-11-18
+
+**Closure version:** `v0.0.08`
+
+**Independent audit verdict:** APPROVE WITH OBSERVATIONS; see `audit.md` for
+the audited revision, accepted observations and outstanding manual checks.
 
 ## 1. Objetivo
 
@@ -21,7 +29,11 @@ Esta fase es **solo la base de la interfaz**. No incluye generación de mundos, 
 - Diseño centrado que se adapte al cambio de tamaño de ventana.
 - Sin copiar texturas, fuentes ni otros recursos protegidos de Minecraft.
 
-## 2. Elección técnica pendiente
+## 2. Technical choice — approved
+
+Approved implementation: C# / .NET 10 with OpenTK 4.9.4. The following proposal
+and approval requirement are retained as historical planning context; the gate
+was satisfied by the authorized implementation and project owner acceptance.
 
 **Propuesta del Arquitecto:** utilizar **C# / .NET 10 + OpenTK 4.x**, porque la versión anterior de Evolve (`WorldGenerationOLD`) ya usaba OpenTK 4.9.4 para la ventana y la representación 2D.
 
@@ -33,7 +45,7 @@ El sistema gráfico debe estar encapsulado en `game/`, con una estructura intern
 
 ### UI-01 — Proyecto gráfico mínimo
 
-**Estado:** Pendiente.
+**Estado:** COMPLETED — Accepted by the project owner.
 
 **Dev / Codex:**
 1. Tras la aprobación de la biblioteca gráfica, crear el proyecto C# ejecutable dentro de `game/`.
@@ -45,7 +57,7 @@ El sistema gráfico debe estar encapsulado en `game/`, con una estructura intern
 
 ### UI-02 — Presentación del menú
 
-**Estado:** Pendiente.
+**Estado:** COMPLETED — Accepted by the project owner.
 
 **Dev / Codex:**
 1. Dibujar el título `EVOLVE` en grande.
@@ -58,7 +70,7 @@ El sistema gráfico debe estar encapsulado en `game/`, con una estructura intern
 
 ### UI-03 — Interacción básica
 
-**Estado:** Pendiente.
+**Estado:** COMPLETED — Accepted by the project owner.
 
 **Dev / Codex:**
 1. Implementar estados visuales normales, al pasar el cursor y al pulsar.
@@ -70,7 +82,7 @@ El sistema gráfico debe estar encapsulado en `game/`, con una estructura intern
 
 ### UI-04 — Verificación y entrega
 
-**Estado:** Pendiente.
+**Estado:** COMPLETED — Accepted by the project owner.
 
 **Dev / Codex:**
 1. Incorporar verificaciones automatizadas sencillas de cualquier lógica de navegación comprobable sin GPU, si la implementación lo permite sin añadir complejidad artificial.
@@ -94,10 +106,55 @@ El sistema gráfico debe estar encapsulado en `game/`, con una estructura intern
 - No modificar `architecture.MD`, otros módulos o este roadmap sin la autorización correspondiente.
 - **No avanzar hacia la generación de mundos** dentro de este roadmap.
 
-## 5. Decisiones que deben cerrarse antes de UI-01
+## 5. Initial decisions — resolved
 
-- [ ] Biblioteca gráfica: aprobar OpenTK u otra alternativa.
-- [ ] Versión inicial visible: aprobar `0.0.1` u otro valor.
-- [ ] Aprobar el diseño y dar autorización al Dev para comenzar UI-01.
+- [x] Graphics library: OpenTK 4.9.4 approved and implemented with C# / .NET 10.
+- [x] Initial display version: `v0.0.01` adopted in root `VERSION`; numeric .NET
+  metadata is normalized separately. The original numeric proposal `0.0.1` above
+  is retained as historical context, not a second source of version truth.
+- [x] Design and UI-01 implementation authorized; UI-01 through UI-04 completed
+  and accepted by the project owner.
+
+Historical planning restriction, superseded by the explicit owner closure below:
 
 **Esta documentación es un plan de trabajo; su publicación no autoriza implementar las etapas.**
+
+## 6. Official closure and approved interface decisions
+
+**CLOSED — Approved by the project owner.** The owner authorized closure after
+reviewing and approving the `game/` structure, including the `menu/` and
+`rendering/` reorganization. Original stage tasks and acceptance criteria remain
+above as the historical baseline.
+
+| Stage | Completed and accepted result |
+| --- | --- |
+| UI-01 | Minimal graphical window and lifecycle. |
+| UI-02 | Approved main-menu presentation and visual refinements. |
+| UI-03 | Mouse and keyboard interaction, unavailable notices and graceful exit. |
+| UI-04 | Automated checks, technical documentation and audit preparation. |
+
+The following decisions are definitive for this interface roadmap:
+
+- Evolve uses C# and .NET 10; its graphical implementation uses OpenTK 4.9.4.
+- The entire application will run inside one main window, `EvolveWindow`.
+  Future menus, laboratories and game screens must be presented within that
+  same window. This decision does not implement navigation or new screens.
+- `game/` remains separate from simulation rules.
+- `game/menu/` groups the menu components; `game/rendering/` contains the
+  current graphical tools.
+- Every C# source file begins with English `//` documentation as required by
+  root `AGENTS.md`.
+- Root `VERSION` is the single source of truth for the game version, with its
+  exact display string preserved in assembly informational metadata.
+
+These decisions approve the interface implementation and its physical layout
+only. They do not settle the physical organization of other modules or replace
+the logical responsibilities in `architecture.MD`.
+
+The independent audit covered `v0.0.06` at commit
+`60b82a54025306367dcba40c8ba84c8ff529a5cc` and returned **APPROVE WITH
+OBSERVATIONS**. The subsequent `v0.0.07` structural reorganization was approved
+by the owner and verified by development; it is not represented as independently
+audited. Observation dispositions and pending manual checks are recorded in
+`audit.md`. Closure does not claim that those manual checks were executed and
+does not authorize another roadmap or new functionality.

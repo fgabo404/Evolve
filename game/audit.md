@@ -1,5 +1,9 @@
 # Main menu audit preparation — UI-04
 
+The preparation sections below preserve the historical UI-04 development
+record. The official closure and independent audit outcome are recorded in the
+final section of this document.
+
 ## Scope and responsibilities
 
 The project owner accepted UI-01, UI-02 and UI-03. This delivery prepares the
@@ -120,5 +124,73 @@ pixel sizes and the 400 x 300 minimum client size are existing design choices.
 Unavailable features remain unavailable; there is no world generation,
 laboratory, settings implementation, simulation or persistence in the menu.
 
-These results are development evidence, not independent audit approval. Final
-roadmap acceptance belongs to the project owner after the Auditor's review.
+The execution and technical review above are historical development evidence,
+not proof of checks performed by the independent Auditor. The independent audit
+outcome and the project owner's subsequent acceptance are recorded below.
+
+## Official closure — 2026-11-18
+
+**Roadmap status:** CLOSED — Approved by the project owner.
+
+**Independent audit verdict:** APPROVE WITH OBSERVATIONS.
+
+**Audited commit:** `60b82a54025306367dcba40c8ba84c8ff529a5cc`
+
+**Audited version:** `v0.0.06`.
+
+The project owner supplied this audit outcome and authorized formal closure
+after reviewing and approving the later `game/menu/` and `game/rendering/`
+structure. The Auditor identified no confirmed critical or major defects.
+This closure records that outcome; it does not perform a new independent audit
+or claim that the Auditor executed the automated checks.
+
+### Observation dispositions
+
+| ID | Observation | Accepted treatment |
+| --- | --- | --- |
+| AUD-01 | Roadmap stage/status inconsistency. | Resolved by this documentary closure: UI-01 through UI-04 are recorded as completed and accepted. |
+| AUD-02 | Grammatical observation in the unavailable-feature message. | Correction deferred by the project owner. The existing message, including OPCIONES, is unchanged. |
+| AUD-03 | DPI validation pending. | Known limitation; real DPI and cross-display validation remain pending. No execution is asserted. |
+| AUD-04 | Display prefix `v` rendered with the `V` glyph. | Accepted by the project owner. The current bitmap font and its mapping are retained. Exact informational metadata still comes from root `VERSION`. |
+| AUD-05 | Native-event and real resource-release validation. | Manual verification remains pending wherever sufficient evidence is absent. Code review and exit-intent checks do not establish native/GPU cleanup. |
+
+### Later structural approval and development evidence
+
+The independent audit examined **`v0.0.06`**, not the later **`v0.0.07`**
+reorganization at commit `9db15d1e614edf88b37137b112868eb32b58d0e9`.
+The owner approved that subsequent structure. Development recorded:
+
+- 16/16 automated checks passed after moving the files.
+- Release build succeeded with zero warnings and errors.
+- Whitespace verification passed.
+- A comparison of all 13 C# source files preserved their non-comment contents;
+  no functional changes were identified by the development review.
+- Built informational metadata matched `v0.0.07`.
+
+These are executed development checks and a development source review, not an
+assertion that the Auditor independently tested or reviewed `v0.0.07`.
+Historical evidence and the manual checklist above remain available. DPI,
+native events and real resource release are not marked as verified by closure.
+
+The `v0.0.08` closure changes only documentation and root `VERSION`. The approved
+interface decisions are recorded in `roadmap.md`, including the single
+`EvolveWindow` policy for future screens. No navigation, new screen, source-code
+change or observation-related correction is implemented in this delivery.
+
+### Closure validation performed by development
+
+The following commands were executed on 2026-11-18 for the documentary closure:
+
+```powershell
+dotnet run --project .\tests\menu\Evolve.Menu.Checks.csproj --configuration Release
+dotnet build .\game\Evolve.Game.csproj --configuration Release
+git diff --check
+```
+
+Results: 16/16 checks passed; Release build succeeded with zero warnings and
+errors; whitespace verification passed. Built informational metadata was read
+from `Evolve.Game.dll` and matched root `VERSION` exactly: `v0.0.08`.
+The change list was restricted to `roadmap.md`, `audit.md`, `readme.md` and root
+`VERSION`; no C# source, project or test code was changed. These are development
+validation results, not a new Auditor execution. No manual GPU, DPI or native
+event verification was performed for this closure.
