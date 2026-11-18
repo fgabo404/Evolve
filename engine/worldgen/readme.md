@@ -91,5 +91,6 @@ or geographic data. See [test coverage](../../tests/worldgen/readme.md).
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-CORE-04 implementation does not grant acceptance or authorize CORE-05 or
-authorize merging `world-core` into `world`.
+CORE-04 is accepted and CORE-05 is authorized for implementation only.
+Final WG-CORE acceptance, state/UI integration and merging `world-core` into
+`world` require separate review and project-owner approval.

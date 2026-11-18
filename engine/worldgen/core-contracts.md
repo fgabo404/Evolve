@@ -696,8 +696,8 @@ CORE-04 delivery. All earlier core and menu regressions must remain valid.
 
 ## 16. CORE-04 deterministic streams and exclusive rebuild
 
-**Status:** implemented, pending review and owner acceptance. This section
-supersedes the earlier execution/rebuild/concurrency deferrals. CORE-05 is absent.
+**Status:** accepted by project owner on 2026-11-18. This section
+supersedes the earlier execution/rebuild/concurrency deferrals. CORE-05 is authorized separately.
 
 ### Versioned arithmetic and public additions
 
@@ -788,3 +788,32 @@ Development validation for v0.0.21: 15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03,
 zero warnings/errors. Whitespace verification passed after removing trailing
 blank lines in documentation. Compiled ProductVersion matched root VERSION.
 No GUI or geographic validation or independent audit acceptance is claimed.
+
+## 17. CORE-04 acceptance and CORE-05 authorization
+
+CORE-04 was accepted by the project owner on 2026-11-18 after reviewing the
+59/59 core checks, 16/16 menu checks, successful Release builds and source
+architecture. This is developer-executed test evidence plus a source review,
+not an independently executed audit.
+
+CORE-05 is authorized on `world-core` to add the completion gate
+`WorldGenerationOrchestrator.FinalizeWorld(context)` and an immutable
+`WorldGenerationResult`, with the minimal contract needed for validation and
+safe downstream state integration **at a later, separately authorized stage**.
+
+Finalization must reject unfinished, Failed, Running, Invalidated, missing or
+inconsistent layer data, including after an incomplete rebuild, with no context
+mutation. Acquire the same context-wide operation lease as forward generation
+and rebuilding; ensure a coherent snapshot against concurrent operations.
+On success expose immutable request metadata, version-relevant metadata and
+all eight completed stage results as read-only data, with no mutable aliases,
+no re-execution, no full-world duplication and no automatic `WorldState` update.
+A finalized result is a stable historical snapshot even if its source context
+is later rebuilt. Decide and document the exact C# API/error policy during
+CORE-05; do not invent geographic result classes or persistence requirements.
+
+Add headless checks for all finalize gates, read-only historical result behavior,
+repeat finalization, concurrent/reentrant rejection and preservation of
+CORE-01..04 regressions. No new real geographic executors, UI, save system or
+merge is authorized. After development the roadmap remains pending independent
+audit and owner acceptance before any integration into `world`.
