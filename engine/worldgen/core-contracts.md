@@ -4,9 +4,17 @@
 **Integration branch:** `world`  
 **Delivery branch:** `world-core`
 
+**Archive note:** CORE-01 through CORE-05 were accepted and integrated into
+`world` and `develop`. The completed `core-roadmap.md` and the original
+`tests/worldgen/` headless checks were subsequently retired at the owner's
+request. Historic check files, commands, test-grant descriptions and audit
+results below document the accepted baseline; they do not describe files
+currently present in the integration branches. The archived baseline remains
+recoverable from `world-core` at `ced15fc478363b2a8803db9fc8be8331d88d6a14`.
+
 **Status:** APPROVED TECHNICAL DESIGN — 2026-11-18; exact C# signatures resolved in CORE-01  
 **Approved behavioral foundation:** [WG-CORE architecture](core-architecture.md)  
-**Delivery plan:** [WG-CORE roadmap](core-roadmap.md)
+**Delivery history:** Completed WG-CORE roadmap retired; retained in Git history (`world-core`)
 
 ## 1. Contract boundaries
 
@@ -636,7 +644,7 @@ scenarios. It verifies ordered execution, all targets/prerequisites, mode
 equivalence using prior inputs, completed no-ops, atomic failure, immutable
 inputs, source isolation, independent contexts, Running/reentrant rejection,
 invalid arguments and absence of CORE-04/05 APIs. Exact coverage and regression
-commands are in [tests/worldgen/readme.md](../../tests/worldgen/readme.md).
+commands were recorded in `tests/worldgen/readme.md`, now retired and available in Git history.
 
 The existing 15 CORE-01 and 19 CORE-02 checks remain active. Only their former
 execution-deferral assertions and test-layer implementations adapt to the

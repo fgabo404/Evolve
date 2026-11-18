@@ -15,7 +15,7 @@ This roadmap is deliberately **high-level**. Detailed scope, algorithms, accepta
 
 | Stage | Workstream | Planned branch | Main scope |
 | --- | --- | --- | --- |
-| [WG-CORE](core-roadmap.md) | Core | `world-core` | **WG-CORE complete and formally accepted; final audit APPROVED.** Orchestrator, GenerationContext, strict execution and invalidation |
+| WG-CORE (completed; roadmap retired) | Core | `world-core` | **WG-CORE complete and formally accepted; final audit APPROVED.** Orchestrator, GenerationContext, strict execution and invalidation |
 | [WG-00](layers/grid/roadmap.md) | Hex Grid | `world-grid` | Define a continuous east/west hex map with polar north/south limits, three configurable sizes and a proposed 2:1 equirectangular geographic representation. |
 | [WG-01](layers/tectonics/roadmap.md) | Tectonic Plates | `world-tectonics` | Generate geologically useful tectonic plates and convergent/divergent/transform boundary relationships. |
 | [WG-02](layers/landmasses/roadmap.md) | Landmasses | `world-landmasses` | Support Pangea, 2–4 continents, archipelagos and real-Earth geography with plate-informed land configuration. |
@@ -25,7 +25,7 @@ This roadmap is deliberately **high-level**. Detailed scope, algorithms, accepta
 | [WG-06](layers/climate/roadmap.md) | Climate | `world-climate` | Derive plausible climate distributions from geography, altitude, maritime influence and atmospheric factors. |
 | [WG-07](layers/biomes/roadmap.md) | Biomes | `world-biomes` | Classify biomes as consequences of environmental conditions and approved biome rules. |
 | [WG-LAB](../../game/laboratory/readme.md) | Laboratory integration | `world-laboratory` | Expose step-by-step execution and visualization in the existing EvolveWindow, without a second generator |
-| [WG-FINAL](../../tests/worldgen/readme.md) | Integration and acceptance | `world` | Verify entire world pipeline, visual inspection, performance and owner acceptance |
+| WG-FINAL | Integration and acceptance | `world` | Verify entire world pipeline, visual inspection, performance and owner acceptance |
 
 **Sequencing:** approve and implement the common orchestration/context contract first; build layers 00 through 07 in dependency order. Laboratory functionality is an **incremental, cross-cutting workstream**, initially able to show grid results and expanded as each layer is delivered; it must never get its own generation algorithms. Final integration follows completion of the pipeline.
 
@@ -50,7 +50,7 @@ flowchart TD
 - Every layer is developed in a **dedicated Git branch** from the current `world` integration baseline, after preceding approved work has been integrated.
 - `world-core` is the existing core implementation branch. Other names above remain **proposals, not branches created by this documentation task**. They use `world-grid`, etc., rather than `world/grid`: a ref named `world` already exists, so a Git branch name beginning with `world/` would conflict.
 - The core increments have been implemented on `world-core`. The Laboratory workstream retains a proposed dedicated branch; its implementation order and increments need separate approval.
-- Only owner-approved work may be committed; accepted work is then integrated into `world` through an explicitly approved integration action. `develop` remains unaffected until separately authorized.
+- Only owner-approved work may be committed; accepted work is then integrated into `world` and later `develop` through explicitly approved integration actions.
 - The general roadmap documents progress; no layer advances before its immediate predecessor is valid and successfully completed in the **same** generation context.
 
 ## Acceptance gates (to be detailed per workstream)
@@ -65,4 +65,4 @@ flowchart TD
 
 No C# implementation, new projects, standalone window, additional generator, geographic algorithms or new stage-specific requirements are authorized merely by creating this roadmap. Unresolved technical decisions remain in the [architecture document](../../WORLD_GENERATION_ARCHITECTURE.md).
 
-**Current status:** WG-CORE (CORE-01 through CORE-05) was formally accepted by the project owner on 2026-11-18 following the independent audit's **APPROVED** verdict. Previous documentation observations are resolved. The accepted implementation remains on `world-core`; integration into `world`, WG-00, other geographic layers and Laboratory development require separate authorization.
+**Current status:** WG-CORE (CORE-01 through CORE-05) was formally accepted by the project owner on 2026-11-18 following the independent audit's **APPROVED** verdict. Previous documentation observations are resolved. The accepted WG-CORE implementation was integrated into `world` and `develop` at `v0.0.25`. The completed core roadmap and its headless check harness were retired afterward; both remain available in Git history. WG-00, later geographic layers and Laboratory development still require separate authorization.

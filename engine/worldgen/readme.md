@@ -31,8 +31,6 @@ active state, save storage or test dependency belongs here.
   validation, invocation, ownership validation, atomic publication and retry.
 - `WorldGenerationResult`: immutable request/version metadata and eight completed
   historical buffers captured by `FinalizeWorld`, stable across later rebuilding.
-- `AssemblyVisibility.cs`: restricted named friend access for the existing
-  headless checks, without adding public storage mutation APIs.
 
 ## Execution and limitations
 
@@ -59,9 +57,10 @@ suffix slots become Invalidated; Failed/Pending slots become Pending; all lose
 data and diagnostics. Rebuild requires completed predecessors and no active
 operation. Previously retrieved immutable results remain historical observations.
 
-The production core contains no layer executors; eight neutral fake executors
-live exclusively in `tests/worldgen/`. Real algorithms belong to separately
-authorized layer roadmaps. Finalization requires eight Completed results with
+The production core contains no geographic layer executors. Eight neutral fake
+executors were previously used for CORE acceptance testing; that completed test
+harness was retired and is retained in Git history. Real algorithms belong to
+separately authorized layer roadmaps. Finalization requires eight Completed results with
 matching ownership, holds the same operation lease, and changes no context state.
 It copies only eight buffer references; repeated calls never execute layers.
 WorldState integration remains unimplemented. See [CORE-04 signatures and vectors](core-contracts.md#16-core-04-deterministic-streams-and-exclusive-rebuild).
@@ -76,28 +75,31 @@ No UI integration or GUI validation is included in this increment.
 Run from the repository root with the .NET 10 SDK:
 
 ```powershell
-dotnet run --project .\tests\worldgen\Evolve.WorldGeneration.Checks.csproj --configuration Release
 dotnet run --project .\tests\menu\Evolve.Menu.Checks.csproj --configuration Release
 dotnet build .\engine\worldgen\Evolve.Engine.WorldGeneration.csproj --configuration Release
 dotnet build .\game\Evolve.Game.csproj --configuration Release
 git diff --check
 ```
 
-The checks run real production contracts, storage and orchestration with no GPU
-or geographic data. See [test coverage](../../tests/worldgen/readme.md).
+The original 69 WG-CORE headless checks passed before acceptance. Their source
+and executable project were later retired at the owner's request, so these
+regression checks are **not currently runnable** in the integration branches.
+They remain recoverable from the archived `world-core` branch. New geographic
+layers must define their own independently approved test coverage.
 
 ## Documents
 
 - [Approved WG-CORE architecture](core-architecture.md)
 - [Technical contracts and exact CORE-03 signatures](core-contracts.md#14-core-03-sequential-execution-contract)
-- [Approved WG-CORE implementation roadmap](core-roadmap.md)
+- Completed WG-CORE roadmap (retired; available in Git history)
 - [Overall roadmap](roadmap.md)
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
 CORE-05 and WG-CORE were formally accepted by the owner following the auditor's
-APPROVED verdict. State/UI integration, WG-00 and merging `world-core` into
-`world` remain unauthorized and require separate owner approval.
+APPROVED verdict. The accepted core was integrated into `world` and
+`develop` by the owner. WG-00, state/UI integration and future geographic work
+still require separate owner approval.
 
 ## Finalization boundary
 

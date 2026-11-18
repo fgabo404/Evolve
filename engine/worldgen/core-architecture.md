@@ -7,7 +7,7 @@
 **Implementation status:** CORE-01 through CORE-05 accepted; WG-CORE closed — 2026-11-18  
 **Audit status:** APPROVED; prior documentation observations resolved — 2026-11-18  
 **Parent documents:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md) · [General Roadmap](roadmap.md)
-**Technical artifacts:** [Approved technical design](core-contracts.md) · [Approved WG-CORE roadmap](core-roadmap.md)
+**Technical artifacts:** [Approved technical design](core-contracts.md) · Completed CORE roadmap retired after acceptance (retained in Git history)
 
 ## 1. Purpose and architectural boundary
 
@@ -217,12 +217,12 @@ WG-CORE can be accepted only after tests and technical review demonstrate:
 6. The engine executes and can be validated **without OpenTK or GPU dependencies**.
 7. `FinalizeWorld()` fails or remains unavailable until every stage is valid.
 
-These criteria preserve the original validation gates; the design approval itself supplied no execution evidence. CORE-01 through CORE-04 are now accepted and CORE-05 is implemented. The independent audit subsequently reported **APPROVED**, previous documentation observations were resolved, and the owner formally accepted CORE-05 and WG-CORE. Implementation evidence is recorded in the [technical contracts](core-contracts.md) and [core roadmap](core-roadmap.md).
+These criteria preserve the original validation gates; the design approval itself supplied no execution evidence. CORE-01 through CORE-04 are now accepted and CORE-05 is implemented. The independent audit subsequently reported **APPROVED**, previous documentation observations were resolved, and the owner formally accepted CORE-05 and WG-CORE. Implementation evidence is recorded in the [technical contracts](core-contracts.md); the completed core roadmap remains in Git history.
 
 ## 9. Remaining engineering decisions
 
 At original approval, the design did **not determine**: exact C# API signatures; settings DTOs and dependency direction between assemblies; stage result representation; resource ownership/copy semantics; concurrency primitives; cancellation and asynchronous execution; failure recovery details; checkpoint storage; exact derivation of stage seeds; internal event/progress notification mechanism; or user-interface layout. Implemented API, project boundaries, immutable ownership, concurrency, retry and deterministic seed derivation are now recorded in [technical contracts](core-contracts.md). The remaining items are outside the implemented WG-CORE scope.
 
-The owner has **accepted CORE-01 through CORE-05 and formally closed WG-CORE** on `world-core` following the independent auditor's **APPROVED** verdict. Previous documentation observations are resolved. Integration into `world`, WG-00 and any subsequent work require separate explicit authorization.
+The owner has **accepted CORE-01 through CORE-05 and formally closed WG-CORE** on `world-core` following the independent auditor's **APPROVED** verdict. Previous documentation observations are resolved. WG-CORE was integrated into `world` and `develop` with explicit owner approval. WG-00 and any subsequent work require separate authorization.
 
-**WG-CORE formally accepted and closed. Audit APPROVED. Integration not authorized.**
+**WG-CORE formally accepted, audited and integrated into `world` and `develop`. WG-00 not authorized.**

@@ -2,7 +2,7 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Working branch:** `world`  
-**Status:** APPROVED PRELIMINARY DESIGN — implementation not yet authorized  
+**Status:** WG-CORE accepted and integrated; geographic layer implementation remains pending owner authorization  
 **Design approved:** 2026-11-18  
 **Relationship:** Extends the logical module boundaries in `architecture.MD` without replacing them.
 
@@ -116,7 +116,7 @@ Reefs should not be finalized solely by this landmass stage: their ecological/ma
 
 ## 5. Orchestrator responsibilities and progression rules
 
-**WG-CORE's formal behavioral design is approved.** See [WG-CORE: Orchestrator and Generation Context](engine/worldgen/core-architecture.md). The owner also approved the [technical design](engine/worldgen/core-contracts.md) and [implementation roadmap](engine/worldgen/core-roadmap.md). Only the initial CORE-01 increment is authorized; no geographic layer implementation is authorized.
+**WG-CORE's formal behavioral design is approved.** See [WG-CORE: Orchestrator and Generation Context](engine/worldgen/core-architecture.md). The owner also approved the [technical design](engine/worldgen/core-contracts.md). The completed CORE roadmap was retired after WG-CORE acceptance and remains available in Git history. WG-CORE was integrated into `world` and `develop`; no geographic layer implementation is authorized yet.
 
 
 The `WorldGenerationOrchestrator`:
@@ -239,7 +239,7 @@ Existing files are omitted from this illustrative tree. Names are candidates unt
 | `engine/worldgen/layers/` | One focused directory for each geographical layer |
 | `state/world/` | The completed world's representation in the single active game |
 | `game/laboratory/` | Stage controls and visualization, within the one existing window |
-| `tests/worldgen/` | Stage, topology, determinism and dependency tests without a GPU |
+| Future world-generation test harness (not currently present) | Stage, topology, determinism and dependency tests without a GPU |
 
 The precise assembly/project boundaries and cross-module contracts are **not yet defined**. Keep the current `game/` project stable unless a later authorized stage requires changes.
 
@@ -299,10 +299,10 @@ This architecture remains **an approved preliminary design only**. The general r
 
 Recommended design order:
 
-1. Implement the authorized **CORE-01** contract foundation in `world-core` using the [approved WG-CORE technical design](engine/worldgen/core-contracts.md) and [roadmap](engine/worldgen/core-roadmap.md); require separate approval before CORE-02.
+1. **WG-CORE completed:** the contract foundation, orchestration, determinism, rebuilding and finalization were accepted and integrated. Preserve the [approved contracts](engine/worldgen/core-contracts.md) when designing geographic layers.
 2. Specify **Stage 00 — Hex Grid**: projection, three map sizes, coordinates, neighbors and wrap.
 3. Define later layers **one at a time**, approving their contracts and validations before implementation.
 
 All future source code must follow root `AGENTS.md`, including English `//` file-purpose headers. Development prompts and project-owner communication remain in Spanish. Future authorized commits must increment root `VERSION`; `world` is the integration branch, and each layer will use a dedicated, separately authorized working branch. See `engine/worldgen/roadmap.md`.
 
-**Current outcome:** a documented, approved preliminary architecture and general planning roadmap; implementation has not begun.
+**Current outcome:** WG-CORE is implemented, audited, formally accepted and integrated into `world` and `develop`. Geographic layers and Laboratory integration have not been authorized to start.
