@@ -184,7 +184,7 @@ The Laboratory may use the same window's existing rendering infrastructure, but 
 
 ## 8. Proposed physical folder and file organization
 
-This is an **approved preliminary directory design**, not authorization to create empty folders, placeholder classes or new .NET projects.
+This is an **approved preliminary directory design**. Documentation directories and their internal Markdown guides and roadmaps are now authorized and created. The `.cs` entries below remain **future candidate files only**: no placeholder C# classes or new .NET projects have been created.
 
 ```text
 Evolve/
@@ -288,11 +288,11 @@ The following points require separate discussion and owner approval:
 9. Climate time resolution, wind/moisture model and biome-classification rules.
 10. Intermediate result/checkpoint representation, memory/performance budgets and error recovery.
 11. Formal orchestrator/context/stage contracts, .NET assembly boundaries and Laboratory presentation controls.
-12. Concrete stage-by-stage implementation roadmap and acceptance tests.
+12. Detailed stage-by-stage implementation tasks and acceptance tests; the general outline and per-layer roadmap placeholders are recorded under `engine/worldgen/`.
 
 ## 12. Development governance and next design steps
 
-This architecture is approved **as a preliminary design only**. No generation implementation, new feature, new screen, physical folder creation or next roadmap has yet been authorized.
+This architecture remains **an approved preliminary design only**. The general roadmap and documentation folder scaffold are authorized and available at `engine/worldgen/roadmap.md`. No generation algorithm, new feature, screen or C# implementation is authorized by their creation.
 
 Recommended design order:
 
@@ -301,6 +301,6 @@ Recommended design order:
 3. Specify **Stage 00 — Hex Grid**: projection, three map sizes, coordinates, neighbors and wrap.
 4. Define later layers **one at a time**, approving their contracts and validations before implementation.
 
-All future source code must follow root `AGENTS.md`, including English `//` file-purpose headers. Development prompts and project-owner communication remain in Spanish. Future authorized commits must increment root `VERSION`; the working branch for this world-generation initiative is `world`.
+All future source code must follow root `AGENTS.md`, including English `//` file-purpose headers. Development prompts and project-owner communication remain in Spanish. Future authorized commits must increment root `VERSION`; `world` is the integration branch, and each layer will use a dedicated, separately authorized working branch. See `engine/worldgen/roadmap.md`.
 
-**Current outcome:** a documented, approved preliminary architecture for planning; implementation has not begun.
+**Current outcome:** a documented, approved preliminary architecture and general planning roadmap; implementation has not begun.

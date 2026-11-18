@@ -4,7 +4,7 @@ These permanent standards apply to all development tasks throughout this
 repository, regardless of the module or roadmap being worked on.
 
 - Repository: `fgabo404/Evolve`
-- Working branch: `architecture`
+- Working branch: the branch expressly authorized for the current task; `world` is the world-generation integration branch.
 - Architecture: `architecture.MD`
 
 ## Language
@@ -85,10 +85,10 @@ After completing an explicitly authorized implementation task:
 
 1. Review every modified file and confirm that the changes stay within scope.
 2. Create a commit with a descriptive English message.
-3. Automatically execute `git push origin architecture`, including any pending
-   authorized local commits.
-4. Verify that publication succeeded by checking that the complete local commit
-   SHA matches the `architecture` branch SHA on GitHub.
+3. Push only the explicitly authorized working branch (for example, `git push origin world`
+   for authorized world-generation integration). Do not publish unrelated commits.
+4. Verify publication by checking that the complete local commit SHA matches
+   the authorized remote branch SHA on GitHub.
 5. Report the commit message and complete SHA to the project owner in Spanish,
    preserving the actual English commit message when quoting it.
 
