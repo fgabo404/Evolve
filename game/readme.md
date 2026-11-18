@@ -43,9 +43,9 @@ project owner approval. The roadmap is unchanged.
 
 ## UI-02 — Main menu presentation
 
-The menu displays `EVOLVE`, the assembly informational version and four static
-buttons: `INICIAR`, `LAB`, `OPCIONES`, `SALIR`. No actions, hover states, keyboard
-navigation or additional screens are implemented. Close using X or Alt+F4.
+The menu displays `EVOLVE`, the assembly informational version and four buttons:
+`INICIAR`, `LAB`, `OPCIONES`, `SALIR`. UI-03 adds input feedback and unavailable
+notices to this presentation. Close using `SALIR`, X or Alt+F4.
 
 - `MainMenuPresentation.cs` composes the visual elements.
 - `MainMenuStyle.cs` preserves the legacy muted blue-gray palette.
@@ -80,7 +80,7 @@ Use the PowerShell restore, build and run commands above. The Auditor should
 check the title, exact version against root `VERSION`, button order, white text,
 thin blue-gray borders, subtle shadows, centering and absence of overlap at 400 x 300, 800 x 600,
 1280 x 720 and maximized size, including high-DPI displays. Verify minimize /
-restore and native close. Static buttons intentionally do not respond to input.
+restore and native close. Interaction validation is described below.
 
 After building, compare metadata without relying on numeric assembly versions:
 
@@ -93,3 +93,54 @@ $expectedVersion
 $actualVersion
 $actualVersion -ceq $expectedVersion
 ```
+
+## UI-03 — Main menu interaction
+
+`MainMenuInteraction.cs` owns pointer presses, keyboard selection and footer
+notices without OpenGL or window dependencies. `MainMenuButton.cs` identifies
+the four approved actions in display order. `MainMenuLayout.ButtonY` is shared
+by drawing and hit detection; gaps and shadows do not count as button bounds.
+`EvolveWindow.cs` converts cursor positions from client coordinates to framebuffer
+pixels using the current size ratio on each axis, including high-DPI windows.
+
+The initial selection is empty, preserving the approved idle appearance.
+Hover or keyboard selection slightly lightens the button and its border. A held
+left click, Enter or Space shows the darker pressed fill. The original normal
+colors, typography, dimensions, title, version position and footer are unchanged.
+
+- A left click activates only when released over the same button it pressed.
+- Up and Down wrap through all four buttons. Without an existing hover or
+  selection, Down begins at `INICIAR` and Up at `SALIR`.
+- Enter and Space activate on release and ignore repeated key-down activation.
+  Without a prior selection or hover, they select `INICIAR`.
+- Actual pointer movement takes over highlighting and cancels keyboard presses;
+  keyboard navigation cancels pointer presses. A stationary pointer does not
+  override keyboard selection.
+- Focus loss, pointer exit, client resize and framebuffer resize cancel pending
+  presses. Releasing an old input after cancellation cannot activate a button.
+- `INICIAR`, `LAB` and `OPCIONES` display a short Spanish unavailable notice in
+  the existing footer. The latest notice persists until another action replaces it.
+- `SALIR` requests the existing native close lifecycle. No other screens,
+  simulation, laboratory or settings functionality are introduced.
+
+Build and run with the PowerShell commands above, then manually validate:
+
+1. With no hover or keyboard selection, compare the menu against approved UI-02;
+   the 12% footer must remain empty before any unavailable action is activated.
+2. Hover each button and hold the left button to inspect pressed feedback. Release
+   on the same button to activate. Drag to another button or a gap before release
+   and confirm no action occurs. A press begun outside must not activate on entry.
+3. Use Up and Down in both directions through the wrap boundary. Activate each
+   unavailable action with Enter and Space; hold either key to verify no repeated
+   activation and that pressed feedback persists until release.
+4. While pressing, move outside the window, change focus with Alt+Tab or resize;
+   return and release, confirming no pending action fires. Change navigation mode
+   while holding an input and confirm the old press is cancelled.
+5. Repeat hover, click and keyboard checks at 400 x 300, 800 x 600, 1280 x 720,
+   maximized size and across displays with different DPI settings. Confirm the
+   footer notice stays readable and inside the existing footer.
+6. In separate runs, activate `SALIR` with mouse, Enter and Space. Confirm clean
+   termination, `$LASTEXITCODE` equal to `0` and no remaining Evolve process.
+
+No builds, tests or runtime validation were executed during implementation.
+UI-04 remains outside this delivery.

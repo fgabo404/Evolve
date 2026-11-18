@@ -8,6 +8,30 @@ internal readonly record struct MainMenuLayout(
 {
     public float VersionTop => TitleTop + TitlePixel * 9;
 
+    // Rendering and hit detection use this same row position to avoid drifting after resize.
+    public float ButtonY(MainMenuButton button) => ButtonTop + (int)button * (ButtonHeight + ButtonGap);
+
+    // Accept framebuffer coordinates and exclude gaps, shadows and the right/bottom edges.
+    public MainMenuButton? HitTest(float x, float y)
+    {
+        if (x < ButtonLeft || x >= ButtonLeft + ButtonWidth)
+        {
+            return null;
+        }
+
+        for (int index = 0; index < MainMenuInteraction.ButtonCount; index++)
+        {
+            var button = (MainMenuButton)index;
+            float top = ButtonY(button);
+            if (y >= top && y < top + ButtonHeight)
+            {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
     // Retain the original dimensions at normal sizes; fit the whole menu on short windows.
     public static MainMenuLayout Create(int width, int height)
     {
