@@ -30,7 +30,7 @@ internal static class WorldGenerationOrchestratorChecks
             ("explicit outcome factories enforce candidate or diagnostic", ResultContract),
             ("contexts remain independent through the same orchestrator", IndependentContexts),
             ("invalidated storage does not trigger an implicit rebuild", NoImplicitRebuild),
-            ("PRNG, rebuild and finalization remain deferred", DeferredScope)
+            ("finalization remains deferred", DeferredScope)
         ];
 
         int failures = 0;
@@ -276,6 +276,7 @@ internal static class WorldGenerationOrchestratorChecks
         orchestrator = Create(inputs =>
         {
             foreach (var operation in Operations(orchestrator, context)) Throws<InvalidOperationException>(operation);
+            Throws<InvalidOperationException>(() => orchestrator.RebuildFrom(context, GenerationStage.Grid));
             Require(context.GetProgress().GetStatus(inputs.Stage) == GenerationStageStatus.Running, "Reentrant rejection damaged active stage.");
             return FakeWorldGenerationLayers.Sample(inputs);
         });
@@ -339,9 +340,8 @@ internal static class WorldGenerationOrchestratorChecks
     {
         var types = typeof(WorldGenerationOrchestrator).Assembly.GetExportedTypes();
         Require(!types.SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
-            .Any(method => method.Name is "RebuildFrom" or "FinalizeWorld"), "CORE-04/05 operation introduced.");
-        Require(!types.Any(type => type.Name.Contains("Random", StringComparison.OrdinalIgnoreCase) || type.Name.Contains("Prng", StringComparison.OrdinalIgnoreCase) ||
-            type.Name == "WorldGenerationResult"), "Random streams or finalized world introduced.");
+            .Any(method => method.Name is "FinalizeWorld"), "CORE-05 operation introduced.");
+        Require(!types.Any(type => type.Name == "WorldGenerationResult"), "Finalized world introduced.");
     }
 
     // Exercise each public forward mode, including a target before an active stage.

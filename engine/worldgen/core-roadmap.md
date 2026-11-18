@@ -4,7 +4,7 @@
 **Integration branch:** `world`  
 **Working branch:** `world-core`
 
-**Status:** CORE-01, CORE-02 and CORE-03 accepted; CORE-04 authorized; CORE-05 not authorized.
+**Status:** CORE-01, CORE-02 and CORE-03 accepted; CORE-04 implemented pending review; CORE-05 not authorized.
 
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
@@ -22,7 +22,7 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 | **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Accepted by project owner — 2026-11-18 |
 | **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Accepted by project owner — 2026-11-18 |
 | **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Accepted by project owner — 2026-11-18 |
-| **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Authorized — pending implementation |
+| **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Implemented — pending review and owner acceptance |
 | **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Not started |
 
 **Execution rule:** work on only the individually authorized increment. Do not advance from CORE-01 to CORE-02 merely because its code is complete; wait for explicit owner approval.
@@ -199,3 +199,19 @@ same result under identical versions, settings and prerequisite data.
 Use test-only deterministic layer executors and headless tests. Do not implement
 real geographic layers, the Laboratory UI, WorldState integration or
 `FinalizeWorld` (CORE-05). No integration into `world` is authorized yet.
+
+## CORE-04 delivery record
+
+Implemented versioned SplitMix64 stage streams, per-context cross-instance
+operation exclusivity and atomic suffix rebuilding. All forward modes still use
+the existing single runner; rebuilt slots resume in canonical order. Exact
+signatures, arithmetic, vectors, status policy and observation guarantees are in
+[CORE-04 contracts](core-contracts.md#16-core-04-deterministic-streams-and-exclusive-rebuild).
+Eight new headless checks complement all 51 previous core checks.
+CORE-04 awaits review/acceptance; CORE-05 remains not started. No integration
+into world or geographic layer development is authorized.
+
+Development evidence: 59/59 core checks and 16/16 menu checks passed; both
+explicit Release builds reported zero warnings/errors. Whitespace verification
+passed and compiled ProductVersion matched v0.0.21. No GUI validation or
+independent audit acceptance is claimed.

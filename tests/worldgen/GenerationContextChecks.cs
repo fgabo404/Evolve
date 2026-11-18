@@ -334,8 +334,8 @@ internal static class GenerationContextChecks
     {
         var core = typeof(GenerationContext).Assembly;
         Require(!core.GetExportedTypes().SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            .Any(method => method.Name is "FinalizeWorld" or "RebuildFrom"),
-            "A CORE-04 or CORE-05 operation was introduced.");
+            .Any(method => method.Name is "FinalizeWorld"),
+            "A CORE-05 operation was introduced.");
         Require(core.GetReferencedAssemblies().All(reference => reference.Name?.StartsWith("System", StringComparison.Ordinal) == true ||
             reference.Name == typeof(WorldGenerationSettings).Assembly.GetName().Name), "Context introduced a graphics or UI dependency.");
     }

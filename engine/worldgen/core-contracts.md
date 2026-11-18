@@ -693,3 +693,98 @@ CORE-05 (`FinalizeWorld` and final result/state boundary), real geographic
 algorithms, UI modifications and player saves remain unauthorized. Document
 exact new C# signatures, determinism test vectors and error semantics in the
 CORE-04 delivery. All earlier core and menu regressions must remain valid.
+
+## 16. CORE-04 deterministic streams and exclusive rebuild
+
+**Status:** implemented, pending review and owner acceptance. This section
+supersedes the earlier execution/rebuild/concurrency deferrals. CORE-05 is absent.
+
+### Versioned arithmetic and public additions
+
+`DeterministicStageRandom` is sealed. Its public contract is
+`DeterministicStageRandom(ulong seed)`, `ulong NextUInt64()`,
+`static ulong DeriveSeed(long seed, GenerationStage stage)`, and constant
+`AlgorithmVersion = "splitmix64-stage-v1"`. `GenerationLayerInputs` adds the
+get-only `DeterministicStageRandom Random` property. Each attempt creates a new
+stream from request seed and canonical identity; retry/rebuild never continues
+an old stream. No execution-interface signature changes.
+
+Arithmetic is unsigned modulo 2^64, explicitly unchecked. Define gamma =
+0x9E3779B97F4A7C15. Mixing x uses, in order:
+`x = (x ^ (x >> 30)) * 0xBF58476D1CE4E5B9`,
+`x = (x ^ (x >> 27)) * 0x94D049BB133111EB`,
+then `x ^ (x >> 31)`. Stage initial state is
+`Mix(unchecked((ulong)mainSeed + gamma * ((ulong)stage + 1)))`.
+Each NextUInt64 first adds gamma to stream state, then returns Mix(state).
+Negative main seeds preserve their two's-complement bits.
+
+Reproducible raw-stream vector for seed 0, first three NextUInt64 calls:
+`E220A8397B1DCDAF`, `6E789E6AA1B965F4`, `06C45D188009454F`.
+DeriveSeed(0, Grid) = `E220A8397B1DCDAF`. Raw-stream construction and stage
+derivation are distinct operations; these constants are checked independently
+of mode/replay tests. Different stage IDs have distinct states for a fixed seed.
+Consumption in one stream cannot advance another.
+
+This compatibility identifier versions both PRNG arithmetic and derivation,
+independently of root game VERSION. Future arithmetic or derivation changes
+require a new identifier and vectors. Layer algorithm versions and deterministic
+layer behavior remain the responsibility of future layer implementations.
+Matching seed, configuration, algorithm versions and validated inputs reproduce
+outputs when executors use deterministic logic and their supplied stream.
+No geographic algorithm, persistence format, clock or global random state exists.
+
+### Exclusive operations and coherent inspection
+
+Each context owns an internal Interlocked operation flag. All forward modes
+acquire it before entering the single existing runner and release it in finally,
+including on invalid input/state and failure. Rebuild acquires the same flag.
+Competing or reentrant operations throw InvalidOperationException immediately,
+including through different orchestrator instances. The flag spans entire bulk
+calls, including gaps between stages. Different contexts have independent flags.
+
+A separate private context lock protects slot transitions, progress snapshots,
+result lookups and whole suffix invalidation. It is held only for short storage
+operations, never during layer execution. A progress snapshot therefore sees
+either side of a complete rebuild, not a partially invalidated suffix. Separate
+queries may naturally observe different instants; previously retrieved immutable
+results and progress remain historical observations. No mutable public context
+access or global lock is introduced. The per-attempt random stream itself is
+single-consumer, not an independently thread-safe shared service.
+
+### Rebuild API and lifecycle
+
+`GenerationProgress RebuildFrom(GenerationContext context, GenerationStage stage)`
+invalidates without executing a layer. Null contexts throw ArgumentNullException;
+undefined IDs throw ArgumentOutOfRangeException. Rebuild requires completed
+predecessors in the same context; otherwise it throws InvalidOperationException
+without mutation. A Running stage or active operation also rejects rebuilding.
+
+The selected suffix through Biomes is replaced atomically:
+
+- Completed and already Invalidated slots become/remain Invalidated.
+- Failed and Pending slots become Pending.
+- Every affected slot loses its published data and diagnostic.
+- Earlier slots and their immutable buffer identities remain unchanged.
+
+The next eligible stage is the selected stage, and the same forward runner
+accepts Invalidated slots. Rebuilding Grid drops all eight outputs. New queries
+return no stale suffix data. Old immutable references are historical values,
+not current context results. A new seed, world type or size requires a new
+immutable request/context; metadata is never changed in place.
+
+### Checks and scope
+
+Eight new named checks cover fixed vectors, signed seeds, stage independence,
+all four world types and three sizes across all modes, every rebuilt suffix,
+replay and ordering, mixed completed/failed/pending states, retry randomness,
+invalid requests, real barrier-coordinated cross-thread contention across two
+orchestrators, independent-context execution and coherent Running observations.
+CORE-01/02/03 checks remain active; only former CORE-04 absence assertions are
+updated to continue prohibiting CORE-05. There is no second execution engine,
+PRNG package, GPU dependency, finalization, real geography or UI change.
+
+Development validation for v0.0.21: 15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03,
+8/8 CORE-04 and 16/16 menu checks passed. Engine and game Release builds reported
+zero warnings/errors. Whitespace verification passed after removing trailing
+blank lines in documentation. Compiled ProductVersion matched root VERSION.
+No GUI or geographic validation or independent audit acceptance is claimed.

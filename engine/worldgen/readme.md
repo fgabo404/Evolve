@@ -1,6 +1,6 @@
 # World Generation Engine
 
-**Status:** CORE-01 and CORE-02 accepted; CORE-03 implemented, pending review and owner acceptance.
+**Status:** CORE-01 through CORE-03 accepted; CORE-04 implemented, pending review and owner acceptance.
 
 ## Responsibility
 
@@ -44,18 +44,23 @@ Bulk modes stop immediately. Retry resumes at the failed stage, preserving
 earlier data. Completed targets/worlds are no-ops.
 
 Use `context.GetProgress()` for all progress and diagnostic inspection; there is
-no second progress store. While a stage is `Running`, synchronous/reentrant
-operations are rejected before mutation. Callers must serialize operations and
-inspection; cross-thread operation exclusivity, cancellation and async execution
-are not guaranteed by CORE-03. The full concurrency strategy belongs to CORE-04.
+no second progress store. CORE-04 adds a per-context exclusive operation lease
+across threads and orchestrator instances. Competing/reentrant operations reject
+immediately. Storage lookups and progress snapshots use a short per-context
+lock; rebuild invalidates its entire suffix atomically without blocking other
+contexts. Separate inspection calls may observe different instants.
 
-Inconsistent completion prefixes and invalidated storage are rejected without
-mutation. Internal single-slot discard remains a storage primitive, not an
-implicit rebuild. PRNG/seed derivation, operational rebuild/downstream
-invalidation, finalization and transfer into `WorldState` remain unimplemented.
-The production core contains no layer executors; the eight neutral fake
-executors live exclusively in `tests/worldgen/`. Real algorithms belong to
-separately authorized layer roadmaps under `layers/`.
+`GenerationLayerInputs.Random` supplies a fresh, versioned SplitMix64 stream per
+stage attempt. `RebuildFrom` preserves completed predecessors, discards the
+selected suffix and restores sequential eligibility. Completed/Invalidated
+suffix slots become Invalidated; Failed/Pending slots become Pending; all lose
+data and diagnostics. Rebuild requires completed predecessors and no active
+operation. Previously retrieved immutable results remain historical observations.
+
+The production core contains no layer executors; eight neutral fake executors
+live exclusively in `tests/worldgen/`. Real algorithms belong to separately
+authorized layer roadmaps. Finalization and WorldState integration remain
+unimplemented. See [CORE-04 signatures and vectors](core-contracts.md#16-core-04-deterministic-streams-and-exclusive-rebuild).
 
 Published buffers accept unmanaged values only. Future reference-rich outputs
 require a separately approved immutable contract. No world is copied per stage,
@@ -86,5 +91,5 @@ or geographic data. See [test coverage](../../tests/worldgen/readme.md).
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-CORE-03 implementation does not grant acceptance, authorize CORE-04/05 or
+CORE-04 implementation does not grant acceptance or authorize CORE-05 or
 authorize merging `world-core` into `world`.

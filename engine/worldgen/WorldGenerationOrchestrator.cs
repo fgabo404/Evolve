@@ -30,10 +30,31 @@ public sealed class WorldGenerationOrchestrator
         return Advance(context, stage, false);
     }
 
-    // Synchronous and reentrant Running guards are enforced here; full concurrency policy belongs to CORE-04.
+    // Invalidates a suffix without executing layers; the context owns the cross-instance operation lease.
+    public GenerationProgress RebuildFrom(GenerationContext context, GenerationStage stage)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        context.EnterOperation();
+        try
+        {
+            context.RebuildFrom(stage);
+            return context.GetProgress();
+        }
+        finally { context.ExitOperation(); }
+    }
+
+    // Hold exclusivity for the entire bulk operation, including gaps between stages.
     private GenerationProgress Advance(GenerationContext context, GenerationStage target, bool singleStage)
     {
         ArgumentNullException.ThrowIfNull(context);
+        context.EnterOperation();
+        try { return AdvanceExclusive(context, target, singleStage); }
+        finally { context.ExitOperation(); }
+    }
+
+    // All forward execution modes retain this single runner.
+    private GenerationProgress AdvanceExclusive(GenerationContext context, GenerationStage target, bool singleStage)
+    {
         while (true)
         {
             var progress = context.GetProgress();
@@ -82,8 +103,6 @@ public sealed class WorldGenerationOrchestrator
             var status = progress.GetStatus(stage);
             if (status == GenerationStageStatus.Running)
                 throw new InvalidOperationException("A generation stage is already running.");
-            if (status == GenerationStageStatus.Invalidated)
-                throw new InvalidOperationException("Rebuilding invalidated stages is not implemented.");
             if (status == GenerationStageStatus.Completed)
             {
                 if (unfinished || context.GetLayerData(stage)?.Stage != stage)
