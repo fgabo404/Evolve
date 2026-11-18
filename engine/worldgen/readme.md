@@ -1,62 +1,90 @@
 # World Generation Engine
 
-**Status:** CORE-01 accepted; CORE-02 context/storage implemented pending acceptance.
+**Status:** CORE-01 and CORE-02 accepted; CORE-03 implemented, pending review and owner acceptance.
 
 ## Responsibility
 
-Coordinate the layered, deterministic generation pipeline independently of the UI.
+Coordinate the layered generation pipeline independently of the UI. The .NET 10
+engine library references only the definitions library. No OpenTK, rendering,
+active state, save storage or test dependency belongs here.
 
-Current CORE-01 components:
+## Current components
 
-- `GenerationStage` — the eight canonical stage IDs, Grid through Biomes.
-- `IWorldGenerationLayer` — a stable stage identity only; execution is deferred.
-- `WorldGenerationLayerRegistry` — complete, unique and correctly ordered
-  registration, with read-only membership and no execution.
-- `GenerationRequest` — immutable main seed and validated definitions settings.
+- `GenerationStage`: eight canonical stage identities, Grid through Biomes.
+- `GenerationRequest`: immutable main seed and validated definitions settings.
+- `WorldGenerationLayerRegistry`: complete, unique, ordered registration with
+  read-only membership; registration itself executes no layer.
+- `IWorldGenerationLayer`: stable identity and synchronous execution returning
+  a candidate or explicit failure, using only read-only inputs.
+- `GenerationContext`: request metadata and the authoritative private table of
+  stage status, published data and failure diagnostics. No public mutators.
+- `GenerationStageStatus` / `GenerationProgress`: five lifecycle states and
+  immutable observations derived from that table, including the completed prefix
+  and next eligible stage.
+- `LayerData` / `LayerData<T>`: stage-owned immutable buffers of unmanaged
+  values, copied once from their sources and reused safely after publication.
+- `GenerationLayerInputs`: immutable request and earlier completed buffers
+  only; no context handle, own-stage access or future-stage access.
+- `LayerExecutionResult`: either an immutable candidate or a failure diagnostic.
+- `WorldGenerationOrchestrator`: `CreateGeneration`, `RunNext`, `RunUntil` and
+  `RunAll`. All forward modes use one synchronous stage runner for prerequisite
+  validation, invocation, ownership validation, atomic publication and retry.
+- `AssemblyVisibility.cs`: restricted named friend access for the existing
+  headless checks, without adding public storage mutation APIs.
 
-CORE-02 components:
+## Execution and limitations
 
-- `GenerationContext` — immutable request access and private stage-owned storage;
-  public callers can only inspect progress and completed results.
-- `GenerationStageStatus` — the five approved storage states.
-- `GenerationProgress` — immutable status/failure observations and derived
-  contiguous progress, with no externally writable state.
-- `LayerData` / `LayerData<T>` — a restricted immutable output contract with
-  owned, copied unmanaged value buffers for individual stages.
-- `AssemblyVisibility.cs` — named friend access for the existing headless checks
-  to validate internal preparation methods without public mutation APIs.
+Create a context from a validated request and a complete registered pipeline.
+The future Laboratory will call `RunNext` for forward execution. Automation can
+use `RunUntil` or `RunAll`; every mode executes prerequisites in canonical order.
+Only completed earlier results are visible to a layer. A valid candidate is
+published together with `Completed`; explicit failures, exceptions, missing
+results and wrong ownership record `Failed` without publishing the candidate.
+Bulk modes stop immediately. Retry resumes at the failed stage, preserving
+earlier data. Completed targets/worlds are no-ops.
 
-`Evolve.Engine.WorldGeneration.csproj` targets .NET 10 and references only the
-definitions library. It does not reference OpenTK, UI, active state or saves.
-Exact signatures, validation and deferred contracts are in
-[core-contracts.md](core-contracts.md#12-core-02-context-and-read-only-storage-contract).
+Use `context.GetProgress()` for all progress and diagnostic inspection; there is
+no second progress store. While a stage is `Running`, synchronous/reentrant
+operations are rejected before mutation. Callers must serialize operations and
+inspection; cross-thread operation exclusivity, cancellation and async execution
+are not guaranteed by CORE-03. The full concurrency strategy belongs to CORE-04.
 
-Future conceptual components, not implemented by CORE-01/CORE-02:
+Inconsistent completion prefixes and invalidated storage are rejected without
+mutation. Internal single-slot discard remains a storage primitive, not an
+implicit rebuild. PRNG/seed derivation, operational rebuild/downstream
+invalidation, finalization and transfer into `WorldState` remain unimplemented.
+The production core contains no layer executors; the eight neutral fake
+executors live exclusively in `tests/worldgen/`. Real algorithms belong to
+separately authorized layer roadmaps under `layers/`.
 
-- `WorldGenerationOrchestrator` — the single generation entry point, sequencing, prerequisite enforcement, failure handling and downstream invalidation.
-- `layers/` — the geographically focused generation algorithms.
+Published buffers accept unmanaged values only. Future reference-rich outputs
+require a separately approved immutable contract. No world is copied per stage,
+and context/progress inspection is neither active game state nor persistence.
+No UI integration or GUI validation is included in this increment.
 
-The planned engine will support full generation and sequential Laboratory
-generation through the **same** execution pipeline. Only a complete, valid world
-may eventually be transferred into `state/world/`; CORE-01/CORE-02 implement neither
-execution nor that transfer.
+## Build and checks
 
-Context transitions are internal storage primitives, not an execution pipeline.
-No prerequisites, concurrency policy, automatic invalidation or reconstruction
-are implemented. Published buffers accept unmanaged value types only; future
-reference-rich geographical data require a separately approved immutable shape.
-Context/progress inspection is not active game state or saved-game persistence.
+Run from the repository root with the .NET 10 SDK:
 
-No OpenGL, rendering, menu code, file-save handling or parallel generator implementation belongs here.
+```powershell
+dotnet run --project .\tests\worldgen\Evolve.WorldGeneration.Checks.csproj --configuration Release
+dotnet run --project .\tests\menu\Evolve.Menu.Checks.csproj --configuration Release
+dotnet build .\engine\worldgen\Evolve.Engine.WorldGeneration.csproj --configuration Release
+dotnet build .\game\Evolve.Game.csproj --configuration Release
+git diff --check
+```
+
+The checks run real production contracts, storage and orchestration with no GPU
+or geographic data. See [test coverage](../../tests/worldgen/readme.md).
 
 ## Documents
 
 - [Approved WG-CORE architecture](core-architecture.md)
-- [Approved technical design](core-contracts.md)
+- [Technical contracts and exact CORE-03 signatures](core-contracts.md#14-core-03-sequential-execution-contract)
 - [Approved WG-CORE implementation roadmap](core-roadmap.md)
 - [Overall roadmap](roadmap.md)
 - [Layer catalog](layers/readme.md)
 - [Approved preliminary architecture](../../WORLD_GENERATION_ARCHITECTURE.md)
 
-CORE-02 is implemented on `world-core`, subject to acceptance. CORE-03 and later
-increments are not authorized by this delivery.
+CORE-03 implementation does not grant acceptance, authorize CORE-04/05 or
+authorize merging `world-core` into `world`.

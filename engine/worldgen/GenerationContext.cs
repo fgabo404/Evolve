@@ -1,5 +1,5 @@
 // Holds immutable request metadata and stage-owned temporary generation state.
-// Exposes read-only inspection while reserving storage transitions for the future engine orchestrator.
+// Exposes read-only inspection while reserving storage transitions for the engine orchestrator.
 
 namespace Evolve.Engine.WorldGeneration;
 

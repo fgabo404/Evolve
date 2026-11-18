@@ -4,7 +4,7 @@
 **Integration branch:** `world`  
 **Working branch:** `world-core`
 
-**Status:** CORE-01 and CORE-02 accepted; CORE-03 authorized; CORE-04..05 not authorized.
+**Status:** CORE-01 and CORE-02 accepted; CORE-03 implemented pending review; CORE-04..05 not authorized.
 
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
@@ -21,7 +21,7 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 | --- | --- | --- | --- |
 | **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Accepted by project owner — 2026-11-18 |
 | **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Accepted by project owner — 2026-11-18 |
-| **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Authorized — pending implementation |
+| **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Implemented — pending review and owner acceptance |
 | **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Not started |
 | **CORE-05 — Finalization and verification** | `FinalizeWorld` as complete-result boundary; unit/contract tests; verification and developer/auditor evidence | Completed eight stages only; headless tests and Release build; accepted review | Not started |
 
@@ -146,4 +146,34 @@ with a narrow executable contract while preserving validated stage registration
 and CORE-01/02 behaviors. All consumers of a stage's inputs are read-only.
 CORE-04's PRNG, operational rebuild/downstream invalidation, and full concurrency
 strategy are deferred; CORE-05 finalization is deferred. Acceptance requires
-new headless tests and unchanged CORE-01/02/menu regression results.
+new headless tests and preserved CORE-01/02/menu regression coverage.
+
+## CORE-03 delivery record
+
+`WorldGenerationOrchestrator` now provides synchronous `CreateGeneration`,
+`RunNext`, `RunUntil` and `RunAll`. All forward modes share one private stage
+runner. Layers receive immutable request metadata and earlier completed buffers
+through `GenerationLayerInputs`; they return a `LayerExecutionResult` candidate
+or explicit failure. Only validated, correctly owned candidates are published.
+Execution failures record Failed without exposing partial data or changing
+previous outputs. Bulk modes stop on failure; later calls retry the eligible
+failed stage without repeating predecessors. Completed targets/worlds are no-ops.
+
+Running and reentrant attempts, inconsistent completion prefixes and invalidated
+drafts are rejected before mutation. Full cross-thread operation exclusivity,
+PRNG, operational rebuild/cascade and finalization remain deferred to CORE-04/05.
+The public context surface and project dependencies are unchanged. The eight
+neutral executors remain exclusively in `tests/worldgen/`; no geographic layer,
+UI change or `WorldState` integration is included.
+
+The exact signatures, operation-error policy and scope limits are recorded in
+[CORE-03 contracts](core-contracts.md#14-core-03-sequential-execution-contract).
+Only CORE-03 is marked implemented, pending review and owner acceptance. This
+record does not close the roadmap, authorize CORE-04 or merge into `world`.
+
+Development evidence for `v0.0.19`: 15/15 CORE-01, 19/19 CORE-02, 17/17 CORE-03
+and 16/16 menu checks passed. Both Release builds reported zero warnings/errors,
+and whitespace verification passed. The compiled product version and generated
+informational version matched root `VERSION`. Environment limitations and exact
+execution contracts are recorded in section 14 of the contracts document.
+No GUI validation or independent audit acceptance is claimed.

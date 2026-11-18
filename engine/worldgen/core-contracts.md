@@ -13,9 +13,9 @@
 The **approved** system behavior is sequential execution of eight stages by one `WorldGenerationOrchestrator`, over a temporary `GenerationContext`, with atomic publication of validated results, deterministic replay, strict prerequisites, downward invalidation and completion-only finalization.
 
 The project owner approved this technical design on 2026-11-18 and accepted
-the CORE-01 surface in section 10. CORE-02 now implements the temporary context
-and read-only storage surface in section 12, subject to acceptance. The broader
-execution behavior below remains a design for later authorized increments.
+the CORE-01 surface in section 10 and CORE-02 storage surface in section 12.
+CORE-03 implements sequential execution as documented in section 14, pending
+review and owner acceptance. PRNG, rebuild and finalization remain deferred.
 
 - `definitions/worldgen/` owns configuration/value definitions; no generation algorithms.
 - `engine/worldgen/` owns the orchestrator, lifecycle and generation draft.
@@ -45,8 +45,9 @@ The initial contract is a fixed, ordered pipeline of eight stages. A stage can r
 
 ## 3. Candidate data and execution contracts
 
-These execution operations are deferred. CORE-02 implements context/progress
-inspection as documented in section 12, but no orchestrator or execution method.
+The following signatures record the approved conceptual design. CORE-02 provides
+inspection (section 12), and CORE-03 provides synchronous forward execution
+(section 14). Rebuild, PRNG and finalization remain deferred.
 
 These are **logical signatures**, not literal finalized C# syntax:
 
@@ -249,9 +250,11 @@ demonstrates layer execution, determinism, finalization or performance behavior.
 - Metrics, diagnostics, checkpoints and memory/performance budgets.
 - Integration with actual Grid later, without adding any geography algorithm to WG-CORE.
 
-**Status:** CORE-01 accepted by the project owner. CORE-02 is implemented on
-`world-core`, pending review and acceptance. CORE-03 through CORE-05 remain
-unimplemented and require separate authorization.
+**Status:** CORE-01 and CORE-02 accepted by the project owner. CORE-03 is
+implemented on `world-core`, pending review and acceptance. CORE-04 and CORE-05
+remain unimplemented and require separate authorization. Sections 10 through 13
+preserve the earlier delivery and authorization records; section 14 defines the
+current execution surface.
 
 ## 10. CORE-01 implemented C# contract
 
@@ -295,7 +298,7 @@ The definitions assembly exposes public enums `WorldType` (`Pangea = 0`,
 `Medium = 1`, `Large = 2`). They select approved configurations only. There are
 no rows, columns, cell counts, physical dimensions or quantitative settings.
 
-### Final explicit public members
+### CORE-01 delivery public members (execution extended in section 14)
 
 | Type | C# signatures |
 | --- | --- |
@@ -335,7 +338,7 @@ eligibility. A future orchestrator still owns prerequisite checks and execution.
 These are constructor/lookup validation exceptions, not a decision about the
 later orchestrator's operation-result or execution-failure model.
 
-### Explicitly deferred execution surface
+### Execution scope at CORE-01 delivery
 
 `IWorldGenerationLayer` deliberately has no `Execute` method in CORE-01.
 Read-only input views, isolated candidate output, stream ownership and result
@@ -532,3 +535,121 @@ CORE-04 (seed streams, rebuild/invalidation and full operation exclusivity)
 and CORE-05 (final result and state integration) are **not authorized** by this
 approval. Exact invocation signatures and error-result representation must be
 documented alongside the CORE-03 implementation.
+
+## 14. CORE-03 sequential execution contract
+
+**Status:** implemented, pending review and owner acceptance. CORE-01/02 remain
+accepted. This section supersedes their execution deferrals only; registration,
+configuration, immutable storage and public context inspection remain intact.
+
+### Final C# surface
+
+All types remain in `Evolve.Engine.WorldGeneration`, using existing .NET 10
+projects with no added package, project reference or production layer executor.
+
+| Type | Explicit public members |
+| --- | --- |
+| `IWorldGenerationLayer` | Existing `GenerationStage Stage { get; }`; new `LayerExecutionResult Execute(GenerationLayerInputs inputs)`. |
+| `public sealed class GenerationLayerInputs` | `GenerationRequest Request { get; }`; `GenerationStage Stage { get; }`; `LayerData GetLayerData(GenerationStage stage)`. Internal construction only. |
+| `public sealed class LayerExecutionResult` | `LayerData? Candidate { get; }`; `string? Failure { get; }`; `static LayerExecutionResult Success(LayerData candidate)`; `static LayerExecutionResult Failed(string diagnostic)`. Private construction. |
+| `public sealed class WorldGenerationOrchestrator` | `WorldGenerationOrchestrator(WorldGenerationLayerRegistry registry)`; `GenerationContext CreateGeneration(GenerationRequest request)`; `GenerationProgress RunNext(GenerationContext context)`; `GenerationProgress RunAll(GenerationContext context)`; `GenerationProgress RunUntil(GenerationContext context, GenerationStage stage)`. |
+
+The implementation is synchronous. All forward operations return the existing
+immutable `GenerationProgress` snapshot, including status and diagnostic of any
+failed attempt. A second `StageExecutionResult` wrapper for `RunNext` would
+duplicate that information, so the conceptual return type in section 3 resolves
+to `GenerationProgress`. `LayerExecutionResult` is solely a layer-to-orchestrator
+candidate/failure envelope, not another progress store or published result.
+
+### Read-only inputs and isolated candidates
+
+The orchestrator constructs a restricted input view after prerequisite checks.
+It contains immutable request metadata, the active identity and private
+references to earlier completed immutable buffers only. It does not retain or
+expose `GenerationContext`. Looking up the active or a later stage throws
+`InvalidOperationException`; unknown IDs throw `ArgumentOutOfRangeException`.
+Retaining an input view cannot later reveal the layer's own or future output.
+Only the small array of buffer references is copied, not earlier layer data.
+
+A layer returns `Success(new LayerData<T>(itsStage, values))` or
+`Failed(diagnostic)`. Existing unmanaged-only buffer ownership and defensive
+source copying remain unchanged. The outcome factory rejects null success data
+and blank failure diagnostics. A failure outcome cannot carry candidate data.
+No `object` payload, mutable context handle, PRNG argument, geographical shape
+or fabricated execution context is introduced.
+
+### One forward path and prerequisite gate
+
+`RunNext`, `RunAll` and `RunUntil` delegate to one private `Advance` loop. Before
+each attempt it checks the context's own progress and published ownership:
+
+1. Any Running stage rejects the operation before mutation.
+2. Completed results must form a contiguous valid prefix from Grid. A completed
+   stage after a gap is rejected rather than silently used as a prerequisite.
+3. Invalidated storage is rejected; operational rebuild is not part of CORE-03.
+4. The first unfinished stage is eligible only with every predecessor completed.
+   There is no public arbitrary-stage runner. A target limits forward progress;
+   it cannot select Tectonics before Grid or skip any prerequisite.
+5. A completed target or completely generated draft is a no-op. Completed layers
+   never run again. Creating a context executes no layer.
+
+The runner captures inputs, marks only the eligible stage Running, checks the
+registered executor's still-matching identity, and invokes it once. A successful
+candidate must be non-null and belong to that exact stage. `Publish` installs
+data and Completed together using CORE-02's immutable slot replacement. There
+is no separate validation algorithm for geographic content, since no real
+layer data or algorithms exist yet; a layer reports its own validation failure
+through the explicit failure outcome.
+
+### Failure, retry and operation errors
+
+Explicit layer failure, ordinary execution exception, missing execution result,
+changed executor identity or mismatched candidate ownership records Failed in
+the active slot with an English diagnostic. No candidate is published; prior
+buffer references and all downstream Pending slots remain unchanged. Exceptions
+are converted to diagnostic strings containing exception type and message.
+`RunAll` and `RunUntil` return immediately on that failure. They never retry in
+the same call. A later call retries the same earliest failed stage, without
+rerunning completed predecessors; success replaces its failure diagnostic.
+
+Null registry/request/context arguments throw `ArgumentNullException`;
+undefined targets throw `ArgumentOutOfRangeException`. Running, inconsistent
+completion prefixes and invalidated storage throw `InvalidOperationException`
+before execution or publication. These are rejected operations, not layer
+failures, and do not replace valid state with Failed.
+
+Running rejection includes synchronous reentrancy from a layer's callback.
+Callers must serialize operations and inspection. Cross-thread operation
+exclusivity, cancellation and async scheduling are not guaranteed here; the
+full concurrency strategy remains CORE-04. No locks, execution leases, PRNG,
+seed streams, rebuild/cascade, finalization or `WorldState` integration are
+implemented ahead of their authorized increments.
+
+### Verification scope
+
+`WorldGenerationOrchestratorChecks.cs` invokes the actual production runner and
+the eight test-only executors. Its 17 named checks include 96 injected failure
+scenarios (four failure kinds at eight stages in three modes) and 24 retry
+scenarios. It verifies ordered execution, all targets/prerequisites, mode
+equivalence using prior inputs, completed no-ops, atomic failure, immutable
+inputs, source isolation, independent contexts, Running/reentrant rejection,
+invalid arguments and absence of CORE-04/05 APIs. Exact coverage and regression
+commands are in [tests/worldgen/readme.md](../../tests/worldgen/readme.md).
+
+The existing 15 CORE-01 and 19 CORE-02 checks remain active. Only their former
+execution-deferral assertions and test-layer implementations adapt to the
+authorized CORE-03 interface. These checks are development evidence, not an
+independent audit or owner acceptance. No geographic or GUI execution occurs.
+
+Executed development evidence for `v0.0.19`: 15/15 CORE-01, 19/19 CORE-02,
+17/17 CORE-03 and 16/16 menu checks passed. The explicit engine and game Release
+builds each reported zero warnings and errors; `git diff --check` passed.
+The built game's ProductVersion and generated AssemblyInformationalVersion
+both matched root `VERSION`. The world-generation dependency manifest contained
+only the checks, engine and definitions projects, with no OpenTK.
+
+The initial sandboxed test invocation could not read the user's NuGet.Config;
+the authorized invocation with that access succeeded. Direct reflection from
+the installed PowerShell runtime could not resolve System.Runtime 10.0.0.0;
+version verification instead used the compiled file's ProductVersion and the
+generated assembly attribute. No GUI validation was performed or claimed.

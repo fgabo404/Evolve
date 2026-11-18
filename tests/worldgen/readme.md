@@ -1,6 +1,6 @@
 # World Generation Tests
 
-**Status:** CORE-01 and CORE-02 headless checks implemented.
+**Status:** CORE-01, CORE-02 and CORE-03 headless checks implemented.
 
 ## Run the current checks
 
@@ -9,50 +9,79 @@ dotnet run --project .\tests\worldgen\Evolve.WorldGeneration.Checks.csproj --con
 ```
 
 Run from the repository root with the .NET 10 SDK. This dependency-free console
-suite returns `0` only when every named check passes, otherwise `1`. Its actual
-production references are engine → definitions; it introduces no copied core,
-OpenTK dependency or test framework. Use `dotnet run`, not `dotnet test`.
+suite returns `0` only when every named check passes, otherwise `1`. It references
+the actual engine library, which references definitions, with no linked core
+copy, OpenTK dependency or test framework. Use `dotnet run`, not `dotnet test`.
 
-`WorldGenerationCheckEntryPoint.cs` runs the unchanged `CoreContractChecks.cs`
-suite and `GenerationContextChecks.cs`; both must pass for exit code `0`.
-`FakeWorldGenerationLayers.cs` contains eight test-only metadata implementations.
-Current coverage includes stage identities, complete registry construction,
-duplicate/missing/unknown/out-of-order stages, nulls, immutable membership,
-minimal configuration, seed preservation and actual compiled dependencies.
+`WorldGenerationCheckEntryPoint.cs` runs all three suites regardless of earlier
+failures and combines their process results:
 
-The context checks use production storage methods directly through the
-`Evolve.WorldGeneration.Checks` friend grant. `FakeLayerValue.cs` supplies only
-neutral unmanaged sample values, not geographic data or an execution simulator.
-Coverage includes eight initial Pending slots, immutable metadata, exclusive
-stage ownership, unavailable data, single-slot discard, source and consumer
-alias protection, immutable progress snapshots, failure diagnostics, rejection
-safety, independent contexts and preservation of buffer identity.
+| File | Responsibility | Named checks |
+| --- | --- | --- |
+| `CoreContractChecks.cs` | Canonical identities; complete, ordered, unique registry; invalid registrations; immutable membership; configuration and seed preservation; actual headless dependencies. | 15 |
+| `GenerationContextChecks.cs` | Metadata, initial Pending states, exclusive ownership, unavailable data, alias protection, immutable progress/failure observations, safe internal transitions and restricted test access. | 19 |
+| `WorldGenerationOrchestratorChecks.cs` | Actual production execution, prerequisites, targets, mode equivalence, failures, retry, read-only inputs, Running rejection and deferred scope. | 17 |
 
-The public result view exposes no mutable collection/backing array. Attempts to
-modify original arrays/lists or retrieved value copies do not change published
-data. Context and progress have no public mutators. The named friend access is
-tested explicitly; no fake orchestrator or production dependency on tests exists.
+The CORE-01 layer-boundary assertion now checks the authorized CORE-03 extension.
+The CORE-02 deferred-scope assertion permits orchestration outside the context
+while still rejecting CORE-04/05 operations. Other prior checks remain in place.
 
-No geographic stage, orchestrator or random generator is executed. Context
-storage calls are preparatory operations only, not `RunNext` or layer execution.
-The remaining coverage below belongs to later authorized increments and layers.
+## Test-only data and executors
 
-## Responsibility
+`FakeWorldGenerationLayers.cs` contains exactly eight concrete implementations,
+one per canonical stage. They return neutral immutable sample values or run
+scenario callbacks to inject failures. They implement no geographic algorithm.
+`FakeLayerValue.cs` supplies an unmanaged structured sample for storage checks.
 
-Verify the generator and each layer **without requiring the graphical interface** where possible.
+The storage suite directly calls engine-internal preparation primitives through
+the named `Evolve.WorldGeneration.Checks` friend grant. These calls deliberately
+test isolated slots and can construct inconsistent drafts for rejection tests;
+they are not a simulated or alternate orchestrator. All execution checks invoke
+the actual `WorldGenerationOrchestrator`.
 
-Planned coverage:
+## CORE-03 coverage
 
-- Orchestrator state transitions, prerequisite enforcement, failure behavior and rebuild invalidation.
-- Reproducibility from seed/settings and consistent `GenerationContext` data ownership.
-- Hex-grid topology and seamless horizontal wrapping with polar boundaries.
-- Plate assignment and boundary validity.
-- World-type landmass connectivity, including seam-aware checks.
-- Elevation and landform consistency; physically meaningful hydrology.
-- Climate response and environmental biome constraints.
-- Laboratory eligibility rules, without duplicating generator logic.
+- Creation runs no layer; Grid is first eligible. Every `RunNext` executes one
+  stage and observes Running before candidate publication.
+- `RunUntil` covers all eight targets and all their prerequisites. All forward
+  modes derive equivalent sample values from actual preceding outputs.
+- Completed targets/worlds do not rerun. Invalid prerequisite prefixes are
+  rejected before invoking any layer.
+- Explicit failures, exceptions after candidate allocation, wrong result
+  ownership and null execution results are injected at each of eight stages in
+  each of three modes (96 failure scenarios). No candidate or downstream result
+  is published; previous buffer references remain unchanged.
+- Every stage is failed and retried through each mode (24 retry scenarios),
+  without repeating predecessors; failure diagnostics clear only after success,
+  and old progress snapshots retain historical observations.
+- Inputs expose only immutable metadata and prior buffers. Retained inputs
+  cannot acquire own-stage/future-stage access. Mutating source arrays after
+  candidate creation cannot change published values.
+- Running states reject all forward operations, including reentrant calls from
+  actual executors. These are synchronous guards, not a cross-thread stress test
+  or proof of CORE-04 operation exclusivity.
+- Invalid arguments, outcome construction, independent contexts and rejection of
+  invalidated storage preserve existing data. No implicit rebuild is performed.
+- PRNG contracts, `RebuildFrom` and `FinalizeWorld` remain absent. Actual compiled
+  dependencies remain headless.
 
-Exact tests and performance targets belong to each separately approved internal layer roadmap. Preserve and continue running existing `tests/menu/` checks when authorized changes may affect UI integration.
+## Regression and remaining coverage
+
+```powershell
+dotnet run --project .\tests\menu\Evolve.Menu.Checks.csproj --configuration Release
+dotnet build .\engine\worldgen\Evolve.Engine.WorldGeneration.csproj --configuration Release
+dotnet build .\game\Evolve.Game.csproj --configuration Release
+git diff --check
+```
+
+Future authorized increments must verify PRNG reproducibility, operation
+exclusivity, rebuild/invalidation and complete-world finalization. Geographic
+layers separately own topology, tectonics, landmass connectivity, elevation,
+hydrology, climate, biome and performance checks. No real world, Laboratory
+screen or GPU validation is performed here.
+
+CORE-03 awaits review and owner acceptance; these checks do not constitute an
+independent audit or authorize later increments.
 
 **General roadmap:** [World Generation Roadmap](../../engine/worldgen/roadmap.md)  
 **Architecture:** [World Generation Architecture](../../WORLD_GENERATION_ARCHITECTURE.md)

@@ -33,7 +33,7 @@ internal static class GenerationContextChecks
             ("CORE-02: independent contexts cannot share mutable metadata or slots", IndependentContexts),
             ("CORE-02: publication and inspection reuse immutable stage buffers", NoWorldCopies),
             ("CORE-02: internal access is granted only to the named headless checks", RestrictedTestAccess),
-            ("CORE-02: no orchestrator, execution API or graphics dependency is introduced", DeferredExecution)
+            ("CORE-02: execution stays outside context and future operations remain absent", DeferredExecution)
         ];
 
         int failures = 0;
@@ -333,10 +333,9 @@ internal static class GenerationContextChecks
     private static void DeferredExecution()
     {
         var core = typeof(GenerationContext).Assembly;
-        Require(core.GetType("Evolve.Engine.WorldGeneration.WorldGenerationOrchestrator") is null, "Orchestrator was introduced.");
         Require(!core.GetExportedTypes().SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            .Any(method => method.Name is "RunNext" or "RunAll" or "RunUntil" or "FinalizeWorld" or "RebuildFrom"),
-            "A deferred execution operation was introduced.");
+            .Any(method => method.Name is "FinalizeWorld" or "RebuildFrom"),
+            "A CORE-04 or CORE-05 operation was introduced.");
         Require(core.GetReferencedAssemblies().All(reference => reference.Name?.StartsWith("System", StringComparison.Ordinal) == true ||
             reference.Name == typeof(WorldGenerationSettings).Assembly.GetName().Name), "Context introduced a graphics or UI dependency.");
     }

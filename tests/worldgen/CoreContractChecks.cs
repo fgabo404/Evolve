@@ -25,7 +25,7 @@ internal static class CoreContractChecks
             ("Only four world types and three dimensionless map sizes are defined", ConfigurationChoices),
             ("Requests preserve valid immutable selections and signed seeds", GenerationRequests),
             ("Invalid configuration values and null settings are rejected", InvalidConfiguration),
-            ("Layer contract exposes identity without fabricated execution", LayerBoundary),
+            ("Layer contract preserves identity and adds only read-only candidate execution", LayerBoundary),
             ("Production assemblies contain no fake or geographic layer implementation", NoProductionLayers),
             ("Core and definitions have no OpenTK or UI assembly dependencies", HeadlessDependencies)
         ];
@@ -198,13 +198,16 @@ internal static class CoreContractChecks
         Throws<ArgumentNullException>(() => new GenerationRequest(0, null!));
     }
 
-    // CORE-01 must not fabricate execution parameters, an empty context or a no-op Execute method.
+    // CORE-03 extends the accepted identity boundary with a narrow read-only execution contract.
     private static void LayerBoundary()
     {
         var contract = typeof(IWorldGenerationLayer);
         var stage = contract.GetProperty(nameof(IWorldGenerationLayer.Stage));
         Require(stage?.PropertyType == typeof(GenerationStage) && stage.SetMethod is null, "Layer stage must be get-only.");
-        Require(contract.GetMethods().Length == 1, "Execution or unrelated members were introduced ahead of their increment.");
+        var execute = contract.GetMethod(nameof(IWorldGenerationLayer.Execute));
+        Require(contract.GetMethods().Length == 2 && execute?.ReturnType == typeof(LayerExecutionResult) &&
+            execute.GetParameters().Select(parameter => parameter.ParameterType).SequenceEqual([typeof(GenerationLayerInputs)]),
+            "Unexpected layer execution boundary.");
     }
 
     // Real and fake executors belong to later layer work and the test assembly respectively.

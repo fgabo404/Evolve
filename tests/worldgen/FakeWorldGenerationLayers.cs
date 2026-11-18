@@ -1,5 +1,5 @@
-// Supplies eight test-only layer implementations for registry validation.
-// They expose metadata only and never execute generation or simulate a functional context.
+// Supplies eight test-only executors for registration and orchestrator checks.
+// Produces neutral immutable sample buffers or scenario-specific callbacks, never geographic algorithms.
 
 using Evolve.Engine.WorldGeneration;
 
@@ -7,59 +7,92 @@ namespace Evolve.WorldGeneration.Checks;
 
 internal static class FakeWorldGenerationLayers
 {
-    // Build fresh registrations so each scenario can vary its own input membership.
-    public static IWorldGenerationLayer[] Create() =>
+    // Fresh instances keep membership and execution behavior isolated between checks.
+    public static IWorldGenerationLayer[] Create(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) =>
     [
-        new FakeGridLayer(), new FakeTectonicsLayer(), new FakeLandmassesLayer(),
-        new FakeElevationLayer(), new FakeLandformsLayer(), new FakeHydrologyLayer(),
-        new FakeClimateLayer(), new FakeBiomesLayer()
+        new FakeGridLayer(execute: execute),
+        new FakeTectonicsLayer(execute),
+        new FakeLandmassesLayer(execute),
+        new FakeElevationLayer(execute),
+        new FakeLandformsLayer(execute),
+        new FakeHydrologyLayer(execute),
+        new FakeClimateLayer(execute),
+        new FakeBiomesLayer(execute)
     ];
+
+    // Values identify the executed stage only; they model no geographical data.
+    public static LayerExecutionResult Sample(GenerationLayerInputs inputs) =>
+        LayerExecutionResult.Success(new LayerData<int>(inputs.Stage, [(int)inputs.Stage]));
 }
 
-// The override allows malformed registration cases without adding production fake types.
-internal sealed class FakeGridLayer(GenerationStage stage = GenerationStage.Grid) : IWorldGenerationLayer
+// Represents Grid in headless checks without implementing its real generator.
+internal sealed class FakeGridLayer(GenerationStage stage = GenerationStage.Grid, Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage { get; } = stage;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Tectonics registration without any tectonic algorithm.
-internal sealed class FakeTectonicsLayer : IWorldGenerationLayer
+// Represents Tectonics in headless checks without implementing its real generator.
+internal sealed class FakeTectonicsLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Tectonics;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Landmasses registration without geographic outputs.
-internal sealed class FakeLandmassesLayer : IWorldGenerationLayer
+// Represents Landmasses in headless checks without implementing its real generator.
+internal sealed class FakeLandmassesLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Landmasses;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Elevation registration without heights or terrain.
-internal sealed class FakeElevationLayer : IWorldGenerationLayer
+// Represents Elevation in headless checks without implementing its real generator.
+internal sealed class FakeElevationLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Elevation;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Landforms registration without feature classification.
-internal sealed class FakeLandformsLayer : IWorldGenerationLayer
+// Represents Landforms in headless checks without implementing its real generator.
+internal sealed class FakeLandformsLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Landforms;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Hydrology registration without drainage or water data.
-internal sealed class FakeHydrologyLayer : IWorldGenerationLayer
+// Represents Hydrology in headless checks without implementing its real generator.
+internal sealed class FakeHydrologyLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Hydrology;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Climate registration without environmental calculations.
-internal sealed class FakeClimateLayer : IWorldGenerationLayer
+// Represents Climate in headless checks without implementing its real generator.
+internal sealed class FakeClimateLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Climate;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
 
-// Represents the Biomes registration without biome generation or finalization.
-internal sealed class FakeBiomesLayer : IWorldGenerationLayer
+// Represents Biomes in headless checks without implementing its real generator.
+internal sealed class FakeBiomesLayer(Func<GenerationLayerInputs, LayerExecutionResult>? execute = null) : IWorldGenerationLayer
 {
     public GenerationStage Stage => GenerationStage.Biomes;
+
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) =>
+        (execute ?? FakeWorldGenerationLayers.Sample)(inputs);
 }
