@@ -2,7 +2,8 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
-**Planned delivery branch:** `world-core` (not created)  
+**Delivery branch:** `world-core`
+
 **Status:** APPROVED TECHNICAL DESIGN — 2026-11-18; exact C# signatures resolved in CORE-01  
 **Approved behavioral foundation:** [WG-CORE architecture](core-architecture.md)  
 **Delivery plan:** [WG-CORE roadmap](core-roadmap.md)
@@ -11,7 +12,10 @@
 
 The **approved** system behavior is sequential execution of eight stages by one `WorldGenerationOrchestrator`, over a temporary `GenerationContext`, with atomic publication of validated results, deterministic replay, strict prerequisites, downward invalidation and completion-only finalization.
 
-The project owner approved this technical design on 2026-11-18. It translates approved behavior into engineering contracts; **exact C# signatures and implementation details are decisions for the separately authorized CORE-01 stage**, not existing code.
+The project owner approved this technical design on 2026-11-18. CORE-01 now
+implements the limited contract surface documented in section 10, subject to
+owner acceptance. The broader execution behavior below remains a design for
+later separately authorized increments, not an existing implementation.
 
 - `definitions/worldgen/` owns configuration/value definitions; no generation algorithms.
 - `engine/worldgen/` owns the orchestrator, lifecycle and generation draft.
@@ -40,6 +44,9 @@ The initial contract is a fixed, ordered pipeline of eight stages. A stage can r
 **WG-CORE scope:** use **test-only deterministic fake executors** to validate this contract. Actual Grid/Tectonics/... algorithms belong to their separate layer branches and roadmaps.
 
 ## 3. Candidate data and execution contracts
+
+These execution operations are deferred. CORE-01 introduces no functional
+context, orchestrator, execution method or placeholder result type.
 
 These are **logical signatures**, not literal finalized C# syntax:
 
@@ -227,7 +234,9 @@ The first WG-CORE test harness should use test-only fake layers and **must not**
 15. Same seed and settings repeat outputs; different stage streams are independent.
 16. No reference to OpenTK, window APIs or GPU-dependent execution in the core tests.
 
-These are **planned acceptance checks**, not executed tests or proof of performance.
+These are planned acceptance checks for the complete WG-CORE. CORE-01 verifies
+only the registration/configuration subset recorded in section 10; it does not
+demonstrate context, execution, determinism, finalization or performance behavior.
 
 ## 9. Decisions awaiting detailed owner approval
 
@@ -239,4 +248,128 @@ These are **planned acceptance checks**, not executed tests or proof of performa
 - Metrics, diagnostics, checkpoints and memory/performance budgets.
 - Integration with actual Grid later, without adding any geography algorithm to WG-CORE.
 
-**Status:** technical design approved by project owner. CORE-01 is authorized as the next implementation increment on the dedicated `world-core` branch. No source code was implemented by this documentation commit.
+**Status:** technical design approved by the project owner. CORE-01 is implemented
+on `world-core`, pending review and acceptance. CORE-02 through CORE-05 remain
+unimplemented and require separate authorization.
+
+## 10. CORE-01 implemented C# contract
+
+### Project boundaries
+
+| Project | Namespace / responsibility | Project references |
+| --- | --- | --- |
+| `definitions/worldgen/Evolve.Definitions.WorldGeneration.csproj` | `Evolve.Definitions.WorldGeneration`: approved configuration values only. | None. |
+| `engine/worldgen/Evolve.Engine.WorldGeneration.csproj` | `Evolve.Engine.WorldGeneration`: request, stage identity, layer identity and validated registry. | Definitions project only. |
+| `tests/worldgen/Evolve.WorldGeneration.Checks.csproj` | `Evolve.WorldGeneration.Checks`: executable headless checks against the actual production assemblies. | Engine project, with definitions available transitively. |
+
+All three projects target `net10.0`, enable nullable reference checking and
+implicit framework usings, and introduce no NuGet packages. The two production
+projects are libraries; the test project is an executable, following the existing
+menu-check convention. No solution, shared UI project, friend assembly, linked
+production-source copy or additional abstraction is required. Existing game and
+menu-test projects, and the state/save modules, are unchanged.
+
+### Stable identities
+
+`Evolve.Engine.WorldGeneration.GenerationStage` is a public enum with exactly:
+
+```csharp
+Grid = 0,
+Tectonics = 1,
+Landmasses = 2,
+Elevation = 3,
+Landforms = 4,
+Hydrology = 5,
+Climate = 6,
+Biomes = 7
+```
+
+The enum value is the unique layer identifier; a second string identifier or
+independent order property would duplicate that source of truth. No unknown,
+extension, sentinel or completion stage is included.
+
+The definitions assembly exposes public enums `WorldType` (`Pangea = 0`,
+`Continents = 1`, `Archipelagos = 2`, `RealEarth = 3`) and `MapSize` (`Small = 0`,
+`Medium = 1`, `Large = 2`). They select approved configurations only. There are
+no rows, columns, cell counts, physical dimensions or quantitative settings.
+
+### Final explicit public members
+
+| Type | C# signatures |
+| --- | --- |
+| `public sealed record WorldGenerationSettings` in definitions | `WorldGenerationSettings(WorldType worldType, MapSize mapSize)`; `WorldType WorldType { get; }`; `MapSize MapSize { get; }`. |
+| `public sealed record GenerationRequest` in engine | `GenerationRequest(long seed, WorldGenerationSettings settings)`; `long Seed { get; }`; `WorldGenerationSettings Settings { get; }`. |
+| `public interface IWorldGenerationLayer` in engine | `GenerationStage Stage { get; }` only. |
+| `public sealed class WorldGenerationLayerRegistry` in engine | `WorldGenerationLayerRegistry(IEnumerable<IWorldGenerationLayer> layers)`; `IReadOnlyList<IWorldGenerationLayer> Layers { get; }`; `IWorldGenerationLayer GetLayer(GenerationStage stage)`. |
+
+The constructors validate data without creating a session. Settings reject
+undefined enum casts; requests reject null settings. The signed 64-bit seed is
+preserved verbatim, including zero and negative values. This is a representation
+choice, not a PRNG, normalization or seed-derivation algorithm. Effective layer
+settings, generator/algorithm version metadata and context freezing are deferred
+until their owning increments specify the contracts. Existing game display
+metadata continues to derive from root `VERSION`; assembly versions are not
+silently adopted as an algorithm-reproducibility contract.
+
+### Registry guarantees and errors
+
+The registry copies the input sequence, validates exactly eight non-null layers,
+and checks known, unique stage identities in canonical Grid-to-Biomes order.
+It never sorts, fills gaps, substitutes layers or registers production fakes.
+With exactly eight known, unique ordered identities, no stage can be missing.
+Only a fully validated read-only membership collection is exposed. Changes to a
+caller's original array/list cannot change the registry.
+
+Layer implementations must keep `Stage` stable for their entire lifetime. The
+registry retains those instances; it does not clone executors or add a context
+ownership system. `GetLayer` inspects registration only and grants no execution
+eligibility. A future orchestrator still owns prerequisite checks and execution.
+
+- Null input sequence or null request settings: `ArgumentNullException`.
+- Wrong registration count, null entry, unknown/duplicate stage or wrong order:
+  `ArgumentException` for `layers`.
+- Undefined settings enum value or lookup stage: `ArgumentOutOfRangeException`.
+
+These are constructor/lookup validation exceptions, not a decision about the
+later orchestrator's operation-result or execution-failure model.
+
+### Explicitly deferred execution surface
+
+`IWorldGenerationLayer` deliberately has no `Execute` method in CORE-01.
+Read-only input views, isolated candidate output, stream ownership and result
+validation require the actual CORE-02/CORE-03 context and execution design.
+There is no empty context, no-op execution, `object` payload, throwing execution
+stub, random implementation, lifecycle state machine or final-world result.
+Later signatures must extend this boundary through their authorized increment.
+
+Exactly eight metadata-only fake implementations live in
+`tests/worldgen/FakeWorldGenerationLayers.cs`. They cover all eight identities;
+the Grid fake can supply malformed metadata for rejection checks. They perform
+no generation, and production libraries contain no layer implementations.
+
+### Validation commands
+
+Run from the repository root with the .NET 10 SDK:
+
+```powershell
+dotnet run --project .\tests\worldgen\Evolve.WorldGeneration.Checks.csproj --configuration Release
+dotnet run --project .\tests\menu\Evolve.Menu.Checks.csproj --configuration Release
+dotnet build .\engine\worldgen\Evolve.Engine.WorldGeneration.csproj --configuration Release
+dotnet build .\game\Evolve.Game.csproj --configuration Release
+git diff --check
+```
+
+The new executable checks canonical values/order, valid registration with eight
+distinct fakes, every duplicate pair, each missing stage, bad counts and order,
+unknown identities, null entries, read-only membership, invalid lookups,
+configuration/request validation and compiled dependency independence from
+OpenTK/UI. It needs no GPU or geographic algorithms. It uses `dotnet run`, not
+`dotnet test`; any failed check returns a nonzero process exit code.
+
+CORE-01 development validation: 15/15 new checks and all 16/16 existing menu
+checks passed. Both explicit Release builds completed with zero warnings and
+errors, and `git diff --check` passed. The built game informational version was
+verified as `v0.0.15`. The world-generation check dependency manifest contained
+only its own project and the engine/definitions libraries, with no OpenTK.
+No GUI, context or geographic execution was performed; these checks are not
+independent audit or owner acceptance.

@@ -2,7 +2,8 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
-**Working branch:** `world-core` (created after this approval commit)  
+**Working branch:** `world-core`
+
 **Status:** APPROVED BY PROJECT OWNER — 2026-11-18; CORE-01 authorized, CORE-02..05 not authorized  
 **Approved design:** [WG-CORE architecture](core-architecture.md)  
 **Proposed engineering contract:** [WG-CORE technical contracts](core-contracts.md)
@@ -17,7 +18,7 @@ No hex-grid algorithm, real-world tectonics, landmass generator, elevations, hyd
 
 | Increment | Scope | Evidence / exit gate | Status |
 | --- | --- | --- | --- |
-| **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Not started |
+| **CORE-01 — Contract foundation** | Approve exact contracts, stage identities, generation request shape and minimal headless project/test organization; register eight test-only executors | Stage registry validates order/identity; builds without GPU; owner-approved C# API | Implemented — pending review and owner acceptance |
 | **CORE-02 — GenerationContext** | Immutable request metadata, per-stage output ownership, read-only inspection and stage progress states | No mutability leak; no partial or invalidated outputs visible; test-only data accepted | Not started |
 | **CORE-03 — Orchestrator execution** | `CreateGeneration`, `RunNext`, `RunUntil`, `RunAll`; prerequisite validation, atomic publication, failure and retry | No skipped stages; no invalid commit; all entry modes share one execution path | Not started |
 | **CORE-04 — Determinism and rebuild** | Stage-specific seeded streams, one active execution per context, `RebuildFrom` and downstream invalidation | Same seed/settings yield same output across modes; rebuilding N removes N..07 | Not started |
@@ -74,4 +75,29 @@ Every increment receives its own test evidence and accepted Git commit, with roo
 
 These decisions must be resolved **before or within a separately authorized CORE-01 design gate**, not silently coded as developer assumptions.
 
-**Roadmap status:** approved. Only CORE-01 is authorized; CORE-02..05 require separate owner approval. The `world-core` branch is created from the approved documentation commit; no C# implementation is part of this approval commit.
+**Roadmap status:** approved. CORE-01 is implemented on `world-core` and remains
+subject to review and owner acceptance. CORE-02..05 still require separate owner
+approval. No merge into `world` or geographic layer development is authorized.
+
+## CORE-01 delivery record
+
+The implemented C# signatures and project-boundary decisions are documented in
+[core-contracts.md, section 10](core-contracts.md#10-core-01-implemented-c-contract).
+The constructor validates a complete fixed registry; no layer is executed.
+Minimal immutable request/settings types contain only the main seed, four world
+types and three dimensionless map-size choices. Eight fake layer implementations
+are confined to `tests/worldgen/`.
+
+The CORE-01 design gate resolves stage identity/order, request representation,
+registration validation exceptions and the checks → engine → definitions
+dependency direction (engine references definitions; checks reference engine).
+Execution parameters, read-only outputs, atomic publication, operation error
+results, context lifecycle, PRNG, concurrency, rebuild and finalization remain
+deferred to their separately authorized increments. No placeholder executable
+contract is introduced to fill those gaps.
+
+Development evidence: 15/15 CORE-01 checks passed, the existing 16/16 menu checks
+passed, engine and game Release builds reported zero warnings/errors, and
+whitespace verification passed. The compiled display version is `v0.0.15`.
+The commands and coverage are recorded in `core-contracts.md`. This evidence
+does not accept the increment or authorize CORE-02.

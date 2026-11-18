@@ -1,6 +1,26 @@
 # World Generation Tests
 
-**Status:** Documentation scaffold; no world-generation test project created.
+**Status:** CORE-01 headless contract checks implemented.
+
+## Run the current checks
+
+```powershell
+dotnet run --project .\tests\worldgen\Evolve.WorldGeneration.Checks.csproj --configuration Release
+```
+
+Run from the repository root with the .NET 10 SDK. This dependency-free console
+suite returns `0` only when every named check passes, otherwise `1`. Its actual
+production references are engine → definitions; it introduces no copied core,
+OpenTK dependency or test framework. Use `dotnet run`, not `dotnet test`.
+
+`WorldGenerationCheckEntryPoint.cs` starts `CoreContractChecks.cs`.
+`FakeWorldGenerationLayers.cs` contains eight test-only metadata implementations.
+Current coverage includes stage identities, complete registry construction,
+duplicate/missing/unknown/out-of-order stages, nulls, immutable membership,
+minimal configuration, seed preservation and actual compiled dependencies.
+
+No geographic stage, context, orchestrator or random generator is executed.
+The remaining coverage below belongs to later authorized increments and layers.
 
 ## Responsibility
 
