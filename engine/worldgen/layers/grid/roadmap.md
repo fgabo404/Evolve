@@ -3,7 +3,7 @@
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
 **Delivery branch:** `world-grid`\
-**Status:** WG-00-A implemented; independent audit APPROVED WITH OBSERVATIONS; FIX01 numeric corrections pending independent re-audit and formal owner acceptance. WG-00-B/C not authorized.\
+**Status:** WG-00-A including FIX01 formally accepted; WG-00-B implemented pending independent audit and owner acceptance; WG-00-C not started or authorized.\
 **Baseline:** WG-CORE accepted and integrated; `world` at `v0.0.26` before this documentation change  
 **Scope:** WG-00 only; no other geographical layers or Laboratory UI implementation
 
@@ -58,7 +58,8 @@ All design approvals are preliminary unless and until the layer-specific technic
 - The cylindrical shortest distance must equal the minimum graph path using valid cell neighbors. Candidate computation minimizes the axial hex distance across periodic target images; verify its correctness at polar boundaries and the seam against independent breadth-first search (BFS) before accepting a bounded-image optimization.
 - All geometry and topology depend only on approved grid configuration, not seed or world type. A Grid implementation must not consume random values needlessly.
 
-These equations are design candidates until WG-00-A validates their exact conventions, overflow behavior, limits and boundary cases.
+These equations preserve the design baseline. WG-00-A including FIX01 is now
+formally accepted; WG-00-B reuses its implemented conventions without changes.
 
 ## 4. Reuse inventory and exclusions
 
@@ -115,8 +116,11 @@ Names and exact namespaces are proposals, not commitments to unnecessary classes
 periodic-image/cube-distance intermediates with a checked final int conversion,
 and rejects non-finite computed extents. Focused overflow regressions extend
 the existing headless suite. No change to approved geometry, topology, public
-signatures or dimensions. The corrective delivery requires independent re-audit
-and formal owner acceptance before advancement to WG-00-B.
+signatures or dimensions. The owner subsequently formally accepted WG-00-A
+including FIX01 at `0631717ed123089da83e3b864f187ab0a2a60bbc` (`v0.0.29`)
+and authorized WG-00-B. The Auditor's remaining .NET 10 native-execution
+limitation is preserved; developer-native checks do not imply the Auditor
+performed native .NET 10 reproduction.
 
 ### WG-00-B — Compact immutable grid data
 
@@ -128,6 +132,13 @@ and formal owner acceptance before advancement to WG-00-B.
 - Memory allocation assessment for Small, Medium and Large. An optional adjacency cache requires measurements and owner approval.
 
 **Gate B:** the owner reviews immutable data contract, exhaustive cell coverage, size/ID invariants and measured memory before permission to proceed to C.
+
+**Implementation:** `HexGridData.cs` stores only two readonly dimensions, selects
+the three approved presets using existing MapSize, calculates IDs/coordinates
+and delegates spatial mathematics to accepted WG-00-A geometry. No per-cell
+objects, neighbor caches or WG-CORE changes. Exact API, developer validation
+and measured construction/memory evidence are recorded in [readme.md](readme.md).
+WG-00-B is submitted for independent audit; acceptance and advancement remain gated.
 
 ### WG-00-C — WG-CORE integration
 
@@ -176,7 +187,7 @@ and formal owner acceptance before advancement to WG-00-B.
 - Respect `AGENTS.md`: project content and commit messages in English; Spanish owner-facing reports; English C# file-purpose `//` comments and no XML/block comments.
 - Every authorized repository-changing commit increments root `VERSION` in that same commit, including documentation edits. Report commit name, complete SHA and PowerShell validation instructions.
 - Do not alter other layers, the old source branch, `game/` rendering, `state/` or `saves/`; do not import older algorithms merely because they exist.
-- Do not interpret test definitions as executed evidence. WG-00-A has implementation and audit evidence; FIX01 requires re-audit. Later benchmarks, layer-wide audit and GUI inspection remain subject to their respective authorizations.
+- Do not interpret test definitions as executed evidence. WG-00-A including FIX01 is formally accepted; WG-00-B has developer evidence pending independent audit. Later benchmarks, layer-wide audit and GUI inspection remain subject to their respective authorizations.
 
 ## 8. Current status
 
@@ -185,20 +196,31 @@ and formal owner acceptance before advancement to WG-00-B.
 - [x] Authorize the `world-grid` working branch and WG-00-A implementation.
 - [x] Implement WG-00-A geometry/coordinates; audit approved with observations.
 - [x] Implement authorized FIX01 numeric corrections and focused regressions.
-- [ ] Independently re-audit FIX01 and close remaining formal WG-00-A verification requirements.
-- [ ] Formally accept WG-00-A and separately authorize advancement.
-- [ ] Complete WG-00-B, review and accept.
+- [x] Owner formally accepted WG-00-A including FIX01 and authorized WG-00-B.
+- [x] Record the Auditor's remaining .NET 10 native-execution limitation without claiming independent native reproduction.
+- [x] Implement WG-00-B and run exhaustive identity/topology, BFS and construction-memory checks.
+- [ ] Independently audit and formally accept WG-00-B before any advancement.
 - [ ] Complete WG-00-C, review and accept.
 - [ ] Complete WG-00-D, review and accept.
 - [ ] Complete WG-00-E independent audit and owner acceptance.
 - [ ] Integrate into `world` only with explicit authorization.
 
-**Document status:** WG-00-A implemented and audited with observations; FIX01
-submitted for independent re-audit. This does not close WG-00 or authorize
-WG-00-B/C, integration into `world` or synchronization with `develop`.
+**Document status:** WG-00-A including FIX01 formally accepted; WG-00-B
+implemented pending independent audit and owner acceptance. WG-00-C has not
+started. This does not close WG-00 or authorize integration into `world`
+or synchronization with `develop`.
 
 FIX01 developer evidence at `v0.0.29`: the complete WG-00-A headless suite
 passed, including new numeric-limit regressions and the existing 1,160,000 BFS
 comparisons across 200×100, 300×150 and 400×200. The engine Release build
 completed with zero warnings/errors and whitespace verification passed.
-Independent re-audit and formal owner acceptance remain pending.
+That FIX01 developer record predates the owner's subsequent formal acceptance.
+
+WG-00-B developer evidence at `v0.0.30`: the complete headless grid project
+passed all retained A/FIX01 checks and new B assertions over 145,000 cells.
+The 1,160,000 existing BFS comparisons remain, with another 1,160,000 comparing
+the grid API directly against BFS. Exact edge totals and invalid inputs passed.
+Engine Release build: zero warnings/errors. Construction batches allocated
+24 B/grid for all sizes, with actual retained heap/timing figures and methodology
+in [readme.md](readme.md); no acceptance thresholds are invented.
+Independent WG-00-B audit and owner acceptance remain pending.

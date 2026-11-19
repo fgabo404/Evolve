@@ -1,6 +1,8 @@
-// Runs independent headless WG-00-A geometry checks against the production engine.
-// Includes seam, polar, signed-coordinate and BFS distance regressions from the legacy grid.
+// Runs headless WG-00-A geometry regressions and WG-00-B data checks against the production engine.
+// Preserves seam, polar, signed-coordinate and BFS coverage while verifying the calculated grid API.
 using System.Numerics;
+using Evolve.Definitions.WorldGeneration;
+using Evolve.Engine.WorldGeneration.Layers.Grid;
 using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
 
 namespace Evolve.WorldGeneration.Grid.Checks;
@@ -24,6 +26,7 @@ internal static class HexGridGeometryChecks
             Console.WriteLine($"PASS WG-00-A {columns}x{rows}: geometry, seam, poles and BFS");
         }
         Console.WriteLine("PASS WG-00-A all geometry checks");
+        HexGridDataChecks.Run();
     }
 
     private static void VerifyCompleteTopology(int columns, int rows, int expectedEdges)
@@ -87,6 +90,13 @@ internal static class HexGridGeometryChecks
 
     private static void VerifyDistancesAgainstBfs(int columns, int rows)
     {
+        var grid = new HexGridData(columns switch
+        {
+            200 => MapSize.Small,
+            300 => MapSize.Medium,
+            400 => MapSize.Large,
+            _ => throw new InvalidOperationException("Unexpected BFS preset")
+        });
         HexOffset[] starts =
         [
             new(0, 0), new(columns - 1, 0),
@@ -123,6 +133,8 @@ internal static class HexGridGeometryChecks
                 var target = new HexOffset(id % columns, id / columns);
                 Require(FlatHexGeometry.WrappedDistance(start, target, columns, rows) ==
                     distances[id], $"BFS distance mismatch: {start} to {target}");
+                Require(grid.GetDistance(startId, id) == distances[id],
+                    $"Grid API BFS distance mismatch: {start} to {target}");
             }
         }
     }
