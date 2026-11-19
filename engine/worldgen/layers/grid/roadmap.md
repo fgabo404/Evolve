@@ -2,8 +2,8 @@
 
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
-**Planned delivery branch:** `world-grid` (not created or authorized by this document)  
-**Status:** OWNER-APPROVED ROADMAP; implementation and branch creation require separate authorization  
+**Delivery branch:** `world-grid`\
+**Status:** WG-00-A implemented; independent audit APPROVED WITH OBSERVATIONS; FIX01 numeric corrections pending independent re-audit and formal owner acceptance. WG-00-B/C not authorized.\
 **Baseline:** WG-CORE accepted and integrated; `world` at `v0.0.26` before this documentation change  
 **Scope:** WG-00 only; no other geographical layers or Laboratory UI implementation
 
@@ -109,6 +109,15 @@ Names and exact namespaces are proposals, not commitments to unnecessary classes
 
 **Gate A:** owner reviews API/conventions and evidence; independent validation of seam, corner, inverse conversions and distances before permission to proceed to B.
 
+**WG-00-A-FIX01:** the owner reports audit approval with observations at
+`7db3c2c70fa11173702640a232f4e909423d07a1` (`v0.0.28`), following
+1,160,000 independent BFS comparisons. The minimal correction uses long
+periodic-image/cube-distance intermediates with a checked final int conversion,
+and rejects non-finite computed extents. Focused overflow regressions extend
+the existing headless suite. No change to approved geometry, topology, public
+signatures or dimensions. The corrective delivery requires independent re-audit
+and formal owner acceptance before advancement to WG-00-B.
+
 ### WG-00-B — Compact immutable grid data
 
 **Scope:** implement only the approved three presets, row-major CellId, immutable grid result and computed spatial queries using A's validated mathematics.
@@ -163,23 +172,33 @@ Names and exact namespaces are proposals, not commitments to unnecessary classes
 ## 7. Execution governance
 
 - Architect specifies; Codex implements the authorized increment; Auditor independently verifies; the owner accepts.
-- Implement only one authorized increment at a time, on an explicitly authorized working branch. The proposed `world-grid` branch must not be created as a side effect of documentation.
+- Implement only one authorized increment at a time, on the explicitly authorized `world-grid` working branch. Its existing implementation does not authorize later increments.
 - Respect `AGENTS.md`: project content and commit messages in English; Spanish owner-facing reports; English C# file-purpose `//` comments and no XML/block comments.
 - Every authorized repository-changing commit increments root `VERSION` in that same commit, including documentation edits. Report commit name, complete SHA and PowerShell validation instructions.
 - Do not alter other layers, the old source branch, `game/` rendering, `state/` or `saves/`; do not import older algorithms merely because they exist.
-- Do not interpret test definitions as executed evidence; actual code builds, benchmarks, audit and GUI inspection are pending later authorizations.
+- Do not interpret test definitions as executed evidence. WG-00-A has implementation and audit evidence; FIX01 requires re-audit. Later benchmarks, layer-wide audit and GUI inspection remain subject to their respective authorizations.
 
 ## 8. Current status
 
 - [x] Owner selected the D01–D11 preliminary design direction, historical algorithm reuse and the A–E roadmap structure.
 - [x] Detailed implementation roadmap documented.
-- [ ] Finalize and independently verify exact WG-00-A geometric and shortest-path contracts.
-- [ ] Authorize the `world-grid` working branch and WG-00-A implementation.
-- [ ] Complete WG-00-A, review and accept.
+- [x] Authorize the `world-grid` working branch and WG-00-A implementation.
+- [x] Implement WG-00-A geometry/coordinates; audit approved with observations.
+- [x] Implement authorized FIX01 numeric corrections and focused regressions.
+- [ ] Independently re-audit FIX01 and close remaining formal WG-00-A verification requirements.
+- [ ] Formally accept WG-00-A and separately authorize advancement.
 - [ ] Complete WG-00-B, review and accept.
 - [ ] Complete WG-00-C, review and accept.
 - [ ] Complete WG-00-D, review and accept.
 - [ ] Complete WG-00-E independent audit and owner acceptance.
 - [ ] Integrate into `world` only with explicit authorization.
 
-**Document status:** planning baseline only; no Grid implementation or execution authorized.
+**Document status:** WG-00-A implemented and audited with observations; FIX01
+submitted for independent re-audit. This does not close WG-00 or authorize
+WG-00-B/C, integration into `world` or synchronization with `develop`.
+
+FIX01 developer evidence at `v0.0.29`: the complete WG-00-A headless suite
+passed, including new numeric-limit regressions and the existing 1,160,000 BFS
+comparisons across 200×100, 300×150 and 400×200. The engine Release build
+completed with zero warnings/errors and whitespace verification passed.
+Independent re-audit and formal owner acceptance remain pending.

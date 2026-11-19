@@ -31,14 +31,20 @@ public static class FlatHexGeometry
     {
         ValidateColumns(columns);
         ValidateRadius(radius);
-        return 1.5d * columns * radius;
+        double width = 1.5d * columns * radius;
+        if (!double.IsFinite(width))
+            throw new OverflowException("Grid period width is not finite.");
+        return width;
     }
 
     public static double MapHeight(int rows, double radius = 1d)
     {
         ValidateRows(rows);
         ValidateRadius(radius);
-        return RootThree * (rows + 0.5d) * radius;
+        double height = RootThree * (rows + 0.5d) * radius;
+        if (!double.IsFinite(height))
+            throw new OverflowException("Grid map height is not finite.");
+        return height;
     }
 
     // Canonicalize an axial image while retaining its physical Offset row at the horizontal seam.
@@ -93,15 +99,16 @@ public static class FlatHexGeometry
         ValidateCell(second, columns, rows);
         HexAxial from = ToAxial(first);
         HexAxial to = ToAxial(second);
-        int best = int.MaxValue;
+        long best = long.MaxValue;
         for (int k = -1; k <= 1; k++)
         {
-            var image = new HexAxial(
-                checked(to.Q + k * columns),
-                checked(to.R - k * (columns / 2)));
-            best = Math.Min(best, from.DistanceTo(image));
+            // Periodic images and non-minimal cube distances can exceed int even when the minimum fits.
+            long dq = (long)to.Q + (long)k * columns - from.Q;
+            long dr = (long)to.R - (long)k * (columns / 2) - from.R;
+            long distance = Math.Max(Math.Abs(dq), Math.Max(Math.Abs(dr), Math.Abs(dq + dr)));
+            best = Math.Min(best, distance);
         }
-        return best;
+        return checked((int)best);
     }
 
     // Geographic labels are normalized logical coordinates, not sphere-based distances.

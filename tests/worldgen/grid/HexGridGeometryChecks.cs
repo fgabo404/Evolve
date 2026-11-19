@@ -14,6 +14,9 @@ internal static class HexGridGeometryChecks
     {
         ValidateInputs();
         ValidateSignedCoordinates();
+        ValidateExtremeDistances();
+        ValidateExtentOverflow();
+        Console.WriteLine("PASS WG-00-A extreme distances and finite extent regressions");
         foreach (var (columns, rows, edges) in Sizes)
         {
             VerifyCompleteTopology(columns, rows, edges);
@@ -154,6 +157,50 @@ internal static class HexGridGeometryChecks
                 canonical.Row == row, "Signed canonical wrapping keeps row");
         }
         Require(new HexAxial(1, 0).DistanceTo(new HexAxial(0, 0)) == 1, "Axial metric");
+    }
+
+    // Exercise legal int-sized addresses without allocating a grid; image overflow must not reject a valid minimum.
+    private static void ValidateExtremeDistances()
+    {
+        int columns = int.MaxValue - 1;
+        int rows = int.MaxValue;
+        (HexOffset First, HexOffset Second, int Expected)[] cases =
+        [
+            (new(0, 0), new(0, 0), 0),
+            (new(columns - 1, rows - 1), new(columns - 1, rows - 1), 0),
+            (new(0, 0), new(columns - 1, 0), 1),
+            (new(0, rows - 1), new(columns - 1, rows - 1), 1),
+            (new(0, 0), new(0, rows - 1), rows - 1),
+            (new(0, 0), new(2, rows - 1), int.MaxValue)
+        ];
+        foreach (var (first, second, expected) in cases)
+        {
+            Require(FlatHexGeometry.WrappedDistance(first, second, columns, rows) == expected,
+                "Extreme distance must remain representable");
+            Require(FlatHexGeometry.WrappedDistance(second, first, columns, rows) == expected,
+                "Extreme distance symmetry");
+        }
+        // The true minimum, not merely an intermediate periodic image, exceeds int.MaxValue here.
+        HexOffset far = new(columns / 2, rows - 1);
+        Expect<OverflowException>(() => FlatHexGeometry.WrappedDistance(new(0, 0), far, columns, rows));
+        Expect<OverflowException>(() => FlatHexGeometry.WrappedDistance(far, new(0, 0), columns, rows));
+    }
+
+    // Finite input radii can still produce infinite extents; invalid inputs retain their argument-error policy.
+    private static void ValidateExtentOverflow()
+    {
+        Expect<OverflowException>(() => FlatHexGeometry.PeriodWidth(4, double.MaxValue));
+        Expect<OverflowException>(() => FlatHexGeometry.MapHeight(2, double.MaxValue));
+        Expect<OverflowException>(() => FlatHexGeometry.PeriodWidth(int.MaxValue - 1, double.MaxValue / 8));
+        Expect<OverflowException>(() => FlatHexGeometry.MapHeight(int.MaxValue, double.MaxValue / 8));
+        Require(double.IsFinite(FlatHexGeometry.PeriodWidth(4, double.MaxValue / 8)), "Large finite width");
+        Require(double.IsFinite(FlatHexGeometry.MapHeight(2, double.MaxValue / 8)), "Large finite height");
+        Require(FlatHexGeometry.MapHeight(2) == Math.Sqrt(3d) * 2.5d, "Normal map height");
+        foreach (double radius in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, 0d, -1d })
+        {
+            Expect<ArgumentOutOfRangeException>(() => FlatHexGeometry.PeriodWidth(4, radius));
+            Expect<ArgumentOutOfRangeException>(() => FlatHexGeometry.MapHeight(2, radius));
+        }
     }
 
     private static void Expect<TException>(Action action) where TException : Exception
