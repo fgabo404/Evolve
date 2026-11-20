@@ -14,16 +14,20 @@ internal sealed class PixelMenuRenderer : IDisposable
     private int vertexArray;
     private int vertexBuffer;
     private int viewportUniform;
+    private int worldScaleUniform;
+    private int worldOffsetUniform;
 
     private const string VertexShaderSource = """
         #version 330 core
         layout(location = 0) in vec2 position;
         layout(location = 1) in vec4 vertexColor;
         uniform vec2 viewportSize;
+        uniform float worldScale;
+        uniform vec2 worldOffset;
         out vec4 tint;
         void main()
         {
-            vec2 normalized = position / viewportSize;
+            vec2 normalized = (position * worldScale + worldOffset) / viewportSize;
             gl_Position = vec4(normalized.x * 2.0 - 1.0, 1.0 - normalized.y * 2.0, 0.0, 1.0);
             tint = vertexColor;
         }
@@ -46,6 +50,8 @@ internal sealed class PixelMenuRenderer : IDisposable
         {
             program = CreateProgram();
             viewportUniform = GL.GetUniformLocation(program, "viewportSize");
+            worldScaleUniform = GL.GetUniformLocation(program, "worldScale");
+            worldOffsetUniform = GL.GetUniformLocation(program, "worldOffset");
             vertexArray = GL.GenVertexArray();
             vertexBuffer = GL.GenBuffer();
             GL.BindVertexArray(vertexArray);
@@ -74,6 +80,17 @@ internal sealed class PixelMenuRenderer : IDisposable
         GL.Viewport(0, 0, width, height);
         GL.UseProgram(program);
         GL.Uniform2(viewportUniform, (float)width, (float)height);
+        GL.Uniform1(worldScaleUniform, 1f);
+        GL.Uniform2(worldOffsetUniform, 0f, 0f);
+    }
+
+    // The Laboratory shares this shader while retaining its own static line buffers.
+    public void UseWorldView(int width, int height, GridCamera camera)
+    {
+        Begin(width, height);
+        var origin = camera.ToScreen(0, 0);
+        GL.Uniform1(worldScaleUniform, (float)camera.Scale);
+        GL.Uniform2(worldOffsetUniform, (float)origin.X, (float)origin.Y);
     }
 
     // Glyph pixels and menu surfaces share the existing colored triangle batch.

@@ -1,11 +1,12 @@
-// Owns the OpenTK window, native input events and menu graphics lifetime.
-// Connects menu interaction and presentation to the renderer without simulation logic.
+// Owns the single OpenTK window, native input routing and menu/Laboratory graphics lifetime.
+// Connects presentation to existing engine session APIs without implementing generation algorithms.
 
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Evolve.Engine.WorldGeneration.Layers.Grid;
 
 namespace Evolve.Game;
 
@@ -15,6 +16,13 @@ internal sealed class EvolveWindow : GameWindow
     private readonly MainMenuInteraction interaction = new();
     private PixelMenuRenderer? renderer;
     private bool pointerInside;
+    private readonly LaboratorySession laboratory = new();
+    private readonly GridCamera gridCamera = new();
+    private HexGridRenderer? gridRenderer;
+    private bool editingSeed, panning, selectingCell;
+    private LaboratoryAction? laboratoryPress;
+    private (double X, double Y) previousPointer;
+    private HexGridData? cameraGrid;
 
     // Configure the native window and graphics context required by the minimal UI.
     public EvolveWindow()
@@ -40,24 +48,46 @@ internal sealed class EvolveWindow : GameWindow
 
         VSync = VSyncMode.On;
         GL.ClearColor(MainMenuStyle.Background);
-        renderer = new PixelMenuRenderer();
+        try
+        {
+            renderer = new PixelMenuRenderer();
+            gridRenderer = new HexGridRenderer();
+        }
+        catch
+        {
+            gridRenderer?.Dispose();
+            renderer?.Dispose();
+            throw;
+        }
     }
 
-    // Skip minimized framebuffers and redraw the menu at the current physical size.
+    // Skip minimized framebuffers and draw the active screen at the current physical size.
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
 
-        if (FramebufferSize.X <= 0 || FramebufferSize.Y <= 0)
+        if (WindowState == OpenTK.Windowing.Common.WindowState.Minimized ||
+            FramebufferSize.X <= 0 || FramebufferSize.Y <= 0)
         {
             return;
         }
 
+        GL.ClearColor(laboratory.IsOpen ? LaboratoryPresentation.Background : MainMenuStyle.Background);
         GL.Clear(ClearBufferMask.ColorBufferBit);
         if (renderer is not null)
         {
-            interaction.UpdateHover(HitTestPointer());
-            menu.Draw(renderer, FramebufferSize.X, FramebufferSize.Y, interaction);
+            if (laboratory.IsOpen)
+            {
+                var layout = CurrentLaboratoryLayout();
+                gridRenderer?.Synchronize(laboratory);
+                gridRenderer?.Draw(renderer, gridCamera, FramebufferSize.X, FramebufferSize.Y);
+                LaboratoryPresentation.Draw(renderer, laboratory, layout, FramebufferSize.X, FramebufferSize.Y, editingSeed);
+            }
+            else
+            {
+                interaction.UpdateHover(HitTestPointer());
+                menu.Draw(renderer, FramebufferSize.X, FramebufferSize.Y, interaction);
+            }
         }
         SwapBuffers();
     }
@@ -83,6 +113,13 @@ internal sealed class EvolveWindow : GameWindow
         base.OnMouseMove(args);
         pointerInside = true;
         if (!IsFocused) return;
+        if (laboratory.IsOpen)
+        {
+            var point = FramePointer();
+            if (panning) gridCamera.Pan(point.X - previousPointer.X, point.Y - previousPointer.Y);
+            previousPointer = point;
+            return;
+        }
         interaction.MovePointer(HitTestPointer());
     }
 
@@ -91,6 +128,7 @@ internal sealed class EvolveWindow : GameWindow
     {
         base.OnMouseEnter();
         pointerInside = true;
+        if (laboratory.IsOpen) return;
         interaction.UpdateHover(HitTestPointer());
     }
 
@@ -106,6 +144,21 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnMouseDown(MouseButtonEventArgs args)
     {
         base.OnMouseDown(args);
+        if (laboratory.IsOpen)
+        {
+            if (!IsFocused) return;
+            previousPointer = FramePointer();
+            var layout = CurrentLaboratoryLayout();
+            if (layout.Viewport.Contains(previousPointer.X, previousPointer.Y)) editingSeed = false;
+            if (args.Button == MouseButton.Right && layout.Viewport.Contains(previousPointer.X, previousPointer.Y))
+                panning = true;
+            if (args.Button == MouseButton.Left)
+            {
+                laboratoryPress = layout.HitTest(previousPointer.X, previousPointer.Y);
+                selectingCell = layout.Viewport.Contains(previousPointer.X, previousPointer.Y);
+            }
+            return;
+        }
         if (!IsFocused || args.Button != MouseButton.Left) return;
         pointerInside = true;
         interaction.PressPointer(HitTestPointer());
@@ -115,6 +168,23 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnMouseUp(MouseButtonEventArgs args)
     {
         base.OnMouseUp(args);
+        if (laboratory.IsOpen)
+        {
+            if (args.Button == MouseButton.Right) panning = false;
+            if (args.Button != MouseButton.Left || !IsFocused) return;
+            var point = FramePointer();
+            var layout = CurrentLaboratoryLayout();
+            if (laboratoryPress is { } action && layout.HitTest(point.X, point.Y) == action)
+                ActivateLaboratory(action);
+            else if (selectingCell && layout.Viewport.Contains(point.X, point.Y) && laboratory.Grid is { } grid)
+            {
+                var world = gridCamera.ToWorld(point.X, point.Y);
+                laboratory.Select(GridVisualGeometry.Pick(grid, world.X, world.Y));
+            }
+            laboratoryPress = null;
+            selectingCell = false;
+            return;
+        }
         if (!IsFocused || args.Button != MouseButton.Left) return;
         ActivateButton(interaction.ReleasePointer(HitTestPointer()));
     }
@@ -124,6 +194,30 @@ internal sealed class EvolveWindow : GameWindow
     {
         base.OnKeyDown(args);
         if (!IsFocused) return;
+        if (laboratory.IsOpen)
+        {
+            if (args.Key == Keys.Escape) ReturnToMenu();
+            else if (editingSeed)
+            {
+                if (args.Key == Keys.Backspace && laboratory.SeedText.Length > 0)
+                    laboratory.SetSeedText(laboratory.SeedText[..^1]);
+                else if (args.Key == Keys.Delete) laboratory.SetSeedText("");
+                else if (args.Key == Keys.Enter) laboratory.CreateSession();
+            }
+            else if (!args.IsRepeat)
+            {
+                if (args.Key == Keys.S) laboratory.CycleSize();
+                if (args.Key == Keys.T) laboratory.CycleWorldType();
+                if (args.Key == Keys.N) laboratory.CreateSession();
+                if (args.Key == Keys.G) laboratory.RunGrid();
+                if (args.Key == Keys.F) gridCamera.Fit();
+                if (args.Key == Keys.Left) gridCamera.Pan(40, 0);
+                if (args.Key == Keys.Right) gridCamera.Pan(-40, 0);
+                if (args.Key == Keys.Up) gridCamera.Pan(0, 40);
+                if (args.Key == Keys.Down) gridCamera.Pan(0, -40);
+            }
+            return;
+        }
 
         if (args.Key is Keys.Up or Keys.Down)
         {
@@ -140,6 +234,7 @@ internal sealed class EvolveWindow : GameWindow
     protected override void OnKeyUp(KeyboardKeyEventArgs args)
     {
         base.OnKeyUp(args);
+        if (laboratory.IsOpen) return;
         if (!IsFocused || args.Key is not (Keys.Enter or Keys.Space)) return;
         ActivateButton(interaction.ReleaseSelection(args.Key == Keys.Enter
             ? MainMenuActivationKey.Enter : MainMenuActivationKey.Space));
@@ -148,6 +243,12 @@ internal sealed class EvolveWindow : GameWindow
     // The input model supplies notices; only the native window owns graceful shutdown.
     private void ActivateButton(MainMenuButton? button)
     {
+        if (button == MainMenuButton.Laboratory)
+        {
+            interaction.ResetInput();
+            laboratory.Open();
+            return;
+        }
         if (button is { } activated && interaction.Activate(activated))
         {
             Close();
@@ -161,6 +262,7 @@ internal sealed class EvolveWindow : GameWindow
         if (!args.IsFocused)
         {
             interaction.ResetInput();
+            CancelPendingInput();
         }
     }
 
@@ -181,15 +283,76 @@ internal sealed class EvolveWindow : GameWindow
     // Cancel both input sources while allowing keyboard selection and footer notices to persist.
     private void CancelPendingInput()
     {
+        panning = selectingCell = false;
+        laboratoryPress = null;
         interaction.CancelPendingPress();
         interaction.UpdateHover(null);
     }
 
-    // Delete menu resources while the graphics context is still available.
+    // Delete menu and grid resources while the graphics context is still available.
     protected override void OnUnload()
     {
+        gridRenderer?.Dispose();
+        gridRenderer = null;
         renderer?.Dispose();
         renderer = null;
         base.OnUnload();
+    }
+
+    private LaboratoryLayout CurrentLaboratoryLayout()
+    {
+        var layout = new LaboratoryLayout(FramebufferSize.X, FramebufferSize.Y);
+        gridCamera.SetViewport(layout.Viewport);
+        if (!ReferenceEquals(cameraGrid, laboratory.Grid))
+        {
+            cameraGrid = laboratory.Grid;
+            if (cameraGrid is not null) gridCamera.SetBounds(GridVisualGeometry.Bounds(cameraGrid));
+        }
+        return layout;
+    }
+
+    // All Laboratory interaction uses the same physical coordinates as rendering, including high DPI.
+    private (double X, double Y) FramePointer() => LaboratoryLayout.ToFramebuffer(
+        MousePosition.X, MousePosition.Y, ClientSize.X, ClientSize.Y, FramebufferSize.X, FramebufferSize.Y);
+
+    private void ActivateLaboratory(LaboratoryAction action)
+    {
+        editingSeed = action == LaboratoryAction.Seed;
+        switch (action)
+        {
+            case LaboratoryAction.Size: laboratory.CycleSize(); break;
+            case LaboratoryAction.WorldType: laboratory.CycleWorldType(); break;
+            case LaboratoryAction.Fit: gridCamera.Fit(); break;
+            case LaboratoryAction.Create: laboratory.CreateSession(); break;
+            case LaboratoryAction.RunGrid: laboratory.RunGrid(); break;
+            case LaboratoryAction.Back: ReturnToMenu(); break;
+        }
+    }
+
+    private void ReturnToMenu()
+    {
+        laboratory.ReturnToMenu();
+        editingSeed = false;
+        CancelPendingInput();
+        interaction.ResetInput();
+    }
+
+    protected override void OnTextInput(TextInputEventArgs args)
+    {
+        base.OnTextInput(args);
+        if (!IsFocused || !laboratory.IsOpen || !editingSeed) return;
+        foreach (char character in args.AsString)
+            if (laboratory.SeedText.Length < 20 && (char.IsAsciiDigit(character) ||
+                ((character == '-' || character == '+') && laboratory.SeedText.Length == 0)))
+                laboratory.SetSeedText(laboratory.SeedText + character);
+    }
+
+    protected override void OnMouseWheel(MouseWheelEventArgs args)
+    {
+        base.OnMouseWheel(args);
+        if (!IsFocused || !laboratory.IsOpen) return;
+        var point = FramePointer();
+        if (CurrentLaboratoryLayout().Viewport.Contains(point.X, point.Y))
+            gridCamera.Zoom(args.OffsetY, point.X, point.Y);
     }
 }

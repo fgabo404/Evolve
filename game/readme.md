@@ -13,7 +13,11 @@ No implementa reglas ni cálculos de simulación.
   presentation and styling. `EvolveWindow` connects these components to native
   input and the renderer.
 - `rendering/` contains `PixelMenuRenderer.cs` and `LegacyBitmapFont.cs`: the
-  existing OpenGL batch and local 5x7 font data used by menu presentation.
+  shared OpenGL shader/batch and local 5x7 font data used by menu and Laboratory presentation.
+- `laboratory/` contains the independently authorized LAB-GRID-01 session,
+  layout, camera, visual outlines, static line renderer and presentation.
+  Its [readme](laboratory/readme.md) and [roadmap](laboratory/roadmap.md) document
+  engine boundaries, controls and pending visual acceptance.
 - `readme.md` and `audit.md` stay in the root of `game/`.
 - `../tests/menu/` links production sources from `menu/` for GPU-independent
   verification; it does not contain a duplicate menu implementation.
@@ -34,7 +38,7 @@ change; native input, DPI behavior and GPU cleanup remain manual checks.
 - Evolve uses C# / .NET 10 and OpenTK 4.9.4 for the graphical application.
 - The entire application runs within one main window, `EvolveWindow`. Future
   menus, laboratories and game screens must be presented inside that same
-  window; this policy does not implement navigation or additional screens.
+  window. LAB-GRID-01 now connects the menu and Laboratory within that window.
 - `game/` owns presentation and player interaction, independently of simulation
   rules. Its `menu/` and `rendering/` responsibilities are described above.
 - C# source files begin with English `//` documentation according to root
@@ -165,10 +169,11 @@ colors, typography, dimensions, title, version position and footer are unchanged
   override keyboard selection.
 - Focus loss, pointer exit, client resize and framebuffer resize cancel pending
   presses. Releasing an old input after cancellation cannot activate a button.
-- `INICIAR`, `LAB` and `OPCIONES` display a short Spanish unavailable notice in
-  the existing footer. The latest notice persists until another action replaces it.
+- At UI-03 delivery, `INICIAR`, `LAB` and `OPCIONES` displayed unavailable
+  notices. LAB-GRID-01 now routes LAB to the Laboratory before the legacy notice
+  handler; INICIAR/OPCIONES retain their existing notices.
 - `SALIR` requests the existing native close lifecycle. No other screens,
-  simulation, laboratory or settings functionality are introduced.
+  simulation or settings functionality were introduced by UI-03.
 
 Build and run with the PowerShell commands above, then manually validate:
 
@@ -214,3 +219,40 @@ audit verdict and accepted observation dispositions. The base-interface roadmap
 is **CLOSED — Approved by the project owner.** DPI, native-event and real GPU
 resource-release checks without sufficient evidence remain manual limitations;
 closure does not imply that those checks have been executed.
+
+## LAB-GRID-01 — Authorized Grid visualization
+
+The owner explicitly authorized this visual delivery on `world-grid`, based on
+accepted engine version `v0.0.31`. It has its own
+[Laboratory roadmap](laboratory/roadmap.md), independent of mathematical WG-00.
+WG-CORE, accepted Grid geometry/data/integration and D01–D11 remain unchanged.
+No WG-00-D/E, geographic algorithm, save or active WorldState work is included.
+
+Activate LAB and return with VOLVER/Escape inside the existing EvolveWindow.
+Configure the real MapSize/WorldType enums and a signed 64-bit seed, create a
+context, then run only Grid through the existing RunNext operation. Inspect the
+published descriptor and real progress. Unavailable stages cannot produce fake
+results. The Game project now references the existing engine project; it contains
+presentation/configuration actions, not simulation or generation algorithms.
+
+The menu's layout, font, palette, INICIAR/OPCIONES notices and shutdown behavior
+remain intact. MainMenuInteraction retains its base-interface tests; the native
+window intercepts LAB activation before calling its historical unavailable
+notice path. Camera/picking/session tests run without OpenTK. Static grid buffers
+are released alongside menu buffers before the window's graphics context closes.
+
+Additional verification:
+
+```powershell
+dotnet run --project .\tests\laboratory\Evolve.Laboratory.Checks.csproj --configuration Release
+dotnet run --project .\tests\worldgen\grid\Evolve.WorldGeneration.Grid.Checks.csproj --configuration Release
+dotnet build .\engine\worldgen\Evolve.Engine.WorldGeneration.csproj --configuration Release
+dotnet build .\game\Evolve.Game.csproj --configuration Release
+```
+
+Developer checks passed (11/11 Laboratory, 16/16 menu, complete A/B/C/FIX01 Grid
+suite and clean Release builds). This does not approve the visual result:
+Small/Medium/Large, zoom/pan, transformed selection, high DPI/resizing,
+minimize/restore, LAB → menu navigation and actual GPU resource cleanup require
+the [requested manual validation](laboratory/readme.md#requested-manual-visual-validation).
+LAB-GRID-01 remains pending independent audit and formal owner acceptance.
