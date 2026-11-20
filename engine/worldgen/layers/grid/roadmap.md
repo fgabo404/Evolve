@@ -3,7 +3,7 @@
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
 **Delivery branch:** `world-grid`\
-**Status:** WG-00-A including FIX01 formally accepted; WG-00-B implemented pending independent audit and owner acceptance; WG-00-C not started or authorized.\
+**Status:** WG-00-A including FIX01 and WG-00-B formally accepted; WG-00-C implemented pending independent audit and owner acceptance; WG-00-D not started or authorized.\
 **Baseline:** WG-CORE accepted and integrated; `world` at `v0.0.26` before this documentation change  
 **Scope:** WG-00 only; no other geographical layers or Laboratory UI implementation
 
@@ -138,7 +138,9 @@ the three approved presets using existing MapSize, calculates IDs/coordinates
 and delegates spatial mathematics to accepted WG-00-A geometry. No per-cell
 objects, neighbor caches or WG-CORE changes. Exact API, developer validation
 and measured construction/memory evidence are recorded in [readme.md](readme.md).
-WG-00-B is submitted for independent audit; acceptance and advancement remain gated.
+The owner subsequently formally accepted WG-00-B at
+`3115c6362d46d0340ca4ec72902ea0edd4d17a45` (`v0.0.30`) and authorized
+WG-00-C. The Auditor's native .NET 10 execution limitation remains recorded.
 
 ### WG-00-C — WG-CORE integration
 
@@ -150,6 +152,14 @@ WG-00-B is submitted for independent audit; acceptance and advancement remain ga
 - Verify `RunNext`, `RunUntil` / `RunAll` when applicable, failure atomicity, immutable access, deterministic reexecution and `RebuildFrom(Grid)` suffix invalidation.
 
 **Gate C:** owner review of integration and regressions; WG-CORE must remain functionally unchanged unless a minimal separately approved extension is demonstrated necessary.
+
+**Implementation:** HexGridLayer publishes one unmanaged HexGridDescriptor
+through the existing LayerData contract. The descriptor validates via accepted
+HexGridData construction and stores only MapSize; ToGridData reconstructs the
+same approved dimensions and calculated queries. No WG-CORE source or public
+contract changed, no random consumption and no per-cell storage. Exact APIs
+and developer evidence are recorded in [readme.md](readme.md).
+WG-00-C is submitted for independent audit and formal owner acceptance.
 
 ### WG-00-D — Complete test suite and performance evidence
 
@@ -187,7 +197,7 @@ WG-00-B is submitted for independent audit; acceptance and advancement remain ga
 - Respect `AGENTS.md`: project content and commit messages in English; Spanish owner-facing reports; English C# file-purpose `//` comments and no XML/block comments.
 - Every authorized repository-changing commit increments root `VERSION` in that same commit, including documentation edits. Report commit name, complete SHA and PowerShell validation instructions.
 - Do not alter other layers, the old source branch, `game/` rendering, `state/` or `saves/`; do not import older algorithms merely because they exist.
-- Do not interpret test definitions as executed evidence. WG-00-A including FIX01 is formally accepted; WG-00-B has developer evidence pending independent audit. Later benchmarks, layer-wide audit and GUI inspection remain subject to their respective authorizations.
+- Do not interpret test definitions as executed evidence. WG-00-A including FIX01 and WG-00-B are formally accepted; WG-00-C has developer evidence pending independent audit. Later benchmarks, layer-wide audit and GUI inspection remain subject to their respective authorizations.
 
 ## 8. Current status
 
@@ -199,16 +209,17 @@ WG-00-B is submitted for independent audit; acceptance and advancement remain ga
 - [x] Owner formally accepted WG-00-A including FIX01 and authorized WG-00-B.
 - [x] Record the Auditor's remaining .NET 10 native-execution limitation without claiming independent native reproduction.
 - [x] Implement WG-00-B and run exhaustive identity/topology, BFS and construction-memory checks.
-- [ ] Independently audit and formally accept WG-00-B before any advancement.
-- [ ] Complete WG-00-C, review and accept.
+- [x] Owner formally accepted WG-00-B and explicitly authorized WG-00-C.
+- [x] Implement WG-00-C using the real Grid executor and unchanged public WG-CORE contracts.
+- [ ] Independently audit and formally accept WG-00-C before any advancement.
 - [ ] Complete WG-00-D, review and accept.
 - [ ] Complete WG-00-E independent audit and owner acceptance.
 - [ ] Integrate into `world` only with explicit authorization.
 
-**Document status:** WG-00-A including FIX01 formally accepted; WG-00-B
-implemented pending independent audit and owner acceptance. WG-00-C has not
-started. This does not close WG-00 or authorize integration into `world`
-or synchronization with `develop`.
+**Document status:** WG-00-A including FIX01 and WG-00-B formally accepted;
+WG-00-C implemented pending independent audit and owner acceptance. WG-00-D
+has not started. This does not close WG-00 or authorize integration into
+`world` or synchronization with `develop`.
 
 FIX01 developer evidence at `v0.0.29`: the complete WG-00-A headless suite
 passed, including new numeric-limit regressions and the existing 1,160,000 BFS
@@ -223,4 +234,15 @@ the grid API directly against BFS. Exact edge totals and invalid inputs passed.
 Engine Release build: zero warnings/errors. Construction batches allocated
 24 B/grid for all sizes, with actual retained heap/timing figures and methodology
 in [readme.md](readme.md); no acceptance thresholds are invented.
-Independent WG-00-B audit and owner acceptance remain pending.
+That WG-00-B developer record predates the owner's subsequent formal acceptance.
+
+WG-00-C developer evidence at `v0.0.31`: complete headless grid suite passed,
+including all A/FIX01/B regressions and ten named production-core integration
+checks. The 2,320,000 existing geometry/grid-API BFS assertions remain intact.
+Grid outputs match all sizes and remain independent of seed/world type;
+failure/retry, rebuilding, finalization and operation exclusivity are exercised
+through the existing orchestrator. Engine Release build: zero warnings/errors;
+whitespace verification passed. D01–D11 traceability is preserved.
+The Auditor's native .NET 10 limitation and pending neighbor/distance query
+throughput measurements remain documented. No WG-00-D work or formal C
+acceptance is claimed.

@@ -1,4 +1,4 @@
-// Runs headless WG-00-A geometry regressions and WG-00-B data checks against the production engine.
+// Runs WG-00 geometry, immutable data and core integration checks against the production engine.
 // Preserves seam, polar, signed-coordinate and BFS coverage while verifying the calculated grid API.
 using System.Numerics;
 using Evolve.Definitions.WorldGeneration;
@@ -27,6 +27,7 @@ internal static class HexGridGeometryChecks
         }
         Console.WriteLine("PASS WG-00-A all geometry checks");
         HexGridDataChecks.Run();
+        HexGridIntegrationChecks.Run();
     }
 
     private static void VerifyCompleteTopology(int columns, int rows, int expectedEdges)
