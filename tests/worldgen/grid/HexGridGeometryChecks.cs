@@ -12,8 +12,14 @@ internal static class HexGridGeometryChecks
     private static readonly (int Columns, int Rows, int Edges)[] Sizes =
         [(200, 100, 59600), (300, 150, 134400), (400, 200, 239200)];
 
-    private static void Main()
+    private static void Main(string[] args)
     {
+        if (args.SequenceEqual(new[] { "--performance" }))
+        {
+            HexGridPerformanceChecks.Run();
+            return;
+        }
+        if (args.Length != 0) throw new ArgumentException("Use no arguments for correctness checks or --performance for measurements.");
         ValidateInputs();
         ValidateSignedCoordinates();
         ValidateExtremeDistances();
@@ -28,6 +34,8 @@ internal static class HexGridGeometryChecks
         Console.WriteLine("PASS WG-00-A all geometry checks");
         HexGridDataChecks.Run();
         HexGridIntegrationChecks.Run();
+        HexGridMetricChecks.Run();
+        Console.WriteLine("PASS V01-V06: 145000 cells; 1160000 geometry BFS comparisons; 1160000 Grid API BFS comparisons; V07 runs separately with --performance");
     }
 
     private static void VerifyCompleteTopology(int columns, int rows, int expectedEdges)
@@ -120,7 +128,7 @@ internal static class HexGridGeometryChecks
             {
                 int id = queue[head++];
                 var cell = new HexOffset(id % columns, id / columns);
-                foreach (HexOffset neighbor in FlatHexGeometry.Neighbors(cell, columns, rows))
+                foreach (HexOffset neighbor in IndependentNeighbors(cell, columns, rows))
                 {
                     int next = neighbor.Row * columns + neighbor.Column;
                     if (distances[next] >= 0) continue;
@@ -137,6 +145,21 @@ internal static class HexGridGeometryChecks
                 Require(grid.GetDistance(startId, id) == distances[id],
                     $"Grid API BFS distance mismatch: {start} to {target}");
             }
+        }
+    }
+
+    // The BFS oracle uses explicit Offset adjacency, not production axial/wrap/neighbor/distance code.
+    private static IEnumerable<HexOffset> IndependentNeighbors(HexOffset cell, int columns, int rows)
+    {
+        int diagonalUp = cell.Column % 2 == 0 ? -1 : 0;
+        (int Column, int Row)[] deltas =
+            [(0, -1), (1, diagonalUp), (1, diagonalUp + 1), (0, 1), (-1, diagonalUp + 1), (-1, diagonalUp)];
+        foreach (var (dx, dy) in deltas)
+        {
+            int row = cell.Row + dy;
+            if (row < 0 || row >= rows) continue;
+            int column = (cell.Column + dx + columns) % columns;
+            yield return new HexOffset(column, row);
         }
     }
 

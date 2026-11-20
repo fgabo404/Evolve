@@ -1,8 +1,6 @@
 // Verifies WG-00-B identities, immutable calculated queries and exhaustive topology against production geometry.
-// Reports construction allocation, retained memory and elapsed time without imposing unapproved performance thresholds.
-using System.Diagnostics;
+// Keeps functional assertions separate from the dedicated WG-00-D performance mode.
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Evolve.Definitions.WorldGeneration;
 using Evolve.Engine.WorldGeneration.Layers.Grid;
 using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
@@ -27,7 +25,6 @@ internal static class HexGridDataChecks
             VerifyInvalidInputs(grid);
             Console.WriteLine($"PASS WG-00-B {size}: {grid.CellCount} unique IDs; {edges} edges; geometry, neighbors, determinism and input checks");
         }
-        MeasureConstruction();
         Console.WriteLine("PASS WG-00-B all compact grid checks");
     }
 
@@ -123,28 +120,6 @@ internal static class HexGridDataChecks
             Expect<ArgumentOutOfRangeException>(() => grid.GetCellId(coordinate));
         foreach (int direction in new[] { -1, 6, int.MaxValue })
             Expect<ArgumentOutOfRangeException>(() => grid.TryGetNeighbor(0, (HexDirection)direction, out _));
-    }
-
-    // Warm up first; a preallocated retained batch prevents dead-code elimination and excludes container allocation.
-    private static void MeasureConstruction()
-    {
-        const int count = 100000;
-        foreach (var size in Enum.GetValues<MapSize>())
-            for (int index = 0; index < 10000; index++) GC.KeepAlive(new HexGridData(size));
-        Console.WriteLine($"MEASURE runtime={RuntimeInformation.FrameworkDescription}; OS={RuntimeInformation.OSDescription}; architecture={RuntimeInformation.ProcessArchitecture}; CPUs={Environment.ProcessorCount}");
-        foreach (var size in Enum.GetValues<MapSize>())
-        {
-            var batch = new HexGridData[count];
-            long beforeRetained = GC.GetTotalMemory(true);
-            long beforeAllocated = GC.GetAllocatedBytesForCurrentThread();
-            long start = Stopwatch.GetTimestamp();
-            for (int index = 0; index < count; index++) batch[index] = new HexGridData(size);
-            TimeSpan elapsed = Stopwatch.GetElapsedTime(start);
-            long allocated = GC.GetAllocatedBytesForCurrentThread() - beforeAllocated;
-            long retained = GC.GetTotalMemory(true) - beforeRetained;
-            Console.WriteLine(FormattableString.Invariant($"MEASURE {size}: count={count}; allocated={allocated} B ({(double)allocated / count:F2} B/grid); retained_delta={retained} B ({(double)retained / count:F2} B/grid); elapsed={elapsed.TotalMilliseconds:F3} ms ({elapsed.TotalNanoseconds / count:F2} ns/grid)"));
-            GC.KeepAlive(batch);
-        }
     }
 
     private static void Expect<TException>(Action action) where TException : Exception

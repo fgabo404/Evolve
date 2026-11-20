@@ -87,7 +87,7 @@ LAB-GRID-02 does not retroactively approve LAB-GRID-01 or advance other incremen
 correction: INICIAR must remain unavailable.
 **Baseline:** `v0.0.33`, `ceaa289018b1a56eafe3417a0d64e6b4fb3c5b70`.
 **Delivery:** `v0.0.34`.
-**Status:** implemented, pending independent audit and formal owner acceptance.
+**Status:** formally accepted by the owner, as confirmed in the WG-00-D authorization.
 
 This correction supersedes only the earlier normal-creation scope. The approved
 LAB presentation, layout, configuration, map and manual controls remain intact.
@@ -99,11 +99,15 @@ session and explicitly advances through RunNext once per manual request.
 - [x] Preserve generated LAB data when INICIAR is activated after returning.
 - [x] Preserve manual LAB controls and remove automatic normal creation.
 - [x] Add production-model regression coverage and run Release checks/builds.
-- [ ] Complete independent audit and obtain formal owner acceptance of FIX01.
+- [x] Owner confirmed formal acceptance of LAB-GRID-02 including FIX01 before WG-00-D.
 
 Developer evidence: 18/18 Laboratory checks, 16/16 menu checks and the complete
 A/FIX01/B/C Grid suite, including 10/10 integration checks and 2,320,000 BFS
 assertions; Engine and Game Release builds with zero warnings/errors.
 No new native visual/input/GPU verification is claimed. The owner's visual
-approval is separate from headless execution and FIX01's pending audit.
+approval and formal acceptance are separate from headless execution. The two
+non-blocking observations remain visible in
+[readme.md](readme.md#non-blocking-observations-retained-after-acceptance): native
+input/DPI/GPU lifecycle evidence and retained GPU buffer allocation. Acceptance
+does not claim those observations resolved; WG-00-D changes no Laboratory code.
 WG-CORE, accepted Grid algorithms, D01–D11 and WG-00-D/E remain unchanged.

@@ -3,7 +3,7 @@
 **Repository:** `fgabo404/Evolve`  
 **Integration branch:** `world`  
 **Delivery branch:** `world-grid`\
-**Status:** WG-00-A including FIX01 and WG-00-B formally accepted; WG-00-C implemented pending independent audit and owner acceptance; WG-00-D not started or authorized.\
+**Status:** WG-00-A/FIX01, WG-00-B and WG-00-C formally accepted; WG-00-D implemented pending independent technical audit and formal owner acceptance; WG-00-E not started.\
 **Baseline:** WG-CORE accepted and integrated; `world` at `v0.0.26` before this documentation change  
 **Scope:** WG-00 only; no other geographical layers or Laboratory UI implementation
 
@@ -159,7 +159,10 @@ HexGridData construction and stores only MapSize; ToGridData reconstructs the
 same approved dimensions and calculated queries. No WG-CORE source or public
 contract changed, no random consumption and no per-cell storage. Exact APIs
 and developer evidence are recorded in [readme.md](readme.md).
-WG-00-C is submitted for independent audit and formal owner acceptance.
+The owner formally accepted WG-00-C before authorizing WG-00-D, based on
+`v0.0.34` / `7ae354f16d602b59eaec5c2c6b3c5637e9d638a8`.
+LAB-GRID-02 including FIX01 is also formally accepted and remains a separate
+visual delivery; its two non-blocking observations remain documented in LAB.
 
 ### WG-00-D — Complete test suite and performance evidence
 
@@ -197,7 +200,7 @@ WG-00-C is submitted for independent audit and formal owner acceptance.
 - Respect `AGENTS.md`: project content and commit messages in English; Spanish owner-facing reports; English C# file-purpose `//` comments and no XML/block comments.
 - Every authorized repository-changing commit increments root `VERSION` in that same commit, including documentation edits. Report commit name, complete SHA and PowerShell validation instructions.
 - Do not alter other layers, the old source branch, `game/` rendering, `state/` or `saves/`; do not import older algorithms merely because they exist.
-- Do not interpret test definitions as executed evidence. WG-00-A including FIX01 and WG-00-B are formally accepted; WG-00-C has developer evidence pending independent audit. Later benchmarks, layer-wide audit and GUI inspection remain subject to their respective authorizations.
+- Do not interpret test definitions as executed evidence. WG-00-A/FIX01, WG-00-B and WG-00-C are formally accepted. WG-00-D developer evidence does not replace independent audit or owner acceptance. WG-00-E, GUI inspection and branch integration require their respective authorizations.
 
 ## 8. Current status
 
@@ -211,14 +214,15 @@ WG-00-C is submitted for independent audit and formal owner acceptance.
 - [x] Implement WG-00-B and run exhaustive identity/topology, BFS and construction-memory checks.
 - [x] Owner formally accepted WG-00-B and explicitly authorized WG-00-C.
 - [x] Implement WG-00-C using the real Grid executor and unchanged public WG-CORE contracts.
-- [ ] Independently audit and formally accept WG-00-C before any advancement.
-- [ ] Complete WG-00-D, review and accept.
+- [x] Owner confirmed formal WG-00-C acceptance before authorizing WG-00-D.
+- [x] Implement WG-00-D V01–V07 validation and reproducible performance evidence.
+- [ ] Independently audit WG-00-D and obtain formal owner acceptance.
 - [ ] Complete WG-00-E independent audit and owner acceptance.
 - [ ] Integrate into `world` only with explicit authorization.
 
-**Document status:** WG-00-A including FIX01 and WG-00-B formally accepted;
-WG-00-C implemented pending independent audit and owner acceptance. WG-00-D
-has not started. This does not close WG-00 or authorize integration into
+**Document status:** WG-00-A/FIX01, WG-00-B and WG-00-C formally accepted;
+WG-00-D implemented at v0.0.35, pending independent audit and owner acceptance.
+WG-00-E has not started. This does not close WG-00 or authorize integration into
 `world` or synchronization with `develop`.
 
 FIX01 developer evidence at `v0.0.29`: the complete WG-00-A headless suite
@@ -243,6 +247,29 @@ Grid outputs match all sizes and remain independent of seed/world type;
 failure/retry, rebuilding, finalization and operation exclusivity are exercised
 through the existing orchestrator. Engine Release build: zero warnings/errors;
 whitespace verification passed. D01–D11 traceability is preserved.
-The Auditor's native .NET 10 limitation and pending neighbor/distance query
-throughput measurements remain documented. No WG-00-D work or formal C
-acceptance is claimed.
+That historical C evidence predates formal acceptance and the WG-00-D
+measurements below. The Auditor's native .NET 10 limitation remains documented.
+
+## 9. WG-00-D delivery evidence
+
+Authorized baseline: v0.0.34 / 7ae354f16d602b59eaec5c2c6b3c5637e9d638a8.
+Delivery: v0.0.35. Only tests, evidence, documentation and VERSION changed;
+accepted Grid/WG-CORE source, interfaces, geometry and D01–D11 are unchanged.
+
+All correctness groups V01–V06 passed: 145,000 cells, 1,160,000 geometry BFS
+comparisons plus 1,160,000 Grid API comparisons, ten core integration checks
+and 1,015,000 deterministic metric triangles. BFS now has independent explicit
+Offset adjacency instead of calling production neighbor mathematics.
+No exhaustive Large all-pairs search was introduced.
+
+V07 is a separate --performance mode: all nine requested operations, all three
+presets, 20,000 warm-up calls per operation/preset and five 200,000-call batches.
+Raw results, variation, environment, methodology and the V01–V07 executable
+mapping are in [readme.md](readme.md) and its linked performance evidence.
+Performance has no invented pass/fail budget. Existing construction measurement
+was moved out of the functional B checks into the dedicated performance mode.
+
+Regression evidence: Laboratory 18/18; menu 16/16; Engine and Game Release
+builds with zero warnings/errors; compiled display version v0.0.35;
+git diff --check passed. No new native UI/GPU validation is claimed.
+Submit WG-00-D for independent technical audit. No WG-00-E or merge is authorized.

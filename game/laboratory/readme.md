@@ -1,6 +1,6 @@
 # World Generation Laboratory
 
-**Status:** Laboratory design visually approved by the owner; FIX01 implemented, pending independent audit and formal acceptance.
+**Status:** LAB-GRID-02 including FIX01 formally accepted by the owner, as confirmed in the WG-00-D authorization. Two non-blocking observations remain open below.
 **Branch:** `world-grid`.
 **FIX01 baseline:** `v0.0.33`, `ceaa289018b1a56eafe3417a0d64e6b4fb3c5b70`.
 **FIX01 delivery:** `v0.0.34`.
@@ -120,8 +120,8 @@ complete Grid A/FIX01/B/C suite including 10/10 integration checks, all 145,000
 cells and 2,320,000 retained BFS assertions. Engine and Game Release builds
 reported zero warnings/errors. Compiled display version matched root VERSION.
 These are headless/build results, not new native visual evidence. The owner has
-visually approved the Laboratory design separately; FIX01 still requires audit
-and formal acceptance.
+accepted LAB-GRID-02 including FIX01 separately; acceptance does not imply
+execution of every native validation below.
 
 Checks link actual production configuration/session/layout/UI-state/camera/
 outline sources and menu-button identities, with no OpenTK loaded. Test-only
@@ -164,5 +164,18 @@ observations. All following checks are pending owner/Auditor review:
    no lingering process and graphics resource deletion with appropriate tooling.
 
 Runtime GLSL compilation, exact pixels, native-event delivery, GPU performance
-and cleanup remain unverified by headless checks. Independent audit and formal
-owner acceptance are required before FIX01 is formally accepted.
+and cleanup remain unverified by headless checks. Formal owner acceptance of
+LAB-GRID-02/FIX01 does not close these remaining observations.
+
+## Non-blocking observations retained after acceptance
+
+1. Native input, DPI transitions and actual GPU lifecycle/resource deletion still
+   require recorded manual evidence. Headless checks and developer builds do not
+   establish these properties, nor remove the Auditor's .NET 10 execution limit.
+2. GPU buffer retention is unchanged: returning to the menu retains the LAB
+   session/mesh, and clearing a session resets draw counts without immediately
+   shrinking the existing buffer allocation. A later upload replaces storage;
+   disposal deletes it at window shutdown. This source-level behavior is not a
+   measured driver-memory/lifecycle guarantee or evidence of a leak correction.
+
+WG-00-D only records these observations; it changes no Laboratory code or UI.
