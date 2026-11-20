@@ -1,4 +1,4 @@
-// Shares responsive sidebar, popup, stage-card and map bounds between LAB and world creation.
+// Defines the approved responsive Laboratory sidebar, popup, stage-card and map bounds.
 // Scrolling keeps every sidebar control reachable at short heights; drawing and hit detection use the same clipped coordinates.
 using Evolve.Engine.WorldGeneration;
 

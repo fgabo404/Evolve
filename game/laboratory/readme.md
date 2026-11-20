@@ -1,9 +1,9 @@
-# Shared World Generation Interface
+# World Generation Laboratory
 
-**Status:** LAB-GRID-02 implemented, pending manual visual verification, independent audit and owner acceptance.
+**Status:** Laboratory design visually approved by the owner; FIX01 implemented, pending independent audit and formal acceptance.
 **Branch:** `world-grid`.
-**Baseline:** `v0.0.32`, `db1900966bf49f22aa1c91131ef3cb4d2519d2d8`.
-**Delivery:** `v0.0.33`.
+**FIX01 baseline:** `v0.0.33`, `ceaa289018b1a56eafe3417a0d64e6b4fb3c5b70`.
+**FIX01 delivery:** `v0.0.34`.
 
 LAB-GRID-01 was delivered but not visually accepted. LAB-GRID-02 is the
 owner-authorized corrective redesign, based on the supplied second reference
@@ -12,11 +12,11 @@ The owner's latest clarification retains Evolve's existing blue colors; the
 white palette in the reference is not adopted. No new UI framework or font.
 This is independent of WG-00-D/E. Accepted WG-CORE and WG-00-A/B/C remain unchanged.
 
-## Shared screens and controls
+## Laboratory navigation and controls
 
-INICIAR opens world-creation configuration; LAB opens manual generation.
-Both use the same sidebar, dropdowns, configuration, camera, renderer, cell card
-and session model inside the existing EvolveWindow. There is no second window.
+Only LAB opens this interface inside the existing EvolveWindow. INICIAR retains
+its original unavailable notice without opening a screen or generating data.
+Normal game creation remains unimplemented. There is no second window.
 OPCIONES retains its notice and SALIR retains native shutdown.
 
 The sidebar contains world type, map size, editable seed with R randomization,
@@ -37,14 +37,9 @@ to the canvas aspect ratio. DPI scaling uses framebuffer/client ratios.
   this UI action does not consume deterministic engine stage streams.
 - In LAB, CREAR SESION (N or Enter in seed editing) creates a context only.
   Click the next available stage, or press G, to invoke RunNext once.
-- In INICIAR, CREAR MUNDO creates the context and advances implemented
-  capabilities in canonical order, stopping at the first unavailable stage or
-  failure. Currently only Grid runs. The result is explicitly a partial map,
-  not a playable world. No FinalizeWorld, State or save action occurs.
-- CONFIGURACION clears the partial session/map but preserves editable settings.
-  SALIR AL MENU or Escape returns to the menu. Reopening the same mode keeps
-  its temporary inspection state; switching LAB/INICIAR clears the old context
-  and shares the selected configuration.
+- CONFIGURACION clears the temporary session/map but preserves editable settings.
+  SALIR AL MENU or Escape returns to the menu. Reopening LAB retains temporary
+  inspection state. Activating INICIAR after leaving LAB does not modify it.
 - A completed Grid stage or Grid view selects real published descriptor data.
   Other views cannot be selected until implemented. Pending/unavailable stages
   never display placeholder geographic results.
@@ -58,14 +53,14 @@ to the canvas aspect ratio. DPI scaling uses framebuffer/client ratios.
 existing WorldGenerationSettings/GenerationRequest after invariant validation.
 Its changes discard the session rather than modifying immutable engine metadata.
 
-`LaboratorySession` shares both modes, discovers implemented executors from one
+`LaboratorySession` owns manual LAB generation, discovers implemented executors from one
 capability inventory (currently HexGridLayer only), and builds the existing
 complete eight-stage registry with unavailable-stage guards elsewhere.
 Guards throw NotSupportedException and produce no fake candidates. CanAdvance
-checks the context's next eligible stage against real capabilities. Manual and
-automatic entry modes share RunNextStage, which calls the existing RunNext.
-To integrate a future real executor, extend the available inventory; automatic
-progression does not hardcode a successful Grid-only stopping point.
+checks the context's next eligible stage against real capabilities. CreateSession
+only creates a pending context; each explicit RunNextStage calls RunNext once.
+The normal-creation mode and automatic CreateWorld entry point were removed.
+Reusable configuration, layout, camera and rendering components remain intact.
 A visualization for any newly implemented layer still requires real display code.
 
 `StageStatus` projects Pending/Running/Completed/Failed/Invalidated from
@@ -76,7 +71,7 @@ as pending configuration, not executed. The notice explains the missing session.
 There is no second mutable progress table.
 
 `LaboratoryUiState` owns only dropdown/edit/scroll state. `LaboratoryLayout`
-supplies identical drawing/hit bounds for both modes, scaled in framebuffer
+supplies identical drawing/hit bounds for LAB, scaled in framebuffer
 space. Short windows intentionally scroll the sidebar instead of clipping
 unreachable controls or overlapping the map. The pinned back action remains
 outside the scrolling clip. `LaboratoryPresentation` draws compact labels,
@@ -120,13 +115,13 @@ dotnet build .\game\Evolve.Game.csproj --configuration Release
 git diff --check
 ```
 
-Developer results: 18/18 shared-screen checks; 16/16 existing menu checks;
+Developer results: 18/18 Laboratory checks; 16/16 existing menu checks;
 complete Grid A/FIX01/B/C suite including 10/10 integration checks, all 145,000
 cells and 2,320,000 retained BFS assertions. Engine and Game Release builds
 reported zero warnings/errors. Compiled display version matched root VERSION.
-The first updated DPI test used mixed logical/physical units; its setup was
-corrected to construct physical dimensions from logical client size and scale,
-then the complete 18-check suite passed. No native visual approval is claimed.
+These are headless/build results, not new native visual evidence. The owner has
+visually approved the Laboratory design separately; FIX01 still requires audit
+and formal acceptance.
 
 Checks link actual production configuration/session/layout/UI-state/camera/
 outline sources and menu-button identities, with no OpenTK loaded. Test-only
@@ -134,7 +129,8 @@ later-stage executors verify capability discovery and fault/retry handling;
 none are production geography. Retired CORE test files are not claimed present
 or rerun; current public-core behavior is exercised by Grid and UI integration.
 The main-menu interaction model retains historical notice paths; the window
-calls tested OpenFromMenu routing for LAB/INICIAR before those paths.
+calls tested OpenFromMenu routing for LAB only before those paths. Tests also
+exercise the original INICIAR notice and verify that it preserves LAB data.
 
 ## Requested manual visual verification
 
@@ -146,16 +142,15 @@ $LASTEXITCODE
 Record screenshots, client/framebuffer sizes, DPI, OS/GPU/driver and pass/fail
 observations. All following checks are pending owner/Auditor review:
 
-1. Compare structure with the supplied image: compact left sidebar, cards and
-   left-aligned controls, large right map, and retained blue palette. Confirm
-   the old three-row full-width toolbar is gone in both LAB and INICIAR.
+1. Confirm the approved LAB appearance remains unchanged. Return to the menu
+   and activate INICIAR with mouse, Enter and Space: only the original unavailable
+   notice must appear, without opening another screen or changing LAB data.
 2. Test 400×300, 800×600, 1280×720, maximized, and 100%/125%/200% DPI.
    Scroll to every stage and the information card. Check pinned back navigation,
    popup placement, wheel routing, keyboard popup selection, labels and hits.
-3. INICIAR: change type/size, edit invalid/overflow/signed seeds, randomize,
-   then CREAR MUNDO. Grid must complete, Tectonics remain unavailable/Pending
-   internally, and a partial-map notice appear. CONFIGURACION must allow another
-   request. No playable-world success or active-state transition may occur.
+3. In LAB, change type/size, edit invalid/overflow/signed seeds and randomize.
+   CONFIGURACION must allow another request. No playable-world success or
+   active-state transition may occur.
 4. LAB: create a session and observe pending Grid with empty-map guidance.
    Click Grid/G to advance once, inspect its completed view and verify all seven
    remaining stages are unavailable. Do not treat unavailable as completed.
@@ -163,11 +158,11 @@ observations. All following checks are pending owner/Auditor review:
    fit, zoom anchor, right-drag pan, geographic selection and seam neighbors
    after transforms. Record Large-grid responsiveness without inventing budgets.
 6. Minimize/restore, change focus while editing/clicking/dragging, move across
-   DPI displays and return LAB/INICIAR → menu → either mode. No stale action or
+   DPI displays and return LAB → menu → LAB. No stale action or
    popup may survive cancellation.
 7. Close with SALIR, X and Alt+F4 in separate runs. Confirm exit code zero,
    no lingering process and graphics resource deletion with appropriate tooling.
 
 Runtime GLSL compilation, exact pixels, native-event delivery, GPU performance
 and cleanup remain unverified by headless checks. Independent audit and formal
-owner acceptance are required before LAB-GRID-02 is accepted.
+owner acceptance are required before FIX01 is formally accepted.

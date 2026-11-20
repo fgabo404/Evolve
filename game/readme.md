@@ -17,7 +17,7 @@ No implementa reglas ni cálculos de simulación.
 - `laboratory/` contains the independently authorized LAB-GRID-01 session,
   layout, camera, visual outlines, static line renderer and presentation.
   LAB-GRID-02 adds shared world configuration and transient dropdown/scroll
-  state for both manual LAB and automatic INICIAR.
+  state for manual LAB. Normal game creation remains unimplemented.
   Its [readme](laboratory/readme.md) and [roadmap](laboratory/roadmap.md) document
   engine boundaries, controls and pending visual acceptance.
 - `readme.md` and `audit.md` stay in the root of `game/`.
@@ -172,8 +172,8 @@ colors, typography, dimensions, title, version position and footer are unchanged
 - Focus loss, pointer exit, client resize and framebuffer resize cancel pending
   presses. Releasing an old input after cancellation cannot activate a button.
 - At UI-03 delivery, `INICIAR`, `LAB` and `OPCIONES` displayed unavailable
-  notices. LAB-GRID-02 routes LAB/INICIAR to the shared generation interface
-  before the legacy notice handler; OPCIONES retains its notice.
+  notices. LAB-GRID-02-FIX01 routes only LAB to the Laboratory interface
+  before the legacy notice handler; INICIAR and OPCIONES retain their notices.
 - `SALIR` requests the existing native close lifecycle. No other screens,
   simulation or settings functionality were introduced by UI-03.
 
@@ -262,7 +262,7 @@ minimize/restore, LAB → menu navigation and actual GPU resource cleanup requir
 the [requested manual validation](laboratory/readme.md#requested-manual-visual-verification).
 LAB-GRID-01 has no visual acceptance; LAB-GRID-02 is the corrective current delivery.
 
-## LAB-GRID-02 — Shared configuration and partial world creation
+## LAB-GRID-02 — Laboratory interface, corrected by FIX01
 
 The owner supplied a sidebar/map reference image and clarified that Evolve's
 original blue colors remain appropriate. The shared interface replaces the old
@@ -271,24 +271,25 @@ editing/randomization, all eight canonical stages and a cell-information card.
 The map occupies the remaining right-hand space and preserves uniform scale.
 The sidebar scrolls at short heights; back navigation stays pinned.
 
-INICIAR now opens world-creation configuration. CREAR MUNDO creates a real
-request/context and calls the same RunNext advancement path used by manual LAB,
-stopping at the first unavailable capability or failure. Currently Grid alone
-completes; Tectonics is unavailable. The result is clearly marked partial,
-without finalization, active State, saves or a playable-world claim.
-CONFIGURACION permits a new request; both modes can return to the menu.
+The owner visually approved the Laboratory design and restricted this interface
+to LAB. FIX01 restores INICIAR's original unavailable notice; it neither opens
+another interface nor creates or changes a generation context. Normal game
+creation remains unimplemented. The previous automatic creation entry point
+and mode were removed. LAB creates a pending session, then advances explicitly
+through RunNext once per manual request. Only Grid is available.
 
 WorldConfiguration is the sole editable settings/seed model. LaboratorySession
 owns capability-aware engine interaction; LaboratoryUiState owns dropdown/edit/
-scroll state only. The main window calls tested OpenFromMenu routing for LAB and
-INICIAR before the legacy notice paths; menu appearance and OPCIONES/SALIR remain
+scroll state only. The main window calls tested OpenFromMenu routing for LAB
+before the legacy notice paths; menu appearance and INICIAR/OPCIONES/SALIR remain
 unchanged. Existing cached Grid rendering and engine algorithms are preserved.
 
-Developer evidence: 18/18 shared-screen checks, 16/16 menu checks, complete
+Developer evidence: 18/18 Laboratory checks, 16/16 menu checks, complete
 A/FIX01/B/C Grid suite including 10/10 integration checks and 2,320,000 BFS
 assertions; clean Engine and Game Release builds. Commands above still apply.
 The current visual/manual checklist is in
 [Laboratory documentation](laboratory/readme.md#requested-manual-visual-verification).
-LAB-GRID-02 is pending reference-image comparison, native size/DPI/input/GPU
-verification, independent audit and formal owner acceptance. WG-CORE, accepted
+The Laboratory appearance has owner visual approval. FIX01 still requires
+independent audit and formal acceptance; native size/DPI/input/GPU checks are
+not established by headless execution. WG-CORE, accepted
 WG-00-A/B/C and D01–D11 are unchanged; no WG-00-D/E work or merge is authorized.

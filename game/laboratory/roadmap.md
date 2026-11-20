@@ -49,7 +49,8 @@ latest owner clarification keeps Evolve's original blue colors and uses the
 reference for structure.
 **Baseline:** `v0.0.32`, `db1900966bf49f22aa1c91131ef3cb4d2519d2d8`.
 **Delivery:** `v0.0.33`.
-**Status:** implemented, pending manual UI verification, independent audit and acceptance.
+**Historical status:** Laboratory design visually approved by the owner; the
+INICIAR scope below is superseded by LAB-GRID-02-FIX01.
 
 LAB-GRID-01 was not visually accepted. This correction replaces its full-width
 toolbar with a scrollable compact left sidebar and large right canvas. LAB and
@@ -79,3 +80,30 @@ The corrected DPI test setup uses logical client sizes and physical framebuffer
 dimensions consistently. See [readme.md](readme.md) for exact commands, UI/core
 boundaries, remaining performance limits and requested manual verification.
 LAB-GRID-02 does not retroactively approve LAB-GRID-01 or advance other increments.
+
+## LAB-GRID-02-FIX01 — Laboratory-only interface
+
+**Authority:** owner approval of the Laboratory appearance and explicit scope
+correction: INICIAR must remain unavailable.
+**Baseline:** `v0.0.33`, `ceaa289018b1a56eafe3417a0d64e6b4fb3c5b70`.
+**Delivery:** `v0.0.34`.
+**Status:** implemented, pending independent audit and formal owner acceptance.
+
+This correction supersedes only the earlier normal-creation scope. The approved
+LAB presentation, layout, configuration, map and manual controls remain intact.
+The normal-creation mode and automatic creation entry point are removed; reusable
+configuration and presentation components remain available. LAB creates a pending
+session and explicitly advances through RunNext once per manual request.
+
+- [x] Restore INICIAR's original notice without opening or generating anything.
+- [x] Preserve generated LAB data when INICIAR is activated after returning.
+- [x] Preserve manual LAB controls and remove automatic normal creation.
+- [x] Add production-model regression coverage and run Release checks/builds.
+- [ ] Complete independent audit and obtain formal owner acceptance of FIX01.
+
+Developer evidence: 18/18 Laboratory checks, 16/16 menu checks and the complete
+A/FIX01/B/C Grid suite, including 10/10 integration checks and 2,320,000 BFS
+assertions; Engine and Game Release builds with zero warnings/errors.
+No new native visual/input/GPU verification is claimed. The owner's visual
+approval is separate from headless execution and FIX01's pending audit.
+WG-CORE, accepted Grid algorithms, D01–D11 and WG-00-D/E remain unchanged.

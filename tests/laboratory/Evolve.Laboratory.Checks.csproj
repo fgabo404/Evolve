@@ -8,6 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="../../engine/worldgen/Evolve.Engine.WorldGeneration.csproj" />
     <Compile Include="../../game/menu/MainMenuButton.cs" Link="Production/MainMenuButton.cs" />
+    <Compile Include="../../game/menu/MainMenuInteraction.cs" Link="Production/MainMenuInteraction.cs" />
+    <Compile Include="../../game/menu/MainMenuActivationKey.cs" Link="Production/MainMenuActivationKey.cs" />
     <Compile Include="../../game/laboratory/WorldConfiguration.cs" Link="Production/WorldConfiguration.cs" />
     <Compile Include="../../game/laboratory/LaboratoryUiState.cs" Link="Production/LaboratoryUiState.cs" />
     <Compile Include="../../game/laboratory/LaboratorySession.cs" Link="Production/LaboratorySession.cs" />

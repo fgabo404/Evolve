@@ -216,14 +216,14 @@ internal sealed class EvolveWindow : GameWindow
                 if (args.Key == Keys.Backspace && laboratory.SeedText.Length > 0)
                     laboratory.SetSeedText(laboratory.SeedText[..^1]);
                 else if (args.Key == Keys.Delete) laboratory.SetSeedText("");
-                else if (args.Key == Keys.Enter) CreateConfiguredWorld();
+                else if (args.Key == Keys.Enter) laboratory.CreateSession();
             }
             else if (!args.IsRepeat)
             {
                 if (args.Key == Keys.S) laboratory.CycleSize();
                 if (args.Key == Keys.T) laboratory.CycleWorldType();
-                if (args.Key == Keys.N) CreateConfiguredWorld();
-                if (args.Key == Keys.G && laboratory.Mode == GenerationScreenMode.Laboratory) laboratory.RunNextStage();
+                if (args.Key == Keys.N) laboratory.CreateSession();
+                if (args.Key == Keys.G) laboratory.RunNextStage();
                 if (args.Key == Keys.F) gridCamera.Fit();
                 if (args.Key == Keys.Left) gridCamera.Pan(40, 0);
                 if (args.Key == Keys.Right) gridCamera.Pan(-40, 0);
@@ -355,22 +355,16 @@ internal sealed class EvolveWindow : GameWindow
         {
             case LaboratoryAction.Randomize: laboratory.RandomizeSeed(); break;
             case LaboratoryAction.Fit: gridCamera.Fit(); break;
-            case LaboratoryAction.Create: CreateConfiguredWorld(); break;
+            case LaboratoryAction.Create: laboratory.CreateSession(); break;
             case LaboratoryAction.Configure: laboratory.ClearSession(); laboratoryUi.Reset(); break;
             case LaboratoryAction.Back: ReturnToMenu(); break;
             case LaboratoryAction.Stage:
                 var stage = (Evolve.Engine.WorldGeneration.GenerationStage)hit.Index;
                 if (laboratory.IsCompleted(stage)) laboratory.SelectView(stage);
-                else if (laboratory.Mode == GenerationScreenMode.Laboratory && laboratory.Context?.GetProgress().NextStage == stage)
+                else if (laboratory.Context?.GetProgress().NextStage == stage)
                     laboratory.RunNextStage();
                 break;
         }
-    }
-
-    private void CreateConfiguredWorld()
-    {
-        if (laboratory.Mode == GenerationScreenMode.WorldCreation) laboratory.CreateWorld();
-        else laboratory.CreateSession();
     }
 
     private void ReturnToMenu()

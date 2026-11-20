@@ -1,4 +1,4 @@
-// Shares navigation and real generation-session inspection between manual LAB and automatic creation.
+// Owns Laboratory-only navigation and real generation-session inspection.
 // Advances only registered production capabilities through the existing orchestrator, without finalization or State integration.
 using Evolve.Definitions.WorldGeneration;
 using Evolve.Engine.WorldGeneration;
@@ -6,15 +6,12 @@ using Evolve.Engine.WorldGeneration.Layers.Grid;
 
 namespace Evolve.Game;
 
-internal enum GenerationScreenMode { Laboratory, WorldCreation }
-
 internal sealed class LaboratorySession
 {
     private readonly WorldConfiguration configuration = new();
     private readonly Dictionary<GenerationStage, IWorldGenerationLayer> available;
     private readonly WorldGenerationOrchestrator orchestrator;
     public bool IsOpen { get; private set; }
-    public GenerationScreenMode Mode { get; private set; }
     public MapSize Size => configuration.Size;
     public WorldType WorldType => configuration.WorldType;
     public string SeedText => configuration.SeedText;
@@ -38,18 +35,12 @@ internal sealed class LaboratorySession
         orchestrator = new WorldGenerationOrchestrator(new WorldGenerationLayerRegistry(layers));
     }
 
-    public void Open(GenerationScreenMode mode = GenerationScreenMode.Laboratory)
-    {
-        if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
-        if (Mode != mode) ClearSession();
-        Mode = mode;
-        IsOpen = true;
-    }
+    public void Open() => IsOpen = true;
     public void ReturnToMenu() => IsOpen = false;
     public bool OpenFromMenu(MainMenuButton? button)
     {
-        if (button is not (MainMenuButton.Start or MainMenuButton.Laboratory)) return false;
-        Open(button == MainMenuButton.Start ? GenerationScreenMode.WorldCreation : GenerationScreenMode.Laboratory);
+        if (button != MainMenuButton.Laboratory) return false;
+        Open();
         return true;
     }
     public bool IsImplemented(GenerationStage stage) => available.ContainsKey(stage);
@@ -108,7 +99,7 @@ internal sealed class LaboratorySession
         return true;
     }
 
-    // Both entry modes use this one advancement path and stop at the first unavailable prerequisite.
+    // Advance exactly one eligible Laboratory stage; unavailable capabilities never execute.
     public bool RunNextStage()
     {
         if (!CanAdvance)
@@ -130,18 +121,6 @@ internal sealed class LaboratorySession
 
     // Retain the existing manual Grid action while enforcing its identity.
     public bool RunGrid() => CanRunGrid && RunNextStage();
-
-    public bool CreateWorld()
-    {
-        if (!CreateSession()) return false;
-        while (CanAdvance)
-            if (!RunNextStage()) return false;
-        var next = Context!.GetProgress().NextStage;
-        Notice = next is GenerationStage stage
-            ? $"MAPA PARCIAL. {stage}: NO DISPONIBLE. NO ES UNA PARTIDA JUGABLE."
-            : "CAPAS COMPLETADAS. SIN PARTIDA ACTIVA.";
-        return true;
-    }
 
     // Only completed data with a real visualization may be selected, never a placeholder image.
     public bool SelectView(GenerationStage stage)

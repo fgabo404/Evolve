@@ -1,4 +1,4 @@
-// Holds the shared editable configuration used by manual LAB and automatic world creation.
+// Holds reusable editable configuration for the Laboratory's manual generation sessions.
 // Validates only existing definition enums and signed seed input before constructing an engine request.
 using System.Buffers.Binary;
 using System.Globalization;

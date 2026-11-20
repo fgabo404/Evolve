@@ -1,4 +1,4 @@
-// Composes the reference-style shared sidebar, stage list, information cards and map empty state.
+// Composes the approved Laboratory sidebar, stage list, information cards and map empty state.
 // Retains Evolve's blue palette and bitmap font; only completed published data is presented as a map.
 using Evolve.Engine.WorldGeneration;
 using Evolve.Definitions.WorldGeneration;
@@ -21,7 +21,7 @@ internal static class LaboratoryPresentation
         {
             double center = view.X + view.Width / 2;
             Line(renderer, "MAPA", center, view.Y + view.Height / 2 - 28 * layout.Scale, view.Width - 16, 2 * layout.Scale);
-            string prompt = session.Mode == GenerationScreenMode.WorldCreation ? "CONFIGURE Y PULSE CREAR MUNDO" : "CREE UNA SESION Y EJECUTE GRID";
+            string prompt = "CREE UNA SESION Y EJECUTE GRID";
             Lines(renderer, prompt, new(view.X + 8, view.Y + view.Height / 2, view.Width - 16, 50 * layout.Scale), layout.Scale, true);
         }
         else
@@ -37,8 +37,8 @@ internal static class LaboratoryPresentation
         {
             GL.Scissor((int)clip.X, (int)(height - clip.Y - clip.Height), (int)clip.Width, (int)clip.Height);
             renderer.Begin(width, height);
-            Label(renderer, session.Mode == GenerationScreenMode.Laboratory ? "GENERACION DE MUNDO" : "CREAR MUNDO", layout.Card(0, 18), 2 * layout.Scale);
-            Label(renderer, session.Mode == GenerationScreenMode.Laboratory ? "LABORATORIO" : "CONFIGURACION", layout.Card(20, 12), layout.Scale);
+            Label(renderer, "GENERACION DE MUNDO", layout.Card(0, 18), 2 * layout.Scale);
+            Label(renderer, "LABORATORIO", layout.Card(20, 12), layout.Scale);
             Label(renderer, "TIPO DE MAPA", layout.Card(40, 10), layout.Scale);
             Label(renderer, "TAMANO", layout.Card(90, 10), layout.Scale);
             Label(renderer, "SEMILLA", layout.Card(140, 10), layout.Scale);
@@ -53,7 +53,7 @@ internal static class LaboratoryPresentation
                     LaboratoryAction.Randomize => "R",
                     LaboratoryAction.View => session.SelectedView?.ToString() ?? "SIN DATOS",
                     LaboratoryAction.Fit => "AJUSTAR",
-                    LaboratoryAction.Create => session.Mode == GenerationScreenMode.WorldCreation ? "CREAR MUNDO" : "CREAR SESION",
+                    LaboratoryAction.Create => "CREAR SESION",
                     _ => "CONFIGURACION"
                 };
                 Card(renderer, layout.Control(action), action == LaboratoryAction.Seed && ui.EditingSeed);
@@ -73,13 +73,13 @@ internal static class LaboratoryPresentation
             }
             Card(renderer, layout.Card(312, 44));
             Lines(renderer, session.Notice, layout.Card(314, 40), layout.Scale);
-            Label(renderer, session.Mode == GenerationScreenMode.Laboratory ? "GENERACION MANUAL" : "PROGRESO DE GENERACION",
+            Label(renderer, "GENERACION MANUAL",
                 layout.Card(366, 10), layout.Scale);
             foreach (var stage in Enum.GetValues<GenerationStage>())
             {
                 var bounds = layout.Stage(stage);
                 bool enabled = session.IsCompleted(stage) ||
-                    (session.Mode == GenerationScreenMode.Laboratory && session.Context?.GetProgress().NextStage == stage && session.CanAdvance);
+                    (session.Context?.GetProgress().NextStage == stage && session.CanAdvance);
                 Card(renderer, bounds, session.SelectedView == stage, enabled);
                 Label(renderer, $"{(int)stage:00} - {stage}", new(bounds.X + 4, bounds.Y + 2, bounds.Width - 8, 9 * layout.Scale), layout.Scale);
                 Label(renderer, session.StageStatus(stage), new(bounds.X + 4, bounds.Y + 12 * layout.Scale, bounds.Width - 8, 9 * layout.Scale), layout.Scale,

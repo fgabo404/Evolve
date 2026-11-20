@@ -19,21 +19,21 @@ using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
     ("static outlines retain approved centers and regular shape", Outlines),
     ("picking centers, boundaries and seam IDs is consistent", Picking),
     ("Laboratory checks remain graphics independent", Headless),
-    ("INICIAR and LAB use the production navigation mapping", CreationNavigation),
-    ("automatic creation stops before unavailable Tectonics", AutomaticCreation),
-    ("automatic capability discovery extends without fake completion", CapabilityDiscovery),
-    ("failure projection and manual retry preserve partial Grid", AutomaticFailure),
+    ("INICIAR stays unavailable without opening or generating", StartUnavailable),
+    ("LAB creates a pending context and advances only manually", ManualStages),
+    ("manual capabilities advance exactly once per explicit request", CapabilityDiscovery),
+    ("failure projection and manual retry preserve partial Grid", ManualFailure),
     ("explicit seed randomization creates valid requests", Randomization),
     ("dropdown navigation and scrolling agree with hit detection", Dropdowns),
-    ("completed views and inspection are shared across entry modes", SharedInspection)
+    ("completed views and inspection survive LAB reopening", SharedInspection)
 ];
 int failures = 0;
 foreach (var (name, check) in checks)
 {
-    try { check(); Console.WriteLine($"PASS LAB-GRID-02 {name}"); }
-    catch (Exception exception) { failures++; Console.Error.WriteLine($"FAIL LAB-GRID-02 {name}: {exception}"); }
+    try { check(); Console.WriteLine($"PASS LAB-GRID-02-FIX01 {name}"); }
+    catch (Exception exception) { failures++; Console.Error.WriteLine($"FAIL LAB-GRID-02-FIX01 {name}: {exception}"); }
 }
-Console.WriteLine($"LAB-GRID-02: {checks.Length - failures}/{checks.Length} checks passed.");
+Console.WriteLine($"LAB-GRID-02-FIX01: {checks.Length - failures}/{checks.Length} checks passed.");
 return failures == 0 ? 0 : 1;
 
 // These tests call actual production methods rather than a test-only navigation or generation pipeline.
@@ -259,32 +259,42 @@ static void Require(bool condition, string message)
     if (!condition) throw new InvalidOperationException(message);
 }
 
-static void CreationNavigation()
+static void StartUnavailable()
 {
     var session = new LaboratorySession();
+    var menu = new MainMenuInteraction();
+    Require(!session.OpenFromMenu(MainMenuButton.Start) && !menu.Activate(MainMenuButton.Start) &&
+        menu.FooterMessage is { } notice && notice.Contains("INICIAR") && notice.Contains("DISPONIBLE") &&
+        !session.IsOpen && session.Context is null && session.Grid is null, "INICIAR opened or generated instead of showing its notice");
     Require(!session.OpenFromMenu(MainMenuButton.Options) && !session.OpenFromMenu(MainMenuButton.Exit) &&
-        !session.OpenFromMenu(null) && !session.IsOpen, "Unrelated action opened generation");
-    Require(session.OpenFromMenu(MainMenuButton.Laboratory) && session.Mode == GenerationScreenMode.Laboratory, "LAB mapping");
+        !session.OpenFromMenu(null), "Unrelated action opened LAB");
+    Require(session.OpenFromMenu(MainMenuButton.Laboratory) && session.IsOpen, "LAB did not open");
     session.CreateSession(); session.RunNextStage();
-    var previous = session.Context;
+    var previous = session.Context!;
+    var data = previous.GetLayerData(GenerationStage.Grid);
     session.ReturnToMenu();
-    Require(session.OpenFromMenu(MainMenuButton.Start) && session.Mode == GenerationScreenMode.WorldCreation &&
-        session.Context is null && session.Grid is null, "INICIAR did not open fresh configuration");
-    Require(previous!.GetProgress().GetStatus(GenerationStage.Grid) == GenerationStageStatus.Completed, "Switching modes mutated engine state");
+    Require(!session.OpenFromMenu(MainMenuButton.Start) && !menu.Activate(MainMenuButton.Start) &&
+        !session.IsOpen && ReferenceEquals(previous, session.Context) &&
+        ReferenceEquals(data, session.Context.GetLayerData(GenerationStage.Grid)) &&
+        previous.GetProgress().NextStage == GenerationStage.Tectonics, "INICIAR modified the retained LAB session");
+    Require(typeof(LaboratorySession).GetMethod("CreateWorld") is null &&
+        typeof(LaboratorySession).GetProperty("Mode") is null, "Normal world-creation behavior remains exposed");
 }
 
-static void AutomaticCreation()
+static void ManualStages()
 {
     var session = new LaboratorySession();
-    session.Open(GenerationScreenMode.WorldCreation);
+    session.Open();
     foreach (var size in Enum.GetValues<MapSize>())
     foreach (var type in Enum.GetValues<WorldType>())
     {
         session.SetSize(size); session.SetWorldType(type); session.SetSeedText("-12345");
-        Require(session.CreateWorld() && session.Grid is not null &&
-            session.GridStatus == GenerationStageStatus.Completed, "Automatic Grid failed");
-        Require(session.Context!.GetProgress().NextStage == GenerationStage.Tectonics && !session.CanAdvance, "Automatic flow advanced past capability");
-        Require(session.Notice.Contains("PARCIAL") && session.Notice.Contains("NO ES UNA PARTIDA"), "Partial-world notice missing");
+        Require(session.CreateSession() && session.Grid is null && session.GridStatus == GenerationStageStatus.Pending &&
+            session.Context!.GetLayerData(GenerationStage.Grid) is null, "Creating a session generated Grid automatically");
+        Require(session.RunNextStage() && session.Grid is not null &&
+            session.GridStatus == GenerationStageStatus.Completed, "Manual Grid failed");
+        Require(session.Context!.GetProgress().NextStage == GenerationStage.Tectonics && !session.CanAdvance &&
+            !session.RunNextStage(), "Manual flow advanced past capability");
         Require(session.StageStatus(GenerationStage.Grid) == "COMPLETADA", "Completed projection");
         foreach (var stage in Enum.GetValues<GenerationStage>().Skip(1))
             Require(!session.IsImplemented(stage) && session.StageStatus(stage) == "NO DISPONIBLE" &&
@@ -292,7 +302,7 @@ static void AutomaticCreation()
                 session.Context.GetLayerData(stage) is null, "Unavailable stage reported fake completion");
         session.ClearSession();
         Require(session.Grid is null && session.Context is null && session.Size == size && session.WorldType == type &&
-            session.SeedText == "-12345", "Return to configuration discarded selected settings");
+            session.SeedText == "-12345", "Returning to configuration discarded selected settings");
     }
 }
 
@@ -305,13 +315,16 @@ static void CapabilityDiscovery()
         Require(inputs.GetLayerData(GenerationStage.Grid) is LayerData<HexGridDescriptor>, "Discovered layer skipped Grid");
         return LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Tectonics, [1]));
     })]);
-    Require(session.CreateWorld() && calls == 1 &&
+    Require(session.CreateSession() && calls == 0 && session.Grid is null, "Session creation executed a capability");
+    Require(session.RunNextStage() && calls == 0 && session.Context!.GetProgress().LastCompletedStage == GenerationStage.Grid,
+        "One manual request ran more than Grid");
+    Require(session.RunNextStage() && calls == 1 &&
         session.Context!.GetProgress().LastCompletedStage == GenerationStage.Tectonics &&
-        session.Context.GetProgress().NextStage == GenerationStage.Landmasses, "Automatic flow is hardcoded to Grid");
+        session.Context.GetProgress().NextStage == GenerationStage.Landmasses, "Manual capability request failed");
     Require(session.Grid is not null && !session.CanAdvance && session.StageStatus(GenerationStage.Landmasses) == "NO DISPONIBLE", "Discovery fabricated later data");
 }
 
-static void AutomaticFailure()
+static void ManualFailure()
 {
     foreach (bool invalidCandidate in new[] { false, true })
     {
@@ -321,7 +334,7 @@ static void AutomaticFailure()
                 ? LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Climate, [999]))
                 : LayerExecutionResult.Failed("Injected failure."))
                 : LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Tectonics, [1])))]);
-        Require(!session.CreateWorld() && session.Grid is not null &&
+        Require(session.CreateSession() && session.RunNextStage() && !session.RunNextStage() && session.Grid is not null &&
             session.StageStatus(GenerationStage.Tectonics) == "FALLIDA", "Failure not displayed from progress");
         var gridData = session.Context!.GetLayerData(GenerationStage.Grid);
         Require(session.Context.GetLayerData(GenerationStage.Tectonics) is null &&
@@ -335,7 +348,7 @@ static void AutomaticFailure()
 static void Randomization()
 {
     var session = new LaboratorySession();
-    session.CreateWorld();
+    session.CreateSession(); session.RunNextStage();
     for (int index = 0; index < 20; index++)
     {
         session.RandomizeSeed();
@@ -380,21 +393,21 @@ static void Dropdowns()
 
 static void SharedInspection()
 {
-    foreach (var mode in Enum.GetValues<GenerationScreenMode>())
-    {
-        var session = new LaboratorySession();
-        session.Open(mode);
-        Require(!session.SelectView(GenerationStage.Grid), "Pending data displayed as generated");
-        if (mode == GenerationScreenMode.WorldCreation) session.CreateWorld();
-        else { session.CreateSession(); session.RunNextStage(); }
-        Require(session.SelectView(GenerationStage.Grid) && !session.SelectView(GenerationStage.Climate), "Unavailable view was displayed");
-        session.Select(19999);
-        Require(session.SelectedView == GenerationStage.Grid && session.Grid!.GetOffset(session.SelectedCell!.Value) ==
-            new HexOffset(199, 99), "Entry modes have divergent inspection");
-        var data = session.Context!.GetLayerData(GenerationStage.Grid);
-        session.SelectView(GenerationStage.Grid);
-        Require(ReferenceEquals(data, session.Context.GetLayerData(GenerationStage.Grid)), "Inspection regenerated a layer");
-    }
+    var session = new LaboratorySession();
+    session.OpenFromMenu(MainMenuButton.Laboratory);
+    Require(!session.SelectView(GenerationStage.Grid), "Pending data displayed as generated");
+    session.CreateSession(); session.RunNextStage();
+    Require(session.SelectView(GenerationStage.Grid) && !session.SelectView(GenerationStage.Climate), "Unavailable view displayed");
+    session.Select(19999);
+    var data = session.Context!.GetLayerData(GenerationStage.Grid);
+    var grid = session.Grid;
+    session.ReturnToMenu();
+    session.OpenFromMenu(MainMenuButton.Laboratory);
+    Require(session.SelectedView == GenerationStage.Grid && session.Grid!.GetOffset(session.SelectedCell!.Value) ==
+        new HexOffset(199, 99), "Reopening LAB lost inspection");
+    session.SelectView(GenerationStage.Grid);
+    Require(ReferenceEquals(grid, session.Grid) && ReferenceEquals(data, session.Context.GetLayerData(GenerationStage.Grid)),
+        "Inspection regenerated a layer");
 }
 
 // Test-only execution proves capability discovery and failures without adding downstream production geography.

@@ -1,4 +1,4 @@
-# Shared Generation Screen Checks
+# Laboratory-only Interface Checks
 
 ```powershell
 dotnet run --project .\tests\laboratory\Evolve.Laboratory.Checks.csproj --configuration Release
@@ -16,14 +16,18 @@ sidebar contract: all controls and stages remain reachable by scrolling, back
 stays fixed, popup hit bounds agree, and physical sizes correctly reflect
 logical client dimensions at 100%, 125% and 200% DPI.
 
-New checks exercise production LAB/INICIAR routing, automatic partial-world
-creation, capability discovery with a test-only later executor, atomic failure/
-invalid-candidate projection and retry, random seed validation, dropdown
-navigation/scroll cancellation and shared completed-data inspection.
+FIX01 checks exercise production LAB-only routing and the original INICIAR
+notice before generation and after leaving a generated LAB session. They verify
+that INICIAR opens no screen and changes no context/results, automatic creation
+APIs are absent, and LAB advances once per explicit request. Other checks retain
+capability discovery, atomic failure/invalid-candidate retry, seed validation,
+dropdown navigation/scroll cancellation and completed-data inspection. The suite
+links the actual production menu interaction model and activation keys.
 Default production inventory contains real Grid only. Additional executors in
 this test file are not production geography or an alternate orchestrator.
 
 These tests do not run native events/GLSL, inspect screenshots, measure GPU
 performance or observe GPU cleanup. Use the
 [manual verification checklist](../../game/laboratory/readme.md#requested-manual-visual-verification).
-LAB-GRID-02 awaits independent audit and formal owner acceptance.
+The Laboratory design has owner visual approval. FIX01 awaits independent audit
+and formal acceptance; headless checks provide no new native visual evidence.
