@@ -1,6 +1,6 @@
 # WG-01 — Tectonic Plates: Compact Roadmap
 
-**Status:** Planning prepared; no WG-01 implementation authorized yet.  
+**Status:** WG-01-A implemented documentarily at v0.0.37, submitted for independent audit and formal owner acceptance; WG-01-B/C/D not started.
 **Working branch:** `world-tectonics`, based on formally closed Grid `v0.0.35` (`503b3ec41a89b9f54cb47dede9f92506123b6a23`).  
 **Target:** exactly **14 connected, irregular, unequal tectonic plates** for Small, Medium and Large.  
 **Historical algorithm baseline:** weighted hex-region growth, multi-scale periodic noise, plate motion and boundary stresses.  
@@ -12,22 +12,33 @@
 
 - Specify compact immutable tectonic data, exact published `LayerData<T>` representation, plate records and stage inputs without changing WG-CORE.
 - Review the legacy tectonic algorithm and identify reusable formulas, topology adaptations, deterministic stream boundaries and memory risks.
-- Approve 14-plate invariants, interfaces, parameter ranges, test oracles and implementation boundaries before writing production logic.
+- Specify 14-plate invariants, interfaces, parameter constraints, test oracles and implementation boundaries before writing production logic. Historical numeric values remain unapproved calibration proposals.
 
-**Gate A:** independent design review and formal owner acceptance.
+**Documentary delivery:** [readme.md](readme.md) records historical source review,
+deterministic weighted growth, 14-seed connectivity guarantees, motion formulas,
+parameter decisions, stress-propagation risks and planned tests T01–T12.
+[contracts.md](contracts.md) defines one LayerData<uint> word buffer with a
+checked schema and immutable typed view, proposed public/internal signatures,
+future file layout and calculated memory bounds. No CORE extension, C# source,
+test project or algorithm is implemented. Baseline v0.0.36 at
+cdb00c3a6689d1e06fb25012b336b9a6a2da744d; delivery v0.0.37.
+
+**Gate A:** pending independent design review and formal owner acceptance.
+Source/history/contract, link/scope review and git diff --check are A evidence;
+no builds or automated/GUI tests executed for documentation-only changes.
 
 ### WG-01-B — Fourteen-plate partition and CORE integration
 
 - Implement farthest-candidate seeds, varied growth profiles, periodic domain-warped multiscale noise and competitive connected growth on real `HexGridData`.
 - Ensure 14 nonempty connected regions, full unique cell assignment, deterministic replay, legal seam/pole neighbors and varied region sizes.
-- Publish tectonic region ownership through the existing stage executor and orchestrator; exercise failure, retry, prerequisites and invalidation without creating a second generator.
+- Publish ownership-only schema features through the existing stage executor and orchestrator; exercise failure, retry, prerequisites and invalidation without creating a second generator. Resolve the numeric partition profile and fixed compatibility vectors before B publication; no motion or fake boundary data.
 
 **Gate B:** exhaustive correctness/integration checks, independent audit and owner acceptance.
 
 ### WG-01-C — Motions, boundaries and Laboratory display
 
 - Assign deterministic per-plate directions and speeds; detect unique inter-plate edges and classify relative convergence, divergence, transform, mixed and quiet interactions.
-- Determine and validate useful distance/stress influence fields; measure propagation expense before adopting the legacy implementation.
+- Determine and validate useful distance/stress influence fields; resolve units, speed/threshold calibration and measure propagation expense before adopting the legacy implementation. Optional influence output remains unavailable unless its semantics and cost are accepted; boundary kinematics alone must not masquerade as computed fields.
 - Add a Laboratory view of the **real published** 14-plate map, boundaries, motion and selected-cell information without changing the normal `INICIAR` behavior.
 - Preserve current LAB Grid display and accepted rendering contracts; native GPU/DPI caveats remain recorded.
 
@@ -45,9 +56,10 @@
 
 - Architect specifies; Dev implements only an authorized increment; independent Auditor reviews; owner accepts.
 - Every authorized repository-changing commit increments root `VERSION`, and reports an English commit message plus its full SHA.
-- No implementation is implied by this planning commit. Do not start WG-01-A code, alter Grid, WG-CORE, State, Saves, other geographic layers, or normal game creation without separate authorization.
+- WG-01-A authorizes documentation and VERSION only. Do not start WG-01-B before independent review and explicit owner acceptance/authorization. Do not alter Grid, WG-CORE, State, Saves, other geographic layers or normal game creation.
 - Keep the Grid audit observations and `world-grid` history intact; do not delete or retire its roadmap.
 - `world-tectonics` is a working branch based on the accepted Grid commit because `world-grid` has not been integrated into `world`. This does not authorize synchronization or merging.
 
 **Layer responsibility:** [readme.md](readme.md)  
+**Data/API contract:** [contracts.md](contracts.md)
 **General roadmap:** [World Generation Roadmap](../../roadmap.md)
