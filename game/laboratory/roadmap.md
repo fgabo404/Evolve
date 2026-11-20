@@ -1,11 +1,11 @@
-# LAB-GRID-01 — First Grid Visualization
+# Laboratory Visual Deliveries
 
 **Repository:** `fgabo404/Evolve`
 **Working branch:** `world-grid`
 **Authority:** explicit project-owner request for LAB-GRID-01.
 **Engine baseline:** `v0.0.31`, `4f0049dba50f68b426c99bb7bafb749648c16d42`.
 **Delivery version:** `v0.0.32`.
-**Status:** implemented, pending manual visual validation, independent audit and owner acceptance.
+**LAB-GRID-01 status:** initial implementation delivered but not visually accepted; its visual design is superseded by corrective LAB-GRID-02 below.
 
 ## Independent scope
 
@@ -41,3 +41,41 @@ No visual run, runtime shader approval, framerate budget, native DPI/focus
 approval or actual graphics-resource-release observation is claimed.
 Rendering work remains separate from pending WG-00 query-performance work.
 This roadmap authorizes no follow-on delivery or branch merge.
+
+## LAB-GRID-02 — Corrective redesign and world creation
+
+**Authority:** explicit owner request and supplied principal reference image;
+latest owner clarification keeps Evolve's original blue colors and uses the
+reference for structure.
+**Baseline:** `v0.0.32`, `db1900966bf49f22aa1c91131ef3cb4d2519d2d8`.
+**Delivery:** `v0.0.33`.
+**Status:** implemented, pending manual UI verification, independent audit and acceptance.
+
+LAB-GRID-01 was not visually accepted. This correction replaces its full-width
+toolbar with a scrollable compact left sidebar and large right canvas. LAB and
+INICIAR reuse the same configuration, dropdowns, stage cards, map renderer,
+camera and cell-information components. Accepted mathematical/core sources,
+D01–D11, State and Saves remain unchanged. No WG-00-D/E or merge is authorized.
+
+- [x] Shared enum-backed dropdowns, validated seed editing and explicit randomization.
+- [x] Connect both LAB and INICIAR using tested production navigation.
+- [x] LAB manual context creation and next eligible capability execution.
+- [x] INICIAR automatic progression via the same core RunNext path, stopping at
+      unavailable capability or failure, with a clearly partial map.
+- [x] Show all eight canonical stages and distinguish actual completion/failure
+      from unavailability; inspect only real completed Grid output.
+- [x] Return to configuration/menu without finalization, playable-world claims,
+      State promotion or persistence.
+- [x] Preserve uniform-scale cached Grid visualization and add empty-map guidance.
+- [x] Headless shared-screen/configuration/capability/layout tests and all menu/
+      Grid regressions; clean Engine/Game Release builds.
+- [ ] Compare native UI against the reference across sizes and DPI settings.
+- [ ] Independently audit, resolve authorized observations and obtain owner acceptance.
+
+Developer evidence: 18/18 shared-screen checks, 16/16 menu checks and the complete
+A/FIX01/B/C Grid suite passed, including 10/10 integration checks and 2,320,000
+BFS assertions. Both Release builds reported zero warnings/errors.
+The corrected DPI test setup uses logical client sizes and physical framebuffer
+dimensions consistently. See [readme.md](readme.md) for exact commands, UI/core
+boundaries, remaining performance limits and requested manual verification.
+LAB-GRID-02 does not retroactively approve LAB-GRID-01 or advance other increments.

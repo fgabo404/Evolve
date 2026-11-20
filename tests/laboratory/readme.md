@@ -1,22 +1,29 @@
-# Laboratory headless checks
-
-Run from the repository root:
+# Shared Generation Screen Checks
 
 ```powershell
 dotnet run --project .\tests\laboratory\Evolve.Laboratory.Checks.csproj --configuration Release
 ```
 
-This .NET 10 console executable links the actual production LaboratorySession,
-LaboratoryLayout, GridCamera and GridVisualGeometry sources. It references the
-existing engine/definitions, loads no OpenTK and returns nonzero on any failure.
+This .NET 10 executable links production WorldConfiguration, LaboratorySession,
+LaboratoryUiState, LaboratoryLayout, GridCamera, GridVisualGeometry and menu
+button identities. It references actual Engine/Definitions and loads no OpenTK.
+All 18 named checks must pass for exit code zero.
 
-Eleven checks cover navigation, enum cycling, signed-seed validation, real Grid
-generation across 24 size/type/seed combinations, unavailable downstream stages,
-session replacement, canonical selection, seam neighbors, responsive/DPI layout,
-fit/zoom/pan/inverse transforms, unit-radius outlines for all sizes and picking.
-No copied simulation or test-only orchestrator is used.
+Coverage retains numeric seeds, enum cycling, real Grid across 24 configurations,
+metadata replacement, canonical selection, camera/picking/outlines and headless
+dependencies. The old toolbar-layout expectation is replaced by the authorized
+sidebar contract: all controls and stages remain reachable by scrolling, back
+stays fixed, popup hit bounds agree, and physical sizes correctly reflect
+logical client dimensions at 100%, 125% and 200% DPI.
 
-These checks do not deliver native events, run GLSL, measure GPU performance,
-validate screenshots or observe resource cleanup. Use the
-[manual checklist](../../game/laboratory/readme.md#requested-manual-visual-validation)
-for owner/Auditor validation. Independent audit and formal acceptance remain pending.
+New checks exercise production LAB/INICIAR routing, automatic partial-world
+creation, capability discovery with a test-only later executor, atomic failure/
+invalid-candidate projection and retry, random seed validation, dropdown
+navigation/scroll cancellation and shared completed-data inspection.
+Default production inventory contains real Grid only. Additional executors in
+this test file are not production geography or an alternate orchestrator.
+
+These tests do not run native events/GLSL, inspect screenshots, measure GPU
+performance or observe GPU cleanup. Use the
+[manual verification checklist](../../game/laboratory/readme.md#requested-manual-visual-verification).
+LAB-GRID-02 awaits independent audit and formal owner acceptance.

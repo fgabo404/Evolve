@@ -1,8 +1,11 @@
-// Defines framebuffer-space Laboratory controls and a letterboxed 2:1 viewing frame.
-// Drawing and hit detection share these bounds; the grid itself is never stretched to fill the frame.
+// Shares responsive sidebar, popup, stage-card and map bounds between LAB and world creation.
+// Scrolling keeps every sidebar control reachable at short heights; drawing and hit detection use the same clipped coordinates.
+using Evolve.Engine.WorldGeneration;
+
 namespace Evolve.Game;
 
-internal enum LaboratoryAction { Size, WorldType, Seed, Fit, Create, RunGrid, Back }
+internal enum LaboratoryAction { Size, WorldType, Seed, Randomize, View, Fit, Create, Configure, Back, Stage, Option }
+internal readonly record struct LaboratoryHit(LaboratoryAction Action, int Index = -1);
 internal readonly record struct LaboratoryBounds(double X, double Y, double Width, double Height)
 {
     public bool Contains(double x, double y) => Width > 0 && Height > 0 && x >= X && y >= Y && x < X + Width && y < Y + Height;
@@ -10,31 +13,74 @@ internal readonly record struct LaboratoryBounds(double X, double Y, double Widt
 
 internal sealed class LaboratoryLayout
 {
-    private readonly int width;
+    public static readonly LaboratoryAction[] Controls =
+        [LaboratoryAction.Size, LaboratoryAction.WorldType, LaboratoryAction.Seed, LaboratoryAction.Randomize,
+         LaboratoryAction.View, LaboratoryAction.Fit, LaboratoryAction.Create, LaboratoryAction.Configure, LaboratoryAction.Back];
+    public double Scale { get; }
+    public double SidebarWidth { get; }
+    public double Scroll { get; }
+    public double MaximumScroll { get; }
+    public LaboratoryBounds SidebarClip { get; }
     public LaboratoryBounds Viewport { get; }
 
-    public LaboratoryLayout(int width, int height)
+    public LaboratoryLayout(int width, int height, double scroll = 0, double scale = 1)
     {
-        this.width = Math.Max(1, width);
-        double availableWidth = Math.Max(1, width - 24);
-        double availableHeight = Math.Max(1, height - 238);
-        double frameWidth = Math.Min(availableWidth, 2 * availableHeight);
-        Viewport = new((width - frameWidth) / 2, 180 + (availableHeight - frameWidth / 2) / 2, frameWidth, frameWidth / 2);
+        Scale = Math.Clamp(scale, 1, 3);
+        SidebarWidth = Math.Min(width - 80 * Scale, Math.Clamp(width / Scale * 0.23, 200, 280) * Scale);
+        SidebarWidth = Math.Max(1, SidebarWidth);
+        SidebarClip = new(8 * Scale, 8 * Scale, SidebarWidth - 16 * Scale, Math.Max(1, height - 56 * Scale));
+        MaximumScroll = Math.Max(0, 726 * Scale - SidebarClip.Height);
+        Scroll = Math.Clamp(scroll, 0, MaximumScroll);
+        Viewport = new(SidebarWidth + 12 * Scale, 12 * Scale,
+            Math.Max(1, width - SidebarWidth - 24 * Scale), Math.Max(1, height - 24 * Scale));
     }
+
+    // Logical sidebar coordinates are translated uniformly for DPI and scroll; footer navigation stays fixed.
+    public LaboratoryBounds At(double x, double y, double width, double height) =>
+        new(SidebarClip.X + x * Scale, SidebarClip.Y + y * Scale - Scroll, width * Scale, height * Scale);
+    public LaboratoryBounds Card(double y, double height) => At(0, y, SidebarClip.Width / Scale, height);
 
     public LaboratoryBounds Control(LaboratoryAction action) => action switch
     {
-        LaboratoryAction.Size => new(12, 40, (width - 36) / 2d, 28),
-        LaboratoryAction.WorldType => new(24 + (width - 36) / 2d, 40, (width - 36) / 2d, 28),
-        LaboratoryAction.Seed => new(12, 80, (width - 36) * 0.65, 28),
-        LaboratoryAction.Fit => new(24 + (width - 36) * 0.65, 80, (width - 36) * 0.35, 28),
-        _ => new(12 + ((int)action - (int)LaboratoryAction.Create) * (width - 12) / 3d, 120, (width - 48) / 3d, 28)
+        LaboratoryAction.WorldType => Card(54, 26),
+        LaboratoryAction.Size => Card(104, 26),
+        LaboratoryAction.Seed => At(0, 154, SidebarClip.Width / Scale - 34, 26),
+        LaboratoryAction.Randomize => At(SidebarClip.Width / Scale - 28, 154, 28, 26),
+        LaboratoryAction.View => Card(204, 26),
+        LaboratoryAction.Create => Card(244, 28),
+        LaboratoryAction.Configure => At(0, 280, SidebarClip.Width / Scale * 0.67 - 3, 24),
+        LaboratoryAction.Fit => At(SidebarClip.Width / Scale * 0.67 + 3, 280, SidebarClip.Width / Scale * 0.33 - 3, 24),
+        LaboratoryAction.Back => new(SidebarClip.X, SidebarClip.Y + SidebarClip.Height + 8 * Scale, SidebarClip.Width, 28 * Scale),
+        _ => throw new ArgumentOutOfRangeException(nameof(action))
     };
 
-    public LaboratoryAction? HitTest(double x, double y)
+    public LaboratoryBounds Stage(GenerationStage stage) => Card(380 + (int)stage * 27, 24);
+
+    public LaboratoryBounds DropdownOption(LaboratoryAction action, int index, int count)
     {
-        foreach (var action in Enum.GetValues<LaboratoryAction>())
-            if (Control(action).Contains(x, y)) return action;
+        var control = Control(action);
+        double popupHeight = count * 26 * Scale;
+        double y = control.Y + control.Height + 3 * Scale;
+        if (y + popupHeight > SidebarClip.Y + SidebarClip.Height)
+            y = control.Y - popupHeight - 3 * Scale;
+        y = Math.Clamp(y, SidebarClip.Y, Math.Max(SidebarClip.Y, SidebarClip.Y + SidebarClip.Height - popupHeight));
+        return new(control.X, y + index * 26 * Scale, control.Width, 26 * Scale);
+    }
+
+    public LaboratoryHit? HitTest(double x, double y, LaboratoryAction? dropdown = null, int optionCount = 0)
+    {
+        if (Control(LaboratoryAction.Back).Contains(x, y)) return new(LaboratoryAction.Back);
+        if (!SidebarClip.Contains(x, y)) return null;
+        if (dropdown is { } popup)
+        {
+            for (int index = 0; index < optionCount; index++)
+                if (DropdownOption(popup, index, optionCount).Contains(x, y)) return new(LaboratoryAction.Option, index);
+            return null;
+        }
+        foreach (var action in Controls)
+            if (action != LaboratoryAction.Back && Control(action).Contains(x, y)) return new(action);
+        foreach (var stage in Enum.GetValues<GenerationStage>())
+            if (Stage(stage).Contains(x, y)) return new(LaboratoryAction.Stage, (int)stage);
         return null;
     }
 

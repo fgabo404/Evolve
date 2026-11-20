@@ -1,5 +1,8 @@
-// Composes Laboratory controls, real progress and selected-cell information using the existing bitmap font.
-// The separate static grid renderer draws the viewport without rebuilding cell geometry each frame.
+// Composes the reference-style shared sidebar, stage list, information cards and map empty state.
+// Retains Evolve's blue palette and bitmap font; only completed published data is presented as a map.
+using Evolve.Engine.WorldGeneration;
+using Evolve.Definitions.WorldGeneration;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace Evolve.Game;
@@ -9,57 +12,152 @@ internal static class LaboratoryPresentation
     public static readonly Color4 Background = new(0.075f, 0.09f, 0.10f, 1);
 
     public static void Draw(PixelMenuRenderer renderer, LaboratorySession session,
-        LaboratoryLayout layout, int width, int height, bool editingSeed)
+        LaboratoryLayout layout, int width, int height, LaboratoryUiState ui)
     {
-        renderer.Begin(width, height);
-        renderer.Rectangle(0, 0, width, 178, MainMenuStyle.Background);
-        renderer.Rectangle(0, height - 55, width, 55, MainMenuStyle.Background);
-        Text(renderer, "LABORATORIO - GRID", width / 2f, 12, width - 24, 2);
-        foreach (var action in Enum.GetValues<LaboratoryAction>())
-        {
-            var bounds = layout.Control(action);
-            string label = action switch
-            {
-                LaboratoryAction.Size => $"TAMANO: {session.Size}",
-                LaboratoryAction.WorldType => $"TIPO: {session.WorldType}",
-                LaboratoryAction.Seed => $"SEED: {session.SeedText}" + (editingSeed ? "_" : ""),
-                LaboratoryAction.Fit => "AJUSTAR (F)",
-                LaboratoryAction.Create => "CREAR SESION",
-                LaboratoryAction.RunGrid => "GRID: RUNNEXT",
-                _ => "VOLVER (ESC)"
-            };
-            bool enabled = action != LaboratoryAction.RunGrid || session.CanRunGrid;
-            renderer.Rectangle((float)bounds.X, (float)bounds.Y, (float)bounds.Width, (float)bounds.Height,
-                enabled ? MainMenuStyle.Button : Background);
-            renderer.Border((float)bounds.X, (float)bounds.Y, (float)bounds.Width, (float)bounds.Height, 1,
-                editingSeed && action == LaboratoryAction.Seed ? MainMenuStyle.HighlightedBorder : MainMenuStyle.Border);
-            Text(renderer, label, (float)(bounds.X + bounds.Width / 2), (float)bounds.Y + 9, (float)bounds.Width - 8, 2);
-        }
-        string status = $"GRID: {session.GridStatus?.ToString() ?? "SIN SESION"} | ETAPAS 01-07: NO DISPONIBLES";
-        Text(renderer, status, width / 2f, 158, width - 24, 2);
         var view = layout.Viewport;
+        renderer.Begin(width, height);
         renderer.Border((float)view.X, (float)view.Y, (float)view.Width, (float)view.Height, 1, MainMenuStyle.Border);
-        string information = "CLIC: CELDA | RUEDA: ZOOM | DERECHO: MOVER | F: AJUSTAR";
-        if (session.SelectedCell is int id && session.Grid is { } grid)
+        if (session.Grid is null)
         {
-            var cell = grid.GetOffset(id);
-            var geo = grid.GetGeographicCenter(id);
-            information = FormattableString.Invariant($"ID {id} COL {cell.Column} FILA {cell.Row} LON {geo.Longitude:F3} LAT {geo.Latitude:F3}");
+            double center = view.X + view.Width / 2;
+            Line(renderer, "MAPA", center, view.Y + view.Height / 2 - 28 * layout.Scale, view.Width - 16, 2 * layout.Scale);
+            string prompt = session.Mode == GenerationScreenMode.WorldCreation ? "CONFIGURE Y PULSE CREAR MUNDO" : "CREE UNA SESION Y EJECUTE GRID";
+            Lines(renderer, prompt, new(view.X + 8, view.Y + view.Height / 2, view.Width - 16, 50 * layout.Scale), layout.Scale, true);
         }
-        Text(renderer, information, width / 2f, height - 48, width - 24, 2);
-        // Wrap notices at small client sizes rather than shrinking glyph pixels below one framebuffer pixel.
-        int columns = Math.Max(1, (width - 24) / LegacyBitmapFont.Advance);
-        for (int line = 0; line < 2 && line * columns < session.Notice.Length; line++)
+        else
+            Lines(renderer, "RUEDA: ZOOM | DERECHO: MOVER | F: AJUSTAR",
+                new(view.X + 8, view.Y + view.Height - 22 * layout.Scale, view.Width - 16, 20 * layout.Scale), layout.Scale, true);
+        renderer.Rectangle(0, 0, (float)layout.SidebarWidth, height, MainMenuStyle.Background);
+        renderer.End();
+
+        // Sidebar contents scroll as a single clipped column; back navigation stays outside the clip.
+        var clip = layout.SidebarClip;
+        GL.Enable(EnableCap.ScissorTest);
+        try
         {
-            string part = session.Notice.Substring(line * columns, Math.Min(columns, session.Notice.Length - line * columns));
-            Text(renderer, part, width / 2f, height - 27 + line * 10, width - 24, 1);
+            GL.Scissor((int)clip.X, (int)(height - clip.Y - clip.Height), (int)clip.Width, (int)clip.Height);
+            renderer.Begin(width, height);
+            Label(renderer, session.Mode == GenerationScreenMode.Laboratory ? "GENERACION DE MUNDO" : "CREAR MUNDO", layout.Card(0, 18), 2 * layout.Scale);
+            Label(renderer, session.Mode == GenerationScreenMode.Laboratory ? "LABORATORIO" : "CONFIGURACION", layout.Card(20, 12), layout.Scale);
+            Label(renderer, "TIPO DE MAPA", layout.Card(40, 10), layout.Scale);
+            Label(renderer, "TAMANO", layout.Card(90, 10), layout.Scale);
+            Label(renderer, "SEMILLA", layout.Card(140, 10), layout.Scale);
+            Label(renderer, "VISTA", layout.Card(190, 10), layout.Scale);
+            foreach (var action in LaboratoryLayout.Controls.Where(action => action != LaboratoryAction.Back))
+            {
+                string label = action switch
+                {
+                    LaboratoryAction.Size => session.Size.ToString(),
+                    LaboratoryAction.WorldType => session.WorldType.ToString(),
+                    LaboratoryAction.Seed => session.SeedText + (ui.EditingSeed ? "_" : ""),
+                    LaboratoryAction.Randomize => "R",
+                    LaboratoryAction.View => session.SelectedView?.ToString() ?? "SIN DATOS",
+                    LaboratoryAction.Fit => "AJUSTAR",
+                    LaboratoryAction.Create => session.Mode == GenerationScreenMode.WorldCreation ? "CREAR MUNDO" : "CREAR SESION",
+                    _ => "CONFIGURACION"
+                };
+                Card(renderer, layout.Control(action), action == LaboratoryAction.Seed && ui.EditingSeed);
+                Label(renderer, label, layout.Control(action), Math.Min(2, layout.Scale));
+                if (action is LaboratoryAction.Size or LaboratoryAction.WorldType or LaboratoryAction.View)
+                {
+                    var field = layout.Control(action);
+                    for (int row = 0; row < 3; row++)
+                    {
+                        double x = field.X + field.Width - (12 - row) * layout.Scale;
+                        renderer.Rectangle((float)x, (float)(field.Y + (10 + row) * layout.Scale),
+                            (float)layout.Scale, (float)layout.Scale, MainMenuStyle.Text);
+                        renderer.Rectangle((float)(x + (4 - 2 * row) * layout.Scale), (float)(field.Y + (10 + row) * layout.Scale),
+                            (float)layout.Scale, (float)layout.Scale, MainMenuStyle.Text);
+                    }
+                }
+            }
+            Card(renderer, layout.Card(312, 44));
+            Lines(renderer, session.Notice, layout.Card(314, 40), layout.Scale);
+            Label(renderer, session.Mode == GenerationScreenMode.Laboratory ? "GENERACION MANUAL" : "PROGRESO DE GENERACION",
+                layout.Card(366, 10), layout.Scale);
+            foreach (var stage in Enum.GetValues<GenerationStage>())
+            {
+                var bounds = layout.Stage(stage);
+                bool enabled = session.IsCompleted(stage) ||
+                    (session.Mode == GenerationScreenMode.Laboratory && session.Context?.GetProgress().NextStage == stage && session.CanAdvance);
+                Card(renderer, bounds, session.SelectedView == stage, enabled);
+                Label(renderer, $"{(int)stage:00} - {stage}", new(bounds.X + 4, bounds.Y + 2, bounds.Width - 8, 9 * layout.Scale), layout.Scale);
+                Label(renderer, session.StageStatus(stage), new(bounds.X + 4, bounds.Y + 12 * layout.Scale, bounds.Width - 8, 9 * layout.Scale), layout.Scale,
+                    enabled ? MainMenuStyle.Text : MainMenuStyle.VersionText);
+            }
+            Card(renderer, layout.Card(610, 106));
+            Label(renderer, "INFORMACION DE CELDA", layout.Card(614, 12), layout.Scale);
+            string information = "SELECCIONE UN HEXAGONO EN EL MAPA.";
+            if (session.SelectedCell is int id && session.Grid is { } grid)
+            {
+                var offset = grid.GetOffset(id); var geo = grid.GetGeographicCenter(id);
+                information = FormattableString.Invariant($"CELLID: {id}\nCOLUMNA: {offset.Column}  FILA: {offset.Row}\nLONGITUD: {geo.Longitude:F3}\nLATITUD: {geo.Latitude:F3}");
+            }
+            Lines(renderer, information, layout.Card(632, 78), layout.Scale);
+            if (ui.Dropdown is { } popup)
+            {
+                string[] options = popup switch
+                {
+                    LaboratoryAction.Size => Enum.GetNames<MapSize>(),
+                    LaboratoryAction.WorldType => Enum.GetNames<WorldType>(),
+                    _ => ["Grid"]
+                };
+                for (int index = 0; index < options.Length; index++)
+                {
+                    var bounds = layout.DropdownOption(popup, index, options.Length);
+                    Card(renderer, bounds, ui.HighlightedOption == index);
+                    Label(renderer, options[index], bounds, layout.Scale,
+                        popup == LaboratoryAction.View && session.Grid is null ? MainMenuStyle.VersionText : MainMenuStyle.Text);
+                }
+            }
+            renderer.End();
+        }
+        finally { GL.Disable(EnableCap.ScissorTest); }
+
+        renderer.Begin(width, height);
+        Card(renderer, layout.Control(LaboratoryAction.Back));
+        Label(renderer, "< SALIR AL MENU", layout.Control(LaboratoryAction.Back), layout.Scale);
+        if (layout.MaximumScroll > 0)
+        {
+            double track = clip.Height;
+            double thumb = Math.Max(18 * layout.Scale, track * track / (track + layout.MaximumScroll));
+            double y = clip.Y + (track - thumb) * layout.Scroll / layout.MaximumScroll;
+            renderer.Rectangle((float)(layout.SidebarWidth - 5 * layout.Scale), (float)y, (float)(2 * layout.Scale), (float)thumb, MainMenuStyle.Border);
         }
         renderer.End();
     }
 
-    private static void Text(PixelMenuRenderer renderer, string value, float center, float top, float availableWidth, int maximumPixel)
+    private static void Card(PixelMenuRenderer renderer, LaboratoryBounds bounds, bool selected = false, bool enabled = true)
     {
-        int pixel = Math.Max(1, Math.Min(maximumPixel, (int)(availableWidth / Math.Max(1, value.Length * LegacyBitmapFont.Advance))));
-        renderer.CenteredText(value, center, top, pixel, MainMenuStyle.Text);
+        renderer.Rectangle((float)bounds.X + 2, (float)bounds.Y + 2, (float)bounds.Width, (float)bounds.Height, MainMenuStyle.Shadow);
+        renderer.Rectangle((float)bounds.X, (float)bounds.Y, (float)bounds.Width, (float)bounds.Height, enabled ? MainMenuStyle.Button : Background);
+        renderer.Border((float)bounds.X, (float)bounds.Y, (float)bounds.Width, (float)bounds.Height, 1,
+            selected ? MainMenuStyle.HighlightedBorder : MainMenuStyle.Border);
+    }
+
+    private static void Label(PixelMenuRenderer renderer, string text, LaboratoryBounds bounds, double pixel, Color4? color = null, bool centered = false)
+    {
+        double actual = Math.Min(pixel, Math.Max(1, Math.Floor((bounds.Width - 8) / Math.Max(1, text.Length * LegacyBitmapFont.Advance))));
+        double center = centered ? bounds.X + bounds.Width / 2 : bounds.X + 6 + (text.Length * LegacyBitmapFont.Advance - 1) * actual / 2;
+        renderer.CenteredText(text, (float)center,
+            (float)(bounds.Y + (bounds.Height - LegacyBitmapFont.Height * actual) / 2), (float)actual, color ?? MainMenuStyle.Text);
+    }
+
+    private static void Line(PixelMenuRenderer renderer, string text, double center, double top, double width, double pixel) =>
+        Label(renderer, text, new(center - width / 2, top, width, 16 * pixel), pixel, centered: true);
+
+    private static void Lines(PixelMenuRenderer renderer, string text, LaboratoryBounds bounds, double pixel, bool centered = false)
+    {
+        int columns = Math.Max(1, (int)((bounds.Width - 12) / (LegacyBitmapFont.Advance * pixel)));
+        int row = 0;
+        foreach (var paragraph in text.Split('\n'))
+        {
+            for (int start = 0; start < paragraph.Length && (row + 1) * 10 * pixel <= bounds.Height; start += columns)
+            {
+                string part = paragraph.Substring(start, Math.Min(columns, paragraph.Length - start));
+                double center = centered ? bounds.X + bounds.Width / 2 : bounds.X + 6 + (part.Length * LegacyBitmapFont.Advance - 1) * pixel / 2;
+                renderer.CenteredText(part, (float)center, (float)(bounds.Y + row++ * 10 * pixel), (float)pixel, MainMenuStyle.Text);
+            }
+        }
     }
 }

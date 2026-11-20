@@ -1,96 +1,115 @@
-# World Generation Laboratory
+# Shared World Generation Interface
 
-**Status:** LAB-GRID-01 implemented, pending manual visual validation, independent audit and owner acceptance.
-**Working branch:** `world-grid`
-**Accepted engine baseline:** `v0.0.31`, `4f0049dba50f68b426c99bb7bafb749648c16d42`.
+**Status:** LAB-GRID-02 implemented, pending manual visual verification, independent audit and owner acceptance.
+**Branch:** `world-grid`.
+**Baseline:** `v0.0.32`, `db1900966bf49f22aa1c91131ef3cb4d2519d2d8`.
+**Delivery:** `v0.0.33`.
 
-The owner explicitly authorized this first visual integration. It is independent
-of the mathematical WG-00 roadmap: D01–D11, WG-00-A/B/C and WG-CORE remain
-unchanged. WG-00-D/E, other geographic layers, WorldState and saves are excluded.
-See the [LAB-GRID-01 delivery roadmap](roadmap.md).
+LAB-GRID-01 was delivered but not visually accepted. LAB-GRID-02 is the
+owner-authorized corrective redesign, based on the supplied second reference
+image: left configuration/stage/information sidebar and a large map on the right.
+The owner's latest clarification retains Evolve's existing blue colors; the
+white palette in the reference is not adopted. No new UI framework or font.
+This is independent of WG-00-D/E. Accepted WG-CORE and WG-00-A/B/C remain unchanged.
 
-## Navigation and controls
+## Shared screens and controls
 
-LAB uses the existing EvolveWindow and original bitmap font. VOLVER or Escape
-returns to the menu; the temporary session remains available on reopening.
-INICIAR and OPCIONES retain their unavailable behavior. SALIR/native close use
-the existing window lifecycle.
+INICIAR opens world-creation configuration; LAB opens manual generation.
+Both use the same sidebar, dropdowns, configuration, camera, renderer, cell card
+and session model inside the existing EvolveWindow. There is no second window.
+OPCIONES retains its notice and SALIR retains native shutdown.
 
-- Click TAMANO / TIPO to cycle the real MapSize / WorldType enums; S / T do the
-  same outside seed editing.
-- Click SEED to edit a signed 64-bit decimal integer. Backspace removes one
-  character, Delete clears it. ASCII digits and a leading + or - are supported.
-  Empty, incomplete or overflowing values cannot create a session.
-- CREAR SESION / N (or Enter while editing seed) creates only the context.
-- GRID: RUNNEXT / G invokes only RunNext while Grid is Pending or Failed.
-  The control is disabled after completion.
-- Wheel zoom anchors at the pointer; right drag or arrow keys pan. AJUSTAR / F
-  restores the initial fit. Resize refits an untouched camera and preserves a
-  camera the user has moved.
-- Click a cell to inspect CellId, column, row and geographic center. Yellow marks
-  selection, blue its engine neighbors, including opposite-edge seam neighbors.
+The sidebar contains world type, map size, editable seed with R randomization,
+view selection, primary action, configuration/fit controls, actual stage status,
+all eight canonical stages, cell information and a pinned back action.
+It scrolls with the wheel when the pointer is over it; back remains visible.
+The right canvas consumes remaining space and shows useful instructions until
+published Grid data exists. The camera scales uniformly, never stretching hexes
+to the canvas aspect ratio. DPI scaling uses framebuffer/client ratios.
 
-Changing metadata discards visible data and selection; create a fresh request
-and context. Focus loss, pointer exit and client/framebuffer resizing cancel
-pending mouse actions.
+- Open dropdowns with the mouse; select an option with the mouse or Up/Down and
+  Enter. Escape closes a popup/edit before returning to the menu. Scrolling,
+  focus loss and resizing close popups and cancel pending presses.
+- Sizes/types come from MapSize and WorldType, without duplicate catalogs.
+- Click the seed field, use digits and a leading + or -, Backspace or Delete.
+  Empty, incomplete and overflowing values cannot create a request.
+- R explicitly chooses a signed 64-bit seed using framework cryptographic bytes;
+  this UI action does not consume deterministic engine stage streams.
+- In LAB, CREAR SESION (N or Enter in seed editing) creates a context only.
+  Click the next available stage, or press G, to invoke RunNext once.
+- In INICIAR, CREAR MUNDO creates the context and advances implemented
+  capabilities in canonical order, stopping at the first unavailable stage or
+  failure. Currently only Grid runs. The result is explicitly a partial map,
+  not a playable world. No FinalizeWorld, State or save action occurs.
+- CONFIGURACION clears the partial session/map but preserves editable settings.
+  SALIR AL MENU or Escape returns to the menu. Reopening the same mode keeps
+  its temporary inspection state; switching LAB/INICIAR clears the old context
+  and shares the selected configuration.
+- A completed Grid stage or Grid view selects real published descriptor data.
+  Other views cannot be selected until implemented. Pending/unavailable stages
+  never display placeholder geographic results.
+- Wheel over the map zooms at the pointer; right drag/arrows pan; AJUSTAR/F fits.
+  Click a hex for CellId, column, row and geographic coordinates. Selection is
+  yellow and actual engine neighbors blue, including opposite-edge seam IDs.
 
-## Engine boundary and unavailable stages
+## Configuration, session and presentation boundaries
 
-LaboratorySession constructs existing WorldGenerationSettings and
-GenerationRequest, calls CreateGeneration, then RunNext. Grid status comes from
-Context.GetProgress, not a second progress table. Completed output is read as
-one LayerData<HexGridDescriptor>, checked against the immutable request and
-converted using ToGridData. No direct Grid execution bypasses orchestration.
+`WorldConfiguration` owns the only editable size/type/seed values and constructs
+existing WorldGenerationSettings/GenerationRequest after invariant validation.
+Its changes discard the session rather than modifying immutable engine metadata.
 
-The registry requires all eight canonical stages. It receives the real
-HexGridLayer and seven explicit unavailable-stage capability guards. A guard
-throws NotSupportedException and never produces fake candidate data. The UI
-prevents all forward calls beyond Grid, so guards are not executed in the
-exposed workflow. Remaining engine slots stay Pending and the screen labels
-01–07 unavailable. No RunAll, arbitrary-stage runner, finalizer or rebuilder is
-exposed by the Laboratory.
+`LaboratorySession` shares both modes, discovers implemented executors from one
+capability inventory (currently HexGridLayer only), and builds the existing
+complete eight-stage registry with unavailable-stage guards elsewhere.
+Guards throw NotSupportedException and produce no fake candidates. CanAdvance
+checks the context's next eligible stage against real capabilities. Manual and
+automatic entry modes share RunNextStage, which calls the existing RunNext.
+To integrate a future real executor, extend the available inventory; automatic
+progression does not hardcode a successful Grid-only stopping point.
+A visualization for any newly implemented layer still requires real display code.
 
-Game references the existing world-generation engine project, with definitions
-available transitively. Engine remains UI/OpenTK independent.
+`StageStatus` projects Pending/Running/Completed/Failed/Invalidated from
+GenerationProgress for implemented stages, and Unavailable for missing
+capabilities. The unavailable engine slots remain Pending; they are never marked
+Completed to satisfy the UI. Before a context exists, available Grid is shown
+as pending configuration, not executed. The notice explains the missing session.
+There is no second mutable progress table.
 
-## Rendering and selection responsibilities
+`LaboratoryUiState` owns only dropdown/edit/scroll state. `LaboratoryLayout`
+supplies identical drawing/hit bounds for both modes, scaled in framebuffer
+space. Short windows intentionally scroll the sidebar instead of clipping
+unreachable controls or overlapping the map. The pinned back action remains
+outside the scrolling clip. `LaboratoryPresentation` draws compact labels,
+dropdowns, thin-bordered blue cards and the empty-map state using existing
+bitmap glyphs and PixelMenuRenderer.
 
-- LaboratoryLayout supplies shared framebuffer control/hit bounds, DPI conversion
-  and a responsive 2:1 letterboxed viewport. A uniform camera scale preserves
-  regular hexagons rather than stretching the grid to fill the frame.
-- GridVisualGeometry queries FlatHexGeometry.Center for cell centers. Six unit
-  vectors at 60-degree intervals form presentation-only flat-top outlines.
-  Rendering and polygon hit testing share those outlines; Game duplicates no
-  axial inverse, neighbor topology or geographic calculation.
-- GridCamera handles fit, pan, zoom and screen/world conversion without OpenGL.
-- HexGridRenderer uploads a static position VBO once per grid replacement.
-  Normal frames update camera uniforms and draw lines; a small overlay changes
-  only when selection changes. PixelMenuRenderer supplies its existing shader
-  and bitmap text. Its default identity transform preserves menu rendering.
-- Click picking scans nearest engine centers, then rejects points outside the
-  shared polygon. Ties select the first canonical ID. Identities, neighbors and
-  geographic information come from HexGridData.
+`GridCamera`, `GridVisualGeometry` and `HexGridRenderer` are reused unchanged.
+Centers, topology, IDs and geographic queries still come from accepted engine
+APIs; rendering/picking share the same presentation outline. Static mesh buffers
+upload once per grid replacement, and only a small overlay changes with selection.
+The same shader uses identity transforms for the main menu and camera transforms
+for the grid. One canonical strip is drawn; seam neighbors retain original IDs.
+There are no duplicate padding cells or infinite repeated-image scrolling.
 
-Only one canonical strip is rendered. No padding/repeated cells or new IDs
-exist. Seam continuity is logical and visible through opposite-edge neighbor
-highlighting; panning does not implement repeated periodic images or infinite
-seamless scrolling.
+## Rendering limits retained from LAB-GRID-01
 
-At Large, the static buffer contains 960,000 position vertices / 1,920,000 floats:
-7,680,000 GPU position bytes plus a temporary CPU upload array of that size.
-Shared edges are intentionally drawn twice. Selection plus six neighbors needs
-at most 672 position bytes. These are calculated buffer sizes, not measured
-driver totals. CPU mesh construction is O(cell count) on grid replacement;
-selection is O(cell count) on click. The complete mesh is not rebuilt per frame.
+For Large, static positions use 960,000 vertices / 1,920,000 floats =
+7,680,000 GPU position bytes, plus a temporary CPU upload array of that size.
+Selection plus six neighbors needs at most 672 position bytes. Shared edges are
+drawn twice. These are calculated buffer sizes, not measured driver totals.
+Construction is O(cell count) per new grid; picking is O(cell count) per click.
+Generation and first mesh upload run on the UI thread; future expensive
+executors may need a separately designed scheduling/cancellation policy.
 
-No framerate, GPU/driver limit, selection latency or query-throughput budget has
-been measured or approved. Edge deduplication, culling and faster picking are
-future rendering decisions requiring evidence. Pending WG-00-D/E performance
-work is not implemented or accepted here.
+No FPS, GPU memory/latency or throughput budget is approved. Culling, edge
+deduplication and faster picking remain evidence-driven rendering decisions.
+Neighbor/distance query throughput remains pending WG-00-D; no WG-00-D/E work
+is delivered here. The Auditor's previously recorded native .NET 10 limitation
+is not resolved by these separate developer executions.
 
-## Build and headless checks
+## Build and automated evidence
 
-Run from the repository root with .NET 10:
+From the repository root with .NET 10:
 
 ```powershell
 dotnet run --project .\tests\laboratory\Evolve.Laboratory.Checks.csproj --configuration Release
@@ -101,48 +120,54 @@ dotnet build .\game\Evolve.Game.csproj --configuration Release
 git diff --check
 ```
 
-Developer evidence: 11/11 Laboratory and 16/16 menu checks passed. The complete
-Grid suite passed A/FIX01/B checks and 10/10 C integration checks, including
-2,320,000 retained geometry/grid-API BFS assertions. Both Release builds reported
-zero warnings/errors. These are developer checks, not independent audit or
-visual acceptance. The Auditor's previously recorded native .NET 10 execution
-limitation is not resolved by this separate developer execution.
+Developer results: 18/18 shared-screen checks; 16/16 existing menu checks;
+complete Grid A/FIX01/B/C suite including 10/10 integration checks, all 145,000
+cells and 2,320,000 retained BFS assertions. Engine and Game Release builds
+reported zero warnings/errors. Compiled display version matched root VERSION.
+The first updated DPI test used mixed logical/physical units; its setup was
+corrected to construct physical dimensions from logical client size and scale,
+then the complete 18-check suite passed. No native visual approval is claimed.
 
-The Laboratory check executable links actual production session/layout/camera/
-visual-geometry sources and references Engine. It loads no OpenTK and creates
-no window or GPU context. Native events, runtime GLSL compilation, pixels, GPU
-performance and actual graphics-resource cleanup remain manual checks.
+Checks link actual production configuration/session/layout/UI-state/camera/
+outline sources and menu-button identities, with no OpenTK loaded. Test-only
+later-stage executors verify capability discovery and fault/retry handling;
+none are production geography. Retired CORE test files are not claimed present
+or rerun; current public-core behavior is exercised by Grid and UI integration.
+The main-menu interaction model retains historical notice paths; the window
+calls tested OpenFromMenu routing for LAB/INICIAR before those paths.
 
-## Requested manual visual validation
+## Requested manual visual verification
 
 ```powershell
 dotnet run --project .\game\Evolve.Game.csproj --configuration Release --no-build
 $LASTEXITCODE
 ```
 
-Record OS, GPU/driver, DPI, viewport size, responsiveness/framerate, screenshots
-and pass/fail evidence. All checks below remain **pending**, not approved:
+Record screenshots, client/framebuffer sizes, DPI, OS/GPU/driver and pass/fail
+observations. All following checks are pending owner/Auditor review:
 
-1. Compare the unchanged menu and enter LAB by mouse/keyboard. INICIAR must
-   remain unavailable; no second window may open.
-2. Generate Small, Medium and Large using all world types and positive/negative
-   seeds; reject invalid/overflow seeds. Creating a session leaves Grid Pending
-   and no mesh; RunNext publishes its size and Completed state. Further forward
-   attempts must never run Tectonics.
-3. Inspect flat-top regular outlines, neutral background, visible lines and fit.
-   Wheel zoom must preserve its cursor anchor; right drag/arrows pan; F restores
-   fit. Record Large-grid responsiveness.
-4. Select center, polar and seam cells after zoom/pan. Compare CellId/column/row/
-   geographic information with engine queries. Opposite-edge blue neighbors
-   must retain valid IDs; outside clicks clear selection.
-5. Resize through 400×300, 800×600, 1280×720 and maximized/high-DPI displays.
-   Confirm controls, hit detection and hex shapes remain consistent. At small
-   sizes a full-grid fit is dense; zoom to inspect individual cells.
-6. Minimize/restore, change focus during a press/drag, leave/re-enter the window.
-   No delayed click/drag may fire; the temporary session must survive.
-7. Navigate LAB → menu → LAB. Close via SALIR, X and Alt+F4 in separate runs.
-   Confirm exit code zero/no lingering process. Use a graphics/debug tool to
-   verify resource deletion before claiming GPU cleanup approval.
+1. Compare structure with the supplied image: compact left sidebar, cards and
+   left-aligned controls, large right map, and retained blue palette. Confirm
+   the old three-row full-width toolbar is gone in both LAB and INICIAR.
+2. Test 400×300, 800×600, 1280×720, maximized, and 100%/125%/200% DPI.
+   Scroll to every stage and the information card. Check pinned back navigation,
+   popup placement, wheel routing, keyboard popup selection, labels and hits.
+3. INICIAR: change type/size, edit invalid/overflow/signed seeds, randomize,
+   then CREAR MUNDO. Grid must complete, Tectonics remain unavailable/Pending
+   internally, and a partial-map notice appear. CONFIGURACION must allow another
+   request. No playable-world success or active-state transition may occur.
+4. LAB: create a session and observe pending Grid with empty-map guidance.
+   Click Grid/G to advance once, inspect its completed view and verify all seven
+   remaining stages are unavailable. Do not treat unavailable as completed.
+5. For all three sizes and four world types, inspect regular flat-top outlines,
+   fit, zoom anchor, right-drag pan, geographic selection and seam neighbors
+   after transforms. Record Large-grid responsiveness without inventing budgets.
+6. Minimize/restore, change focus while editing/clicking/dragging, move across
+   DPI displays and return LAB/INICIAR → menu → either mode. No stale action or
+   popup may survive cancellation.
+7. Close with SALIR, X and Alt+F4 in separate runs. Confirm exit code zero,
+   no lingering process and graphics resource deletion with appropriate tooling.
 
-Manual visual evidence, independent audit and formal owner acceptance remain
-required. Further visual/geographic development needs separate authorization.
+Runtime GLSL compilation, exact pixels, native-event delivery, GPU performance
+and cleanup remain unverified by headless checks. Independent audit and formal
+owner acceptance are required before LAB-GRID-02 is accepted.

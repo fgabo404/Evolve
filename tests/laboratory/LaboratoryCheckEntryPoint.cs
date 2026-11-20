@@ -18,15 +18,22 @@ using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
     ("camera transforms preserve scale, anchors and navigation", Camera),
     ("static outlines retain approved centers and regular shape", Outlines),
     ("picking centers, boundaries and seam IDs is consistent", Picking),
-    ("Laboratory checks remain graphics independent", Headless)
+    ("Laboratory checks remain graphics independent", Headless),
+    ("INICIAR and LAB use the production navigation mapping", CreationNavigation),
+    ("automatic creation stops before unavailable Tectonics", AutomaticCreation),
+    ("automatic capability discovery extends without fake completion", CapabilityDiscovery),
+    ("failure projection and manual retry preserve partial Grid", AutomaticFailure),
+    ("explicit seed randomization creates valid requests", Randomization),
+    ("dropdown navigation and scrolling agree with hit detection", Dropdowns),
+    ("completed views and inspection are shared across entry modes", SharedInspection)
 ];
 int failures = 0;
 foreach (var (name, check) in checks)
 {
-    try { check(); Console.WriteLine($"PASS LAB-GRID-01 {name}"); }
-    catch (Exception exception) { failures++; Console.Error.WriteLine($"FAIL LAB-GRID-01 {name}: {exception}"); }
+    try { check(); Console.WriteLine($"PASS LAB-GRID-02 {name}"); }
+    catch (Exception exception) { failures++; Console.Error.WriteLine($"FAIL LAB-GRID-02 {name}: {exception}"); }
 }
-Console.WriteLine($"LAB-GRID-01: {checks.Length - failures}/{checks.Length} checks passed.");
+Console.WriteLine($"LAB-GRID-02: {checks.Length - failures}/{checks.Length} checks passed.");
 return failures == 0 ? 0 : 1;
 
 // These tests call actual production methods rather than a test-only navigation or generation pipeline.
@@ -131,19 +138,36 @@ static void Selection()
 
 static void Layout()
 {
-    foreach (var (width, height) in new[] { (400, 300), (800, 600), (1280, 720), (1920, 1080) })
+    foreach (var (clientWidth, clientHeight) in new[] { (400, 300), (800, 600), (1280, 720), (1920, 1080) })
+    foreach (double scale in new[] { 1d, 1.25d, 2d })
     {
-        var layout = new LaboratoryLayout(width, height);
-        Require(Math.Abs(layout.Viewport.Width / layout.Viewport.Height - 2) < 1e-10 &&
-            layout.Viewport.Y >= 180 && layout.Viewport.Y + layout.Viewport.Height <= height - 55, "Viewport stretches or overlaps controls");
-        foreach (var action in Enum.GetValues<LaboratoryAction>())
+        int width = (int)(clientWidth * scale), height = (int)(clientHeight * scale);
+        var layout = new LaboratoryLayout(width, height, 0, scale);
+        Require(layout.Viewport.X > layout.SidebarWidth && layout.Viewport.Width > 0 &&
+            layout.Viewport.Y >= 0 && layout.Viewport.Y + layout.Viewport.Height <= height, "Map/sidebar overlap");
+        foreach (var action in LaboratoryLayout.Controls)
         {
             var bounds = layout.Control(action);
             double x = bounds.X + bounds.Width / 2, y = bounds.Y + bounds.Height / 2;
-            Require(layout.HitTest(x, y) == action && !layout.Viewport.Contains(x, y), "Layout/hit mismatch");
-            var physical = LaboratoryLayout.ToFramebuffer(x / 2, y / 2, width / 2, height / 2, width, height);
-            Require(layout.HitTest(physical.X, physical.Y) == action, "DPI mismatch");
+            if (!layout.SidebarClip.Contains(x, y) && action != LaboratoryAction.Back) continue;
+            Require(layout.HitTest(x, y) == new LaboratoryHit(action) && !layout.Viewport.Contains(x, y), "Control hit mismatch");
+            var physical = LaboratoryLayout.ToFramebuffer(x / scale, y / scale, clientWidth, clientHeight, width, height);
+            Require(layout.HitTest(physical.X, physical.Y) == new LaboratoryHit(action), "High-DPI hit mismatch");
         }
+        foreach (var stage in Enum.GetValues<GenerationStage>())
+        {
+            var original = layout.Stage(stage);
+            var scrolled = new LaboratoryLayout(width, height,
+                original.Y - layout.SidebarClip.Y - layout.SidebarClip.Height / 2 + original.Height / 2, scale);
+            var bounds = scrolled.Stage(stage);
+            double x = bounds.X + bounds.Width / 2, y = bounds.Y + bounds.Height / 2;
+            Require(scrolled.SidebarClip.Contains(x, y) &&
+                scrolled.HitTest(x, y) == new LaboratoryHit(LaboratoryAction.Stage, (int)stage), "Stage unreachable after scroll");
+        }
+        var bottom = new LaboratoryLayout(width, height, double.MaxValue, scale);
+        var info = bottom.Card(610, 106);
+        Require(info.Y >= bottom.SidebarClip.Y &&
+            info.Y + info.Height <= bottom.SidebarClip.Y + bottom.SidebarClip.Height, "Information card unreachable");
     }
     Require(LaboratoryLayout.ToFramebuffer(10, 10, 0, 0, 0, 0) == (0d, 0d), "Minimized client division by zero");
 }
@@ -233,4 +257,149 @@ static void Expect<T>(Action action) where T : Exception
 static void Require(bool condition, string message)
 {
     if (!condition) throw new InvalidOperationException(message);
+}
+
+static void CreationNavigation()
+{
+    var session = new LaboratorySession();
+    Require(!session.OpenFromMenu(MainMenuButton.Options) && !session.OpenFromMenu(MainMenuButton.Exit) &&
+        !session.OpenFromMenu(null) && !session.IsOpen, "Unrelated action opened generation");
+    Require(session.OpenFromMenu(MainMenuButton.Laboratory) && session.Mode == GenerationScreenMode.Laboratory, "LAB mapping");
+    session.CreateSession(); session.RunNextStage();
+    var previous = session.Context;
+    session.ReturnToMenu();
+    Require(session.OpenFromMenu(MainMenuButton.Start) && session.Mode == GenerationScreenMode.WorldCreation &&
+        session.Context is null && session.Grid is null, "INICIAR did not open fresh configuration");
+    Require(previous!.GetProgress().GetStatus(GenerationStage.Grid) == GenerationStageStatus.Completed, "Switching modes mutated engine state");
+}
+
+static void AutomaticCreation()
+{
+    var session = new LaboratorySession();
+    session.Open(GenerationScreenMode.WorldCreation);
+    foreach (var size in Enum.GetValues<MapSize>())
+    foreach (var type in Enum.GetValues<WorldType>())
+    {
+        session.SetSize(size); session.SetWorldType(type); session.SetSeedText("-12345");
+        Require(session.CreateWorld() && session.Grid is not null &&
+            session.GridStatus == GenerationStageStatus.Completed, "Automatic Grid failed");
+        Require(session.Context!.GetProgress().NextStage == GenerationStage.Tectonics && !session.CanAdvance, "Automatic flow advanced past capability");
+        Require(session.Notice.Contains("PARCIAL") && session.Notice.Contains("NO ES UNA PARTIDA"), "Partial-world notice missing");
+        Require(session.StageStatus(GenerationStage.Grid) == "COMPLETADA", "Completed projection");
+        foreach (var stage in Enum.GetValues<GenerationStage>().Skip(1))
+            Require(!session.IsImplemented(stage) && session.StageStatus(stage) == "NO DISPONIBLE" &&
+                session.Context.GetProgress().GetStatus(stage) == GenerationStageStatus.Pending &&
+                session.Context.GetLayerData(stage) is null, "Unavailable stage reported fake completion");
+        session.ClearSession();
+        Require(session.Grid is null && session.Context is null && session.Size == size && session.WorldType == type &&
+            session.SeedText == "-12345", "Return to configuration discarded selected settings");
+    }
+}
+
+static void CapabilityDiscovery()
+{
+    int calls = 0;
+    var session = new LaboratorySession([new HexGridLayer(), new TestLayer(GenerationStage.Tectonics, inputs =>
+    {
+        calls++;
+        Require(inputs.GetLayerData(GenerationStage.Grid) is LayerData<HexGridDescriptor>, "Discovered layer skipped Grid");
+        return LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Tectonics, [1]));
+    })]);
+    Require(session.CreateWorld() && calls == 1 &&
+        session.Context!.GetProgress().LastCompletedStage == GenerationStage.Tectonics &&
+        session.Context.GetProgress().NextStage == GenerationStage.Landmasses, "Automatic flow is hardcoded to Grid");
+    Require(session.Grid is not null && !session.CanAdvance && session.StageStatus(GenerationStage.Landmasses) == "NO DISPONIBLE", "Discovery fabricated later data");
+}
+
+static void AutomaticFailure()
+{
+    foreach (bool invalidCandidate in new[] { false, true })
+    {
+        bool fail = true;
+        var session = new LaboratorySession([new HexGridLayer(), new TestLayer(GenerationStage.Tectonics, _ =>
+            fail ? (invalidCandidate
+                ? LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Climate, [999]))
+                : LayerExecutionResult.Failed("Injected failure."))
+                : LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Tectonics, [1])))]);
+        Require(!session.CreateWorld() && session.Grid is not null &&
+            session.StageStatus(GenerationStage.Tectonics) == "FALLIDA", "Failure not displayed from progress");
+        var gridData = session.Context!.GetLayerData(GenerationStage.Grid);
+        Require(session.Context.GetLayerData(GenerationStage.Tectonics) is null &&
+            session.Context.GetProgress().GetStatus(GenerationStage.Landmasses) == GenerationStageStatus.Pending, "Partial candidate escaped");
+        fail = false;
+        Require(session.RunNextStage() && session.StageStatus(GenerationStage.Tectonics) == "COMPLETADA" &&
+            ReferenceEquals(gridData, session.Context.GetLayerData(GenerationStage.Grid)), "Retry changed earlier Grid");
+    }
+}
+
+static void Randomization()
+{
+    var session = new LaboratorySession();
+    session.CreateWorld();
+    for (int index = 0; index < 20; index++)
+    {
+        session.RandomizeSeed();
+        Require(long.TryParse(session.SeedText, out long seed) && session.Context is null && session.Grid is null &&
+            session.CreateSession() && session.Context!.Request.Seed == seed, "Randomization bypassed validation or retained old world");
+    }
+    Expect<ArgumentOutOfRangeException>(() => session.SetSize((MapSize)99));
+    Expect<ArgumentOutOfRangeException>(() => session.SetWorldType((WorldType)99));
+    Expect<ArgumentNullException>(() => session.SetSeedText(null!));
+}
+
+static void Dropdowns()
+{
+    var ui = new LaboratoryUiState();
+    foreach (var action in new[] { LaboratoryAction.Size, LaboratoryAction.WorldType, LaboratoryAction.View })
+    {
+        ui.Toggle(action);
+        Require(ui.Dropdown == action && ui.OptionCount > 0, "Dropdown did not open");
+        ui.MoveOption(-1);
+        Require(ui.HighlightedOption == ui.OptionCount - 1, "Dropdown navigation did not wrap");
+        ui.MoveOption(1);
+        Require(ui.HighlightedOption == 0, "Dropdown forward wrap");
+        var layout = new LaboratoryLayout(400, 300);
+        for (int index = 0; index < ui.OptionCount; index++)
+        {
+            var option = layout.DropdownOption(action, index, ui.OptionCount);
+            double x = option.X + option.Width / 2, y = option.Y + option.Height / 2;
+            Require(layout.SidebarClip.Contains(x, y) && ui.HitTest(layout, x, y) ==
+                new LaboratoryHit(LaboratoryAction.Option, index), "Popup clipped or inconsistent hit target");
+            ui.HoverOption(index);
+            Require(ui.HighlightedOption == index, "Popup hover mismatch");
+        }
+        ui.CloseTransient();
+    }
+    var original = new LaboratoryLayout(400, 300);
+    ui.Toggle(LaboratoryAction.WorldType);
+    ui.ScrollBy(99999, original);
+    Require(ui.Scroll == original.MaximumScroll && ui.Dropdown is null, "Scroll not clamped or popup stale");
+    ui.Reset();
+    Require(ui.Scroll == 0 && !ui.EditingSeed && ui.Dropdown is null, "Navigation reset retained stale editing state");
+}
+
+static void SharedInspection()
+{
+    foreach (var mode in Enum.GetValues<GenerationScreenMode>())
+    {
+        var session = new LaboratorySession();
+        session.Open(mode);
+        Require(!session.SelectView(GenerationStage.Grid), "Pending data displayed as generated");
+        if (mode == GenerationScreenMode.WorldCreation) session.CreateWorld();
+        else { session.CreateSession(); session.RunNextStage(); }
+        Require(session.SelectView(GenerationStage.Grid) && !session.SelectView(GenerationStage.Climate), "Unavailable view was displayed");
+        session.Select(19999);
+        Require(session.SelectedView == GenerationStage.Grid && session.Grid!.GetOffset(session.SelectedCell!.Value) ==
+            new HexOffset(199, 99), "Entry modes have divergent inspection");
+        var data = session.Context!.GetLayerData(GenerationStage.Grid);
+        session.SelectView(GenerationStage.Grid);
+        Require(ReferenceEquals(data, session.Context.GetLayerData(GenerationStage.Grid)), "Inspection regenerated a layer");
+    }
+}
+
+// Test-only execution proves capability discovery and failures without adding downstream production geography.
+internal sealed class TestLayer(GenerationStage stage, Func<GenerationLayerInputs, LayerExecutionResult> execute) : IWorldGenerationLayer
+{
+    public GenerationStage Stage => stage;
+    public LayerExecutionResult Execute(GenerationLayerInputs inputs) => execute(inputs);
 }

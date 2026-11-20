@@ -16,6 +16,8 @@ No implementa reglas ni cálculos de simulación.
   shared OpenGL shader/batch and local 5x7 font data used by menu and Laboratory presentation.
 - `laboratory/` contains the independently authorized LAB-GRID-01 session,
   layout, camera, visual outlines, static line renderer and presentation.
+  LAB-GRID-02 adds shared world configuration and transient dropdown/scroll
+  state for both manual LAB and automatic INICIAR.
   Its [readme](laboratory/readme.md) and [roadmap](laboratory/roadmap.md) document
   engine boundaries, controls and pending visual acceptance.
 - `readme.md` and `audit.md` stay in the root of `game/`.
@@ -170,8 +172,8 @@ colors, typography, dimensions, title, version position and footer are unchanged
 - Focus loss, pointer exit, client resize and framebuffer resize cancel pending
   presses. Releasing an old input after cancellation cannot activate a button.
 - At UI-03 delivery, `INICIAR`, `LAB` and `OPCIONES` displayed unavailable
-  notices. LAB-GRID-01 now routes LAB to the Laboratory before the legacy notice
-  handler; INICIAR/OPCIONES retain their existing notices.
+  notices. LAB-GRID-02 routes LAB/INICIAR to the shared generation interface
+  before the legacy notice handler; OPCIONES retains its notice.
 - `SALIR` requests the existing native close lifecycle. No other screens,
   simulation or settings functionality were introduced by UI-03.
 
@@ -222,6 +224,9 @@ closure does not imply that those checks have been executed.
 
 ## LAB-GRID-01 — Authorized Grid visualization
 
+Historical delivery record: this implementation was not visually accepted.
+Its initial layout is superseded by the corrective LAB-GRID-02 delivery below.
+
 The owner explicitly authorized this visual delivery on `world-grid`, based on
 accepted engine version `v0.0.31`. It has its own
 [Laboratory roadmap](laboratory/roadmap.md), independent of mathematical WG-00.
@@ -254,5 +259,36 @@ Developer checks passed (11/11 Laboratory, 16/16 menu, complete A/B/C/FIX01 Grid
 suite and clean Release builds). This does not approve the visual result:
 Small/Medium/Large, zoom/pan, transformed selection, high DPI/resizing,
 minimize/restore, LAB → menu navigation and actual GPU resource cleanup require
-the [requested manual validation](laboratory/readme.md#requested-manual-visual-validation).
-LAB-GRID-01 remains pending independent audit and formal owner acceptance.
+the [requested manual validation](laboratory/readme.md#requested-manual-visual-verification).
+LAB-GRID-01 has no visual acceptance; LAB-GRID-02 is the corrective current delivery.
+
+## LAB-GRID-02 — Shared configuration and partial world creation
+
+The owner supplied a sidebar/map reference image and clarified that Evolve's
+original blue colors remain appropriate. The shared interface replaces the old
+three-row toolbar with compact left configuration controls, dropdowns, seed
+editing/randomization, all eight canonical stages and a cell-information card.
+The map occupies the remaining right-hand space and preserves uniform scale.
+The sidebar scrolls at short heights; back navigation stays pinned.
+
+INICIAR now opens world-creation configuration. CREAR MUNDO creates a real
+request/context and calls the same RunNext advancement path used by manual LAB,
+stopping at the first unavailable capability or failure. Currently Grid alone
+completes; Tectonics is unavailable. The result is clearly marked partial,
+without finalization, active State, saves or a playable-world claim.
+CONFIGURACION permits a new request; both modes can return to the menu.
+
+WorldConfiguration is the sole editable settings/seed model. LaboratorySession
+owns capability-aware engine interaction; LaboratoryUiState owns dropdown/edit/
+scroll state only. The main window calls tested OpenFromMenu routing for LAB and
+INICIAR before the legacy notice paths; menu appearance and OPCIONES/SALIR remain
+unchanged. Existing cached Grid rendering and engine algorithms are preserved.
+
+Developer evidence: 18/18 shared-screen checks, 16/16 menu checks, complete
+A/FIX01/B/C Grid suite including 10/10 integration checks and 2,320,000 BFS
+assertions; clean Engine and Game Release builds. Commands above still apply.
+The current visual/manual checklist is in
+[Laboratory documentation](laboratory/readme.md#requested-manual-visual-verification).
+LAB-GRID-02 is pending reference-image comparison, native size/DPI/input/GPU
+verification, independent audit and formal owner acceptance. WG-CORE, accepted
+WG-00-A/B/C and D01–D11 are unchanged; no WG-00-D/E work or merge is authorized.
