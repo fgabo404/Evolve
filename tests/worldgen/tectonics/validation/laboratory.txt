@@ -1,0 +1,19 @@
+PASS LAB-GRID-02-FIX01 navigation stays within the existing session model
+PASS LAB-GRID-02-FIX01 enum selectors cycle only approved values
+PASS LAB-GRID-02-FIX01 numeric seeds use signed 64-bit invariant validation
+PASS LAB-GRID-02-FIX01 only real Grid runs for every configuration
+PASS LAB-GRID-02-FIX01 metadata edits discard stale visible results
+PASS LAB-GRID-02-FIX01 selection uses valid engine identities
+PASS LAB-GRID-02-FIX01 responsive layout and high-DPI hit detection agree
+PASS LAB-GRID-02-FIX01 camera transforms preserve scale, anchors and navigation
+PASS LAB-GRID-02-FIX01 static outlines retain approved centers and regular shape
+PASS LAB-GRID-02-FIX01 picking centers, boundaries and seam IDs is consistent
+PASS LAB-GRID-02-FIX01 Laboratory checks remain graphics independent
+PASS LAB-GRID-02-FIX01 INICIAR stays unavailable without opening or generating
+PASS LAB-GRID-02-FIX01 LAB creates a pending context and advances only manually
+PASS LAB-GRID-02-FIX01 manual capabilities advance exactly once per explicit request
+PASS LAB-GRID-02-FIX01 failure projection and manual retry preserve partial Grid
+PASS LAB-GRID-02-FIX01 explicit seed randomization creates valid requests
+PASS LAB-GRID-02-FIX01 dropdown navigation and scrolling agree with hit detection
+PASS LAB-GRID-02-FIX01 completed views and inspection survive LAB reopening
+LAB-GRID-02-FIX01: 18/18 checks passed.

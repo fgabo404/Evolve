@@ -1,0 +1,102 @@
+[
+  {
+    "Seed": "0",
+    "Sample": "original"
+  },
+  {
+    "Seed": "1",
+    "Sample": "original"
+  },
+  {
+    "Seed": "-1",
+    "Sample": "original"
+  },
+  {
+    "Seed": "-9223372036854775808",
+    "Sample": "original"
+  },
+  {
+    "Seed": "9223372036854775807",
+    "Sample": "original"
+  },
+  {
+    "Seed": "-3400830380307605163",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "6271138625679541737",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-6193655624985058374",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-6538421267902645947",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-4608737424865336115",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-4923053767554875883",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "4517604358543604528",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-8084971969216702404",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "6187257447923776777",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "2760456123240563578",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "889631742930865887",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-8485039587547374355",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "543448805097523274",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-969310639158331791",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-3167645075397676302",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "1294751800611435470",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-3097366908752749037",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "4644407584288247349",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-5607929700858316891",
+    "Sample": "additional"
+  },
+  {
+    "Seed": "-7223462904550089253",
+    "Sample": "additional"
+  }
+]

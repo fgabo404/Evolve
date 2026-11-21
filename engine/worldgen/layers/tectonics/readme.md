@@ -1,10 +1,11 @@
 # Layer 01 — Tectonic Plates
 
-**Status:** WG-01-A implemented documentarily, submitted for independent audit
-and formal owner acceptance. No tectonic C# implementation exists yet.
+**Status:** WG-01-B implemented with owner-approved R, frozen algorithm
+tectonic-partition-r-v2 (revision 2). Submitted for independent audit and formal
+owner acceptance of B; profile approval is not acceptance of the increment.
 **Working branch:** `world-tectonics`.
-**Authorized baseline:** `v0.0.36`, `cdb00c3a6689d1e06fb25012b336b9a6a2da744d`.
-**Document delivery:** `v0.0.37`.
+**Delivery baseline:** `v0.0.37`, `63e968ff71dbbcaa61e1ebbba744e466e3a01332`.
+**Delivery:** `v0.0.38`.
 **Prerequisite:** formally closed Layer 00 — Hex Grid.
 
 ## 1. Responsibility and boundaries
@@ -16,8 +17,8 @@ ownership and kinematic information, not continents, oceanic crust assignments,
 elevation, physical stress simulation, State or Saves.
 
 The [contracts](contracts.md) specify the single immutable publication buffer,
-typed API, memory accounting and errors. Every named C# file/signature is a
-future implementation target; A creates no source files or algorithms.
+typed API, memory accounting and errors. The A design is retained below; the
+ownership-only B subset is now implemented as recorded in section 10.
 
 - Depend only on Engine, Grid and existing Definitions; no OpenTK, Laboratory,
   Landmasses, State or Saves dependencies.
@@ -181,11 +182,11 @@ boundary kinematics only and explicitly report influence unavailable, never
 fabricated zero fields. Ownership, plate records, boundaries and motion already
 give Layer 02/03 geological inputs without requiring a terrain generator.
 
-## 7. Parameter proposals and open decisions
+## 7. Historical A proposals and remaining C decisions
 
-Count 14, accepted Grid configuration, nonemptiness/connectivity and finite
-arithmetic are fixed. Values below are historical references or proposals,
-**not approved calibration**. Needed defaults require B/C review before use.
+This table preserves A's historical proposals. B now uses the exact frozen
+R constants in section 10/calibration.md; historical P0 values below are not
+current defaults. Motion/classification/influence parameters remain C decisions.
 
 | Parameter | Historical value / proposal | Effect and required evidence |
 | --- | --- | --- |
@@ -208,9 +209,10 @@ legacy values.
 
 ## 8. Planned independent validation matrix
 
-Every entry is **planned, not executed**. Future checks belong in
-tests/worldgen/tectonics/, call real production code and use only test-local
-downstream executors. Keep accepted Grid and applicable LAB/menu regressions.
+This is the original A validation matrix. The applicable B subset is now
+executed in tests/worldgen/tectonics/ as detailed in section 10 and the test
+readme; C/D entries remain planned. Tests call production code and use only
+test-local downstream executors. Keep accepted Grid and LAB/menu regressions.
 
 | ID / gate | Invariant | Independent oracle / adversarial evidence |
 | --- | --- | --- |
@@ -227,24 +229,48 @@ downstream executors. Keep accepted Grid and applicable LAB/menu regressions.
 | T11 / D | Memory/performance/dependencies | All presets/seeds; generation/query times, frontier peak, allocation/copies, optional spread scaling; environment/warmup/repeated batches, no invented thresholds; no UI/State/GPU dependencies. |
 | T12 / C,D | Real LAB integration/regressions | C authorization only; display completed real data and unavailable channels honestly; preserve Grid/menu, native input/DPI/GPU and retention observations; INICIAR stays unavailable. |
 
-A executes source/history/contract and document/link/scope review plus
-git diff --check only. No new test project, generator or benchmark exists.
-Builds and automated/GUI tests are not run for this documentation-only delivery;
-they cannot validate an unimplemented tectonic design. No independent acceptance
-or geological validation is claimed.
+Historically, A executed source/history/contract and document/link/scope review
+plus git diff --check only. It created no test project, generator or benchmark
+and ran no builds or automated/GUI tests for its documentation-only delivery.
+The B execution evidence is separate below. Neither delivery claims independent
+acceptance or geological validation from developer checks alone.
 
 ## 9. Gates and progression
 
 - **A:** these documents, contracts, compact roadmap and VERSION only; independent
   audit and explicit owner acceptance required before B.
-- **B:** separately approved profile/partition, ownership-only schema subset and
-  real CORE publication; no motion/UI placeholder.
+- **B:** approved R profile and Ownership-only CORE publication implemented;
+  independent audit and formal increment acceptance remain pending.
 - **C:** approved motions/boundaries and conditional measured influences; actual
   LAB view, B partition remains stable, absent features stay explicit.
 - **D:** complete correctness/performance evidence, independent audit and formal
   owner closure. Branch integration remains separately authorized.
 
-**Internal roadmap:** [roadmap.md](roadmap.md)  
+## 10. WG-01-B definitive R implementation
+
+The real TectonicPlatesLayer, TectonicData codec/view, frozen profile,
+TectonicPartitionGenerator and PeriodicTectonicNoise implement Ownership only.
+Coverage, metadata and connectivity are validated before publication by CORE.
+No motion, boundary/influence section, LAB integration or INICIAR change.
+
+The owner explicitly selected CAL01 R. Exact cost bits and constants are frozen
+in TectonicGenerationProfile: no experimental factory, legacy runtime cost
+interpolation or profile selector remains. Schema 1 is unchanged; partition
+revision 2 distinguishes R from P0 revision 1 and unsupported CAL01 tags.
+
+[calibration.md](calibration.md) preserves historical P0/CAL01 evidence and records
+the final constants, 15 complete production vectors, R results, measured phase/
+memory evidence and current OBS dispositions. Calibration OBS-03 is closed by
+owner profile approval and the frozen vectors; OBS-01 crust, OBS-02 motion
+policy and OBS-04 optional influences remain deferred/out of B scope.
+
+Developer checks: 10/10 tectonic groups, all Grid regressions, Laboratory 18/18
+and menu 16/16; Release Engine/Game builds with no warnings/errors. These are
+developer results, not the independent audit or formal B acceptance.
+See [test instructions](../../../../tests/worldgen/tectonics/readme.md).
+Grid, WG-CORE, UI, State and Saves production code remain unchanged.
+
+**Internal roadmap:** [roadmap.md](roadmap.md)
 **Data/API contract:** [contracts.md](contracts.md)
 **General roadmap:** [World Generation Roadmap](../../roadmap.md)  
 **Architecture:** [World Generation Architecture](../../../../WORLD_GENERATION_ARCHITECTURE.md)

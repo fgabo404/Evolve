@@ -1,0 +1,81 @@
+$ErrorActionPreference = 'Stop'
+$culture = [Globalization.CultureInfo]::InvariantCulture
+$resultsDirectory = (Resolve-Path 'tests/worldgen/tectonics/experiments/cal01').Path
+$rows = Get-Content (Join-Path $resultsDirectory 'cases.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+function Median($values) {
+    $ordered = @($values | ForEach-Object { [double]$_ } | Sort-Object)
+    $half = [int][Math]::Floor($ordered.Count / 2)
+    if ($ordered.Count % 2) { return $ordered[$half] }
+    return ($ordered[$half - 1] + $ordered[$half]) / 2
+}
+$summary = foreach ($sample in @('all','original','additional')) {
+    foreach ($size in @('Small','Medium','Large')) {
+        foreach ($experimentId in @('P0','P1','P2','R','W')) {
+            $selected = @($rows | Where-Object { $_.Profile -eq $experimentId -and $_.Size -eq $size -and ($sample -eq 'all' -or $_.Sample -eq $sample) })
+            [pscustomobject][ordered]@{
+                Sample=$sample; Size=$size; Profile=$experimentId; Cases=$selected.Count
+                WorstMinPercent=($selected.MinPercent | Measure-Object -Minimum).Minimum
+                MedianMinPercent=(Median $selected.MinPercent)
+                MedianMaxPercent=(Median $selected.MaxPercent)
+                WorstMaxPercent=($selected.MaxPercent | Measure-Object -Maximum).Maximum
+                MedianArea=(Median $selected.MedianArea)
+                MedianRatio=(Median $selected.MaxMinRatio)
+                TinyBelowHalfPercent=($selected | Measure-Object TinyHalfPercent -Sum).Sum
+                TinyBelowOnePercent=($selected | Measure-Object TinyOnePercent -Sum).Sum
+                TinyBelowTwoPercent=($selected | Measure-Object TinyTwoPercent -Sum).Sum
+                DominantAbove20Percent=($selected | Measure-Object Dominant20Percent -Sum).Sum
+                DominantAbove25Percent=($selected | Measure-Object Dominant25Percent -Sum).Sum
+                DominantAbove33Percent=($selected | Measure-Object Dominant33Percent -Sum).Sum
+                MedianEffectivePlates=(Median $selected.EffectivePlateCount)
+                MedianInterplateEdges=(Median $selected.InterplateEdges)
+                MinInterplateEdges=($selected.InterplateEdges | Measure-Object -Minimum).Minimum
+                MaxInterplateEdges=($selected.InterplateEdges | Measure-Object -Maximum).Maximum
+                MedianPartitionMs=(Median $selected.PartitionMs)
+                MinPartitionMs=($selected.PartitionMs | Measure-Object -Minimum).Minimum
+                MaxPartitionMs=($selected.PartitionMs | Measure-Object -Maximum).Maximum
+                MedianSeedMs=(Median $selected.SeedMs)
+                MedianNoiseMs=(Median $selected.NoiseMs)
+                MedianGrowthMs=(Median $selected.GrowthMs)
+                MinAllocated=($selected.PartitionAllocated | Measure-Object -Minimum).Minimum
+                MaxAllocated=($selected.PartitionAllocated | Measure-Object -Maximum).Maximum
+                MedianQueue=(Median $selected.PeakQueue)
+                MaxQueue=($selected.PeakQueue | Measure-Object -Maximum).Maximum
+            }
+        }
+    }
+}
+$summary | Export-Csv (Join-Path $resultsDirectory 'summary.csv') -NoTypeInformation -Encoding UTF8
+$statistics = New-Object 'System.Collections.Generic.List[string]'
+$statistics.Add('# CAL01 summary tables')
+$statistics.Add('')
+$statistics.Add('All diagnostic cutoffs are exploratory, not approved acceptance limits.')
+$statistics.Add('')
+foreach ($sample in @('all','original','additional')) {
+    $statistics.Add("## $sample sample")
+    $statistics.Add('')
+    $statistics.Add('| Size/profile | Cases | Worst min % | Median min % | Median max % | Worst max % | Median largest/smallest | Plates <1% | Plates >25% | Median edges | Median ms | Allocation B range |')
+    $statistics.Add('| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |')
+    foreach ($row in $summary | Where-Object Sample -eq $sample) {
+        $statistics.Add([string]::Format($culture,'| {0}/{1} | {2} | {3:F4} | {4:F4} | {5:F4} | {6:F4} | {7:F2} | {8} | {9} | {10:F1} | {11:F3} | {12}-{13} |',
+            $row.Size,$row.Profile,$row.Cases,$row.WorstMinPercent,$row.MedianMinPercent,$row.MedianMaxPercent,$row.WorstMaxPercent,$row.MedianRatio,$row.TinyBelowOnePercent,$row.DominantAbove25Percent,$row.MedianInterplateEdges,$row.MedianPartitionMs,$row.MinAllocated,$row.MaxAllocated))
+    }
+    $statistics.Add('')
+}
+[IO.File]::WriteAllText((Join-Path $resultsDirectory 'summary.md'), ($statistics -join [Environment]::NewLine) + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+$imageIndex = @('# CAL01 local PNG comparisons','','All panels show actual generated ownership. Colors are fixed by PlateId.','')
+$imageIndex += '| Comparison | PNG |'
+$imageIndex += '| --- | --- |'
+foreach ($image in Get-ChildItem -LiteralPath (Join-Path $resultsDirectory 'images') -Filter '*.png' | Sort-Object Name) {
+    $imageIndex += "| $($image.BaseName) | [Open comparison](images/$($image.Name)) |"
+}
+[IO.File]::WriteAllText((Join-Path $resultsDirectory 'image-index.md'), ($imageIndex -join [Environment]::NewLine) + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+foreach ($group in $rows | Group-Object Size,Seed) {
+    $origins = @($group.Group | ForEach-Object { $_.Origins -join ',' } | Sort-Object -Unique)
+    if ($origins.Count -ne 1) { throw "Origins differ between profiles: $($group.Name)" }
+    foreach ($case in $group.Group) {
+        if (@($case.Areas).Count -ne 14 -or ($case.Areas | Measure-Object -Sum).Sum -notin @(20000,45000,80000) -or @($case.Costs | Sort-Object -Unique).Count -ne 14) { throw 'Invalid case statistics' }
+    }
+}
+Write-Output 'PASS 75 paired worlds retain identical origins across five profiles; all 375 cost rows are distinct permutations'
+Write-Output 'Generated 45 summary rows and complete image index'
+$summary | Where-Object { $_.Sample -eq 'additional' -and $_.Profile -in @('P0','P1','P2','R') } | Format-Table Size,Profile,WorstMinPercent,WorstMaxPercent,MedianRatio,TinyBelowOnePercent,DominantAbove25Percent -AutoSize

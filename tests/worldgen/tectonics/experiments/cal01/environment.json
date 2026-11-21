@@ -1,0 +1,15 @@
+{
+  "Experiment": "WG-01-B-CAL01",
+  "Approval": "none; local experiment only",
+  "DateUtc": "2026-11-21T20:28:42.5011075+00:00",
+  "Runtime": ".NET 10.0.13",
+  "OS": "Microsoft Windows 10.0.26200",
+  "Architecture": "X64",
+  "CPUs": 16,
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "TieredCompilation": "0",
+  "StopwatchFrequency": 10000000,
+  "Warmup": "one generation per size/profile",
+  "Timing": "one measured partition plus one full deterministic replay per case; all validation outside partition clock",
+  "DiagnosticThresholds": "exploratory only: tiny \u003C0.5%, \u003C1%, \u003C2%; dominant \u003E20%, \u003E25%, \u003E33%; no rejection criteria"
+}

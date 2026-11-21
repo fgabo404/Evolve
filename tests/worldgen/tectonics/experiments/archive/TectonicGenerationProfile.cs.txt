@@ -1,0 +1,57 @@
+// Defines the provisional, versioned numeric profile for fourteen-plate partition calibration.
+// Contains no world-type controls, motion parameters or geographic settings outside WG-01-B.
+namespace Evolve.Engine.WorldGeneration.Layers.Tectonics;
+
+internal sealed class TectonicGenerationProfile
+{
+    internal const int PlateCount = 14;
+    internal const uint PartitionRevision = 1;
+    internal static TectonicGenerationProfile Candidate { get; } = new();
+    internal int CandidateSamples => 160;
+    internal double WarpFraction { get; }
+    internal double Irregularity { get; }
+    internal double MinimumResistance { get; }
+    internal double MaximumResistance { get; }
+    internal double BroadWeight => 1.65;
+    internal double MediumWeight => 1.10;
+    internal double FineWeight => 0.44;
+    internal ReadOnlySpan<int> Frequencies => [3, 5, 9, 13, 21, 29];
+    private readonly float[] costs;
+
+    private TectonicGenerationProfile(double costExponent = 1, double irregularity = 1.90,
+        double minimumResistance = 0.27, double maximumResistance = 3.10, double warpFraction = 0.055)
+    {
+        WarpFraction = warpFraction;
+        Irregularity = irregularity;
+        MinimumResistance = minimumResistance;
+        MaximumResistance = maximumResistance;
+        // Interpolate the historical range in log space rather than dropping two small-plate profiles.
+        double[] legacy = [.58, .64, .72, .79, .88, .97, 1.05, 1.14, 1.24, 1.35, 1.48, 1.62, 1.79, 1.97, 2.17, 2.40];
+        costs = new float[PlateCount];
+        for (int index = 0; index < PlateCount; index++)
+        {
+            double position = index * 15d / 13;
+            int lower = (int)position;
+            double fraction = position - lower;
+            costs[index] = (float)Math.Exp(Math.Log(legacy[lower]) +
+                fraction * (Math.Log(legacy[Math.Min(lower + 1, 15)]) - Math.Log(legacy[lower])));
+            if (costExponent != 1) costs[index] = (float)Math.Pow(costs[index], costExponent);
+            if (!float.IsFinite(costs[index]) || costs[index] <= 0 ||
+                (index > 0 && costs[index] <= costs[index - 1]))
+                throw new InvalidOperationException("Invalid growth-cost profile.");
+        }
+    }
+
+    // Local experiment profiles never replace Candidate or register a supported production revision.
+    internal static TectonicGenerationProfile CreateExperiment(double costExponent, double irregularity,
+        double minimumResistance, double maximumResistance, double warpFraction)
+    {
+        double[] values = [costExponent, irregularity, minimumResistance, maximumResistance, warpFraction];
+        if (values.Any(value => !double.IsFinite(value)) || costExponent <= 0 || irregularity < 0 ||
+            minimumResistance <= 0 || maximumResistance < minimumResistance || warpFraction < 0)
+            throw new ArgumentException("Invalid local experiment profile.");
+        return new(costExponent, irregularity, minimumResistance, maximumResistance, warpFraction);
+    }
+
+    internal float GetCost(int rank) => costs[rank];
+}

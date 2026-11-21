@@ -1,9 +1,10 @@
 # WG-01-A — Tectonic Data and API Contracts
 
-**Status:** documentary implementation proposed for independent audit and owner
-acceptance; no C# implementation or approval of calibration implied.
+**Status:** approved A design; B Ownership-only subset implemented with frozen
+owner-approved R, partition revision 2. Independent B audit and formal acceptance
+remain pending. C contracts are prospective, not implemented features.
 **Baseline:** v0.0.36 / cdb00c3a6689d1e06fb25012b336b9a6a2da744d.
-**Delivery:** v0.0.37. [Design and validation matrix](readme.md).
+**A delivery:** v0.0.37. **B delivery:** v0.0.38. [Design and validation matrix](readme.md).
 
 ## 1. Verified CORE compatibility and representation decision
 
@@ -66,7 +67,7 @@ unused high bytes must be zero (new sizes still require separate authorization).
 | 13 | InfluenceOffset=BoundaryOffset+5*B when Influence present; otherwise zero. |
 | 14 | InfluenceStride=4 words when present; otherwise zero. |
 | 15 | TotalWordCount=BoundaryOffset+5*B+(Influence ? 4*N : 0), exactly buffer.Count. No trailing data. |
-| 16 | Positive partition algorithm revision, identifying frozen parameters/hash/draw order; B must define its first revision and vectors before publishing. |
+| 16 | Frozen partition revision 2, tectonic-partition-r-v2. R parameters/hash/draw order are versioned together. Reject P0 revision 1 and CAL01 experiment tags. |
 | 17 | Positive motion/classification revision when Motion present; otherwise zero. |
 | 18 | Positive influence revision when Influence present; otherwise zero. |
 | 19 | Activity threshold A as finite nonnegative float bits when Motion present; otherwise zero. |
@@ -76,8 +77,8 @@ unused high bytes must be zero (new sizes still require separate authorization).
 | 23..31 | Reserved zero. |
 
 Revision numbers identify an immutable internal profile and interpretation, not
-just an incrementing counter disconnected from settings. No actual numeric
-algorithm profile is approved in A; B/C must document and freeze it. Header
+just an incrementing counter disconnected from settings. R is now approved and
+frozen for B; motion/influence profiles remain pending in C. Header
 revisions/active thresholds make published interpretation explicit. A schema
 version change is required if future features cannot obey this exact layout.
 
@@ -279,5 +280,35 @@ compatibility vectors must be resolved before B publication. C adds only real
 approved motion/edge/optional influence features without altering B partition
 random streams. D verifies the full implementation; no branch merge is implied.
 
-No automated tests, compile result, geological output or GUI approval is
-claimed for these prospective contracts.
+The A delivery claimed no implementation/test execution. Current B evidence
+is recorded separately below; no C or GUI approval is implied.
+
+## 7. Actual WG-01-B subset
+
+Implemented: TectonicPlatesLayer.Execute, TectonicData.FromLayerData, all B
+metadata properties, GetPlateId and GetPlate, and the readonly TectonicPlate.
+The only supported feature combination is 1 (Ownership); flags 7/15 and motion,
+boundary or influence values are rejected until their real C implementation.
+The corresponding C value types and query methods have not been added as
+empty placeholders. All motion/influence revisions remain zero by schema.
+
+The B view retains only the immutable LayerData<uint>; Grid is required during
+validation but need not be retained until C queries require it. Reverse size
+validation uses the real HexGridData constructor over existing MapSize values,
+not a second hardcoded dimensions table. All 32 header words, exact payload
+length, zero feature/reserved words, revision/profile cost permutation, seeds,
+owner histogram and connectivity are checked before returning success/view.
+
+TectonicDraft currently contains Owners, Plates and private calibration metrics.
+Nullable C buffers and motion/boundary builders are deferred. The codec and
+public reader share validation; no arrays escape and no geography is generated
+by a reader. Internal measurement counters do not enter the payload or change
+random draw order. The specifically named checks assembly has friend access
+for actual profile/noise vectors and phase metrics only; its tests never mutate
+CORE internals or require a public testing hook.
+
+Profile R is frozen as tectonic-partition-r-v2, revision 2. Only Approved can
+be constructed internally; no experiment factory or profile selection exists.
+GetCost reads exact IEEE-754 float words from CAL01's complete R profile.
+See [calibration.md](calibration.md) for constants, production vectors, historical
+comparison and independent audit limitations. Schema 1 layout is unchanged.

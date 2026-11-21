@@ -1,0 +1,297 @@
+// Runs isolated CAL01 profiles through the real partition algorithm and WG-CORE without replacing P0.
+// Records complete distributions, deterministic replay, independent owner BFS, diagnostics and offline map scenes.
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
+using Evolve.Definitions.WorldGeneration;
+using Evolve.Engine.WorldGeneration;
+using Evolve.Engine.WorldGeneration.Layers.Grid;
+using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
+using Evolve.Engine.WorldGeneration.Layers.Tectonics;
+using static Evolve.WorldGeneration.Tectonics.Checks.TectonicCheckFixtures;
+
+namespace Evolve.WorldGeneration.Tectonics.Checks;
+
+internal static class TectonicProfileComparison
+{
+    private sealed record Experiment(string Id, uint Tag, string Change, TectonicGenerationProfile Profile);
+    private sealed record Outcome(TectonicDraft Draft, LayerData<uint> Data, double Milliseconds, long Allocated);
+    private sealed record Case(string Profile, string Size, string Seed, string Sample, int[] Areas, double[] Percentages,
+        int[] Origins, float[] Costs, double MinPercent, double MaxPercent, double MedianArea, double MaxMinRatio,
+        int TinyHalfPercent, int TinyOnePercent, int TinyTwoPercent, int Dominant20Percent, int Dominant25Percent,
+        int Dominant33Percent, double EffectivePlateCount, int InterplateEdges, int SeamInterplateEdges, int SeamSamePlateEdges,
+        int BoundaryCells, int PeakQueue, double SeedMs, double NoiseMs, double GrowthMs, double PartitionMs,
+        long PartitionAllocated, int PayloadBytes, string Digest);
+    private static readonly Experiment[] Profiles =
+    [
+        new("P0", 1, "Unchanged reference", TectonicGenerationProfile.Candidate),
+        new("P1", 0xCA010001, "P0: costs raised to power 0.5 only", TectonicGenerationProfile.CreateExperiment(.5, 1.90, .27, 3.10, .055)),
+        new("P2", 0xCA010002, "P1: irregularity 1.90 -> 0.95 only", TectonicGenerationProfile.CreateExperiment(.5, .95, .27, 3.10, .055)),
+        new("R", 0xCA010003, "P2: resistance clamp [0.27,3.10] -> [0.50,2.00] only", TectonicGenerationProfile.CreateExperiment(.5, .95, .50, 2.00, .055)),
+        new("W", 0xCA010004, "P2: warp 0.055 -> 0.025 only", TectonicGenerationProfile.CreateExperiment(.5, .95, .27, 3.10, .025))
+    ];
+    private static readonly long[] OriginalSeeds = [0, 1, -1, long.MinValue, long.MaxValue];
+
+    internal static void Run(string outputDirectory)
+    {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        string directory = Path.GetFullPath(outputDirectory);
+        Directory.CreateDirectory(directory);
+        Directory.CreateDirectory(Path.Combine(directory, "scenes"));
+        long[] seeds = Seeds();
+        WriteJson("environment.json", new
+        {
+            Experiment = "WG-01-B-CAL01", Approval = "none; local experiment only", DateUtc = DateTimeOffset.UtcNow,
+            Runtime = RuntimeInformation.FrameworkDescription, OS = RuntimeInformation.OSDescription,
+            Architecture = RuntimeInformation.ProcessArchitecture.ToString(), CPUs = Environment.ProcessorCount,
+            Processor = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"),
+            TieredCompilation = Environment.GetEnvironmentVariable("DOTNET_TieredCompilation"),
+            StopwatchFrequency = Stopwatch.Frequency, Warmup = "one generation per size/profile",
+            Timing = "one measured partition plus one full deterministic replay per case; all validation outside partition clock",
+            DiagnosticThresholds = "exploratory only: tiny <0.5%, <1%, <2%; dominant >20%, >25%, >33%; no rejection criteria"
+        });
+        WriteJson("seeds.json", seeds.Select((seed, index) => new { Seed = seed.ToString(), Sample = index < 5 ? "original" : "additional" }));
+        WriteJson("profiles.json", Profiles.Select(profile => new
+        {
+            profile.Id, profile.Tag, profile.Change, Approval = "experimental, not adopted",
+            Costs = Enumerable.Range(0, 14).Select(profile.Profile.GetCost).ToArray(),
+            CandidateSamples = profile.Profile.CandidateSamples, Frequencies = profile.Profile.Frequencies.ToArray(),
+            profile.Profile.Irregularity, profile.Profile.MinimumResistance, profile.Profile.MaximumResistance,
+            profile.Profile.WarpFraction, profile.Profile.BroadWeight, profile.Profile.MediumWeight, profile.Profile.FineWeight
+        }));
+        var cases = new List<Case>();
+        using var progress = new StreamWriter(Path.Combine(directory, "checks.txt"), false, new UTF8Encoding(false));
+        Console.WriteLine($"CAL01: {seeds.Length} seeds x 3 sizes x {Profiles.Length} profiles; two full executions per case");
+        foreach (var size in Enum.GetValues<MapSize>())
+        {
+            var grid = new HexGridData(size);
+            foreach (var profile in Profiles) _ = Produce(grid, size, 0, profile, false);
+            foreach (long seed in seeds)
+            {
+                var primary = new List<(Experiment Profile, Outcome Outcome)>();
+                foreach (var profile in Profiles)
+                {
+                    GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+                    var first = Produce(grid, size, seed, profile, false);
+                    var replay = Produce(grid, size, seed, profile, true);
+                    Require(first.Data.SequenceEqual(replay.Data), $"Non-deterministic {profile.Id}/{size}/{seed}");
+                    Require(first.Draft.Owners.SequenceEqual(replay.Draft.Owners), "Owner replay mismatch");
+                    var record = Describe(grid, size, seed, profile, first, Array.IndexOf(OriginalSeeds, seed) >= 0 ? "original" : "additional");
+                    cases.Add(record);
+                    if (profile.Id is "P0" or "P1" or "P2") primary.Add((profile, first));
+                    string pass = $"PASS {profile.Id}/{size}/{seed}: coverage=all; connected=14; deterministic=full_words; seam/poles=real_grid; min={record.MinPercent:F4}%; max={record.MaxPercent:F4}%";
+                    progress.WriteLine(pass);
+                }
+                if (Array.IndexOf(OriginalSeeds, seed) >= 0) WriteScene(directory, grid, size, seed, primary, "original");
+                Console.WriteLine($"CAL01 {size} seed={seed}: all five profiles passed");
+            }
+        }
+        WriteJson("cases.json", cases);
+        using (var csv = new StreamWriter(Path.Combine(directory, "cases.csv"), false, new UTF8Encoding(false)))
+        {
+            csv.WriteLine("profile,size,seed,sample,min_percent,max_percent,median_area,max_min_ratio,tiny_below_0.5_percent,tiny_below_1_percent,tiny_below_2_percent,dominant_above_20_percent,dominant_above_25_percent,dominant_above_33_percent,effective_plate_count,interplate_edges,seam_interplate_edges,seam_same_plate_edges,boundary_cells,peak_queue,seed_ms,noise_ms,growth_ms,partition_ms,partition_allocated_B,payload_B");
+            foreach (var row in cases)
+                csv.WriteLine($"{row.Profile},{row.Size},{row.Seed},{row.Sample},{row.MinPercent:R},{row.MaxPercent:R},{row.MedianArea:R},{row.MaxMinRatio:R},{row.TinyHalfPercent},{row.TinyOnePercent},{row.TinyTwoPercent},{row.Dominant20Percent},{row.Dominant25Percent},{row.Dominant33Percent},{row.EffectivePlateCount:R},{row.InterplateEdges},{row.SeamInterplateEdges},{row.SeamSamePlateEdges},{row.BoundaryCells},{row.PeakQueue},{row.SeedMs:R},{row.NoiseMs:R},{row.GrowthMs:R},{row.PartitionMs:R},{row.PartitionAllocated},{row.PayloadBytes}");
+        }
+        using (var areas = new StreamWriter(Path.Combine(directory, "areas.csv"), false, new UTF8Encoding(false)))
+        {
+            areas.WriteLine("profile,size,seed,sample,plate_id,area,percentage,seed_cell_id,growth_cost");
+            foreach (var row in cases)
+            for (int plate = 0; plate < 14; plate++)
+                areas.WriteLine($"{row.Profile},{row.Size},{row.Seed},{row.Sample},{plate},{row.Areas[plate]},{row.Percentages[plate]:R},{row.Origins[plate]},{row.Costs[plate]:R}");
+        }
+        // Additional examples are chosen by predeclared P2 tail statistics, never by a subjective attractive map.
+        foreach (var size in Enum.GetValues<MapSize>())
+        {
+            var additional = cases.Where(row => row.Size == size.ToString() && row.Profile == "P2" && row.Sample == "additional").ToArray();
+            foreach (string seedText in new[] { additional.OrderBy(row => row.MinPercent).First().Seed,
+                additional.OrderByDescending(row => row.MaxPercent).First().Seed }.Distinct())
+            {
+                long seed = long.Parse(seedText, CultureInfo.InvariantCulture);
+                var grid = new HexGridData(size);
+                var primary = Profiles.Take(3).Select(profile => (profile, Produce(grid, size, seed, profile, false))).ToList();
+                foreach (var (profile, outcome) in primary)
+                    Require(TectonicCalibrationChecks.Digest(outcome.Data) == cases.Single(row => row.Profile == profile.Id &&
+                        row.Size == size.ToString() && row.Seed == seedText).Digest, "Export changed measured world");
+                WriteScene(directory, grid, size, seed, primary, "additional-tail");
+            }
+        }
+        progress.WriteLine($"TOTAL PASS {cases.Count} cases; {cases.Count * 2} complete executions plus warmups/export replay; no thresholds approved");
+        Console.WriteLine($"CAL01 completed: {cases.Count} cases, {cases.Count * 14} plate rows, {cases.Count * 2} complete verified executions");
+        void WriteJson(string filename, object value) => File.WriteAllText(Path.Combine(directory, filename),
+            JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true }), new UTF8Encoding(false));
+
+    }
+
+    private static void WriteScene(string directory, HexGridData grid, MapSize size, long seed,
+        List<(Experiment Profile, Outcome Outcome)> worlds, string sample)
+    {
+        string file = $"{size}-{seed}-{sample}.scene";
+        using var stream = File.Create(Path.Combine(directory, "scenes", file));
+        using var writer = new BinaryWriter(stream, Encoding.UTF8);
+        writer.Write(0x43414C31); writer.Write(grid.Columns); writer.Write(grid.Rows); writer.Write(seed);
+        writer.Write(grid.CellCount); writer.Write(worlds.Count);
+        for (int vertex = 0; vertex < 6; vertex++)
+        { writer.Write((float)Math.Cos(vertex * Math.PI / 3)); writer.Write((float)Math.Sin(vertex * Math.PI / 3)); }
+        for (int cell = 0; cell < grid.CellCount; cell++)
+        {
+            var center = FlatHexGeometry.Center(grid.GetOffset(cell));
+            writer.Write(center.X); writer.Write(center.Y);
+        }
+        foreach (var (profile, outcome) in worlds)
+        {
+            writer.Write(profile.Id); writer.Write(profile.Change);
+            writer.Write(outcome.Draft.Owners);
+            for (int plate = 0; plate < 14; plate++) writer.Write(outcome.Draft.Plates[plate].CellCount);
+            // Boundary masks come only from accepted Grid queries; the renderer performs no topology.
+            for (int cell = 0; cell < grid.CellCount; cell++)
+            {
+                byte mask = 0;
+                for (int direction = 0; direction < 6; direction++)
+                    if (!grid.TryGetNeighbor(cell, (HexDirection)direction, out int next) ||
+                        outcome.Draft.Owners[cell] != outcome.Draft.Owners[next])
+                        mask |= (byte)(1 << ((direction + 4) % 6));
+                writer.Write(mask);
+            }
+        }
+    }
+
+    // Adds an honest visual check for the resistance control without replacing or rerunning measured tables.
+    internal static void ExportControlMaps(string outputDirectory)
+    {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        string directory = Path.GetFullPath(outputDirectory);
+        var cases = JsonSerializer.Deserialize<List<Case>>(File.ReadAllText(Path.Combine(directory, "cases.json")))!;
+        foreach (var size in Enum.GetValues<MapSize>())
+        {
+            var grid = new HexGridData(size);
+            var worlds = Profiles.Where(profile => profile.Id is "P0" or "P2" or "R")
+                .Select(profile => (profile, Produce(grid, size, 0, profile, false))).ToList();
+            foreach (var (profile, result) in worlds)
+            {
+                Require(result.Data.SequenceEqual(Produce(grid, size, 0, profile, true).Data), "Control map replay differs");
+                Require(TectonicCalibrationChecks.Digest(result.Data) == cases.Single(row => row.Profile == profile.Id &&
+                    row.Size == size.ToString() && row.Seed == "0").Digest, "Control map differs from measured case");
+            }
+            WriteScene(directory, grid, size, 0, worlds, "control-P0-P2-R");
+        }
+    }
+
+    private static long[] Seeds()
+    {
+        var seeds = OriginalSeeds.ToList();
+        var random = new DeterministicStageRandom(0x43414C30312D3230UL);
+        while (seeds.Count < 25)
+        {
+            long seed = unchecked((long)random.NextUInt64());
+            if (!seeds.Contains(seed)) seeds.Add(seed);
+        }
+        return seeds.ToArray();
+    }
+
+    private static Outcome Produce(HexGridData grid, MapSize size, long seed, Experiment profile, bool replay)
+    {
+        TectonicDraft? draft = null;
+        double elapsed = 0;
+        long allocated = 0;
+        var executor = new TestLayer(GenerationStage.Tectonics, inputs =>
+        {
+            Require(inputs.GetLayerData(GenerationStage.Grid) is LayerData<HexGridDescriptor> descriptor &&
+                descriptor.Count == 1 && descriptor[0].Size == size, "Missing real Grid prerequisite");
+            ulong partition = inputs.Random.NextUInt64(), noise = inputs.Random.NextUInt64();
+            _ = inputs.Random.NextUInt64();
+            long before = GC.GetAllocatedBytesForCurrentThread(), start = Stopwatch.GetTimestamp();
+            draft = TectonicPartitionGenerator.Generate(grid, new(partition), new(noise), profile.Profile);
+            elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            ValidateDraft(grid, draft, profile.Profile);
+            LayerData<uint> packed = profile.Id == "P0"
+                ? TectonicData.CreateCandidate(grid, draft, profile.Profile) : PackExperimental(grid, size, draft, profile.Tag);
+            for (int cell = 0; cell < grid.CellCount; cell++)
+                Require((byte)(packed[144 + cell / 4] >> (8 * (cell % 4))) == draft.Owners[cell], "Packed ownership mismatch");
+            if (profile.Id != "P0") Expect<ArgumentException>(() => TectonicData.FromLayerData(packed, grid));
+            return LayerExecutionResult.Success(packed);
+        });
+        var orchestrator = Orchestrator(executor);
+        var context = orchestrator.CreateGeneration(Request(size, seed, replay ? WorldType.RealEarth : WorldType.Pangea));
+        if (replay) orchestrator.RunUntil(context, GenerationStage.Tectonics);
+        else { orchestrator.RunNext(context); orchestrator.RunNext(context); }
+        Require(context.GetProgress().LastCompletedStage == GenerationStage.Tectonics && draft is not null, "Experiment did not publish atomically");
+        return new(draft!, Published(context), elapsed, allocated);
+    }
+
+    // Experimental tags are deliberately rejected by the production view and never registered as final revisions.
+    // The local adapter packs the approved word schema; no production codec or default execution path changes.
+    private static LayerData<uint> PackExperimental(HexGridData grid, MapSize size, TectonicDraft draft, uint tag)
+    {
+        uint[] words = new uint[144 + grid.CellCount / 4];
+        words[0] = 0x54454354; words[1] = 1; words[2] = 1; words[3] = (uint)size;
+        words[4] = (uint)grid.CellCount; words[5] = 14; words[6] = 32; words[7] = 8;
+        words[8] = 144; words[9] = (uint)(grid.CellCount / 4); words[10] = (uint)words.Length;
+        words[12] = 5; words[15] = (uint)words.Length; words[16] = tag;
+        for (int plate = 0; plate < 14; plate++)
+        {
+            words[32 + plate * 8] = (uint)draft.Plates[plate].SeedCellId;
+            words[33 + plate * 8] = (uint)draft.Plates[plate].CellCount;
+            words[34 + plate * 8] = BitConverter.SingleToUInt32Bits(draft.Plates[plate].GrowthCost);
+        }
+        for (int cell = 0; cell < grid.CellCount; cell++) words[144 + cell / 4] |= (uint)draft.Owners[cell] << (8 * (cell % 4));
+        return new(GenerationStage.Tectonics, words);
+    }
+
+    private static void ValidateDraft(HexGridData grid, TectonicDraft draft, TectonicGenerationProfile profile)
+    {
+        Require(draft.Owners.Length == grid.CellCount && draft.Plates.Length == 14, "Wrong experimental dimensions");
+        int[] histogram = new int[14];
+        foreach (byte owner in draft.Owners) { Require(owner < 14, "Invalid owner"); histogram[owner]++; }
+        bool[] visited = new bool[grid.CellCount];
+        int[] queue = new int[grid.CellCount];
+        for (byte plate = 0; plate < 14; plate++)
+        {
+            var row = draft.Plates[plate];
+            Require(row.PlateId == plate && row.CellCount == histogram[plate] && row.CellCount > 0 &&
+                draft.Owners[row.SeedCellId] == plate &&
+                Enumerable.Range(0, 14).Any(rank => profile.GetCost(rank) == row.GrowthCost), "Experimental metadata mismatch");
+            int head = 0, tail = 1; queue[0] = row.SeedCellId; visited[row.SeedCellId] = true;
+            while (head < tail)
+                foreach (int next in Neighbors(queue[head++], grid.Columns, grid.Rows))
+                    if (!visited[next] && draft.Owners[next] == plate) { visited[next] = true; queue[tail++] = next; }
+            Require(tail == row.CellCount, "Independent experiment BFS found disconnected ownership");
+        }
+        Require(visited.All(value => value), "Incomplete experimental coverage");
+    }
+
+    private static Case Describe(HexGridData grid, MapSize size, long seed, Experiment profile, Outcome result, string sample)
+    {
+        int[] areas = result.Draft.Plates.Select(plate => plate.CellCount).ToArray();
+        int[] sorted = areas.Order().ToArray();
+        double[] percentages = areas.Select(area => 100d * area / grid.CellCount).ToArray();
+        int edges = 0, seamCross = 0, seamSame = 0, boundaryCells = 0;
+        for (int cell = 0; cell < grid.CellCount; cell++)
+        {
+            bool boundary = false;
+            foreach (int next in Neighbors(cell, grid.Columns, grid.Rows))
+            {
+                bool unlike = result.Draft.Owners[cell] != result.Draft.Owners[next];
+                boundary |= unlike;
+                if (cell >= next) continue;
+                if (unlike) edges++;
+                if (Math.Abs(cell % grid.Columns - next % grid.Columns) == grid.Columns - 1)
+                { if (unlike) seamCross++; else seamSame++; }
+            }
+            if (boundary) boundaryCells++;
+        }
+        double entropy = -areas.Sum(area => { double p = (double)area / grid.CellCount; return p * Math.Log(p); });
+        var m = result.Draft.Metrics;
+        return new(profile.Id, size.ToString(), seed.ToString(CultureInfo.InvariantCulture), sample, areas, percentages,
+            result.Draft.Plates.Select(plate => plate.SeedCellId).ToArray(), result.Draft.Plates.Select(plate => plate.GrowthCost).ToArray(),
+            percentages.Min(), percentages.Max(), (sorted[6] + sorted[7]) / 2d, (double)sorted[^1] / sorted[0],
+            percentages.Count(p => p < .5), percentages.Count(p => p < 1), percentages.Count(p => p < 2),
+            percentages.Count(p => p > 20), percentages.Count(p => p > 25), percentages.Count(p => p > 33),
+            Math.Exp(entropy), edges, seamCross, seamSame, boundaryCells, m.PeakFrontier,
+            m.SeedMilliseconds, m.NoiseMilliseconds, m.GrowthMilliseconds, result.Milliseconds, result.Allocated,
+            result.Data.Count * 4, TectonicCalibrationChecks.Digest(result.Data));
+    }
+}

@@ -1,0 +1,16 @@
+COVERAGE Small: 20000 cells; 14 independently connected regions; payload=20576 B
+COVERAGE Medium: 45000 cells; 14 independently connected regions; payload=45576 B
+COVERAGE Large: 80000 cells; 14 independently connected regions; payload=80576 B
+PASS WG-01-B T01-T03 exhaustive owners, independent connectivity and seam/pole coverage
+PASS WG-01-B T04 complete deterministic outputs across all world types and signed seeds
+PASS WG-01-B T05 fixed numeric vectors, periodic warp and distinct-seed fallback
+FROZEN R: 15 full golden buffers; 75 CAL01 R cases matched; 75 full mode/type replays and independent BFS checks
+PASS WG-01-B T04-T05 frozen R full buffers and equivalence with all CAL01 R cases
+MALFORMED 204 field corruptions plus type/length/index/connectivity fixtures rejected
+PASS WG-01-B T06 malformed packed schemas and disconnected data are rejected
+PASS WG-01-B T06 immutable metadata and defensive source ownership
+PASS WG-01-B T10 real CORE ordering, rebuilding and historical results
+PASS WG-01-B T10 failures and invalid Grid/candidates stay atomic and retryable
+PASS WG-01-B T10 competing and reentrant operations cannot publish partial data
+PASS WG-01-B T11-T12 ownership-only scope and graphical independence
+WG-01-B: 10/10 groups passed.

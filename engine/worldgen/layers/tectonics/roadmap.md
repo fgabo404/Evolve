@@ -1,6 +1,6 @@
 # WG-01 — Tectonic Plates: Compact Roadmap
 
-**Status:** WG-01-A implemented documentarily at v0.0.37, submitted for independent audit and formal owner acceptance; WG-01-B/C/D not started.
+**Status:** WG-01-B implemented at v0.0.38 with owner-selected R and frozen revision 2; pending independent B audit and formal acceptance. WG-01-C/D not started.
 **Working branch:** `world-tectonics`, based on formally closed Grid `v0.0.35` (`503b3ec41a89b9f54cb47dede9f92506123b6a23`).  
 **Target:** exactly **14 connected, irregular, unequal tectonic plates** for Small, Medium and Large.  
 **Historical algorithm baseline:** weighted hex-region growth, multi-scale periodic noise, plate motion and boundary stresses.  
@@ -23,7 +23,8 @@ future file layout and calculated memory bounds. No CORE extension, C# source,
 test project or algorithm is implemented. Baseline v0.0.36 at
 cdb00c3a6689d1e06fb25012b336b9a6a2da744d; delivery v0.0.37.
 
-**Gate A:** pending independent design review and formal owner acceptance.
+**Gate A:** the owner identifies the WG-01-A design as approved in the B request.
+The referenced audit observations remain tracked; no new audit verdict is invented.
 Source/history/contract, link/scope review and git diff --check are A evidence;
 no builds or automated/GUI tests executed for documentation-only changes.
 
@@ -34,6 +35,15 @@ no builds or automated/GUI tests executed for documentation-only changes.
 - Publish ownership-only schema features through the existing stage executor and orchestrator; exercise failure, retry, prerequisites and invalidation without creating a second generator. Resolve the numeric partition profile and fixed compatibility vectors before B publication; no motion or fake boundary data.
 
 **Gate B:** exhaustive correctness/integration checks, independent audit and owner acceptance.
+
+**B delivery:** schema-1 Ownership result and independent headless checks
+implemented. R selected explicitly by the owner after CAL01; exact cost words
+and constants frozen as tectonic-partition-r-v2 (revision 2), with 15 complete
+production buffers and equivalence checks against all 75 archived R cases.
+10/10 tectonic groups, Grid/LAB/menu regressions and Release builds passed.
+[calibration.md](calibration.md) retains P0/CAL01 evidence and final measurements.
+OBS-03 numeric calibration closed; OBS-01/02/04 remain deferred as documented.
+No increment acceptance, C/D development or merge is implied.
 
 ### WG-01-C — Motions, boundaries and Laboratory display
 
@@ -56,7 +66,7 @@ no builds or automated/GUI tests executed for documentation-only changes.
 
 - Architect specifies; Dev implements only an authorized increment; independent Auditor reviews; owner accepts.
 - Every authorized repository-changing commit increments root `VERSION`, and reports an English commit message plus its full SHA.
-- WG-01-A authorizes documentation and VERSION only. Do not start WG-01-B before independent review and explicit owner acceptance/authorization. Do not alter Grid, WG-CORE, State, Saves, other geographic layers or normal game creation.
+- B finalization is expressly authorized for R only. Stop after its publication for independent audit and formal acceptance; no C implementation or changes to Grid, WG-CORE, State, Saves, other layers or normal creation are authorized.
 - Keep the Grid audit observations and `world-grid` history intact; do not delete or retire its roadmap.
 - `world-tectonics` is a working branch based on the accepted Grid commit because `world-grid` has not been integrated into `world`. This does not authorize synchronization or merging.
 

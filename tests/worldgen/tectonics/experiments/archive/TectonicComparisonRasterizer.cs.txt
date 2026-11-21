@@ -1,0 +1,121 @@
+// Renders exported real CAL01 scenes to offline PNG comparisons using Windows GDI+ only.
+// Reads engine-supplied centers, corners and boundary masks; it does not generate geography or alter Laboratory code.
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
+
+public static class TectonicComparisonRasterizer
+{
+    public static void Render(string inputPath, string outputPath)
+    {
+        using (BinaryReader reader = new BinaryReader(File.OpenRead(inputPath)))
+        {
+            if (reader.ReadInt32() != 0x43414C31) throw new InvalidDataException("Invalid CAL01 scene.");
+            int columns = reader.ReadInt32(), rows = reader.ReadInt32();
+            long seed = reader.ReadInt64();
+            int count = reader.ReadInt32(), profiles = reader.ReadInt32();
+            if (count != columns * rows || profiles != 3) throw new InvalidDataException("Invalid comparison dimensions.");
+            PointF[] corners = new PointF[6];
+            for (int i = 0; i < 6; i++) corners[i] = new PointF(reader.ReadSingle(), reader.ReadSingle());
+            PointF[] centers = new PointF[count];
+            float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+            for (int i = 0; i < count; i++)
+            {
+                centers[i] = new PointF(reader.ReadSingle(), reader.ReadSingle());
+                for (int vertex = 0; vertex < 6; vertex++)
+                {
+                    minX = Math.Min(minX, centers[i].X + corners[vertex].X);
+                    minY = Math.Min(minY, centers[i].Y + corners[vertex].Y);
+                    maxX = Math.Max(maxX, centers[i].X + corners[vertex].X);
+                    maxY = Math.Max(maxY, centers[i].Y + corners[vertex].Y);
+                }
+            }
+            string[] hex = { "#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2",
+                "#7F7F7F", "#BCBD22", "#17BECF", "#393B79", "#E7BA52", "#66C2A5", "#A55194" };
+            SolidBrush[] colors = new SolidBrush[14];
+            for (int plate = 0; plate < 14; plate++) colors[plate] = new SolidBrush(ColorTranslator.FromHtml(hex[plate]));
+            try
+            {
+                using (Bitmap bitmap = new Bitmap(3000, 1000, PixelFormat.Format24bppRgb))
+                using (Graphics graphics = Graphics.FromImage(bitmap))
+                using (Font title = new Font("Segoe UI", 25, FontStyle.Bold, GraphicsUnit.Pixel))
+                using (Font heading = new Font("Segoe UI", 22, FontStyle.Bold, GraphicsUnit.Pixel))
+                using (Font body = new Font("Segoe UI", 16, FontStyle.Regular, GraphicsUnit.Pixel))
+                using (Font legend = new Font("Segoe UI", 17, FontStyle.Regular, GraphicsUnit.Pixel))
+                using (Font boldLegend = new Font("Segoe UI", 17, FontStyle.Bold, GraphicsUnit.Pixel))
+                using (Pen boundary = new Pen(Color.FromArgb(31, 41, 55), 1.1f))
+                using (SolidBrush text = new SolidBrush(Color.FromArgb(26, 37, 55)))
+                using (SolidBrush muted = new SolidBrush(Color.FromArgb(75, 85, 99)))
+                {
+                    graphics.Clear(Color.FromArgb(236, 240, 245));
+                    graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                    graphics.DrawString("CAL01 | " + columns + " x " + rows + " | seed " + seed + " | experimental profiles, not approved", title, text, 24, 14);
+                    float scale = Math.Min(940f / (maxX - minX), 550f / (maxY - minY));
+                    for (int profile = 0; profile < profiles; profile++)
+                    {
+                        int left = profile * 1000;
+                        graphics.FillRectangle(Brushes.White, left + 12, 58, 976, 880);
+                        string name = reader.ReadString(), description = reader.ReadString();
+                        byte[] owners = reader.ReadBytes(count);
+                        int[] areas = new int[14];
+                        for (int plate = 0; plate < 14; plate++) areas[plate] = reader.ReadInt32();
+                        byte[] boundaries = reader.ReadBytes(count);
+                        if (owners.Length != count || boundaries.Length != count) throw new EndOfStreamException();
+                        graphics.DrawString(name, heading, text, left + 30, 68);
+                        graphics.DrawString(description, body, muted, left + 90, 74);
+                        float originX = left + 30 + (940 - (maxX - minX) * scale) / 2;
+                        float originY = 128 + (550 - (maxY - minY) * scale) / 2;
+                        PointF[] polygon = new PointF[6];
+                        graphics.SmoothingMode = SmoothingMode.None;
+                        for (int cell = 0; cell < count; cell++)
+                        {
+                            if (owners[cell] >= 14) throw new InvalidDataException("Invalid owner.");
+                            Corners(polygon, centers[cell], corners, originX, originY, minX, minY, scale);
+                            graphics.FillPolygon(colors[owners[cell]], polygon);
+                        }
+                        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        for (int cell = 0; cell < count; cell++)
+                        {
+                            if (boundaries[cell] == 0) continue;
+                            Corners(polygon, centers[cell], corners, originX, originY, minX, minY, scale);
+                            for (int edge = 0; edge < 6; edge++)
+                                if ((boundaries[cell] & (1 << edge)) != 0)
+                                    graphics.DrawLine(boundary, polygon[edge], polygon[(edge + 1) % 6]);
+                        }
+                        int[] sorted = (int[])areas.Clone(); Array.Sort(sorted);
+                        int minimum = sorted[0], maximum = sorted[13], minId = Array.IndexOf(areas, minimum), maxId = Array.IndexOf(areas, maximum);
+                        string summary = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                            "MIN P{0:00}: {1} ({2:F3}%)   |   MAX P{3:00}: {4} ({5:F3}%)",
+                            minId, minimum, minimum * 100.0 / count, maxId, maximum, maximum * 100.0 / count);
+                        graphics.DrawString(summary, body, text, left + 30, 699);
+                        graphics.DrawString(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                            "Median: {0:F1} cells   |   largest / smallest: {1:F2}   |   same scale across profiles",
+                            (sorted[6] + sorted[7]) / 2.0, (double)maximum / minimum), body, muted, left + 30, 725);
+                        for (int plate = 0; plate < 14; plate++)
+                        {
+                            int x = left + 30 + (plate / 7) * 475, y = 765 + (plate % 7) * 23;
+                            graphics.FillRectangle(colors[plate], x, y + 1, 18, 17);
+                            graphics.DrawRectangle(Pens.DimGray, x, y + 1, 18, 17);
+                            string marker = plate == minId ? "  MIN" : plate == maxId ? "  MAX" : "";
+                            string label = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                "P{0:00}  {1,6} cells   {2,7:F3}%{3}", plate, areas[plate], areas[plate] * 100.0 / count, marker);
+                            graphics.DrawString(label, plate == minId || plate == maxId ? boldLegend : legend, text, x + 26, y);
+                        }
+                    }
+                    graphics.DrawString("One canonical strip; east/west edges are logically joined. No duplicated cells. Stable PlateId colors; dark lines are real plate interfaces/polar edges.", body, muted, 24, 961);
+                    bitmap.Save(outputPath, ImageFormat.Png);
+                }
+            }
+            finally { foreach (SolidBrush brush in colors) brush.Dispose(); }
+        }
+    }
+
+    private static void Corners(PointF[] result, PointF center, PointF[] corners, float originX, float originY, float minX, float minY, float scale)
+    {
+        for (int vertex = 0; vertex < 6; vertex++)
+            result[vertex] = new PointF(originX + (center.X + corners[vertex].X - minX) * scale,
+                originY + (center.Y + corners[vertex].Y - minY) * scale);
+    }
+}

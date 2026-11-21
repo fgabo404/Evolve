@@ -1,0 +1,13 @@
+param([string]$ResultsDirectory = (Join-Path $PSScriptRoot 'cal01'))
+
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Drawing
+Add-Type -Path (Join-Path $PSScriptRoot 'TectonicComparisonRasterizer.cs') -ReferencedAssemblies System.Drawing
+$resolvedResults = (Resolve-Path -LiteralPath $ResultsDirectory).Path
+$imageDirectory = Join-Path $resolvedResults 'images'
+[System.IO.Directory]::CreateDirectory($imageDirectory) | Out-Null
+foreach ($scene in Get-ChildItem -LiteralPath (Join-Path $resolvedResults 'scenes') -Filter '*.scene') {
+    $destination = Join-Path $imageDirectory ($scene.BaseName + '.png')
+    [TectonicComparisonRasterizer]::Render($scene.FullName, $destination)
+    Write-Output "EXPORTED $destination"
+}
