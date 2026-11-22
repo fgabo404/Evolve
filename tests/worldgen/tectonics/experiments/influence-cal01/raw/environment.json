@@ -1,0 +1,51 @@
+{
+  "Framework": ".NET 10.0.13",
+  "OS": "Microsoft Windows 10.0.26200",
+  "OSArchitecture": 1,
+  "ProcessArchitecture": 1,
+  "ProcessorCount": 16,
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "Frequency": 10000000,
+  "TieredCompilation": "0",
+  "WarmupsPerCase": 1,
+  "MeasuredBatchesPerCase": 3,
+  "IterationsPerBatch": 1,
+  "Seeds": [
+    0,
+    -1,
+    9223372036854775807
+  ],
+  "Candidates": [
+    {
+      "Name": "NARROW",
+      "Minimum": 1,
+      "Fraction": 0.01,
+      "Cutoff": 3
+    },
+    {
+      "Name": "HISTORICAL",
+      "Minimum": 1,
+      "Fraction": 0.02,
+      "Cutoff": 3
+    },
+    {
+      "Name": "WIDE",
+      "Minimum": 1,
+      "Fraction": 0.04,
+      "Cutoff": 3
+    },
+    {
+      "Name": "SHORT-CUTOFF",
+      "Minimum": 1,
+      "Fraction": 0.02,
+      "Cutoff": 2
+    },
+    {
+      "Name": "LONG-CUTOFF",
+      "Minimum": 1,
+      "Fraction": 0.02,
+      "Cutoff": 4
+    }
+  ],
+  "Notes": "Single process/thread; explicit full-GC outside timers. R/M generation and decoding excluded. Retained GC deltas are noisy, signed managed-heap observations, not peak working set."
+}

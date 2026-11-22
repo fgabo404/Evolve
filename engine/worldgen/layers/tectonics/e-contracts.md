@@ -114,6 +114,12 @@ float computed from this profile and accepted Grid dimensions. Supported
 revisions must identify exact approved parameter values, not arbitrary tuning
 accepted merely because it is finite. Model identifiers and seed-policy revision
 1 are proposals, not frozen runtime constants. Cutoff is header word 22.
+E1 audit MINOR-02 clarification: radius and cutoff must both be finite and
+strictly positive. Compute their product and its ceiling with checked
+representability before narrowing to an integer, then cap traversal at N-1.
+Reject nonfinite products or an unrepresentable integer reach with
+OverflowException; reject invalid inputs before allocating a table. No numeric
+cutoff interval is approved; historical limits must not become implicit defaults.
 Choosing mantle alternative B requires a separate profile/layout review before
 implementation; do not add a speculative generic solver parameter section.
 

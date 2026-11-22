@@ -1,7 +1,9 @@
 # WG-01-E: Integrated dynamics roadmap
 
-**E1 documentary delivery, pending independent audit and express owner
-acceptance. E2-E5 are not authorized for implementation.** The original
+**E1 is the accepted v0.0.43 baseline identified by the owner's E2-CAL01
+authorization. E2-CAL01 permits private implementation and comparison only;
+no Influence profile is selected/frozen and normal publication stays unchanged.
+E2-FINAL and E3-E5 are not authorized.** The original
 [four-increment A/B/C/D roadmap](roadmap.md) remains historical and active for
 its outstanding acceptance gates. This separate extension neither closes
 Layer 01 nor resolves GATE-01. No branch merge is authorized.
@@ -24,6 +26,15 @@ revision 1. All numeric Influence/mantle choices below need separate approval.
 | Risks | New mantle is stylized; schema/API proposals and numeric policies remain subject to review. |
 
 ## E2 - Tectonic deformation
+
+**E2-CAL01:** internal experimental builders and independent checks are being
+delivered for owner selection, not E2 acceptance. See the
+[calibration report](e2-calibration.md) for candidates, raw evidence, limitations
+and the distinction between executed and future checks. E1 audit MINOR-02 is
+clarified in [e-contracts.md](e-contracts.md): positive finite radius/cutoff,
+checked integer reach and overflow rejection; no approved numeric range.
+E1 audit MINOR-01 (schema-1/schema-2 reader compatibility) remains open for E4.
+Neither entry concerns the separately numbered historical D-FIX01 findings.
 
 | Item | Requirement |
 | --- | --- |
@@ -87,7 +98,8 @@ revision 1. All numeric Influence/mantle choices below need separate approval.
 
 ## Planned executable test matrix
 
-These are **future requirements**, not tests introduced or executed in E1.
+These were **future requirements at E1**. E2-CAL01's actual executed subset
+is identified in its calibration report; no E3/E4/E5 checks are claimed here.
 Fixtures use approved real Grid sizes and controlled sparse source fields;
 do not add tiny production MapSize values merely to simplify an oracle.
 
@@ -117,5 +129,7 @@ do not add tiny production MapSize values merely to simplify an oracle.
 - GATE-01 remains partially open under [audit-fix01.md](audit-fix01.md).
   Existing native/DPI/GPU limitations are not erased by new design documents.
 
-Stop after E1 publication. E2 requires independent audit and express owner
-acceptance/authorization; neither this roadmap nor publication grants it.
+The E1 publication stop was followed by explicit E2-CAL01 authorization.
+Stop after preliminary comparison: no winning profile, E2-FINAL, E3, schema-2
+publication or LAB changes without the owner's subsequent decision and
+appropriate independent audit. GATE-01 is not resolved by calibration.

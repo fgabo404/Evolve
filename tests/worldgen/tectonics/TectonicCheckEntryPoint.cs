@@ -1,4 +1,4 @@
-// Exercises WG-01-B/C production data, independent geometry/kinematics and CORE lifecycle.
+// Exercises frozen WG-01-B/C data, independent geometry/kinematics, CORE lifecycle and private E2 calibration.
 // Compares complete payloads and dispatches isolated calibration tools without changing production execution.
 using System.Reflection;
 using Evolve.Definitions.WorldGeneration;
@@ -14,6 +14,7 @@ internal static class TectonicCheckEntryPoint
     private static int Main(string[] args)
     {
         if (args.SequenceEqual(new[] { "--calibration" })) { TectonicCalibrationChecks.Run(); return 0; }
+        if (args.Length == 2 && args[0] == "--influence-calibration") { TectonicInfluenceCalibration.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
         if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
@@ -38,7 +39,11 @@ internal static class TectonicCheckEntryPoint
             ("T08 fifteen complete M compatibility buffers", TectonicMotionChecks.Frozen),
             ("T08 exact agreement with all 75 approved CAL01 M cases", MotionProfileComparison.VerifyApprovedM),
             ("D independent category predicates and exact binary midpoint rounding", TectonicFinalVerification.Check),
-            ("D-FIX01 conventional graphics timing median", TectonicFinalVerification.CheckTimingStatistics)
+            ("D-FIX01 conventional graphics timing median", TectonicFinalVerification.CheckTimingStatistics),
+            ("E2-CAL01 stored M endpoint sources and ownership", TectonicInfluenceChecks.Sources),
+            ("E2-CAL01 checked numeric inputs, reach and canonical zeros", TectonicInfluenceChecks.Numeric),
+            ("E2-CAL01 independent complete Gaussian and distance oracles", TectonicInfluenceChecks.Propagation),
+            ("E2-CAL01 replay, all sizes/types/signed seeds and unchanged publication", TectonicInfluenceChecks.Compatibility)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)

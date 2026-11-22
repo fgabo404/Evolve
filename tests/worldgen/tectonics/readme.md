@@ -4,6 +4,43 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
+## E2-CAL01: private deformation experiments
+
+The current suite passes 21/21 groups: the seventeen B/C/D-FIX01 groups plus
+four internal deformation groups in TectonicInfluenceChecks.cs. See the
+[calibration report](../../../engine/worldgen/layers/tectonics/e2-calibration.md)
+for numerical policy, candidates, complete/sampled independent oracles, actual
+measurements and remaining decisions. No Influence profile is selected/frozen;
+normal publication remains schema 1/features 7. No Laboratory view or mantle
+calculation is added. E1 MINOR-01 reader compatibility remains pending for E4;
+E1 MINOR-02 finite-positive cutoff/checked reach is addressed experimentally.
+
+Run correctness/regressions with the commands below. Run calibration separately,
+after other checks/builds finish, to avoid concurrent test load. The harness
+uses five explicit candidates, all sizes, seeds 0/-1/long.MaxValue, one warmup
+then three measured batches per case. Phase times/allocations exclude analysis
+and output; signed retained-GC deltas are not peak working set. Raw batch zero
+is retained and excluded from summaries. Existing evidence is never overwritten.
+
+```powershell
+dotnet build .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release
+$previousTiering = $env:DOTNET_TieredCompilation
+try {
+    $env:DOTNET_TieredCompilation = '0'
+    # Choose a new empty directory; this path is intentionally not the archived raw evidence.
+    dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release --no-build -- --influence-calibration .\tests\worldgen\tectonics\experiments\influence-cal01\rerun
+} finally {
+    $env:DOTNET_TieredCompilation = $previousTiering
+}
+```
+
+Archived [raw evidence](experiments/influence-cal01/raw/environment.json),
+[phase samples](experiments/influence-cal01/raw/timings.csv),
+[field distributions](experiments/influence-cal01/raw/fields.csv),
+[summaries](experiments/influence-cal01/raw/summary.csv) and
+[regression log](experiments/influence-cal01/validation/tectonics.txt) belong
+only to E2-CAL01. They do not supersede historical R/M vectors or approve E2-FINAL.
+
 **Current audit follow-up:** D-FIX01 executes 17/17 groups including the shared
 conventional graphics timing median (even/odd/repeated/extreme finite samples).
 Historical D's 16-group logs and upper-middle frame summaries are preserved.

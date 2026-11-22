@@ -52,7 +52,11 @@ Primary candidate:
 Here d is unweighted shortest distance from actual Grid neighbor queries,
 including the seam and excluding polar wrap; only d<=K contributes. Recommend
 the historical integer-shell policy K=min(N-1,ceil(R*cutoff)), with comparison
-before narrowing casts to avoid overflow. No unreachable source contributes.
+before narrowing casts to avoid overflow. For E2-CAL01, first require finite,
+strictly positive radius/cutoff and a finite product/ceiling representable as
+int; otherwise reject the input or throw OverflowException before applying
+the N-1 cap. This resolves E1 audit MINOR-02 without approving a numeric range.
+No unreachable source contributes.
 The uint nearest-boundary distance is separate: multi-source BFS from **all**
 boundary endpoints, not an amplitude-weighted or channel-specific distance.
 
