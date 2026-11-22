@@ -1,0 +1,10 @@
+C:\Users\fgabo\Documents\JUEGO\Evolve\output\wg01d-capture\FinalGraphicsEntryPoint.cs(93,42): error CS0104: 'ErrorCode' is an ambiguous reference between 'OpenTK.Windowing.GraphicsLibraryFramework.ErrorCode' and 'OpenTK.Graphics.OpenGL4.ErrorCode' [C:\Users\fgabo\Documents\JUEGO\Evolve\output\wg01d-capture\Capture.csproj]
+C:\Users\fgabo\Documents\JUEGO\Evolve\output\wg01d-capture\FinalGraphicsEntryPoint.cs(115,42): error CS0104: 'ErrorCode' is an ambiguous reference between 'OpenTK.Windowing.GraphicsLibraryFramework.ErrorCode' and 'OpenTK.Graphics.OpenGL4.ErrorCode' [C:\Users\fgabo\Documents\JUEGO\Evolve\output\wg01d-capture\Capture.csproj]
+dotnet :
+At line:4 char:1
++ dotnet run --project output/wg01d-capture/Capture.csproj --configurat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+The build failed. Fix the build errors and run again.

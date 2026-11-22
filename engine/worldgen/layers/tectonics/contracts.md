@@ -1,8 +1,9 @@
 # WG-01-A — Tectonic Data and API Contracts
 
 **Status:** A/B formally accepted according to the owner's WG-01-C request;
-Ownership remains frozen at partition revision 2. C is implemented with the
-owner-approved M policy, pending audit and visual acceptance. The historical
+Ownership remains frozen at partition revision 2. C + FIX01 with approved M were
+formally accepted at v0.0.40; D's favorable audit has observations tracked in
+[audit-fix01.md](audit-fix01.md), with D acceptance/final closure still pending. The historical
 design below resolves to the [actual C contract](delivery-c.md); the exact
 approved numerical policy is recorded in [motion-calibration.md](motion-calibration.md).
 **Baseline:** v0.0.36 / cdb00c3a6689d1e06fb25012b336b9a6a2da744d.

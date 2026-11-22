@@ -1,0 +1,17 @@
+PASS Initial menu remains idle
+PASS Matching pointer press and release activate each button once
+PASS Different buttons, gaps and unpaired releases never activate
+PASS Pointer drag feedback follows the original button
+PASS Down navigation wraps through all four buttons
+PASS Up navigation wraps through all four buttons
+PASS Keyboard selection takes precedence over stationary hover
+PASS Enter and Space activate each selected button on matching release
+PASS Activation defaults to the hovered button or Start
+PASS Repeated and overlapping activation keys do not duplicate activation
+PASS Cancellation invalidates mouse and keyboard presses
+PASS Focus reset clears input but preserves the last notice
+PASS Switching input source invalidates the old press
+PASS Unavailable features update readable notices without requesting exit
+PASS Exit is requested only after valid activation
+PASS Hit detection matches button bounds across framebuffer sizes
+16/16 checks passed.

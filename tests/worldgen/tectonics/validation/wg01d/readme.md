@@ -2,7 +2,13 @@
 
 [Final report](../../../../../engine/worldgen/layers/tectonics/verification-d.md)
 contains scope, requirements, results, metrics, observations and commands.
-[Native owner matrix](native-validation.md): all owner-native rows PENDING.
+[Native owner matrix](native-validation.md): N01 PASS by owner declaration;
+N02–N17 remain PENDING. [Audit follow-up](../../../../../engine/worldgen/layers/tectonics/audit-fix01.md).
+
+Historical frames.csv columns named Median record the **upper middle** of thirty
+sorted observations. Those original results are unchanged. The corrected
+capture template uses a tested conventional median for future runs; new FIX01
+measurements are stored separately, with individual samples retained.
 
 - tectonics.txt: 16/16 groups, both fifteen-buffer sets, all 75 R/M cases,
   independent BFS and the D numeric predicate/midpoint oracle.

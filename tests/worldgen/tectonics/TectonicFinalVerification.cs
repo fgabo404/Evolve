@@ -14,6 +14,28 @@ internal static class TectonicFinalVerification
 {
     private static long querySink;
 
+    internal static void CheckTimingStatistics()
+    {
+        Require(GraphicsTimingStatistics.MedianOfSortedSamples([1, 3, 5]) == 3, "Odd sample count.");
+        Require(GraphicsTimingStatistics.MedianOfSortedSamples([1, 3, 5, 7]) == 4, "Even sample count.");
+        Require(GraphicsTimingStatistics.MedianOfSortedSamples(Enumerable.Range(1, 30).Select(value => (double)value).ToArray()) == 15.5,
+            "Thirty samples must average indices 14 and 15, not select index 15.");
+        Require(GraphicsTimingStatistics.MedianOfSortedSamples([2, 2, 2, 2]) == 2 &&
+            GraphicsTimingStatistics.MedianOfSortedSamples([1, 2, 2, 7, 9]) == 2, "Repeated values.");
+        Require(GraphicsTimingStatistics.MedianOfSortedSamples([double.MaxValue]) == double.MaxValue &&
+            GraphicsTimingStatistics.MedianOfSortedSamples([double.MaxValue, double.MaxValue]) == double.MaxValue &&
+            GraphicsTimingStatistics.MedianOfSortedSamples([-double.MaxValue, -double.MaxValue]) == -double.MaxValue,
+            "Finite extremes must not overflow the median.");
+        Require(GraphicsTimingStatistics.MedianOfSortedSamples([-double.MaxValue, double.MaxValue]) == 0 &&
+            GraphicsTimingStatistics.MedianOfSortedSamples([double.Epsilon, 2 * double.Epsilon]) == 2 * double.Epsilon,
+            "Opposite signs and subnormal halfway rounding.");
+        Expect<ArgumentException>(() => GraphicsTimingStatistics.MedianOfSortedSamples([]));
+        Expect<ArgumentException>(() => GraphicsTimingStatistics.MedianOfSortedSamples([2, 1]));
+        Expect<ArgumentException>(() => GraphicsTimingStatistics.MedianOfSortedSamples([double.NaN]));
+        Expect<ArgumentException>(() => GraphicsTimingStatistics.MedianOfSortedSamples([double.PositiveInfinity]));
+        Console.WriteLine("TIMING MEDIAN: odd/even/30 samples, repeats, finite extremes, subnormals and invalid inputs passed.");
+    }
+
     internal static void Check()
     {
         float a = BitConverter.UInt32BitsToSingle(0x3E19999A);

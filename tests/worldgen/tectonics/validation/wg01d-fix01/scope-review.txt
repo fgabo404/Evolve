@@ -1,0 +1,8 @@
+PASS clean starting baseline verified: 04aea2ac457868a6ba01e2a364c404026df43733 / world-tectonics.
+PASS no production Engine/CORE/Grid/R/M/Game/LAB/menu/State/Saves changes or original vector updates.
+PASS 35 original D artifacts retain exact SHA-256 hashes; old frame results are upper-middle and not recomputed.
+PASS seventeen tectonic groups including shared conventional median; complete Grid, Laboratory 19/19, menu 16/16 and Release builds.
+PASS all eighteen new frame summaries independently match 540 retained samples within printed precision.
+PASS complementary GL scenarios, actual 800x600/1280x720/1920x1061 framebuffers and logical object deletion; exact 1920x1080 NOT validated.
+PASS native launcher syntax only; N01 PASS by owner declaration, N02-N17 PENDING, GATE-01 PARTIALLY RESOLVED.
+PASS git diff --check and compiled display VERSION v0.0.42; no automatic closure or merge.

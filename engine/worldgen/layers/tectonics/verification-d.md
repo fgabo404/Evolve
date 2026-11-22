@@ -6,6 +6,12 @@ owner-accepted FIX01 / v0.0.40; initially clean working tree.
 **Status:** developer verification complete for independent audit submission.
 This is not the independent Auditor's verdict or formal owner acceptance.
 
+**Post-audit note:** the owner's D-FIX01 request reports a favorable independent
+audit with observations. See [audit-fix01.md](audit-fix01.md) for the current
+status; the report below remains the historical developer D record. Its frame
+columns labeled Median used the upper central sample of 30, not the conventional
+even-sample median. Original numbers/artifacts are preserved, not recalculated.
+
 ## 1. Executive assessment and authority
 
 The executed automated and offscreen graphics checks pass, with no known
@@ -199,10 +205,11 @@ summary include all min/max/mean values and exact uploaded section sizes.
 
 Each scene/view has ten warmups and thirty synchronized samples: **540 measured
 complete frames** across Grid and Tectonics, with UI/selection included. Size
-summary below is the median of three scene medians, **not** a pooled 90-sample
-median. CPU includes reflection, render dispatch, SwapBuffers and Finish.
+summary below is the median of three scene **upper-middle statistics** (index
+15 of 30 sorted samples), **not** a conventional even-sample median or a pooled
+90-sample median. CPU includes reflection, render dispatch, SwapBuffers and Finish.
 
-| View | Small GPU ms | Medium GPU ms | Large GPU ms |
+| View (historical upper-middle per scene) | Small GPU ms | Medium GPU ms | Large GPU ms |
 | --- | ---: | ---: | ---: |
 | Grid | .843776 | .863232 | .998400 |
 | Tectonics + Grid | 1.380352 | 1.319936 | 1.551360 |
@@ -212,7 +219,7 @@ Tectonic GPU sample extrema were .822272–8.471552 / 1.117184–2.924544 /
 earlier reports, or hardware-independent thresholds. Driver clocks, scheduling,
 cache/thermal state, UI and synchronization differ between observations.
 
-Tectonic CPU-finish median of scene medians: **6.4769 / 3.1430 / 3.6018 ms**.
+Tectonic CPU-finish median of scene upper-middle values: **6.4769 / 3.1430 / 3.6018 ms**.
 CPU and GPU intervals measure different synchronized work and must not be
 subtracted to estimate a renderer optimization or input latency.
 

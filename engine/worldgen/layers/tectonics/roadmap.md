@@ -1,6 +1,6 @@
 # WG-01 — Tectonic Plates: Compact Roadmap
 
-**Status:** A/B accepted; C and accepted FIX01 preserved. WG-01-D developer verification delivered at v0.0.41 for independent audit. Native owner matrix and final Layer 01 acceptance remain pending; no roadmap closure or merge.
+**Status:** A/B accepted; C + FIX01 formally accepted at v0.0.40. D delivered at v0.0.41 and audited favorably with observations per the owner's D-FIX01 request. Finding follow-up is recorded in audit-fix01.md. D acceptance and final Layer 01 closure remain pending; no roadmap closure or merge.
 **Working branch:** `world-tectonics`, based on formally closed Grid `v0.0.35` (`503b3ec41a89b9f54cb47dede9f92506123b6a23`).  
 **Target:** exactly **14 connected, irregular, unequal tectonic plates** for Small, Medium and Large.  
 **Historical algorithm baseline:** weighted hex-region growth, multi-scale periodic noise, plate motion and boundary stresses.  
@@ -60,8 +60,8 @@ flags 7; Influence disabled. [delivery-c.md](delivery-c.md) records real motion,
 complete unique interfaces, immutable publication, Laboratory display, fifteen
 new complete M vectors, preservation of all fifteen B buffers, exact agreement
 with 75 M cases, 15/15 tectonic groups and regressions. OBS-02 numerical policy
-closed for delivery; independent audit/visual review and C acceptance pending.
-No D implementation, broader observation fixes or merge is implied.
+closed for delivery. C + FIX01 were subsequently formally accepted at v0.0.40.
+The later D authorization is verification-only; no broader fixes or merge is implied.
 
 ### WG-01-D — Full verification and final closure
 
@@ -75,10 +75,11 @@ No D implementation, broader observation fixes or merge is implied.
 executed checks, frozen vectors, CPU/query/memory and real offscreen GL metrics.
 Tectonics 16/16, Laboratory 19/19, menu 16/16, complete Grid regressions and
 Release builds pass. No production algorithm/profile/LAB change was made.
-No blocking functional defect was found in the executed scope. Native inputs,
-DPI/window transitions/normal close remain PENDING in the owner matrix. D is
-submitted for audit; independent verdict and formal owner closure are not
-claimed. Influence remains absent and unbenchmarked, pending a future decision.
+No blocking functional defect was found in the executed scope. The subsequent
+favorable audit with observations is recorded in [audit-fix01.md](audit-fix01.md).
+N01 is PASS by owner declaration; N02–N17 remain PENDING for native confirmation.
+No formal D acceptance or Layer 01 closure is claimed. Influence remains absent
+and unbenchmarked, pending a future decision.
 
 ## Governance
 

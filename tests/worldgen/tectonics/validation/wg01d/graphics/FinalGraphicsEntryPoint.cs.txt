@@ -11,6 +11,9 @@ using Evolve.Engine.WorldGeneration.Layers.Grid;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using Evolve.WorldGeneration.Tectonics.Checks;
+using OpenTK.Mathematics;
+using GLFW = OpenTK.Windowing.GraphicsLibraryFramework.GLFW;
 
 internal static class FinalGraphicsEntryPoint
 {
@@ -46,6 +49,7 @@ internal static class FinalGraphicsEntryPoint
         var upload = renderer.GetType().GetMethod("Upload", Static)!;
         int[] diagnosticBuffers = Enumerable.Range(0, 4).Select(_ => GL.GenBuffer()).ToArray();
         var frameCsv = new StringBuilder("Size,Seed,View,Samples,GpuMinMs,GpuMedianMs,GpuMaxMs,CpuFinishMedianMs\n");
+        var sampleCsv = new StringBuilder("Size,Seed,View,Sample,GpuMs,CpuFinishMs\n");
         var meshCsv = new StringBuilder("Size,Seed,Batch,GridMeshMs,GridAllocated,TectonicMeshMs,TectonicAllocated,UploadCpuFinishMs,UploadGpuMs,GridBytes,FillBytes,BoundaryBytes,ArrowBytes\n");
         var bufferCsv = new StringBuilder("State,Buffer,Bytes\n");
         Invoke(session, "Open");
@@ -97,7 +101,23 @@ internal static class FinalGraphicsEntryPoint
             Require(smallGrid[0] == 1920000 && smallGrid[1] == oldSizes[1], "Grid replacement retention mismatch.");
             Invoke(session, "RunNextStage"); Draw();
             Require(Sizes("Small-complete")[1] == 2880000, "Small fill storage not replaced.");
+            foreach (var resolution in new[] { new Vector2i(800, 600), new Vector2i(1280, 720), new Vector2i(1920, 1080) })
+            {
+                window.ClientSize = resolution;
+                GLFW.PollEvents();
+                if (window.ClientSize != resolution)
+                    Console.WriteLine($"LIMITATION requested client={resolution}; actual client={window.ClientSize}; exact requested resolution not validated.");
+                width = window.FramebufferSize.X; height = window.FramebufferSize.Y;
+                Require(width > 0 && height > 0, "Invalid resized framebuffer.");
+                GL.BindTexture(TextureTarget.Texture2D, texture);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+                Require(GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) == FramebufferErrorCode.FramebufferComplete, "Incomplete resized FBO.");
+                Draw(); Capture($"Resize-{width}x{height}.png");
+                Require(GL.GetError() == ErrorCode.NoError, "GL error after programmatic resize.");
+                Console.WriteLine($"PASS actual-dimension rendering requested={resolution}; client={window.ClientSize}; framebuffer={width}x{height}; no native drag/DPI claim.");
+            }
             File.WriteAllText(Path.Combine(directory, "frames.csv"), frameCsv.ToString());
+            File.WriteAllText(Path.Combine(directory, "frame-samples.csv"), sampleCsv.ToString());
             File.WriteAllText(Path.Combine(directory, "geometry-upload.csv"), meshCsv.ToString());
             File.WriteAllText(Path.Combine(directory, "buffer-retention.csv"), bufferCsv.ToString());
             int[] resourceBuffers = Buffers.Select(name => (int)Field(renderer, name)).ToArray();
@@ -140,8 +160,10 @@ internal static class FinalGraphicsEntryPoint
                 cpu[sample] = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
                 GL.GetQueryObject(timer, GetQueryObjectParam.QueryResult, out long ns); gpu[sample] = ns / 1_000_000d;
             }
+            for (int sample = 0; sample < gpu.Length; sample++)
+                sampleCsv.Append(FormattableString.Invariant($"{size},{seed},{view},{sample},{gpu[sample]:F6},{cpu[sample]:F6}\n"));
             Array.Sort(gpu); Array.Sort(cpu);
-            frameCsv.Append(FormattableString.Invariant($"{size},{seed},{view},30,{gpu[0]:F6},{gpu[15]:F6},{gpu[^1]:F6},{cpu[15]:F6}\n"));
+            frameCsv.Append(FormattableString.Invariant($"{size},{seed},{view},30,{gpu[0]:F6},{GraphicsTimingStatistics.MedianOfSortedSamples(gpu):F6},{gpu[^1]:F6},{GraphicsTimingStatistics.MedianOfSortedSamples(cpu):F6}\n"));
         }
         void MeasureGeometry(MapSize size, long seed, HexGridData grid, object tectonics)
         {

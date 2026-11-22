@@ -1,0 +1,1 @@
+PASS compiled display version and VERSION: v0.0.42

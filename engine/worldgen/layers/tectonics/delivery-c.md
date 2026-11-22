@@ -5,6 +5,11 @@ C acceptance or D work. **Branch:** world-tectonics. **Version:** v0.0.39.
 **Baseline:** v0.0.38, ba187fe933ad494a3b81992438d694fa40fed418.
 A/B are formally accepted according to the owner's C authorization.
 
+**Later status:** C + FIX01 were formally accepted at v0.0.40. D was delivered
+at v0.0.41 and audited favorably with observations, per the owner's D-FIX01
+request. [audit-fix01.md](audit-fix01.md) records current finding follow-up;
+the C-era pending/no-D statements below retain their historical meaning.
+
 ## Frozen numeric policy and compatibility
 
 The owner approved exactly M and the numerical policy in

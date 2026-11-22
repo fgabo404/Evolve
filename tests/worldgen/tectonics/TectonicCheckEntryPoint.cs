@@ -37,7 +37,8 @@ internal static class TectonicCheckEntryPoint
             ("T06/T10 C schema safety, immutability and historical rebuilding", TectonicMotionChecks.Schema),
             ("T08 fifteen complete M compatibility buffers", TectonicMotionChecks.Frozen),
             ("T08 exact agreement with all 75 approved CAL01 M cases", MotionProfileComparison.VerifyApprovedM),
-            ("D independent category predicates and exact binary midpoint rounding", TectonicFinalVerification.Check)
+            ("D independent category predicates and exact binary midpoint rounding", TectonicFinalVerification.Check),
+            ("D-FIX01 conventional graphics timing median", TectonicFinalVerification.CheckTimingStatistics)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)

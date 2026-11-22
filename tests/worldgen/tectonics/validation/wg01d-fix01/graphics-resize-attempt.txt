@@ -1,0 +1,22 @@
+ENV .NET 10.0.13; Microsoft Windows 10.0.26200; X64; CPUs=16; Intel64 Family 6 Model 154 Stepping 3, GenuineIntel
+GL_VENDOR=NVIDIA Corporation; GL_RENDERER=NVIDIA GeForce RTX 3050 Laptop GPU/PCIe/SSE2; GL_VERSION=3.3.0 NVIDIA 592.00; framebuffer=(1280, 720); tiering=runtime default
+METHOD Release; VSync off; hidden single actual EvolveWindow; RGBA8 FBO; 10 warmup/30 timed frames per size/seed/view; 1 warmup/3 mesh-upload batches; reflection diagnostic overhead included in CPU measurements; no simultaneous builds/tests.
+PASS GPU Small/0: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Small/1: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Small/-1: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Medium/0: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Medium/1: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Medium/-1: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Large/0: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Large/1: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS GPU Large/-1: manual staging/model toggles/selection/camera/reopening/INICIAR; real shaders/frames; not native event input.
+PASS programmatic resize client=(800, 600); framebuffer=800x600; no native drag/DPI claim.
+PASS programmatic resize client=(1280, 720); framebuffer=1280x720; no native drag/DPI claim.
+dotnet : Unhandled exception. System.InvalidOperationException: Requested client dimensions were not applied.
+At line:4 char:1
++ dotnet run --project output/wg01d-capture/Capture.csproj --configurat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unhandled excep...re not applied.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+   at FinalGraphicsEntryPoint.Main(String[] args)

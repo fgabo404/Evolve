@@ -4,7 +4,14 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
-WG-01-D now executes **16/16 groups**, adding an independent Boolean category
+**Current audit follow-up:** D-FIX01 executes 17/17 groups including the shared
+conventional graphics timing median (even/odd/repeated/extreme finite samples).
+Historical D's 16-group logs and upper-middle frame summaries are preserved.
+[audit-fix01.md](../../../engine/worldgen/layers/tectonics/audit-fix01.md) records
+MINOR-01/02 resolution and the partially resolved GATE-01. N01 is owner-declared
+PASS; N02–N17 remain PENDING. New runs/samples reside only in validation/wg01d-fix01/.
+
+The historical WG-01-D delivery executed **16/16 groups**, adding an independent Boolean category
 oracle over 324 signed/extreme pairs and 42,991 published interfaces, plus
 exact positive/negative binary midpoint rounding. Previous checks/fixtures are
 preserved. [Final verification](../../../engine/worldgen/layers/tectonics/verification-d.md)
@@ -17,8 +24,8 @@ It validates full output against the real orchestrator and reports allocation
 and retained-GC deltas. Source and raw results explain diagnostic overhead and
 why the initial enumerable-copy probe is excluded from final metrics.
 
-The original B evidence below is historical; the final C section records the
-current 15-group suite and approved M publication. No historical claims of
+The original B evidence below is historical; the C section records its
+historical 15-group suite and approved M publication. No historical claims of
 absent motion should be read as the current C capability inventory.
 
 ## Independent audit commands
@@ -134,7 +141,7 @@ vectors. The owner selected M and its exact numerical policy. Production now
 matches all 75 M fingerprints exactly, with fifteen separate complete buffers
 in motion-vectors/. Existing vectors/ and P0/CAL01 evidence remain unchanged.
 
-Default checks now pass 15/15 groups, retaining all B assertions and adding
+The C delivery passed 15/15 groups, retaining all B assertions and adding
 production M precision/ties, complete independent interfaces/projections,
 expanded malformed schema/canonical-zero checks, C candidate atomicity/retry,
 historical rebuilding, full output WorldType independence and complete M

@@ -1,14 +1,15 @@
 # Layer 01 — Tectonic Plates
 
-**Status:** WG-01-A/B formally accepted by the owner in the WG-01-C request.
-Frozen tectonic-partition-r-v2 (revision 2) remains unchanged. C is implemented
-with owner-approved M and Laboratory display, pending independent audit and
-owner visual acceptance. See [delivery-c.md](delivery-c.md) for C contracts and
-[verification-d.md](verification-d.md) for the complete D developer verification,
-reconciled observations and pending native/independent acceptance gates.
+**Status:** WG-01-A and WG-01-B accepted. WG-01-C + FIX01 formally accepted at
+v0.0.40. WG-01-D delivered at v0.0.41 and independently audited favorably with
+observations, as communicated in the owner's D-FIX01 authorization. Formal
+WG-01-D acceptance and final Layer 01 closure remain pending. R revision 2 and
+M revision 1 are unchanged. [audit-fix01.md](audit-fix01.md) records finding
+resolutions and the outstanding native gate; [verification-d.md](verification-d.md)
+retains the developer D evidence and [delivery-c.md](delivery-c.md) the C record.
 **Working branch:** `world-tectonics`.
-**Delivery baseline:** `v0.0.37`, `63e968ff71dbbcaa61e1ebbba744e466e3a01332`.
-**Delivery:** `v0.0.38`.
+**Historical B baseline:** `v0.0.37`, `63e968ff71dbbcaa61e1ebbba744e466e3a01332`.
+**Historical B delivery:** `v0.0.38`.
 **Prerequisite:** formally closed Layer 00 — Hex Grid.
 
 ## 1. Responsibility and boundaries
@@ -246,7 +247,7 @@ acceptance or geological validation from developer checks alone.
   formally accepted by the owner in the C authorization.
 - **C:** approved motions/boundaries and conditional measured influences; actual
   LAB view implemented with M, B partition stable; influences remain absent.
-  Independent audit and formal owner acceptance are pending.
+  C + FIX01 were formally accepted at v0.0.40; D native gate/final closure remain pending.
 - **D:** complete correctness/performance evidence, independent audit and formal
   owner closure. Branch integration remains separately authorized.
 
