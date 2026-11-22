@@ -12,6 +12,16 @@ retains the developer D evidence and [delivery-c.md](delivery-c.md) the C record
 **Historical B delivery:** `v0.0.38`.
 **Prerequisite:** formally closed Layer 00 — Hex Grid.
 
+## WG-01-E documentary extension
+
+The owner authorized E1 architecture only at v0.0.42. See the
+[historical review](e-history-review.md), [integrated design](e-architecture.md),
+[proposed schema-2 contract](e-contracts.md), [five-increment E roadmap](e-roadmap.md)
+and [documentary verification](e1-validation.md). These proposals do not replace
+the active R/M profiles or schema 1/features 7. Influence and mantle remain
+unimplemented; E2 requires independent audit and express owner acceptance.
+GATE-01 remains partially open and Layer 01 is not formally closed.
+
 ## 1. Responsibility and boundaries
 
 Generate exactly **14 nonempty connected regions**, with one owner in 0..13

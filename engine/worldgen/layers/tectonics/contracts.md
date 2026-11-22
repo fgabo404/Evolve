@@ -9,6 +9,11 @@ approved numerical policy is recorded in [motion-calibration.md](motion-calibrat
 **Baseline:** v0.0.36 / cdb00c3a6689d1e06fb25012b336b9a6a2da744d.
 **A delivery:** v0.0.37. **B delivery:** v0.0.38. [Design and validation matrix](readme.md).
 
+**Separate E1 proposal:** [e-contracts.md](e-contracts.md) evaluates an explicit
+schema 2 for integrated deformation/mantle. It is pending approval and does not
+alter this active/historical contract or current production schema 1/features 7.
+The reserved Influence combination described below is not currently enabled.
+
 ## 1. Verified CORE compatibility and representation decision
 
 The inspected production LayerData constructor is private protected and
