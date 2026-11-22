@@ -1,0 +1,30 @@
+[
+  {
+    "Id": "H",
+    "MinimumSpeed": 1,
+    "MaximumSpeed": 8,
+    "Activity": 0.15,
+    "MixedRatio": 0.5
+  },
+  {
+    "Id": "Q",
+    "MinimumSpeed": 1,
+    "MaximumSpeed": 8,
+    "Activity": 0.5,
+    "MixedRatio": 0.5
+  },
+  {
+    "Id": "M",
+    "MinimumSpeed": 1,
+    "MaximumSpeed": 8,
+    "Activity": 0.15,
+    "MixedRatio": 0.75
+  },
+  {
+    "Id": "Z",
+    "MinimumSpeed": 0,
+    "MaximumSpeed": 8,
+    "Activity": 0.15,
+    "MixedRatio": 0.5
+  }
+]

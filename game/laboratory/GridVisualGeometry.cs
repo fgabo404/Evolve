@@ -12,6 +12,8 @@ internal static class GridVisualGeometry
     private static readonly Vector2[] Corners = Enumerable.Range(0, 6)
         .Select(index => new Vector2((float)Math.Cos(index * Math.PI / 3), (float)Math.Sin(index * Math.PI / 3))).ToArray();
 
+    internal static Vector2 Corner(int index) => Corners[index];
+
     public static LaboratoryBounds Bounds(HexGridData grid)
     {
         double left = double.MaxValue, top = double.MaxValue, right = double.MinValue, bottom = double.MinValue;

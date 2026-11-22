@@ -1,8 +1,10 @@
 # Layer 01 — Tectonic Plates
 
-**Status:** WG-01-B implemented with owner-approved R, frozen algorithm
-tectonic-partition-r-v2 (revision 2). Submitted for independent audit and formal
-owner acceptance of B; profile approval is not acceptance of the increment.
+**Status:** WG-01-A/B formally accepted by the owner in the WG-01-C request.
+Frozen tectonic-partition-r-v2 (revision 2) remains unchanged. C is implemented
+with owner-approved M and Laboratory display, pending independent audit and
+owner visual acceptance. See [delivery-c.md](delivery-c.md) for actual contracts,
+tests, performance and limitations. D is not started.
 **Working branch:** `world-tectonics`.
 **Delivery baseline:** `v0.0.37`, `63e968ff71dbbcaa61e1ebbba744e466e3a01332`.
 **Delivery:** `v0.0.38`.
@@ -240,9 +242,10 @@ acceptance or geological validation from developer checks alone.
 - **A:** these documents, contracts, compact roadmap and VERSION only; independent
   audit and explicit owner acceptance required before B.
 - **B:** approved R profile and Ownership-only CORE publication implemented;
-  independent audit and formal increment acceptance remain pending.
+  formally accepted by the owner in the C authorization.
 - **C:** approved motions/boundaries and conditional measured influences; actual
-  LAB view, B partition remains stable, absent features stay explicit.
+  LAB view implemented with M, B partition stable; influences remain absent.
+  Independent audit and formal owner acceptance are pending.
 - **D:** complete correctness/performance evidence, independent audit and formal
   owner closure. Branch integration remains separately authorized.
 

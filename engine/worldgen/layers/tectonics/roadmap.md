@@ -1,6 +1,6 @@
 # WG-01 — Tectonic Plates: Compact Roadmap
 
-**Status:** WG-01-B implemented at v0.0.38 with owner-selected R and frozen revision 2; pending independent B audit and formal acceptance. WG-01-C/D not started.
+**Status:** WG-01-A/B formally accepted. WG-01-C implemented at v0.0.39 with owner-approved M, pending independent audit and owner visual acceptance. WG-01-D not started.
 **Working branch:** `world-tectonics`, based on formally closed Grid `v0.0.35` (`503b3ec41a89b9f54cb47dede9f92506123b6a23`).  
 **Target:** exactly **14 connected, irregular, unequal tectonic plates** for Small, Medium and Large.  
 **Historical algorithm baseline:** weighted hex-region growth, multi-scale periodic noise, plate motion and boundary stresses.  
@@ -54,6 +54,15 @@ No increment acceptance, C/D development or merge is implied.
 
 **Gate C:** tectonic physics/geometry and LAB regression checks, visual review, independent audit and owner acceptance.
 
+**C delivery:** the owner selected exactly M and the policy in
+[motion-calibration.md](motion-calibration.md). Motion revision 1, schema 1,
+flags 7; Influence disabled. [delivery-c.md](delivery-c.md) records real motion,
+complete unique interfaces, immutable publication, Laboratory display, fifteen
+new complete M vectors, preservation of all fifteen B buffers, exact agreement
+with 75 M cases, 15/15 tectonic groups and regressions. OBS-02 numerical policy
+closed for delivery; independent audit/visual review and C acceptance pending.
+No D implementation, broader observation fixes or merge is implied.
+
 ### WG-01-D — Full verification and final closure
 
 - Verify all three sizes, deterministic seeds, 14 connected regions, boundary pairs, interactions, CORE lifecycle and LAB behavior.
@@ -66,7 +75,7 @@ No increment acceptance, C/D development or merge is implied.
 
 - Architect specifies; Dev implements only an authorized increment; independent Auditor reviews; owner accepts.
 - Every authorized repository-changing commit increments root `VERSION`, and reports an English commit message plus its full SHA.
-- B finalization is expressly authorized for R only. Stop after its publication for independent audit and formal acceptance; no C implementation or changes to Grid, WG-CORE, State, Saves, other layers or normal creation are authorized.
+- A/B are accepted and C is expressly authorized, preserving frozen R. The owner selected M and its documented numerical policy before the final C commit. No changes to Grid, WG-CORE, State, Saves, other layers or normal creation, and no D implementation, are authorized.
 - Keep the Grid audit observations and `world-grid` history intact; do not delete or retire its roadmap.
 - `world-tectonics` is a working branch based on the accepted Grid commit because `world-grid` has not been integrated into `world`. This does not authorize synchronization or merging.
 

@@ -3,6 +3,7 @@
 using Evolve.Definitions.WorldGeneration;
 using Evolve.Engine.WorldGeneration;
 using Evolve.Engine.WorldGeneration.Layers.Grid;
+using Evolve.Engine.WorldGeneration.Layers.Tectonics;
 
 namespace Evolve.Game;
 
@@ -17,6 +18,9 @@ internal sealed class LaboratorySession
     public string SeedText => configuration.SeedText;
     public GenerationContext? Context { get; private set; }
     public HexGridData? Grid { get; private set; }
+    public TectonicData? Tectonics { get; private set; }
+    public bool ShowBoundaries { get; private set; } = true;
+    public bool ShowMotion { get; private set; } = true;
     public int? SelectedCell { get; private set; }
     public GenerationStage? SelectedView { get; private set; }
     public string Notice { get; private set; } = "CONFIGURE EL MUNDO PARA COMENZAR.";
@@ -27,7 +31,7 @@ internal sealed class LaboratorySession
     // This inventory is the single extension point for future real executors; missing stages are capability guards.
     public LaboratorySession(IEnumerable<IWorldGenerationLayer>? availableLayers = null)
     {
-        available = (availableLayers ?? new IWorldGenerationLayer[] { new HexGridLayer() }).ToDictionary(layer => layer.Stage);
+        available = (availableLayers ?? new IWorldGenerationLayer[] { new HexGridLayer(), new TectonicPlatesLayer() }).ToDictionary(layer => layer.Stage);
         if (available.Keys.Any(stage => !Enum.IsDefined(stage)))
             throw new ArgumentException("Unknown generation capability.", nameof(availableLayers));
         var layers = Enum.GetValues<GenerationStage>().Select(stage =>
@@ -79,6 +83,7 @@ internal sealed class LaboratorySession
     {
         Context = null;
         Grid = null;
+        Tectonics = null;
         SelectedCell = null;
         SelectedView = null;
         Notice = "CONFIGURE Y CREE UNA NUEVA SESION.";
@@ -93,6 +98,7 @@ internal sealed class LaboratorySession
         }
         Context = orchestrator.CreateGeneration(request!);
         Grid = null;
+        Tectonics = null;
         SelectedCell = null;
         SelectedView = null;
         Notice = "SESION CREADA. GRID PENDIENTE.";
@@ -114,7 +120,7 @@ internal sealed class LaboratorySession
             Notice = progress.GetFailure(stage) ?? "LA ETAPA NO SE COMPLETO.";
             return false;
         }
-        if (stage == GenerationStage.Grid) SelectView(stage);
+        if (stage is GenerationStage.Grid or GenerationStage.Tectonics) SelectView(stage);
         Notice = $"{stage}: COMPLETADA. LAS CAPAS RESTANTES PUEDEN NO ESTAR DISPONIBLES.";
         return true;
     }
@@ -125,13 +131,33 @@ internal sealed class LaboratorySession
     // Only completed data with a real visualization may be selected, never a placeholder image.
     public bool SelectView(GenerationStage stage)
     {
-        if (stage != GenerationStage.Grid || !IsCompleted(stage)) return false;
-        var data = Context!.GetLayerData(stage) as LayerData<HexGridDescriptor>;
+        if (stage is not (GenerationStage.Grid or GenerationStage.Tectonics) || !IsCompleted(stage)) return false;
+        var data = Context!.GetLayerData(GenerationStage.Grid) as LayerData<HexGridDescriptor>;
         if (data is null || data.Count != 1 || data[0].Size != Context.Request.Settings.MapSize)
             throw new InvalidOperationException("Published Grid does not match the immutable request.");
         Grid ??= data[0].ToGridData();
+        if (stage == GenerationStage.Tectonics)
+            Tectonics ??= TectonicData.FromLayerData(Context.GetLayerData(stage)!, Grid);
         SelectedView = stage;
         return true;
+    }
+
+    public void ToggleBoundaries() => ShowBoundaries = !ShowBoundaries;
+    public void ToggleMotion() => ShowMotion = !ShowMotion;
+
+    // Presentation reads the already validated result; it never regenerates or guesses plate metadata.
+    public string DescribeSelection()
+    {
+        if (SelectedCell is not int id || Grid is not { } grid) return "SELECCIONE UN HEXAGONO EN EL MAPA.";
+        var offset = grid.GetOffset(id); var geo = grid.GetGeographicCenter(id);
+        string text = FormattableString.Invariant($"CELLID: {id}\nCOLUMNA: {offset.Column}  FILA: {offset.Row}\nLONGITUD: {geo.Longitude:F3}\nLATITUD: {geo.Latitude:F3}");
+        if (SelectedView == GenerationStage.Tectonics && Tectonics is { } tectonics)
+        {
+            byte owner = tectonics.GetPlateId(id);
+            var plate = tectonics.GetPlate(owner); var motion = tectonics.GetMotion(owner);
+            text += FormattableString.Invariant($"\nPLATEID: {owner}\nCELDAS: {plate.CellCount} ({100d * plate.CellCount / grid.CellCount:F2}%)\nDIRECCION: {motion.DirectionDegrees:F2} GRADOS\nVELOCIDAD: {motion.SpeedCmPerYear:F3} CM/ANO\nINFLUENCIAS: NO DISPONIBLES");
+        }
+        return text;
     }
 
     public void Select(int? cellId)

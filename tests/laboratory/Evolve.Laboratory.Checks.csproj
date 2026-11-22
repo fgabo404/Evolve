@@ -16,5 +16,6 @@
     <Compile Include="../../game/laboratory/LaboratoryLayout.cs" Link="Production/LaboratoryLayout.cs" />
     <Compile Include="../../game/laboratory/GridCamera.cs" Link="Production/GridCamera.cs" />
     <Compile Include="../../game/laboratory/GridVisualGeometry.cs" Link="Production/GridVisualGeometry.cs" />
+    <Compile Include="../../game/laboratory/TectonicVisualGeometry.cs" Link="Production/TectonicVisualGeometry.cs" />
   </ItemGroup>
 </Project>

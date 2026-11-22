@@ -22,14 +22,16 @@ internal sealed class LaboratoryLayout
     public double MaximumScroll { get; }
     public LaboratoryBounds SidebarClip { get; }
     public LaboratoryBounds Viewport { get; }
+    public double InformationHeight { get; }
 
-    public LaboratoryLayout(int width, int height, double scroll = 0, double scale = 1)
+    public LaboratoryLayout(int width, int height, double scroll = 0, double scale = 1, bool tectonicInformation = false)
     {
         Scale = Math.Clamp(scale, 1, 3);
         SidebarWidth = Math.Min(width - 80 * Scale, Math.Clamp(width / Scale * 0.23, 200, 280) * Scale);
         SidebarWidth = Math.Max(1, SidebarWidth);
         SidebarClip = new(8 * Scale, 8 * Scale, SidebarWidth - 16 * Scale, Math.Max(1, height - 56 * Scale));
-        MaximumScroll = Math.Max(0, 726 * Scale - SidebarClip.Height);
+        InformationHeight = tectonicInformation ? 166 : 106;
+        MaximumScroll = Math.Max(0, (620 + InformationHeight) * Scale - SidebarClip.Height);
         Scroll = Math.Clamp(scroll, 0, MaximumScroll);
         Viewport = new(SidebarWidth + 12 * Scale, 12 * Scale,
             Math.Max(1, width - SidebarWidth - 24 * Scale), Math.Max(1, height - 24 * Scale));

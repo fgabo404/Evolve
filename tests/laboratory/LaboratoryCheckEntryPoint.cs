@@ -5,6 +5,7 @@ using Evolve.Definitions.WorldGeneration;
 using Evolve.Engine.WorldGeneration;
 using Evolve.Engine.WorldGeneration.Layers.Grid;
 using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
+using Evolve.Engine.WorldGeneration.Layers.Tectonics;
 
 (string Name, Action Check)[] checks =
 [
@@ -25,7 +26,8 @@ using Evolve.Engine.WorldGeneration.Layers.Grid.Geometry;
     ("failure projection and manual retry preserve partial Grid", ManualFailure),
     ("explicit seed randomization creates valid requests", Randomization),
     ("dropdown navigation and scrolling agree with hit detection", Dropdowns),
-    ("completed views and inspection survive LAB reopening", SharedInspection)
+    ("completed views and inspection survive LAB reopening", SharedInspection),
+    ("real Tectonics data, colors, geometry, arrows and inspection", TectonicInspection)
 ];
 int failures = 0;
 foreach (var (name, check) in checks)
@@ -293,10 +295,12 @@ static void ManualStages()
             session.Context!.GetLayerData(GenerationStage.Grid) is null, "Creating a session generated Grid automatically");
         Require(session.RunNextStage() && session.Grid is not null &&
             session.GridStatus == GenerationStageStatus.Completed, "Manual Grid failed");
-        Require(session.Context!.GetProgress().NextStage == GenerationStage.Tectonics && !session.CanAdvance &&
-            !session.RunNextStage(), "Manual flow advanced past capability");
+        Require(session.Context!.GetProgress().NextStage == GenerationStage.Tectonics && session.CanAdvance &&
+            session.Tectonics is null, "Tectonics executed without a second request");
+        Require(session.RunNextStage() && session.Tectonics is not null && !session.CanAdvance && !session.RunNextStage(),
+            "Real Tectonics failed or flow advanced past capability");
         Require(session.StageStatus(GenerationStage.Grid) == "COMPLETADA", "Completed projection");
-        foreach (var stage in Enum.GetValues<GenerationStage>().Skip(1))
+        foreach (var stage in Enum.GetValues<GenerationStage>().Skip(2))
             Require(!session.IsImplemented(stage) && session.StageStatus(stage) == "NO DISPONIBLE" &&
                 session.Context.GetProgress().GetStatus(stage) == GenerationStageStatus.Pending &&
                 session.Context.GetLayerData(stage) is null, "Unavailable stage reported fake completion");
@@ -313,7 +317,7 @@ static void CapabilityDiscovery()
     {
         calls++;
         Require(inputs.GetLayerData(GenerationStage.Grid) is LayerData<HexGridDescriptor>, "Discovered layer skipped Grid");
-        return LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Tectonics, [1]));
+        return new TectonicPlatesLayer().Execute(inputs);
     })]);
     Require(session.CreateSession() && calls == 0 && session.Grid is null, "Session creation executed a capability");
     Require(session.RunNextStage() && calls == 0 && session.Context!.GetProgress().LastCompletedStage == GenerationStage.Grid,
@@ -329,11 +333,11 @@ static void ManualFailure()
     foreach (bool invalidCandidate in new[] { false, true })
     {
         bool fail = true;
-        var session = new LaboratorySession([new HexGridLayer(), new TestLayer(GenerationStage.Tectonics, _ =>
+        var session = new LaboratorySession([new HexGridLayer(), new TestLayer(GenerationStage.Tectonics, inputs =>
             fail ? (invalidCandidate
                 ? LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Climate, [999]))
                 : LayerExecutionResult.Failed("Injected failure."))
-                : LayerExecutionResult.Success(new LayerData<int>(GenerationStage.Tectonics, [1])))]);
+                : new TectonicPlatesLayer().Execute(inputs))]);
         Require(session.CreateSession() && session.RunNextStage() && !session.RunNextStage() && session.Grid is not null &&
             session.StageStatus(GenerationStage.Tectonics) == "FALLIDA", "Failure not displayed from progress");
         var gridData = session.Context!.GetLayerData(GenerationStage.Grid);
@@ -408,6 +412,74 @@ static void SharedInspection()
     session.SelectView(GenerationStage.Grid);
     Require(ReferenceEquals(grid, session.Grid) && ReferenceEquals(data, session.Context.GetLayerData(GenerationStage.Grid)),
         "Inspection regenerated a layer");
+}
+
+// Inspect actual packed M results and the mesh used by the native renderer without a GPU.
+static void TectonicInspection()
+{
+    var session = new LaboratorySession();
+    foreach (var size in Enum.GetValues<MapSize>())
+    foreach (string seed in new[] { "0", "-1" })
+    {
+        session.SetSize(size); session.SetSeedText(seed); session.CreateSession();
+        Require(session.RunNextStage() && session.Tectonics is null && !session.SelectView(GenerationStage.Tectonics), "Premature Tectonics view.");
+        var grid = session.Grid!;
+        var camera = new GridCamera();
+        camera.SetViewport(new LaboratoryLayout(1280, 720).Viewport); camera.SetBounds(GridVisualGeometry.Bounds(grid));
+        camera.Pan(12, 15); camera.Zoom(2, 600, 300);
+        var transform = camera.ToScreen(100, 50);
+        Require(session.RunNextStage() && session.SelectedView == GenerationStage.Tectonics && session.Tectonics is not null, "Manual real Tectonics failed.");
+        var data = session.Tectonics!;
+        var published = (LayerData<uint>)session.Context!.GetLayerData(GenerationStage.Tectonics)!;
+        var words = published.ToArray();
+        Require(published[2] == 7 && data.HasMotion && data.HasBoundaries && !data.HasInfluence && !session.CanAdvance, "Wrong visible capabilities.");
+        var mesh = TectonicVisualGeometry.Build(grid, data);
+        Require(mesh.Positions.Length == grid.CellCount * 36 && mesh.Counts.Sum() == grid.CellCount * 18 &&
+            mesh.Arrows.Length == 14 * 12, "Incomplete visible regions/arrows.");
+        int seams = Enumerable.Range(0, data.BoundaryCount).Select(data.GetBoundary).Count(edge =>
+            Math.Abs(grid.GetOffset(edge.FirstCellId).Column - grid.GetOffset(edge.SecondCellId).Column) > 1);
+        Require(mesh.Boundaries.Length == 4 * (data.BoundaryCount + seams), "Seam interfaces not shown on both cuts.");
+        Require(Enumerable.Range(0, 14).Select(id => TectonicVisualGeometry.Color((byte)id)).Distinct().Count() == 14, "Indistinguishable palette entries.");
+        int[] cursor = mesh.Starts.Select(value => value * 2).ToArray();
+        for (int cell = 0; cell < grid.CellCount; cell++)
+        {
+            byte plate = data.GetPlateId(cell);
+            var center = FlatHexGeometry.Center(grid.GetOffset(cell));
+            for (int corner = 0; corner < 6; corner++)
+            {
+                int start = cursor[plate];
+                Require(mesh.Positions[start] == center.X && mesh.Positions[start + 1] == center.Y, "Fill belongs to a different cell/plate.");
+                var expected = center + GridVisualGeometry.Corner(corner);
+                Require(mesh.Positions[start + 2] == expected.X && mesh.Positions[start + 3] == expected.Y, "Distorted fill corner.");
+                cursor[plate] += 6;
+            }
+        }
+        for (byte plate = 0; plate < 14; plate++)
+        {
+            int anchor = TectonicVisualGeometry.Anchor(data, plate);
+            Require(data.GetPlateId(anchor) == plate && mesh.Counts[plate] == data.GetPlate(plate).CellCount * 18, "Arrow anchor/area mismatch.");
+            var start = FlatHexGeometry.Center(grid.GetOffset(anchor));
+            int arrow = plate * 12;
+            Require(mesh.Arrows[arrow] == start.X && mesh.Arrows[arrow + 1] == start.Y, "Unstable motion anchor.");
+            var velocity = data.GetMotion(plate).Velocity;
+            double dx = mesh.Arrows[arrow + 2] - start.X, dy = mesh.Arrows[arrow + 3] - start.Y;
+            Require(dx * velocity.X + dy * velocity.Y > 0 && Math.Abs(dx * velocity.Y - dy * velocity.X) < .002, "Incorrect arrow direction.");
+            session.Select(anchor);
+            Require(session.DescribeSelection().Contains($"PLATEID: {plate}") && session.DescribeSelection().Contains("CM/ANO"), "Missing actual selected plate information.");
+        }
+        session.ToggleBoundaries(); session.ToggleMotion();
+        Require(!session.ShowBoundaries && !session.ShowMotion, "Overlay toggles failed.");
+        session.ToggleBoundaries(); session.ToggleMotion();
+        session.ReturnToMenu(); session.OpenFromMenu(MainMenuButton.Laboratory);
+        Require(ReferenceEquals(session.Tectonics, data) && ReferenceEquals(session.Grid, grid) && published.SequenceEqual(words), "Inspection/reopening regenerated or mutated data.");
+        session.SelectView(GenerationStage.Grid); session.SelectView(GenerationStage.Tectonics);
+        Require(camera.ToScreen(100, 50) == transform && ReferenceEquals(session.Grid, grid), "View switch requires a different Grid/camera.");
+        var layout = new LaboratoryLayout(800, 500, double.MaxValue, 2, true);
+        Require(layout.InformationHeight == 166 && layout.Card(610, layout.InformationHeight).Y + 166 * layout.Scale <=
+            layout.SidebarClip.Y + layout.SidebarClip.Height, "Plate information cannot be reached by scrolling.");
+        session.SetSeedText("1");
+        Require(session.Tectonics is null && session.Grid is null, "Changed request retained stale Tectonics.");
+    }
 }
 
 // Test-only execution proves capability discovery and failures without adding downstream production geography.

@@ -5,6 +5,11 @@
 **FIX01 baseline:** `v0.0.33`, `ceaa289018b1a56eafe3417a0d64e6b4fb3c5b70`.
 **FIX01 delivery:** `v0.0.34`.
 
+**Current extension:** owner-authorized WG-01-C on world-tectonics, v0.0.39,
+adds real Tectonics inspection while preserving this accepted Grid interface.
+Its independent audit and owner visual acceptance remain pending; existing
+non-blocking observations below are not closed by this extension.
+
 LAB-GRID-01 was delivered but not visually accepted. LAB-GRID-02 is the
 owner-authorized corrective redesign, based on the supplied second reference
 image: left configuration/stage/information sidebar and a large map on the right.
@@ -54,7 +59,7 @@ existing WorldGenerationSettings/GenerationRequest after invariant validation.
 Its changes discard the session rather than modifying immutable engine metadata.
 
 `LaboratorySession` owns manual LAB generation, discovers implemented executors from one
-capability inventory (currently HexGridLayer only), and builds the existing
+capability inventory (HexGridLayer and TectonicPlatesLayer), and builds the existing
 complete eight-stage registry with unavailable-stage guards elsewhere.
 Guards throw NotSupportedException and produce no fake candidates. CanAdvance
 checks the context's next eligible stage against real capabilities. CreateSession
@@ -62,6 +67,12 @@ only creates a pending context; each explicit RunNextStage calls RunNext once.
 The normal-creation mode and automatic CreateWorld entry point were removed.
 Reusable configuration, layout, camera and rendering components remain intact.
 A visualization for any newly implemented layer still requires real display code.
+
+WG-01-C supplies that display for published Tectonics only. After Grid, the
+second explicit G/next-stage action runs real Tectonics; Landmasses and later
+stages stay unavailable. The view dropdown contains Grid/Tectonics, with pending
+results disabled. A completed-stage click also selects its existing output.
+Changing a view preserves Grid/camera references and never invokes generation.
 
 `StageStatus` projects Pending/Running/Completed/Failed/Invalidated from
 GenerationProgress for implemented stages, and Unavailable for missing
@@ -179,3 +190,38 @@ LAB-GRID-02/FIX01 does not close these remaining observations.
    measured driver-memory/lifecycle guarantee or evidence of a leak correction.
 
 WG-00-D only records these observations; it changes no Laboratory code or UI.
+
+## WG-01-C — Actual published plate inspection
+
+The owner approved M [1,8) cm/year, activity .15 and mixed ratio .75 with the
+exact policy in the tectonic motion calibration. The session reads one validated
+TectonicData view from the completed flags-7 publication; the renderer never
+regenerates plate ownership or motion. Colors are stable by PlateId for all
+fourteen regions. TectonicVisualGeometry builds grouped triangles, unique
+boundary lines and arrows once per published result, reusing Grid corners and
+the same camera. Both visible cuts of a seam interface are shown; IDs are not
+duplicated. The plate's accepted origin anchors each arrow inside its region.
+
+Click a hex to read actual PlateId, CellCount/area percentage, direction and
+speed. The existing information card expands its scrollable height only for
+this view. B toggles boundaries and V toggles arrows, with status in the map
+hint. N creates a session, G advances one stage, F fits; wheel zooms, right drag
+or arrows pan. Escape/back returns to the menu; reopening retains inspection.
+INICIAR remains unavailable. No separate boundary-edge selection or native
+visual/GPU approval is claimed. Influence fields remain unavailable.
+
+Large adds 11,520,000 position bytes for static fills plus boundary/arrow data
+to the existing 7,680,000-byte Grid line buffer, with temporary CPU upload
+arrays. Fourteen uniform-color draws avoid per-vertex colors. The existing
+buffer-retention policy extends to these meshes: clearing resets draw counts;
+later uploads replace storage, shutdown deletes buffers/arrays while the
+context is current. Actual driver retention/deletion still needs manual evidence.
+
+Developer checks pass 19/19 including real Grid→Tectonics sessions for all
+sizes, complete fill ownership/regular corners, seam lines, stable palette and
+arrow anchors/directions, actual inspection text, toggles and LAB reopening.
+[C delivery/evidence](../../engine/worldgen/layers/tectonics/delivery-c.md)
+records all regressions, benchmarks and the remaining independent/visual gate.
+Native input, DPI, minimize/restore, rendering and GPU lifecycle observations
+remain open. Re-run the manual checklist above for Small/Medium/Large with
+Tectonics, overlays and several seeds before owner visual acceptance.

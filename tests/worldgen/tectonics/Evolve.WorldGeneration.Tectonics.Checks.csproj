@@ -8,6 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="../../../engine/worldgen/Evolve.Engine.WorldGeneration.csproj" />
     <None Update="vectors/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="motion-vectors/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="experiments/motion-cal01/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/cal01/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/cal01/profiles.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

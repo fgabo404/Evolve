@@ -25,7 +25,8 @@ internal static class LaboratoryPresentation
             Lines(renderer, prompt, new(view.X + 8, view.Y + view.Height / 2, view.Width - 16, 50 * layout.Scale), layout.Scale, true);
         }
         else
-            Lines(renderer, "RUEDA: ZOOM | DERECHO: MOVER | F: AJUSTAR",
+            Lines(renderer, session.SelectedView == GenerationStage.Tectonics
+                ? $"RUEDA: ZOOM | DERECHO: MOVER | F: AJUSTAR | B: LIMITES {(session.ShowBoundaries ? "SI" : "NO")} | V: FLECHAS {(session.ShowMotion ? "SI" : "NO")}" : "RUEDA: ZOOM | DERECHO: MOVER | F: AJUSTAR",
                 new(view.X + 8, view.Y + view.Height - 22 * layout.Scale, view.Width - 16, 20 * layout.Scale), layout.Scale, true);
         renderer.Rectangle(0, 0, (float)layout.SidebarWidth, height, MainMenuStyle.Background);
         renderer.End();
@@ -85,29 +86,23 @@ internal static class LaboratoryPresentation
                 Label(renderer, session.StageStatus(stage), new(bounds.X + 4, bounds.Y + 12 * layout.Scale, bounds.Width - 8, 9 * layout.Scale), layout.Scale,
                     enabled ? MainMenuStyle.Text : MainMenuStyle.VersionText);
             }
-            Card(renderer, layout.Card(610, 106));
+            Card(renderer, layout.Card(610, layout.InformationHeight));
             Label(renderer, "INFORMACION DE CELDA", layout.Card(614, 12), layout.Scale);
-            string information = "SELECCIONE UN HEXAGONO EN EL MAPA.";
-            if (session.SelectedCell is int id && session.Grid is { } grid)
-            {
-                var offset = grid.GetOffset(id); var geo = grid.GetGeographicCenter(id);
-                information = FormattableString.Invariant($"CELLID: {id}\nCOLUMNA: {offset.Column}  FILA: {offset.Row}\nLONGITUD: {geo.Longitude:F3}\nLATITUD: {geo.Latitude:F3}");
-            }
-            Lines(renderer, information, layout.Card(632, 78), layout.Scale);
+            Lines(renderer, session.DescribeSelection(), layout.Card(632, layout.InformationHeight - 28), layout.Scale);
             if (ui.Dropdown is { } popup)
             {
                 string[] options = popup switch
                 {
                     LaboratoryAction.Size => Enum.GetNames<MapSize>(),
                     LaboratoryAction.WorldType => Enum.GetNames<WorldType>(),
-                    _ => ["Grid"]
+                    _ => ["Grid", "Tectonics"]
                 };
                 for (int index = 0; index < options.Length; index++)
                 {
                     var bounds = layout.DropdownOption(popup, index, options.Length);
                     Card(renderer, bounds, ui.HighlightedOption == index);
                     Label(renderer, options[index], bounds, layout.Scale,
-                        popup == LaboratoryAction.View && session.Grid is null ? MainMenuStyle.VersionText : MainMenuStyle.Text);
+                        popup == LaboratoryAction.View && !session.IsCompleted((GenerationStage)index) ? MainMenuStyle.VersionText : MainMenuStyle.Text);
                 }
             }
             renderer.End();

@@ -1,0 +1,12 @@
+{
+  "Runtime": ".NET 10.0.13",
+  "OperatingSystem": "Microsoft Windows 10.0.26200",
+  "Architecture": "X64",
+  "LogicalProcessors": 16,
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "TieredCompilation": "0",
+  "Warmup": "One complete motion/build per size/profile; production partition is generated before measurement.",
+  "Measurement": "Three serial batches per world/profile; 25 worlds per size; full motion \u002B scan \u002B sort \u002B projection.",
+  "Exclusions": "Partition, view validation, independent oracle, digest, JSON, console output and GC collections.",
+  "Limitations": "Fixed H/Q/M/Z order, no CPU reservation/affinity/frequency lock; allocations are not peak or retained heap."
+}

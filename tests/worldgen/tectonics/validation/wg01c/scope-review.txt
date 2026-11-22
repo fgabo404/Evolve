@@ -1,0 +1,6 @@
+Reviewed all changed production/test sources and documentation; no scope expansion.
+Frozen R profile/generator/noise and original B fixtures unchanged; full regression comparisons passed.
+No WG-CORE, Grid, State, Saves, Definitions, other layers or normal INICIAR changes.
+M-v1 exact approval confirmed by all 75 historical candidate fingerprints and fifteen new complete buffers.
+Native visual/input/DPI/GPU evidence and independent C acceptance remain pending.
+New delivery/calibration links and new text whitespace checked; git diff --check passed.

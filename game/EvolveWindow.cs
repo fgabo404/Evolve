@@ -81,7 +81,7 @@ internal sealed class EvolveWindow : GameWindow
             {
                 var layout = CurrentLaboratoryLayout();
                 gridRenderer?.Synchronize(laboratory);
-                gridRenderer?.Draw(renderer, gridCamera, FramebufferSize.X, FramebufferSize.Y);
+                gridRenderer?.Draw(renderer, gridCamera, FramebufferSize.X, FramebufferSize.Y, laboratory);
                 LaboratoryPresentation.Draw(renderer, laboratory, layout, FramebufferSize.X, FramebufferSize.Y, laboratoryUi);
             }
             else
@@ -225,6 +225,8 @@ internal sealed class EvolveWindow : GameWindow
                 if (args.Key == Keys.N) laboratory.CreateSession();
                 if (args.Key == Keys.G) laboratory.RunNextStage();
                 if (args.Key == Keys.F) gridCamera.Fit();
+                if (args.Key == Keys.B) laboratory.ToggleBoundaries();
+                if (args.Key == Keys.V) laboratory.ToggleMotion();
                 if (args.Key == Keys.Left) gridCamera.Pan(40, 0);
                 if (args.Key == Keys.Right) gridCamera.Pan(-40, 0);
                 if (args.Key == Keys.Up) gridCamera.Pan(0, 40);
@@ -318,7 +320,8 @@ internal sealed class EvolveWindow : GameWindow
     {
         double scale = ClientSize.X > 0 && ClientSize.Y > 0
             ? Math.Min(FramebufferSize.X / (double)ClientSize.X, FramebufferSize.Y / (double)ClientSize.Y) : 1;
-        var layout = new LaboratoryLayout(FramebufferSize.X, FramebufferSize.Y, laboratoryUi.Scroll, scale);
+        var layout = new LaboratoryLayout(FramebufferSize.X, FramebufferSize.Y, laboratoryUi.Scroll, scale,
+            laboratory.SelectedView == Evolve.Engine.WorldGeneration.GenerationStage.Tectonics);
         gridCamera.SetViewport(layout.Viewport);
         if (!ReferenceEquals(cameraGrid, laboratory.Grid))
         {
@@ -340,7 +343,7 @@ internal sealed class EvolveWindow : GameWindow
             if (hit.Index < 0 || hit.Index >= laboratoryUi.OptionCount) return;
             if (popup == LaboratoryAction.Size) laboratory.SetSize(Enum.GetValues<Evolve.Definitions.WorldGeneration.MapSize>()[hit.Index]);
             if (popup == LaboratoryAction.WorldType) laboratory.SetWorldType(Enum.GetValues<Evolve.Definitions.WorldGeneration.WorldType>()[hit.Index]);
-            if (popup == LaboratoryAction.View) laboratory.SelectView(Evolve.Engine.WorldGeneration.GenerationStage.Grid);
+            if (popup == LaboratoryAction.View) laboratory.SelectView((Evolve.Engine.WorldGeneration.GenerationStage)hit.Index);
             laboratoryUi.CloseTransient();
             return;
         }

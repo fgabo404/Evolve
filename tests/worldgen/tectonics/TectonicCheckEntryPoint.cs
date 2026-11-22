@@ -1,5 +1,5 @@
-// Exercises WG-01-B production generation, packed data, independent connectivity and CORE lifecycle.
-// Tests compare complete payloads; private test access is confined to tectonic vectors and calibration helpers.
+// Exercises WG-01-B/C production data, independent geometry/kinematics and CORE lifecycle.
+// Compares complete payloads and dispatches isolated calibration tools without changing production execution.
 using System.Reflection;
 using Evolve.Definitions.WorldGeneration;
 using Evolve.Engine.WorldGeneration;
@@ -14,8 +14,11 @@ internal static class TectonicCheckEntryPoint
     private static int Main(string[] args)
     {
         if (args.SequenceEqual(new[] { "--calibration" })) { TectonicCalibrationChecks.Run(); return 0; }
+        if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
+        if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
         if (args.Length == 2 && args[0] == "--export-vectors") { TectonicFrozenVectors.Export(args[1]); return 0; }
-        if (args.Length != 0) throw new ArgumentException("Use no arguments for checks or --calibration for measurements.");
+        if (args.Length != 0) throw new ArgumentException("Use no arguments for checks, --calibration for measurements, or --compare-motion <directory> for provisional C profiles.");
         (string Name, Action Check)[] checks =
         [
             ("T01-T03 exhaustive owners, independent connectivity and seam/pole coverage", Coverage),
@@ -27,15 +30,20 @@ internal static class TectonicCheckEntryPoint
             ("T10 real CORE ordering, rebuilding and historical results", Lifecycle),
             ("T10 failures and invalid Grid/candidates stay atomic and retryable", Failures),
             ("T10 competing and reentrant operations cannot publish partial data", Concurrent),
-            ("T11-T12 ownership-only scope and graphical independence", Scope)
+            ("T11 graphical independence and disabled influence scope", Scope),
+            ("T08 frozen M precision, projections and category ties", TectonicMotionChecks.Numeric),
+            ("T07 complete independent boundary topology and projections", TectonicMotionChecks.Boundaries),
+            ("T06/T10 C schema safety, immutability and historical rebuilding", TectonicMotionChecks.Schema),
+            ("T08 fifteen complete M compatibility buffers", TectonicMotionChecks.Frozen),
+            ("T08 exact agreement with all 75 approved CAL01 M cases", MotionProfileComparison.VerifyApprovedM)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)
         {
-            try { check(); Console.WriteLine($"PASS WG-01-B {name}"); }
-            catch (Exception exception) { failures++; Console.Error.WriteLine($"FAIL WG-01-B {name}: {exception}"); }
+            try { check(); Console.WriteLine($"PASS WG-01-B/C {name}"); }
+            catch (Exception exception) { failures++; Console.Error.WriteLine($"FAIL WG-01-B/C {name}: {exception}"); }
         }
-        Console.WriteLine($"WG-01-B: {checks.Length - failures}/{checks.Length} groups passed.");
+        Console.WriteLine($"WG-01-B/C: {checks.Length - failures}/{checks.Length} groups passed.");
         return failures == 0 ? 0 : 1;
     }
 
@@ -176,7 +184,7 @@ internal static class TectonicCheckEntryPoint
         Require(typeof(TectonicData).GetProperties().All(property => property.SetMethod is null) &&
             typeof(TectonicPlate).GetProperties().All(property => property.SetMethod is null), "External metadata mutation");
         Require(typeof(TectonicData).GetFields(BindingFlags.Instance | BindingFlags.NonPublic).All(field => field.IsInitOnly &&
-            field.FieldType == typeof(LayerData<uint>)), "View retains mutable scratch or context");
+            (field.FieldType == typeof(LayerData<uint>) || field.FieldType == typeof(HexGridData))), "View retains mutable scratch or context");
     }
 
     private static void Lifecycle()
@@ -235,7 +243,7 @@ internal static class TectonicCheckEntryPoint
                 context.GetLayerData(GenerationStage.Tectonics) is null && context.GetProgress().GetStatus(GenerationStage.Landmasses) == GenerationStageStatus.Pending, "Failure exposed partial data or advanced");
             orchestrator.RunNext(context);
             Require(ReferenceEquals(grid, context.GetLayerData(GenerationStage.Grid)) &&
-                Published(context).SequenceEqual(Generate(MapSize.Small).Data), "Retry changed payload or Grid");
+                OwnershipOnly(Published(context)).SequenceEqual(Generate(MapSize.Small).Data), "Retry changed payload or Grid");
         }
         foreach (int invalid in Enumerable.Range(0, 4))
         {
@@ -310,6 +318,6 @@ internal static class TectonicCheckEntryPoint
         Require(assembly.GetReferencedAssemblies().All(item => item.Name?.StartsWith("System") == true ||
             item.Name == typeof(MapSize).Assembly.GetName().Name), "Unexpected Engine dependency");
         Require(!assembly.GetTypes().Any(type => type.Namespace?.StartsWith("Evolve.Engine.WorldGeneration.Layers.Tectonics") == true &&
-            (type.Name.Contains("MotionGenerator") || type.Name.Contains("BoundaryBuilder") || type.Name.Contains("InfluenceBuilder"))), "C implementation anticipated");
+            type.Name.Contains("InfluenceBuilder")), "Optional influences anticipated");
     }
 }

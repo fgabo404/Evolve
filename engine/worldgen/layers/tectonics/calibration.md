@@ -1,8 +1,10 @@
 # WG-01-B — Frozen R Delivery and Historical Calibration Evidence
 
-**Current status:** profile R selected explicitly by the owner for final B delivery;
-tectonic-partition-r-v2 / revision 2 frozen, schema 1 unchanged. Independent B
-audit and formal increment acceptance remain pending.
+**Current status:** WG-01-A/B formally accepted according to the owner's C request;
+tectonic-partition-r-v2 / revision 2 frozen, schema 1 unchanged. The separate
+[C motion comparison](motion-calibration.md) was subsequently approved for M;
+[delivery-c.md](delivery-c.md) records its implementation and verification.
+Historical B audit/acceptance statements below describe their original delivery.
 **Branch/base:** world-tectonics, v0.0.37,
 63e968ff71dbbcaa61e1ebbba744e466e3a01332.
 **Current delivery:** v0.0.38. The P0 and CAL01 sections below are historical

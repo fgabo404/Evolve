@@ -18,6 +18,8 @@ No implementa reglas ni cálculos de simulación.
   layout, camera, visual outlines, static line renderer and presentation.
   LAB-GRID-02 adds shared world configuration and transient dropdown/scroll
   state for manual LAB. Normal game creation remains unimplemented.
+  WG-01-C adds real published Tectonics, static plate fills/boundaries/motion
+  arrows and selected-plate information using the same window and camera.
   Its [readme](laboratory/readme.md) and [roadmap](laboratory/roadmap.md) document
   engine boundaries, controls and pending visual acceptance.
 - `readme.md` and `audit.md` stay in the root of `game/`.

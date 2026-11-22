@@ -26,6 +26,22 @@ internal static class TectonicCheckFixtures
 
     internal static (HexGridData Grid, LayerData<uint> Data) Generate(MapSize size, long seed = 0, WorldType type = WorldType.Pangea)
     {
+        var (grid, complete) = GenerateComplete(size, seed, type);
+        return (grid, OwnershipOnly(complete));
+    }
+
+    // Preserve original B assertions against the exact historical schema, removing only explicitly added C fields.
+    internal static LayerData<uint> OwnershipOnly(LayerData<uint> complete)
+    {
+        uint[] words = complete.Take(checked((int)complete[10])).ToArray();
+        words[2] = 1; words[11] = 0; words[15] = (uint)words.Length;
+        words[17] = words[19] = words[20] = 0;
+        for (int plate = 0; plate < 14; plate++) Array.Clear(words, 32 + plate * 8 + 3, 4);
+        return new(GenerationStage.Tectonics, words);
+    }
+
+    internal static (HexGridData Grid, LayerData<uint> Data) GenerateComplete(MapSize size, long seed = 0, WorldType type = WorldType.Pangea)
+    {
         var orchestrator = Orchestrator();
         var context = orchestrator.CreateGeneration(Request(size, seed, type));
         orchestrator.RunUntil(context, GenerationStage.Tectonics);

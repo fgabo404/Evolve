@@ -1,0 +1,97 @@
+{
+  "Algorithm": "tectonic-motion-m-v1",
+  "MotionRevision": 1,
+  "Flags": 7,
+  "Vectors": [
+    {
+      "Size": "Small",
+      "Seed": "0",
+      "File": "Small-0.words",
+      "Digest": "EA4170DA32783BA60C38787B86E7D5995A4FEAE0A94A5048430C517B49C6A0EA"
+    },
+    {
+      "Size": "Small",
+      "Seed": "1",
+      "File": "Small-1.words",
+      "Digest": "6395E224E8E3F53A000C12E939483E81786DF63CB376476D971C52767CC29AA1"
+    },
+    {
+      "Size": "Small",
+      "Seed": "-1",
+      "File": "Small--1.words",
+      "Digest": "091150AA130F3F1F64058844DEEFD7696ADD7BF68857218749C106AED80AD874"
+    },
+    {
+      "Size": "Small",
+      "Seed": "-9223372036854775808",
+      "File": "Small--9223372036854775808.words",
+      "Digest": "27CD2737D3D50A303827B16CDD1CE2F22318FDAF18CC55D700F06609A373D777"
+    },
+    {
+      "Size": "Small",
+      "Seed": "9223372036854775807",
+      "File": "Small-9223372036854775807.words",
+      "Digest": "2A6AE2C06C14861B10AE195F965930648A52A5D2CD4EDFD91B7C1971E4627DC8"
+    },
+    {
+      "Size": "Medium",
+      "Seed": "0",
+      "File": "Medium-0.words",
+      "Digest": "E02FFEA04914F8370E99A927327B106CCD5152D5187D88CBC004AA7CCF552F03"
+    },
+    {
+      "Size": "Medium",
+      "Seed": "1",
+      "File": "Medium-1.words",
+      "Digest": "CA4680E4E17F7F5D6CD0B9F818644FAEF23EAFB5192537D67EF4325489FCC274"
+    },
+    {
+      "Size": "Medium",
+      "Seed": "-1",
+      "File": "Medium--1.words",
+      "Digest": "6617CD43D520A7E6B25EC47DC6700339D6901C7490DD463A59B5D2474EB88854"
+    },
+    {
+      "Size": "Medium",
+      "Seed": "-9223372036854775808",
+      "File": "Medium--9223372036854775808.words",
+      "Digest": "DBF31E6AAF9E4679E31345C7F45ABE3A496A840A1B9544146EF978645F89D480"
+    },
+    {
+      "Size": "Medium",
+      "Seed": "9223372036854775807",
+      "File": "Medium-9223372036854775807.words",
+      "Digest": "C02C1405E77E3EB1D86B9B8E489A11EF22588220AB9F5F30E0A3D314EB7A29BF"
+    },
+    {
+      "Size": "Large",
+      "Seed": "0",
+      "File": "Large-0.words",
+      "Digest": "B624D10F65CF75A95DC24904700FFBA52C17C4F440AAD0DBA69D1FFE06EB2085"
+    },
+    {
+      "Size": "Large",
+      "Seed": "1",
+      "File": "Large-1.words",
+      "Digest": "4D7AFB5A396EAD6ED6BCAD5BB830914013A5C0657341BF18C6DBD24AB4731152"
+    },
+    {
+      "Size": "Large",
+      "Seed": "-1",
+      "File": "Large--1.words",
+      "Digest": "D4BC748C9772D654511F5E3A37F4B290CCC17AFE8790F53236E56AA4F2FB4D4C"
+    },
+    {
+      "Size": "Large",
+      "Seed": "-9223372036854775808",
+      "File": "Large--9223372036854775808.words",
+      "Digest": "5FF512BE5B9A5AD5691E7A3E1AE1BCF02E8277F2CB2FBBAB83A04387C3D50283"
+    },
+    {
+      "Size": "Large",
+      "Seed": "9223372036854775807",
+      "File": "Large-9223372036854775807.words",
+      "Digest": "5A1147C2CC55A600362BBF784D454FB1343DA25EFF2F0466D4515A883D848FD0"
+    }
+  ]
+}

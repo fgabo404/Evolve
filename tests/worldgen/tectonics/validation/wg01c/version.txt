@@ -1,0 +1,1 @@
+PASS VERSION and AssemblyInformationalVersion: v0.0.39

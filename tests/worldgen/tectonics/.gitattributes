@@ -1,8 +1,10 @@
 candidate-calibration.txt -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 experiments/cal01/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+experiments/motion-cal01/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 experiments/cal01/summary.md -text whitespace=blank-at-eol,-blank-at-eof,space-before-tab,cr-at-eol
 experiments/archive/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 vectors/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+motion-vectors/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 r-performance.txt -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 r-performance-summary.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 validation/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

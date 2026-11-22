@@ -108,7 +108,7 @@ internal static class TectonicFrozenVectors
             var orchestrator = Orchestrator();
             var context = orchestrator.CreateGeneration(Request(size, seed, WorldType.RealEarth));
             orchestrator.RunNext(context); orchestrator.RunNext(context);
-            Require(actual.SequenceEqual(Published(context)), "Complete R replay differs across execution mode/world type");
+            Require(actual.SequenceEqual(OwnershipOnly(Published(context))), "Complete R replay differs across execution mode/world type");
             var view = TectonicData.FromLayerData(actual, grid);
             CheckRegions(grid, view);
             for (byte plate = 0; plate < 14; plate++)

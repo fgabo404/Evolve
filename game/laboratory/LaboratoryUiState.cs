@@ -14,7 +14,7 @@ internal sealed class LaboratoryUiState
     {
         LaboratoryAction.Size => Enum.GetValues<MapSize>().Length,
         LaboratoryAction.WorldType => Enum.GetValues<WorldType>().Length,
-        LaboratoryAction.View => 1,
+        LaboratoryAction.View => 2,
         _ => 0
     };
 

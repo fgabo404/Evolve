@@ -1,8 +1,12 @@
-# WG-01-B — Frozen R headless verification
+# WG-01-B/C — Frozen R and M headless verification
 
 The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
+
+The original B evidence below is historical; the final C section records the
+current 15-group suite and approved M publication. No historical claims of
+absent motion should be read as the current C capability inventory.
 
 ## Independent audit commands
 
@@ -93,9 +97,43 @@ line via one file-specific attribute; source whitespace checks are unchanged.
 [calibration report](../../../engine/worldgen/layers/tectonics/calibration.md)
 contains the exact constants, observations, areas, final timing methodology and
 limits. [Historical experiments](experiments/readme.md) contain text snapshots,
-raw/summarized CAL01 evidence and PNGs; no experiment executable is compiled or
-selectable. Discarded .scene geometry is regenerable; the PNGs/data remain.
+raw/summarized CAL01 evidence and PNGs; historical CAL01 sources remain inert.
+The separately authorized C numeric comparison below is executable test-only
+code. Discarded .scene geometry is regenerable; the PNGs/data remain.
 
 No numerical performance threshold, geological realism, cross-platform bit
 identity, native input/DPI/GPU cleanup or formal B acceptance is inferred.
-WG-01-B is submitted for independent audit only.
+
+## WG-01-C approval and verification
+
+The owner has formally accepted A/B and authorized C. Before adopting kinematic
+constants, the test-only experiments/MotionProfileComparison.cs compares four
+provisional policies using the third reserved stream and real frozen production
+R Ownership data. Run with --compare-motion <new-empty-output-directory>.
+It refuses to overwrite results and never publishes C data or changes the LAB.
+
+[Motion policy report](../../../engine/worldgen/layers/tectonics/motion-calibration.md)
+contains exact policies, commands, measurements and limitations.
+[motion-cal01/](experiments/motion-cal01/) contains all 300 cases, 900 full
+replays, exact profiles/environment, CSV summary and regression outputs.
+These fingerprints are historical comparative evidence, not the new frozen C
+vectors. The owner selected M and its exact numerical policy. Production now
+matches all 75 M fingerprints exactly, with fifteen separate complete buffers
+in motion-vectors/. Existing vectors/ and P0/CAL01 evidence remain unchanged.
+
+Default checks now pass 15/15 groups, retaining all B assertions and adding
+production M precision/ties, complete independent interfaces/projections,
+expanded malformed schema/canonical-zero checks, C candidate atomicity/retry,
+historical rebuilding, full output WorldType independence and complete M
+goldens. The test-only OwnershipOnly projection removes exactly the added C
+fields to preserve every original B assertion/vector. It does not rewrite
+fixtures or duplicate partition generation. Unsupported Influence remains absent.
+
+[C delivery](../../../engine/worldgen/layers/tectonics/delivery-c.md) records
+contracts, final logs, measurement methodology and native limitations. Run
+--motion-performance for separate serial R+M phase/allocation measurements.
+--export-motion-vectors <empty-directory> documents the explicit production
+fixture export and refuses to overwrite an existing directory's contents.
+Normal checks never export or update compatibility vectors. Native visual
+review and formal C acceptance remain pending.
+The historical B delivery was an audit submission; the later C request records owner acceptance of A/B.
