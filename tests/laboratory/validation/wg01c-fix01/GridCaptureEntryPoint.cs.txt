@@ -1,0 +1,145 @@
+// Captures actual EvolveWindow OpenGL rendering into an offscreen framebuffer for FIX01 evidence.
+// Uses reflection only in this temporary validation harness; no production test hooks or alternate renderer are added.
+using System.Buffers.Binary;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Reflection;
+using System.Text;
+using Evolve.Definitions.WorldGeneration;
+using Evolve.Engine.WorldGeneration.Layers.Grid;
+using OpenTK.Graphics.OpenGL4;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
+
+internal static class GridCaptureEntryPoint
+{
+    private const BindingFlags Instance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        string directory = Path.GetFullPath(args.Single());
+        Directory.CreateDirectory(directory);
+        var assembly = Assembly.Load("Evolve.Game");
+        Type type = assembly.GetType("Evolve.Game.EvolveWindow", true)!;
+        using var window = (GameWindow)Activator.CreateInstance(type)!;
+        window.IsVisible = false;
+        window.Context.MakeCurrent();
+        type.GetMethod("OnLoad", Instance)!.Invoke(window, null);
+        window.VSync = VSyncMode.Off;
+        Console.WriteLine($"GL_VENDOR={GL.GetString(StringName.Vendor)}; GL_RENDERER={GL.GetString(StringName.Renderer)}; GL_VERSION={GL.GetString(StringName.Version)}");
+        Console.WriteLine($"FRAMEBUFFER={window.FramebufferSize}; OS={System.Runtime.InteropServices.RuntimeInformation.OSDescription}; runtime={System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
+        int width = window.FramebufferSize.X, height = window.FramebufferSize.Y;
+        int framebuffer = GL.GenFramebuffer(), texture = GL.GenTexture(), timer = GL.GenQuery();
+        GL.BindTexture(TextureTarget.Texture2D, texture);
+        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, framebuffer);
+        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, texture, 0);
+        if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
+            throw new InvalidOperationException("Incomplete capture framebuffer.");
+        GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+        object session = Field(window, "laboratory");
+        object camera = Field(window, "gridCamera");
+        object renderer = Field(window, "gridRenderer");
+        var render = type.GetMethod("OnRenderFrame", Instance)!;
+        Invoke(session, "Open");
+        var csv = new StringBuilder("Size,View,Samples,GpuMinMs,GpuMedianMs,GpuMaxMs,CpuFinishMedianMs,GridPositionBytes\n");
+        try
+        {
+            foreach (var size in Enum.GetValues<MapSize>())
+            {
+                Invoke(session, "SetSize", size); Invoke(session, "SetSeedText", "0");
+                Require((bool)Invoke(session, "CreateSession")! && (bool)Invoke(session, "RunNextStage")!, "Grid setup failed.");
+                var grid = (HexGridData)session.GetType().GetProperty("Grid")!.GetValue(session)!;
+                Invoke(session, "Select", grid.GetCellId(new(grid.Columns / 2, grid.Rows / 2)));
+                Draw();
+                int buffer = (int)Field(renderer, "vertexBuffer");
+                GL.BindBuffer(BufferTarget.ArrayBuffer, buffer);
+                GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out int bytes);
+                Require(bytes == grid.CellCount * 24 * sizeof(float), "Unexpected Grid position buffer.");
+                Measure(size, "Grid", bytes);
+                Capture($"{size}-grid.png");
+                Require((bool)Invoke(session, "RunNextStage")!, "Tectonics setup failed.");
+                Draw();
+                Require((int)Field(renderer, "vertexBuffer") == buffer && ReferenceEquals(grid, session.GetType().GetProperty("Grid")!.GetValue(session)), "Grid buffer/reference replaced by Tectonics.");
+                Measure(size, "Tectonics", bytes);
+                Capture($"{size}-tectonics.png");
+                object viewport = camera.GetType().GetProperty("Viewport")!.GetValue(camera)!;
+                double vx = Number(viewport, "X") + Number(viewport, "Width") / 2;
+                double vy = Number(viewport, "Y") + Number(viewport, "Height") / 2;
+                Invoke(camera, "Zoom", 5d, vx, vy); Invoke(camera, "Pan", 20d, -15d);
+                Draw(); Capture($"{size}-tectonics-zoom.png");
+                Invoke(session, "ToggleBoundaries"); Invoke(session, "ToggleMotion");
+                Draw(); Capture($"{size}-grid-with-overlays-off.png");
+                Invoke(session, "ToggleBoundaries"); Invoke(session, "ToggleMotion");
+                Require(GL.GetError() == ErrorCode.NoError, "OpenGL error after capture.");
+                Console.WriteLine($"PASS {size}: static Grid buffer reused; actual Grid/Tectonics/zoom/pan/selection/toggle frames captured.");
+            }
+            File.WriteAllText(Path.Combine(directory, "render-performance.csv"), csv.ToString());
+            Console.WriteLine(csv);
+        }
+        finally
+        {
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            GL.DeleteQuery(timer); GL.DeleteTexture(texture); GL.DeleteFramebuffer(framebuffer);
+            type.GetMethod("OnUnload", Instance)!.Invoke(window, null);
+        }
+
+        void Draw() => render.Invoke(window, new object[] { new FrameEventArgs(1d / 60) });
+        void Measure(MapSize size, string view, int bytes)
+        {
+            for (int warm = 0; warm < 10; warm++) Draw();
+            GL.Finish();
+            double[] gpu = new double[30], cpu = new double[30];
+            for (int sample = 0; sample < gpu.Length; sample++)
+            {
+                long start = Stopwatch.GetTimestamp();
+                GL.BeginQuery(QueryTarget.TimeElapsed, timer); Draw(); GL.EndQuery(QueryTarget.TimeElapsed); GL.Finish();
+                cpu[sample] = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+                GL.GetQueryObject(timer, GetQueryObjectParam.QueryResult, out long nanoseconds);
+                gpu[sample] = nanoseconds / 1_000_000d;
+            }
+            Array.Sort(gpu); Array.Sort(cpu);
+            csv.Append(FormattableString.Invariant($"{size},{view},30,{gpu[0]:F6},{gpu[15]:F6},{gpu[^1]:F6},{cpu[15]:F6},{bytes}\n"));
+        }
+        void Capture(string filename)
+        {
+            GL.Finish();
+            byte[] pixels = new byte[width * height * 4];
+            GL.ReadPixels(0, 0, width, height, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
+            WritePng(Path.Combine(directory, filename), width, height, pixels);
+        }
+    }
+
+    private static object Field(object target, string name) => target.GetType().GetField(name, Instance)!.GetValue(target)!;
+    private static object? Invoke(object target, string name, params object[] values) => target.GetType().GetMethod(name, Instance)!.Invoke(target, values);
+    private static double Number(object target, string name) => (double)target.GetType().GetProperty(name)!.GetValue(target)!;
+    private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+
+    // Lossless RGBA PNG encoder keeps capture tooling independent of image libraries and screen compositors.
+    private static void WritePng(string path, int width, int height, byte[] bottomUpRgba)
+    {
+        using var file = File.Create(path);
+        file.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 });
+        byte[] header = new byte[13];
+        BinaryPrimitives.WriteInt32BigEndian(header.AsSpan(0, 4), width); BinaryPrimitives.WriteInt32BigEndian(header.AsSpan(4, 4), height);
+        header[8] = 8; header[9] = 6;
+        Chunk("IHDR", header);
+        using var data = new MemoryStream();
+        using (var compressed = new ZLibStream(data, CompressionLevel.Optimal, true))
+            for (int row = height - 1; row >= 0; row--) { compressed.WriteByte(0); compressed.Write(bottomUpRgba, row * width * 4, width * 4); }
+        Chunk("IDAT", data.ToArray()); Chunk("IEND", []);
+        void Chunk(string type, byte[] bytes)
+        {
+            byte[] kind = Encoding.ASCII.GetBytes(type), length = new byte[4];
+            BinaryPrimitives.WriteInt32BigEndian(length, bytes.Length); file.Write(length); file.Write(kind); file.Write(bytes);
+            uint crc = uint.MaxValue;
+            foreach (byte value in kind.Concat(bytes))
+            {
+                crc ^= value;
+                for (int bit = 0; bit < 8; bit++) crc = (crc >> 1) ^ ((crc & 1) != 0 ? 0xEDB88320u : 0);
+            }
+            BinaryPrimitives.WriteUInt32BigEndian(length, ~crc); file.Write(length);
+        }
+    }
+}

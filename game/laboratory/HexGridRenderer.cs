@@ -95,7 +95,8 @@ internal sealed class HexGridRenderer : IDisposable
         {
             GL.Scissor((int)view.X, (int)(height - view.Y - view.Height), (int)view.Width, (int)view.Height);
             GL.LineWidth(1);
-            if (session.SelectedView == GenerationStage.Tectonics && tectonics is not null)
+            bool tectonicView = session.SelectedView == GenerationStage.Tectonics && tectonics is not null;
+            if (tectonicView)
             {
                 GL.BindVertexArray(fillArray);
                 for (byte plate = 0; plate < 14; plate++)
@@ -104,10 +105,15 @@ internal sealed class HexGridRenderer : IDisposable
                     Tint(new Color4(color.X, color.Y, color.Z, 1));
                     GL.DrawArrays(PrimitiveType.Triangles, starts[plate], counts[plate]);
                 }
+            }
+            // Reuse the same static Grid buffer over every layer; overlays and selection stay above it.
+            DrawLines(vertexArray, vertexCount, tectonicView
+                ? new Color4(.20f, .25f, .29f, 1) : new Color4(0.38f, 0.47f, 0.51f, 1));
+            if (tectonicView)
+            {
                 if (session.ShowBoundaries) DrawLines(boundaryArray, boundaryCount, new Color4(.09f,.12f,.17f,1));
                 if (session.ShowMotion) DrawLines(arrowArray, arrowCount, new Color4(1f,1f,1f,1));
             }
-            else DrawLines(vertexArray, vertexCount, new Color4(0.38f, 0.47f, 0.51f, 1));
             if (overlayCount > 0)
             {
                 GL.BindVertexArray(overlayArray);

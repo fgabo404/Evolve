@@ -225,3 +225,24 @@ records all regressions, benchmarks and the remaining independent/visual gate.
 Native input, DPI, minimize/restore, rendering and GPU lifecycle observations
 remain open. Re-run the manual checklist above for Small/Medium/Large with
 Tectonics, overlays and several seeds before owner visual acceptance.
+
+## WG-01-C-FIX01 — Always-visible Grid (v0.0.40)
+
+The owner requested that the existing static Grid lines remain visible over
+Tectonics. Draw order is now layer fill, Grid lines, enabled tectonic boundaries,
+enabled white motion arrows, then selection. Grid uses a discreet dark color
+over plates; tectonic boundaries retain their darker, higher-contrast color.
+Grid-only appearance and one-pixel line width are unchanged. B/V control only
+their existing overlays; there is no Grid visibility toggle.
+
+The same Grid VAO/VBO is reused. No geometry rebuild in Draw, new Grid data,
+GPU position allocation, generator call, camera/input change or publication
+change is introduced. Each Tectonics frame adds one draw of the existing line
+buffer. Accepted Grid/R/M/CORE source and compatibility fixtures are unchanged.
+
+[FIX01 evidence](../../tests/laboratory/validation/wg01c-fix01/readme.md)
+contains actual OpenGL framebuffer captures for all sizes, isolated rendering
+measurements, reproducible capture tooling and regression outputs. This is
+developer offscreen GPU evidence, not owner interactive/visual acceptance or
+proof of native input, DPI transitions, driver retention or shutdown behavior.
+WG-01-C acceptance remains pending independent audit and owner review.

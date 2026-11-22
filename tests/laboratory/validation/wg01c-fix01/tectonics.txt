@@ -1,0 +1,23 @@
+COVERAGE Small: 20000 cells; 14 independently connected regions; payload=20576 B
+COVERAGE Medium: 45000 cells; 14 independently connected regions; payload=45576 B
+COVERAGE Large: 80000 cells; 14 independently connected regions; payload=80576 B
+PASS WG-01-B/C T01-T03 exhaustive owners, independent connectivity and seam/pole coverage
+PASS WG-01-B/C T04 complete deterministic outputs across all world types and signed seeds
+PASS WG-01-B/C T05 fixed numeric vectors, periodic warp and distinct-seed fallback
+FROZEN R: 15 full golden buffers; 75 CAL01 R cases matched; 75 full mode/type replays and independent BFS checks
+PASS WG-01-B/C T04-T05 frozen R full buffers and equivalence with all CAL01 R cases
+MALFORMED 204 field corruptions plus type/length/index/connectivity fixtures rejected
+PASS WG-01-B/C T06 malformed packed schemas and disconnected data are rejected
+PASS WG-01-B/C T06 immutable metadata and defensive source ownership
+PASS WG-01-B/C T10 real CORE ordering, rebuilding and historical results
+PASS WG-01-B/C T10 failures and invalid Grid/candidates stay atomic and retryable
+PASS WG-01-B/C T10 competing and reentrant operations cannot publish partial data
+PASS WG-01-B/C T11 graphical independence and disabled influence scope
+PASS WG-01-B/C T08 frozen M precision, projections and category ties
+PASS WG-01-B/C T07 complete independent boundary topology and projections
+PASS WG-01-B/C T06/T10 C schema safety, immutability and historical rebuilding
+FROZEN M: 15 complete flags-7 production buffers matched word for word.
+PASS WG-01-B/C T08 fifteen complete M compatibility buffers
+Approved M: all 75 full candidate fingerprints and unchanged R Ownership fingerprints matched.
+PASS WG-01-B/C T08 exact agreement with all 75 approved CAL01 M cases
+WG-01-B/C: 15/15 groups passed.
