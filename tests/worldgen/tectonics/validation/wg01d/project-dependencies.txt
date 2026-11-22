@@ -1,0 +1,5 @@
+tests/worldgen/tectonics/Evolve.WorldGeneration.Tectonics.Checks.csproj:9:    <ProjectReference Include="../../../engine/worldgen/Evolve.Engine.WorldGeneration.csproj" />
+engine/worldgen/Evolve.Engine.WorldGeneration.csproj:9:    <ProjectReference Include="../../definitions/worldgen/Evolve.Definitions.WorldGeneration.csproj" />
+game/Evolve.Game.csproj:17:    <ProjectReference Include="../engine/worldgen/Evolve.Engine.WorldGeneration.csproj" />
+game/Evolve.Game.csproj:18:    <PackageReference Include="OpenTK.Graphics" Version="4.9.4" />
+game/Evolve.Game.csproj:19:    <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.9.4" />

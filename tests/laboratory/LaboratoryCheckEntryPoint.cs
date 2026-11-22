@@ -467,9 +467,13 @@ static void TectonicInspection()
             session.Select(anchor);
             Require(session.DescribeSelection().Contains($"PLATEID: {plate}") && session.DescribeSelection().Contains("CM/ANO"), "Missing actual selected plate information.");
         }
-        session.ToggleBoundaries(); session.ToggleMotion();
+        session.ToggleBoundaries();
+        Require(!session.ShowBoundaries && session.ShowMotion, "Boundary toggle changed motion state.");
+        session.ToggleMotion();
         Require(!session.ShowBoundaries && !session.ShowMotion, "Overlay toggles failed.");
-        session.ToggleBoundaries(); session.ToggleMotion();
+        session.ToggleBoundaries();
+        Require(session.ShowBoundaries && !session.ShowMotion, "Boundary toggle enabled motion unexpectedly.");
+        session.ToggleMotion();
         session.ReturnToMenu(); session.OpenFromMenu(MainMenuButton.Laboratory);
         Require(ReferenceEquals(session.Tectonics, data) && ReferenceEquals(session.Grid, grid) && published.SequenceEqual(words), "Inspection/reopening regenerated or mutated data.");
         session.SelectView(GenerationStage.Grid); session.SelectView(GenerationStage.Tectonics);

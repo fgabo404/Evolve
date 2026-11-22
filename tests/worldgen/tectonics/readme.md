@@ -4,6 +4,19 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
+WG-01-D now executes **16/16 groups**, adding an independent Boolean category
+oracle over 324 signed/extreme pairs and 42,991 published interfaces, plus
+exact positive/negative binary midpoint rounding. Previous checks/fixtures are
+preserved. [Final verification](../../../engine/worldgen/layers/tectonics/verification-d.md)
+and [native pending matrix](validation/wg01d/native-validation.md) separate
+developer evidence from owner/independent acceptance.
+
+Run --final-performance separately after building, with tiering disabled, for
+isolated actual region/motion/boundary/codec/view/array-copy/query measurements.
+It validates full output against the real orchestrator and reports allocation
+and retained-GC deltas. Source and raw results explain diagnostic overhead and
+why the initial enumerable-copy probe is excluded from final metrics.
+
 The original B evidence below is historical; the final C section records the
 current 15-group suite and approved M publication. No historical claims of
 absent motion should be read as the current C capability inventory.

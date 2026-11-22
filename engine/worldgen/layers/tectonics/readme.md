@@ -3,8 +3,9 @@
 **Status:** WG-01-A/B formally accepted by the owner in the WG-01-C request.
 Frozen tectonic-partition-r-v2 (revision 2) remains unchanged. C is implemented
 with owner-approved M and Laboratory display, pending independent audit and
-owner visual acceptance. See [delivery-c.md](delivery-c.md) for actual contracts,
-tests, performance and limitations. D is not started.
+owner visual acceptance. See [delivery-c.md](delivery-c.md) for C contracts and
+[verification-d.md](verification-d.md) for the complete D developer verification,
+reconciled observations and pending native/independent acceptance gates.
 **Working branch:** `world-tectonics`.
 **Delivery baseline:** `v0.0.37`, `63e968ff71dbbcaa61e1ebbba744e466e3a01332`.
 **Delivery:** `v0.0.38`.

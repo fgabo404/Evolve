@@ -1,6 +1,6 @@
 # WG-01 — Tectonic Plates: Compact Roadmap
 
-**Status:** WG-01-A/B formally accepted. WG-01-C implemented at v0.0.39 with owner-approved M, pending independent audit and owner visual acceptance. WG-01-D not started.
+**Status:** A/B accepted; C and accepted FIX01 preserved. WG-01-D developer verification delivered at v0.0.41 for independent audit. Native owner matrix and final Layer 01 acceptance remain pending; no roadmap closure or merge.
 **Working branch:** `world-tectonics`, based on formally closed Grid `v0.0.35` (`503b3ec41a89b9f54cb47dede9f92506123b6a23`).  
 **Target:** exactly **14 connected, irregular, unequal tectonic plates** for Small, Medium and Large.  
 **Historical algorithm baseline:** weighted hex-region growth, multi-scale periodic noise, plate motion and boundary stresses.  
@@ -71,11 +71,20 @@ No D implementation, broader observation fixes or merge is implied.
 
 **Gate D:** favorable independent audit and **explicit owner acceptance**. Branch integration requires a separate authorization.
 
+**D evidence:** [verification-d.md](verification-d.md) maps all requirements to
+executed checks, frozen vectors, CPU/query/memory and real offscreen GL metrics.
+Tectonics 16/16, Laboratory 19/19, menu 16/16, complete Grid regressions and
+Release builds pass. No production algorithm/profile/LAB change was made.
+No blocking functional defect was found in the executed scope. Native inputs,
+DPI/window transitions/normal close remain PENDING in the owner matrix. D is
+submitted for audit; independent verdict and formal owner closure are not
+claimed. Influence remains absent and unbenchmarked, pending a future decision.
+
 ## Governance
 
 - Architect specifies; Dev implements only an authorized increment; independent Auditor reviews; owner accepts.
 - Every authorized repository-changing commit increments root `VERSION`, and reports an English commit message plus its full SHA.
-- A/B are accepted and C is expressly authorized, preserving frozen R. The owner selected M and its documented numerical policy before the final C commit. No changes to Grid, WG-CORE, State, Saves, other layers or normal creation, and no D implementation, are authorized.
+- A/B and the FIX01 baseline are accepted; R and M are frozen. D is explicitly authorized for verification, documentation and tests only. No changes to accepted production behavior, Grid, WG-CORE, State, Saves, other layers or normal creation are authorized; functional defects require separate owner authorization.
 - Keep the Grid audit observations and `world-grid` history intact; do not delete or retire its roadmap.
 - `world-tectonics` is a working branch based on the accepted Grid commit because `world-grid` has not been integrated into `world`. This does not authorize synchronization or merging.
 

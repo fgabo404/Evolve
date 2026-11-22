@@ -1,0 +1,24 @@
+PASS WG-00-A extreme distances and finite extent regressions
+PASS WG-00-A 200x100: geometry, seam, poles and BFS
+PASS WG-00-A 300x150: geometry, seam, poles and BFS
+PASS WG-00-A 400x200: geometry, seam, poles and BFS
+PASS WG-00-A all geometry checks
+PASS WG-00-B Small: 20000 unique IDs; 59600 edges; geometry, neighbors, determinism and input checks
+PASS WG-00-B Medium: 45000 unique IDs; 134400 edges; geometry, neighbors, determinism and input checks
+PASS WG-00-B Large: 80000 unique IDs; 239200 edges; geometry, neighbors, determinism and input checks
+PASS WG-00-B all compact grid checks
+PASS WG-00-C real Grid registration and first publication for all sizes
+PASS WG-00-C descriptor and published values are immutable
+PASS WG-00-C all forward modes preserve prerequisite order
+PASS WG-00-C Grid rebuild invalidates the full suffix and replays
+PASS WG-00-C seeds and world types do not alter size-specific geometry
+PASS WG-00-C explicit failures, exceptions and invalid candidates are atomic and retryable
+PASS WG-00-C finalization retains historical Grid data after rebuild
+PASS WG-00-C concurrent and reentrant operations remain rejected
+PASS WG-00-C registry and invalid argument guards remain enforced
+PASS WG-00-C engine remains independent of graphics
+PASS WG-00-C 10/10 integration checks
+PASS WG-00-D Small: 140000 deterministic triangles; independent geographic/spacing and invalid-input checks
+PASS WG-00-D Medium: 315000 deterministic triangles; independent geographic/spacing and invalid-input checks
+PASS WG-00-D Large: 560000 deterministic triangles; independent geographic/spacing and invalid-input checks
+PASS V01-V06: 145000 cells; 1160000 geometry BFS comparisons; 1160000 Grid API BFS comparisons; V07 runs separately with --performance

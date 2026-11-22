@@ -17,8 +17,9 @@ internal static class TectonicCheckEntryPoint
         if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
         if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
+        if (args.SequenceEqual(new[] { "--final-performance" })) { TectonicFinalVerification.Measure(); return 0; }
         if (args.Length == 2 && args[0] == "--export-vectors") { TectonicFrozenVectors.Export(args[1]); return 0; }
-        if (args.Length != 0) throw new ArgumentException("Use no arguments for checks, --calibration for measurements, or --compare-motion <directory> for provisional C profiles.");
+        if (args.Length != 0) throw new ArgumentException("Use no arguments for checks; see readme.md for supported measurement and explicit fixture-export switches.");
         (string Name, Action Check)[] checks =
         [
             ("T01-T03 exhaustive owners, independent connectivity and seam/pole coverage", Coverage),
@@ -35,7 +36,8 @@ internal static class TectonicCheckEntryPoint
             ("T07 complete independent boundary topology and projections", TectonicMotionChecks.Boundaries),
             ("T06/T10 C schema safety, immutability and historical rebuilding", TectonicMotionChecks.Schema),
             ("T08 fifteen complete M compatibility buffers", TectonicMotionChecks.Frozen),
-            ("T08 exact agreement with all 75 approved CAL01 M cases", MotionProfileComparison.VerifyApprovedM)
+            ("T08 exact agreement with all 75 approved CAL01 M cases", MotionProfileComparison.VerifyApprovedM),
+            ("D independent category predicates and exact binary midpoint rounding", TectonicFinalVerification.Check)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)
