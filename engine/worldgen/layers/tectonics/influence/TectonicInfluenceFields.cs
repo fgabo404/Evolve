@@ -84,4 +84,23 @@ internal sealed class TectonicInfluenceFields
     }
 
     private static bool NegativeZero(float value) => BitConverter.SingleToUInt32Bits(value) == 0x80000000;
+
+    // Measure the proposed E4 trust-boundary cost without enabling a codec or normal executor integration.
+    // This is a complete production recomputation, not an independent numerical oracle.
+    internal void ValidateComplete(TectonicInfluenceSources sources, TectonicBoundaryDistances distances)
+    {
+        Validate(sources, distances);
+        var expectedDistances = TectonicBoundaryDistances.Build(sources);
+        var expected = Build(sources, Parameters);
+        for (int cell = 0; cell < Count; cell++)
+        {
+            var a = values[cell];
+            var b = expected[cell];
+            if (distances[cell] != expectedDistances[cell] || Bits(a.Compression) != Bits(b.Compression) ||
+                Bits(a.Extension) != Bits(b.Extension) || Bits(a.Shear) != Bits(b.Shear))
+                throw new ArgumentException("Complete influence recomputation differs from the supplied fields.");
+        }
+    }
+
+    private static uint Bits(float value) => BitConverter.SingleToUInt32Bits(value);
 }

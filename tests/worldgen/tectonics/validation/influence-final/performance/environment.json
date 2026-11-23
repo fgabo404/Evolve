@@ -1,0 +1,21 @@
+{
+  "Framework": ".NET 10.0.13",
+  "OS": "Microsoft Windows 10.0.26200",
+  "OSArchitecture": "X64",
+  "ProcessArchitecture": "X64",
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "ProcessorCount": 16,
+  "Frequency": 10000000,
+  "TieredCompilation": "0",
+  "WarmupBatchesPerCase": 1,
+  "MeasuredBatchesPerCase": 3,
+  "OperationsPerPhasePerBatch": 1,
+  "Seeds": [
+    0,
+    -1,
+    9223372036854775807
+  ],
+  "Profile": "tectonic-influence-historical-v1",
+  "Revision": 1,
+  "Notes": "Single-threaded Release; GC before/after outside timers; reference M decoding and independent source extraction outside measured phases; no dedicated-machine guarantee; retained deltas are signed GC observations, not peak heap."
+}

@@ -1,9 +1,11 @@
 # WG-01-E: Integrated dynamics roadmap
 
 **E1 is the accepted v0.0.43 baseline identified by the owner's E2-CAL01
-authorization. E2-CAL01 permits private implementation and comparison only;
-no Influence profile is selected/frozen and normal publication stays unchanged.
-E2-FINAL and E3-E5 are not authorized.** The original
+authorization. The owner's E2-FINAL specification reports E2-CAL01 formally
+accepted with observations and selects HISTORICAL for implementation/validation.
+E2-FINAL is delivered pending architectural review, independent audit and owner
+acceptance; no definitive profile freeze or normal activation is implied.
+E3-E5 are not authorized.** The original
 [four-increment A/B/C/D roadmap](roadmap.md) remains historical and active for
 its outstanding acceptance gates. This separate extension neither closes
 Layer 01 nor resolves GATE-01. No branch merge is authorized.
@@ -27,14 +29,21 @@ revision 1. All numeric Influence/mantle choices below need separate approval.
 
 ## E2 - Tectonic deformation
 
-**E2-CAL01:** internal experimental builders and independent checks are being
-delivered for owner selection, not E2 acceptance. See the
+**E2-CAL01 historical delivery:** internal experimental builders and independent
+checks were delivered for owner selection. See the
 [calibration report](e2-calibration.md) for candidates, raw evidence, limitations
 and the distinction between executed and future checks. E1 audit MINOR-02 is
 clarified in [e-contracts.md](e-contracts.md): positive finite radius/cutoff,
 checked integer reach and overflow rejection; no approved numeric range.
 E1 audit MINOR-01 (schema-1/schema-2 reader compatibility) remains open for E4.
 Neither entry concerns the separately numbered historical D-FIX01 findings.
+
+**E2-FINAL delivery:** [exact selected-profile contract](influence-profile.md)
+and [verification report](e2-final.md) specify proposed revision 1, complete
+independent oracles, separate full-field review vectors and PERF-01 measurements.
+TEST-01 and PERF-01 have developer evidence, pending independent review; E1
+MINOR-01 stays open for E4. Normal publication remains schema 1/features 7,
+without Influence or Mantle. GATE-01 remains partially open.
 
 | Item | Requirement |
 | --- | --- |
@@ -129,7 +138,8 @@ do not add tiny production MapSize values merely to simplify an oracle.
 - GATE-01 remains partially open under [audit-fix01.md](audit-fix01.md).
   Existing native/DPI/GPU limitations are not erased by new design documents.
 
-The E1 publication stop was followed by explicit E2-CAL01 authorization.
-Stop after preliminary comparison: no winning profile, E2-FINAL, E3, schema-2
-publication or LAB changes without the owner's subsequent decision and
-appropriate independent audit. GATE-01 is not resolved by calibration.
+The E1 publication stop was followed by E2-CAL01 and then explicit E2-FINAL
+authorization. Stop after E2-FINAL publication for architectural review,
+independent audit and express owner acceptance of the proposed profile.
+No E3/E4, schema-2 publication or LAB changes are authorized. GATE-01 is not
+resolved by this delivery.

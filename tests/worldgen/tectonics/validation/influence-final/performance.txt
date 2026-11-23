@@ -1,0 +1,10 @@
+PERF-01 Small/0: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Small/-1: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Small/9223372036854775807: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Medium/0: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Medium/-1: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Medium/9223372036854775807: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Large/0: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Large/-1: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 Large/9223372036854775807: warmup + 3 batches; all complete oracle/replay comparisons passed.
+PERF-01 complete: 216 raw rows, 9 size/seed cases; no performance budget or profile acceptance inferred.

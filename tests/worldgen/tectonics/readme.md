@@ -4,9 +4,55 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
+## E2-FINAL: selected-profile validation and review vectors
+
+The current suite passes **24/24 groups**: the prior 21 plus exact selected
+policy/dense corruption checks, complete real-map oracles and complete
+Influence references bound to original R/M buffers. The proposed profile is
+`tectonic-influence-historical-v1`, revision 1; definitive acceptance remains
+pending independent audit and the owner's decision. Normal schema 1/features 7
+remain unchanged. See the [delivery report](../../../engine/worldgen/layers/tectonics/e2-final.md)
+and [reference manifest](influence-vectors/manifest.json).
+
+Complete real-map oracles cover 725,000 cells / 2,175,000 float values over
+all sizes and five signed/extreme seeds; a separate fully dense Small fixture
+covers 20,000 cells. They independently decode stored M projections, traverse
+explicit Offset topology from each target and evaluate the complete envelope.
+References compare all bytes for 60 size/seed/world-type cases, sharing only
+physically identical fixture files. No target sampling is used in those new
+oracles; the preserved CAL01 sampled checks remain additional historical coverage.
+
+Run the full regressions with the independent-audit commands below. Measure
+PERF-01 separately after builds/tests finish, using a new empty directory:
+
+```powershell
+dotnet build .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release
+$previousTiering = $env:DOTNET_TieredCompilation
+try {
+    $env:DOTNET_TieredCompilation = '0'
+    dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release --no-build -- --influence-final-performance .\tests\worldgen\tectonics\validation\influence-final-rerun
+} finally {
+    $env:DOTNET_TieredCompilation = $previousTiering
+}
+```
+
+The explicit authoring switch below verifies independent full oracles before
+export. It never overwrites existing references and is unnecessary for normal
+audit verification. Do not use it to replace failing goldens without approval.
+
+```powershell
+dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release -- --export-influence-vectors .\tests\worldgen\tectonics\influence-review-export
+```
+
+[PERF-01 raw rows](validation/influence-final/performance/timings.csv) separate
+source extraction, boundary distance, Gaussian propagation, structural
+validation, production recomputation and independent full-oracle validation.
+Warmup is explicit; CPU/runtime/batch settings and signed GC-retention caveats
+are recorded. No budget or hardware-independent acceptance threshold is implied.
+
 ## E2-CAL01: private deformation experiments
 
-The current suite passes 21/21 groups: the seventeen B/C/D-FIX01 groups plus
+The historical CAL01 suite passed 21/21 groups: the seventeen B/C/D-FIX01 groups plus
 four internal deformation groups in TectonicInfluenceChecks.cs. See the
 [calibration report](../../../engine/worldgen/layers/tectonics/e2-calibration.md)
 for numerical policy, candidates, complete/sampled independent oracles, actual

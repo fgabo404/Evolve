@@ -15,6 +15,8 @@ internal static class TectonicCheckEntryPoint
     {
         if (args.SequenceEqual(new[] { "--calibration" })) { TectonicCalibrationChecks.Run(); return 0; }
         if (args.Length == 2 && args[0] == "--influence-calibration") { TectonicInfluenceCalibration.Run(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--export-influence-vectors") { TectonicInfluenceVectors.Export(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--influence-final-performance") { TectonicInfluenceFinalPerformance.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
         if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
@@ -43,7 +45,10 @@ internal static class TectonicCheckEntryPoint
             ("E2-CAL01 stored M endpoint sources and ownership", TectonicInfluenceChecks.Sources),
             ("E2-CAL01 checked numeric inputs, reach and canonical zeros", TectonicInfluenceChecks.Numeric),
             ("E2-CAL01 independent complete Gaussian and distance oracles", TectonicInfluenceChecks.Propagation),
-            ("E2-CAL01 replay, all sizes/types/signed seeds and unchanged publication", TectonicInfluenceChecks.Compatibility)
+            ("E2-CAL01 replay, all sizes/types/signed seeds and unchanged publication", TectonicInfluenceChecks.Compatibility),
+            ("E2-FINAL exact policy, dense oracle and candidate integrity", TectonicInfluenceFinalChecks.PolicyAndDense),
+            ("E2-FINAL all-target independent real source/distance/envelope oracles", TectonicInfluenceFinalChecks.CompleteOracles),
+            ("E2-FINAL complete Influence vectors and original R/M bindings", TectonicInfluenceVectors.Verify)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)

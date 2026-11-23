@@ -18,9 +18,14 @@ The owner authorized E1 architecture only at v0.0.42. See the
 [historical review](e-history-review.md), [integrated design](e-architecture.md),
 [proposed schema-2 contract](e-contracts.md), [five-increment E roadmap](e-roadmap.md)
 and [documentary verification](e1-validation.md). These proposals do not replace
-the active R/M profiles or schema 1/features 7. Influence and mantle remain
-unimplemented; E2 requires independent audit and express owner acceptance.
+the active R/M profiles or schema 1/features 7. Published Influence and mantle
+remain unavailable; E2 requires independent audit and express owner acceptance.
 GATE-01 remains partially open and Layer 01 is not formally closed.
+Subsequent [E2-FINAL](e2-final.md) implements and verifies private Influence
+components with the owner-selected HISTORICAL candidate. Normal published
+Influence remains absent; definitive profile acceptance and E4 integration
+remain pending. Its [numeric contract](influence-profile.md) is separate from
+the active schema-1 R/M publication.
 
 ## 1. Responsibility and boundaries
 

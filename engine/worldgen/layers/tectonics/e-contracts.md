@@ -5,6 +5,11 @@ document does not replace the active [schema-1 contract](contracts.md), enable
 Influence, freeze new numeric parameters or authorize implementation. See the
 [architecture](e-architecture.md) and [increment gates](e-roadmap.md).
 
+E2-FINAL separately implements the internal owner-selected HISTORICAL candidate;
+its [exact proposed revision-1 policy](influence-profile.md) and review vectors
+do not approve or activate the schema-2 layout below. The current reader and
+published payload remain schema 1/features 7; MINOR-01 compatibility is for E4.
+
 ## Recommendation and alternatives
 
 Recommend schema **2**, still one immutable `LayerData<uint>` belonging to
