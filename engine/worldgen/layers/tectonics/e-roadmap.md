@@ -59,6 +59,14 @@ without Influence or Mantle. GATE-01 remains partially open.
 
 ## E3 - Mantle convection
 
+**E3-CAL02 delivery:** the owner authorized complementary experiments from the
+accepted v0.0.46 base, keeping BALANCED as a conceptual direction only.
+[Declared design](e3-cal02-design.md) and [results](e3-calibration-02.md) compare
+operators/units, coordinate interpretation, sampling and data-derived Vref.
+All alternatives are test-only; canonical CAL01 numerical components remain
+unchanged. E3 MINOR-01 corrects only the old double-zero documentation claim,
+preserving raw evidence. No Mantle profile, E3-FINAL, E4/E5 or closure is approved.
+
 **E3-CAL01 delivery:** [historical reuse review](e3-history-review.md) and
 [calibration report](e3-calibration.md) document unchanged sampler/RNG/Grid/
 normal reuse, eight experimental Model A candidates, complete independent

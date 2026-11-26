@@ -13,5 +13,6 @@
     <None Update="experiments/motion-cal01/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/cal01/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/cal01/profiles.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="experiments/mantle-cal01/raw/results.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

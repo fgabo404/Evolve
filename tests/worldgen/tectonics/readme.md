@@ -4,9 +4,44 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
+## E3-CAL02: complementary spatial experiments
+
+The current suite passes **30/30 groups**. Three new groups retain exact CAL01
+controls, compare complete alternative operators against independent geometry,
+sample a common continuous field across sizes and exercise octave/shifted-seam
+screens. See the [declared matrix](../../../engine/worldgen/layers/tectonics/e3-cal02-design.md)
+and [CAL02 report](../../../engine/worldgen/layers/tectonics/e3-calibration-02.md).
+No canonical Engine source, sampler or frozen reference changes. Mantle remains
+experimental and normal publication stays schema 1/features 7.
+
+After regressions and builds finish, run the separate measurement tool using
+a fresh empty directory:
+
+```powershell
+dotnet build .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release
+$previousTiering = $env:DOTNET_TieredCompilation
+try {
+    $env:DOTNET_TieredCompilation = '0'
+    dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release --no-build -- --mantle-spatial-calibration .\tests\worldgen\tectonics\experiments\mantle-cal02\rerun
+} finally {
+    $env:DOTNET_TieredCompilation = $previousTiering
+}
+```
+
+The runner records its frozen-input survey and exact resolved design before
+executing alternatives. [Design/environment](experiments/mantle-cal02/raw/design.json),
+[survey](experiments/mantle-cal02/raw/influence-survey.csv),
+[controlled resolution](experiments/mantle-cal02/raw/controlled-resolution.csv),
+[octave screen](experiments/mantle-cal02/raw/sampling.csv),
+[subcell sensitivity](experiments/mantle-cal02/raw/shifts.csv),
+[paired metrics](experiments/mantle-cal02/raw/metrics.csv) and
+[raw timings](experiments/mantle-cal02/raw/timings.csv) preserve all evidence.
+All four channels are compared; alternative operator units differ, so RMS
+similarity alone does not select a policy. No Mantle goldens or profile freeze.
+
 ## E3-CAL01: experimental Model A calibration
 
-The current suite passes **27/27 groups**, retaining all 24 E2-FINAL groups and
+The historical CAL01 suite passed **27/27 groups**, retaining all 24 E2-FINAL groups and
 adding parameter/seed checks, controlled fields and complete candidate oracles.
 See the [calibration report](../../../engine/worldgen/layers/tectonics/e3-calibration.md)
 and [historical reuse matrix](../../../engine/worldgen/layers/tectonics/e3-history-review.md).

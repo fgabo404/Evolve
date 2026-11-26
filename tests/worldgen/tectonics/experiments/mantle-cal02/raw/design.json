@@ -1,0 +1,238 @@
+{
+  "Seeds": [
+    0,
+    -1,
+    -9223372036854775808,
+    9223372036854775807
+  ],
+  "Matrix": [
+    {
+      "Name": "CONTROL",
+      "Factor": "CONTROL",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "R1-NATIVE",
+      "Factor": "RES-01",
+      "Operation": "R1Native",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "R2-NATIVE",
+      "Factor": "RES-01",
+      "Operation": "R2Native",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "R1-WIDTH",
+      "Factor": "RES-01",
+      "Operation": "R1Width",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "R2-WIDTH",
+      "Factor": "RES-01",
+      "Operation": "R2Width",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "A1",
+      "Factor": "ANISO-01",
+      "Operation": "R0",
+      "SpatialPolicy": "A1",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "LOW",
+      "Factor": "ALIAS-01",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 1,
+        "RegionalFrequency": 3,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "HIGH",
+      "Factor": "ALIAS-01",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 4,
+        "RegionalFrequency": 12,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "VREF-Q25",
+      "Factor": "VREF",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 0.046172723
+      }
+    },
+    {
+      "Name": "VREF-Q50",
+      "Factor": "VREF",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 0.9367168
+      }
+    },
+    {
+      "Name": "VREF-Q75",
+      "Factor": "VREF",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 4.445543
+      }
+    },
+    {
+      "Name": "TECTONIC-DOM",
+      "Factor": "WEIGHT-CONTROL",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 4,
+        "BroadWeight": 1,
+        "RegionalWeight": 1,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "BROAD-DOM",
+      "Factor": "WEIGHT-CONTROL",
+      "Operation": "R0",
+      "SpatialPolicy": "A0",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 1,
+        "BroadWeight": 4,
+        "RegionalWeight": 1,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "COMBINED-A1-R2",
+      "Factor": "COMBINED",
+      "Operation": "R2Width",
+      "SpatialPolicy": "A1",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "COMBINED-A1-LOW-R2",
+      "Factor": "COMBINED",
+      "Operation": "R2Width",
+      "SpatialPolicy": "A1",
+      "Parameters": {
+        "BroadFrequency": 1,
+        "RegionalFrequency": 3,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    }
+  ],
+  "VrefBits": [
+    "3D3D1F9C",
+    "3F6FCCAC",
+    "408E41E3"
+  ],
+  "SurveyPolicy": "float median of twelve per-world positive C\u002BE quantiles, each world equally weighted; quantile floor(q*(n-1))",
+  "Runtime": ".NET 10.0.13",
+  "OS": "Microsoft Windows 10.0.26200",
+  "Architecture": "X64",
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "ProcessorCount": 16,
+  "Frequency": 10000000,
+  "TieredCompilation": "0",
+  "Warmups": 1,
+  "Batches": 3,
+  "IterationsPerPhase": 1,
+  "SeedDomain": "unchanged experimental WG01MNT1; no frozen Mantle profile",
+  "Notes": "Single-threaded; no dedicated-machine claim; GC outside timers; signed retained deltas are not peak heap."
+}

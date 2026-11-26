@@ -1,0 +1,13 @@
+CAL02 Small/0: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Small/-1: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Small/-9223372036854775808: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Small/9223372036854775807: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Medium/0: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Medium/-1: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Medium/-9223372036854775808: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Medium/9223372036854775807: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Large/0: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Large/-1: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Large/-9223372036854775808: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 Large/9223372036854775807: 15 paired candidates, exact archived controls, 24 subcell probes; all balance/replay checks passed.
+CAL02 complete: 2880 phase rows, 540 paired metric rows, 288 shift rows; no policy selected.

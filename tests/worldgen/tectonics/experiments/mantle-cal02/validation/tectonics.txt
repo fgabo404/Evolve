@@ -1,0 +1,97 @@
+COVERAGE Small: 20000 cells; 14 independently connected regions; payload=20576 B
+COVERAGE Medium: 45000 cells; 14 independently connected regions; payload=45576 B
+COVERAGE Large: 80000 cells; 14 independently connected regions; payload=80576 B
+PASS WG-01-B/C T01-T03 exhaustive owners, independent connectivity and seam/pole coverage
+PASS WG-01-B/C T04 complete deterministic outputs across all world types and signed seeds
+PASS WG-01-B/C T05 fixed numeric vectors, periodic warp and distinct-seed fallback
+FROZEN R: 15 full golden buffers; 75 CAL01 R cases matched; 75 full mode/type replays and independent BFS checks
+PASS WG-01-B/C T04-T05 frozen R full buffers and equivalence with all CAL01 R cases
+MALFORMED 204 field corruptions plus type/length/index/connectivity fixtures rejected
+PASS WG-01-B/C T06 malformed packed schemas and disconnected data are rejected
+PASS WG-01-B/C T06 immutable metadata and defensive source ownership
+PASS WG-01-B/C T10 real CORE ordering, rebuilding and historical results
+PASS WG-01-B/C T10 failures and invalid Grid/candidates stay atomic and retryable
+PASS WG-01-B/C T10 competing and reentrant operations cannot publish partial data
+PASS WG-01-B/C T11 graphical independence and disabled influence scope
+PASS WG-01-B/C T08 frozen M precision, projections and category ties
+PASS WG-01-B/C T07 complete independent boundary topology and projections
+PASS WG-01-B/C T06/T10 C schema safety, immutability and historical rebuilding
+FROZEN M: 15 complete flags-7 production buffers matched word for word.
+PASS WG-01-B/C T08 fifteen complete M compatibility buffers
+Approved M: all 75 full candidate fingerprints and unchanged R Ownership fingerprints matched.
+PASS WG-01-B/C T08 exact agreement with all 75 approved CAL01 M cases
+D_CLASSES Small seed=0 boundaries=1870 quiet/convergent/divergent/transform/mixed=0/372/377/851/270
+D_CLASSES Small seed=1 boundaries=1956 quiet/convergent/divergent/transform/mixed=0/430/314/834/378
+D_CLASSES Small seed=-1 boundaries=1826 quiet/convergent/divergent/transform/mixed=0/452/306/800/268
+D_CLASSES Small seed=-9223372036854775808 boundaries=1817 quiet/convergent/divergent/transform/mixed=0/367/457/709/284
+D_CLASSES Small seed=9223372036854775807 boundaries=1911 quiet/convergent/divergent/transform/mixed=0/370/364/787/390
+D_CLASSES Medium seed=0 boundaries=2818 quiet/convergent/divergent/transform/mixed=0/685/528/1016/589
+D_CLASSES Medium seed=1 boundaries=2967 quiet/convergent/divergent/transform/mixed=0/663/588/1114/602
+D_CLASSES Medium seed=-1 boundaries=2873 quiet/convergent/divergent/transform/mixed=0/554/513/1276/530
+D_CLASSES Medium seed=-9223372036854775808 boundaries=2950 quiet/convergent/divergent/transform/mixed=0/724/506/1074/646
+D_CLASSES Medium seed=9223372036854775807 boundaries=2867 quiet/convergent/divergent/transform/mixed=0/717/517/1228/405
+D_CLASSES Large seed=0 boundaries=3944 quiet/convergent/divergent/transform/mixed=0/740/828/1799/577
+D_CLASSES Large seed=1 boundaries=3888 quiet/convergent/divergent/transform/mixed=0/631/801/1587/869
+D_CLASSES Large seed=-1 boundaries=3692 quiet/convergent/divergent/transform/mixed=0/809/852/1506/525
+D_CLASSES Large seed=-9223372036854775808 boundaries=3740 quiet/convergent/divergent/transform/mixed=0/921/677/1437/705
+D_CLASSES Large seed=9223372036854775807 boundaries=3872 quiet/convergent/divergent/transform/mixed=0/703/788/1838/543
+D_ORACLE: 324 signed/extreme component pairs; exact midpoint rounding; 42991 published interfaces.
+PASS WG-01-B/C D independent category predicates and exact binary midpoint rounding
+TIMING MEDIAN: odd/even/30 samples, repeats, finite extremes, subnormals and invalid inputs passed.
+PASS WG-01-B/C D-FIX01 conventional graphics timing median
+PASS WG-01-B/C E2-CAL01 stored M endpoint sources and ownership
+PASS WG-01-B/C E2-CAL01 checked numeric inputs, reach and canonical zeros
+PASS WG-01-B/C E2-CAL01 independent complete Gaussian and distance oracles
+PASS WG-01-B/C E2-CAL01 replay, all sizes/types/signed seeds and unchanged publication
+E2-FINAL DENSE: all 20000 source cells; 60000 channel values and 20000 distances matched independent target BFS.
+PASS WG-01-B/C E2-FINAL exact policy, dense oracle and candidate integrity
+E2-FINAL ORACLE Small/0: all 20000 sources/distances and 60000 channel values matched.
+E2-FINAL ORACLE Small/1: all 20000 sources/distances and 60000 channel values matched.
+E2-FINAL ORACLE Small/-1: all 20000 sources/distances and 60000 channel values matched.
+E2-FINAL ORACLE Small/-9223372036854775808: all 20000 sources/distances and 60000 channel values matched.
+E2-FINAL ORACLE Small/9223372036854775807: all 20000 sources/distances and 60000 channel values matched.
+E2-FINAL ORACLE Medium/0: all 45000 sources/distances and 135000 channel values matched.
+E2-FINAL ORACLE Medium/1: all 45000 sources/distances and 135000 channel values matched.
+E2-FINAL ORACLE Medium/-1: all 45000 sources/distances and 135000 channel values matched.
+E2-FINAL ORACLE Medium/-9223372036854775808: all 45000 sources/distances and 135000 channel values matched.
+E2-FINAL ORACLE Medium/9223372036854775807: all 45000 sources/distances and 135000 channel values matched.
+E2-FINAL ORACLE Large/0: all 80000 sources/distances and 240000 channel values matched.
+E2-FINAL ORACLE Large/1: all 80000 sources/distances and 240000 channel values matched.
+E2-FINAL ORACLE Large/-1: all 80000 sources/distances and 240000 channel values matched.
+E2-FINAL ORACLE Large/-9223372036854775808: all 80000 sources/distances and 240000 channel values matched.
+E2-FINAL ORACLE Large/9223372036854775807: all 80000 sources/distances and 240000 channel values matched.
+E2-FINAL REAL ORACLES: 15 full maps; 725000 cells; 2175000 exact float comparisons; no target sampling.
+PASS WG-01-B/C E2-FINAL all-target independent real source/distance/envelope oracles
+INFLUENCE VECTORS: all 60 cases matched every decoded byte and SHA-256; original 15 B + 15 M buffers unchanged.
+PASS WG-01-B/C E2-FINAL complete Influence vectors and original R/M bindings
+PASS WG-01-B/C E3-CAL01 parameters, periodic signals and isolated seed policy
+PASS WG-01-B/C E3-CAL01 controlled potentials and independent edge oracle
+MANTLE CAL01 Small/0: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Small/-1: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Small/-9223372036854775808: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Small/9223372036854775807: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Medium/0: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Medium/-1: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Medium/-9223372036854775808: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Medium/9223372036854775807: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Large/0: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Large/-1: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Large/-9223372036854775808: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+MANTLE CAL01 Large/9223372036854775807: all 8 candidates, complete potential/edge/replay checks; R/M/Influence unchanged.
+PASS WG-01-B/C E3-CAL01 complete candidate replay and unchanged R/M/Influence
+PASS WG-01-B/C E3-CAL02 controlled geometric operators and continuous resolution field
+PASS WG-01-B/C E3-CAL02 geometry, octave sampling and shifted seam probes
+CAL02 REAL Small/0: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Small/-1: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Small/-9223372036854775808: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Small/9223372036854775807: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Medium/0: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Medium/-1: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Medium/-9223372036854775808: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Medium/9223372036854775807: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Large/0: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Large/-1: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Large/-9223372036854775808: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+CAL02 REAL Large/9223372036854775807: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.
+PASS WG-01-B/C E3-CAL02 complete alternative oracles and archived controls
+WG-01-B/C: 30/30 groups passed.

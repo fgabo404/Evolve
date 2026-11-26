@@ -129,8 +129,11 @@ These are numerical error bounds, not tunable geological tolerances. Ideal
 per-component bound 12 follows from degree <=6 and |phi difference|<=2; validation
 allows its next float to cover final rounding, not a calibrated physical cap.
 
-All measured pre-float global double balances were **zero**. This is an observed
-result, not a promise of exact cancellation for every possible valid float field.
+E3 MINOR-01 correction: ideal paired cancellation does not imply an exactly
+zero computed global double sum. Medium / seed 9223372036854775807 /
+TECTONIC-ONLY records DoubleBalance=1.7763568394002505E-15, within its derived
+budget 2.0063475155697538E-08. Finite accumulation can leave nonzero residuals.
+This documentary correction does not change the calculation or original CSVs.
 
 | Size | Maximum absolute float residual | Float budget range across candidates/seeds | Maximum budget fraction used |
 | --- | ---: | --- | ---: |

@@ -18,6 +18,7 @@ internal static class TectonicCheckEntryPoint
         if (args.Length == 2 && args[0] == "--export-influence-vectors") { TectonicInfluenceVectors.Export(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--influence-final-performance") { TectonicInfluenceFinalPerformance.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--mantle-calibration") { MantleCalibrationRunner.Run(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--mantle-spatial-calibration") { MantleSpatialRunner.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
         if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
@@ -52,7 +53,10 @@ internal static class TectonicCheckEntryPoint
             ("E2-FINAL complete Influence vectors and original R/M bindings", TectonicInfluenceVectors.Verify),
             ("E3-CAL01 parameters, periodic signals and isolated seed policy", MantleCalibrationChecks.ParametersAndSignals),
             ("E3-CAL01 controlled potentials and independent edge oracle", MantleCalibrationChecks.ControlledAndEdges),
-            ("E3-CAL01 complete candidate replay and unchanged R/M/Influence", MantleCalibrationChecks.ReplayAndIntegrity)
+            ("E3-CAL01 complete candidate replay and unchanged R/M/Influence", MantleCalibrationChecks.ReplayAndIntegrity),
+            ("E3-CAL02 controlled geometric operators and continuous resolution field", MantleSpatialChecks.Controlled),
+            ("E3-CAL02 geometry, octave sampling and shifted seam probes", MantleSpatialChecks.SamplingAndGeometry),
+            ("E3-CAL02 complete alternative oracles and archived controls", MantleSpatialChecks.RealMaps)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)
