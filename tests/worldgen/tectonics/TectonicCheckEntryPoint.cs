@@ -1,4 +1,4 @@
-// Exercises frozen WG-01-B/C data, independent geometry/kinematics, CORE lifecycle and private E2 calibration.
+// Exercises frozen R/M/Influence data, independent geometry, CORE lifecycle and private E2/E3 calibration.
 // Compares complete payloads and dispatches isolated calibration tools without changing production execution.
 using System.Reflection;
 using Evolve.Definitions.WorldGeneration;
@@ -17,6 +17,7 @@ internal static class TectonicCheckEntryPoint
         if (args.Length == 2 && args[0] == "--influence-calibration") { TectonicInfluenceCalibration.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-influence-vectors") { TectonicInfluenceVectors.Export(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--influence-final-performance") { TectonicInfluenceFinalPerformance.Run(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--mantle-calibration") { MantleCalibrationRunner.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
         if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
@@ -48,7 +49,10 @@ internal static class TectonicCheckEntryPoint
             ("E2-CAL01 replay, all sizes/types/signed seeds and unchanged publication", TectonicInfluenceChecks.Compatibility),
             ("E2-FINAL exact policy, dense oracle and candidate integrity", TectonicInfluenceFinalChecks.PolicyAndDense),
             ("E2-FINAL all-target independent real source/distance/envelope oracles", TectonicInfluenceFinalChecks.CompleteOracles),
-            ("E2-FINAL complete Influence vectors and original R/M bindings", TectonicInfluenceVectors.Verify)
+            ("E2-FINAL complete Influence vectors and original R/M bindings", TectonicInfluenceVectors.Verify),
+            ("E3-CAL01 parameters, periodic signals and isolated seed policy", MantleCalibrationChecks.ParametersAndSignals),
+            ("E3-CAL01 controlled potentials and independent edge oracle", MantleCalibrationChecks.ControlledAndEdges),
+            ("E3-CAL01 complete candidate replay and unchanged R/M/Influence", MantleCalibrationChecks.ReplayAndIntegrity)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)

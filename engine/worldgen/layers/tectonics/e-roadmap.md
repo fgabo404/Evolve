@@ -5,7 +5,9 @@ authorization. The owner's E2-FINAL specification reports E2-CAL01 formally
 accepted with observations and selects HISTORICAL for implementation/validation.
 E2-FINAL is delivered pending architectural review, independent audit and owner
 acceptance; no definitive profile freeze or normal activation is implied.
-E3-E5 are not authorized.** The original
+The owner subsequently authorized E3-CAL01 at v0.0.45, treating R/M/Influence
+as frozen inputs. Only private Model A calibration is delivered; Mantle
+selection/freezing, E3-FINAL and E4/E5 remain unauthorized.** The original
 [four-increment A/B/C/D roadmap](roadmap.md) remains historical and active for
 its outstanding acceptance gates. This separate extension neither closes
 Layer 01 nor resolves GATE-01. No branch merge is authorized.
@@ -56,6 +58,13 @@ without Influence or Mantle. GATE-01 remains partially open.
 | Risks | Large cutoff approaches O(SN); float evaluation order and pruning can change values; measured costs must guide approval. |
 
 ## E3 - Mantle convection
+
+**E3-CAL01 delivery:** [historical reuse review](e3-history-review.md) and
+[calibration report](e3-calibration.md) document unchanged sampler/RNG/Grid/
+normal reuse, eight experimental Model A candidates, complete independent
+potential/edge checks, numerical balance budgets and raw distributions/timings.
+No candidate is selected or frozen. Normal schema 1/features 7 is unchanged;
+E3-FINAL/E4/E5 require separate authorization. GATE-01 remains partially open.
 
 | Item | Requirement |
 | --- | --- |
@@ -141,5 +150,7 @@ do not add tiny production MapSize values merely to simplify an oracle.
 The E1 publication stop was followed by E2-CAL01 and then explicit E2-FINAL
 authorization. Stop after E2-FINAL publication for architectural review,
 independent audit and express owner acceptance of the proposed profile.
-No E3/E4, schema-2 publication or LAB changes are authorized. GATE-01 is not
-resolved by this delivery.
+The later E3-CAL01 authorization permits only the separately recorded Model A
+calibration. Stop after its publication for architectural review, independent
+audit and owner parameter selection. No E3-FINAL/E4/E5, schema-2 publication or
+LAB changes are authorized. GATE-01 is not resolved by this delivery.

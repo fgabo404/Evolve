@@ -87,7 +87,8 @@ and unbenchmarked, pending a future decision.
 integrated dynamics at baseline v0.0.42. The [five-increment E roadmap](e-roadmap.md)
 preserves the four historical increments above. E1 and E2-CAL01 were delivered;
 the separately authorized [E2-FINAL](e2-final.md) is submitted for review.
-E3-E5 remain unauthorized. Frozen R/M and normal publication remain unchanged;
+Subsequent [E3-CAL01](e3-calibration.md) authorizes private Model A calibration
+only; E3-FINAL and E4/E5 remain unauthorized. Frozen R/M/Influence and normal publication remain unchanged;
 this extension does not close GATE-01 or accept D/Layer 01.
 
 - Architect specifies; Dev implements only an authorized increment; independent Auditor reviews; owner accepts.

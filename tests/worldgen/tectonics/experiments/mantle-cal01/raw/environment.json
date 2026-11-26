@@ -1,0 +1,111 @@
+{
+  "Framework": ".NET 10.0.13",
+  "OS": "Microsoft Windows 10.0.26200",
+  "OSArchitecture": "X64",
+  "ProcessArchitecture": "X64",
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "ProcessorCount": 16,
+  "Frequency": 10000000,
+  "TieredCompilation": "0",
+  "WarmupBatches": 1,
+  "MeasuredBatches": 3,
+  "IterationsPerPhase": 1,
+  "Seeds": [
+    0,
+    -1,
+    -9223372036854775808,
+    9223372036854775807
+  ],
+  "SeedDomain": "ASCII WG01MNT1 little-endian 0x31544E4D31304757; fresh stage-derived stream, broad then regional",
+  "Candidates": [
+    {
+      "Name": "TECTONIC-DOM",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 4,
+        "BroadWeight": 1,
+        "RegionalWeight": 1,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "BALANCED",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "BROAD-DOM",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 1,
+        "BroadWeight": 4,
+        "RegionalWeight": 1,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "REGIONAL-DOM",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 1,
+        "BroadWeight": 1,
+        "RegionalWeight": 4,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "TECTONIC-ONLY",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 1,
+        "BroadWeight": 0,
+        "RegionalWeight": 0,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "NOISE-ONLY",
+      "Parameters": {
+        "BroadFrequency": 2,
+        "RegionalFrequency": 6,
+        "TectonicWeight": 0,
+        "BroadWeight": 1,
+        "RegionalWeight": 1,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "LOW-FREQUENCY",
+      "Parameters": {
+        "BroadFrequency": 1,
+        "RegionalFrequency": 3,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    },
+    {
+      "Name": "HIGH-FREQUENCY",
+      "Parameters": {
+        "BroadFrequency": 4,
+        "RegionalFrequency": 12,
+        "TectonicWeight": 2,
+        "BroadWeight": 2,
+        "RegionalWeight": 2,
+        "ReferenceSpeed": 1
+      }
+    }
+  ],
+  "Notes": "Experimental Model A only; no profile selected. Single thread, GC outside timers. Earlier R/M/Influence construction excluded. Retained deltas are noisy signed GC observations, not peak memory."
+}

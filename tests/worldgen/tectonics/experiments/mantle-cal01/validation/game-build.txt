@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  Restored C:\Users\fgabo\Documents\JUEGO\Evolve\game\Evolve.Game.csproj (in 1.06 sec).
+  2 of 3 projects are up-to-date for restore.
+  Evolve.Definitions.WorldGeneration -> C:\Users\fgabo\Documents\JUEGO\Evolve\definitions\worldgen\bin\Release\net10.0\Evolve.Definitions.WorldGeneration.dll
+  Evolve.Engine.WorldGeneration -> C:\Users\fgabo\Documents\JUEGO\Evolve\engine\worldgen\bin\Release\net10.0\Evolve.Engine.WorldGeneration.dll
+  Evolve.Game -> C:\Users\fgabo\Documents\JUEGO\Evolve\game\bin\Release\net10.0\Evolve.Game.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.92

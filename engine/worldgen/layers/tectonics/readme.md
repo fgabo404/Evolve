@@ -27,6 +27,12 @@ Influence remains absent; definitive profile acceptance and E4 integration
 remain pending. Its [numeric contract](influence-profile.md) is separate from
 the active schema-1 R/M publication.
 
+The separately authorized [E3-CAL01](e3-calibration.md) reuses accepted periodic
+noise, RNG, coordinates and normals for internal Model A experiments; its
+[historical review](e3-history-review.md) distinguishes reuse from new logic.
+R/M/Influence are frozen inputs per that authorization. No Mantle profile,
+normal activation, new Laboratory view or final layer closure is implied.
+
 ## 1. Responsibility and boundaries
 
 Generate exactly **14 nonempty connected regions**, with one owner in 0..13

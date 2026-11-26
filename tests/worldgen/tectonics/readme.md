@@ -4,9 +4,46 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
+## E3-CAL01: experimental Model A calibration
+
+The current suite passes **27/27 groups**, retaining all 24 E2-FINAL groups and
+adding parameter/seed checks, controlled fields and complete candidate oracles.
+See the [calibration report](../../../engine/worldgen/layers/tectonics/e3-calibration.md)
+and [historical reuse matrix](../../../engine/worldgen/layers/tectonics/e3-history-review.md).
+No Mantle candidate is selected/frozen and normal publication stays schema 1/7.
+
+Complete new candidate tests cover 96 maps: 3 sizes x 4 signed/extreme seeds x
+8 candidates, all potentials and canonical edges, independent Offset geometry,
+periodic normals and final float values. Additional controls exercise zero/
+constant/tectonic/noise/anomaly cases, malformed fields and derived balance
+bounds. Replay compares Pangea and RealEarth; prior frozen R/M/Influence tests
+continue to cover all four world types. No GPU/window validation is claimed.
+
+After the regression/build commands below finish, run measurements separately
+with an empty output directory and tiering disabled:
+
+```powershell
+dotnet build .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release
+$previousTiering = $env:DOTNET_TieredCompilation
+try {
+    $env:DOTNET_TieredCompilation = '0'
+    dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release --no-build -- --mantle-calibration .\tests\worldgen\tectonics\experiments\mantle-cal01\rerun
+} finally {
+    $env:DOTNET_TieredCompilation = $previousTiering
+}
+```
+
+Archived [environment/candidates](experiments/mantle-cal01/raw/environment.json),
+[phase timings](experiments/mantle-cal01/raw/timings.csv),
+[distributions](experiments/mantle-cal01/raw/distributions.csv),
+[balance/interior results](experiments/mantle-cal01/raw/results.csv) and
+[summaries](experiments/mantle-cal01/raw/summary.csv) preserve warmup separately.
+No old evidence is overwritten. The harness refuses a nonempty output directory.
+Hashes are experimental replay evidence, not new frozen Mantle vectors.
+
 ## E2-FINAL: selected-profile validation and review vectors
 
-The current suite passes **24/24 groups**: the prior 21 plus exact selected
+The historical E2-FINAL suite passed **24/24 groups**: the prior 21 plus exact selected
 policy/dense corruption checks, complete real-map oracles and complete
 Influence references bound to original R/M buffers. The proposed profile is
 `tectonic-influence-historical-v1`, revision 1; definitive acceptance remains
