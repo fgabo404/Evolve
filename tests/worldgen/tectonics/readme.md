@@ -4,9 +4,39 @@ The .NET 10 executable references actual production Engine code; no OpenTK,
 native window or duplicate generator. Use dotnet run, not dotnet test.
 Nonzero exit means a failed assertion.
 
+## E3-FINAL: historical BALANCED candidate
+
+The current suite contains **33 groups**, including strict profile/manifest
+rejection, complete independent A0 signal/potential/R0 oracles, and all sixty
+logical candidate-reference cases. The fifteen unique full buffers in
+[mantle-candidate-vectors/](mantle-candidate-vectors/) are candidate references,
+not formally frozen outputs. [E3-FINAL report](../../../engine/worldgen/layers/tectonics/e3-final.md)
+records executed results, all hashes, phase measurements and limitations.
+The CAL02 real-map group now automatically checks all **60** historical
+CAL01 controls, including 24 LOW/HIGH cases; those remain experimental only.
+Normal production remains schema 1/features 7 without Influence/Mantle.
+
+```powershell
+dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release
+```
+
+After regressions/builds finish, reproduce isolated phase measurements in a
+new empty output directory (never overwrite committed evidence):
+
+```powershell
+dotnet run --project .\tests\worldgen\tectonics\Evolve.WorldGeneration.Tectonics.Checks.csproj --configuration Release --no-build -- --mantle-final-performance .\tests\worldgen\tectonics\experiments\mantle-final-rerun
+```
+
+The runner uses one warmup plus three measured batches for twelve size/seed
+cases and records raw allocation/retained GC deltas, minimum/conventional
+median/maximum, and environment details. Oracle/hashing costs are separate.
+MEM-01 stays open: isolated retention does not establish simultaneous peak.
+The explicit authoring switch `--export-mantle-candidate-vectors <empty-dir>`
+was used once after declaring the matrix; routine checks never export fixtures.
+
 ## E3-CAL02: complementary spatial experiments
 
-The current suite passes **30/30 groups**. Three new groups retain exact CAL01
+The historical CAL02 suite passed **30/30 groups**. Three new groups retain exact CAL01
 controls, compare complete alternative operators against independent geometry,
 sample a common continuous field across sizes and exercise octave/shifted-seam
 screens. See the [declared matrix](../../../engine/worldgen/layers/tectonics/e3-cal02-design.md)

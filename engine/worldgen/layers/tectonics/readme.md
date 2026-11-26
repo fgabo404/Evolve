@@ -14,6 +14,13 @@ retains the developer D evidence and [delivery-c.md](delivery-c.md) the C record
 
 ## WG-01-E documentary extension
 
+**Current E3-FINAL delivery:** the owner selected the historical BALANCED
+Model A/R0/A0 candidate. [Profile and verification report](e3-final.md) records
+strict internal metadata, complete candidate vectors and independent oracles.
+This is a review submission, not formal Mantle freezing or E3 acceptance.
+R/M/Influence stay frozen and normal publication remains schema 1/features 7;
+E4/E5, new LAB views and Layer 01 closure remain unauthorized.
+
 The owner authorized E1 architecture only at v0.0.42. See the
 [historical review](e-history-review.md), [integrated design](e-architecture.md),
 [proposed schema-2 contract](e-contracts.md), [five-increment E roadmap](e-roadmap.md)

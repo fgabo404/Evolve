@@ -1,0 +1,46 @@
+# Historical BALANCED Mantle candidate references
+
+Candidate revision 1, tectonic-mantle-balanced-historical-v1. NOT formally frozen.
+Fifteen complete buffers represent sixty executed logical size/seed/WorldType cases.
+The twelve CAL01/CAL02 BALANCED cases are a subset; no identical type copies are stored.
+
+Logical format: CellId ascending, Potential/FlowX/FlowY/SignedVertical, four IEEE-754
+binary32 little-endian words, 16 bytes/cell, no header/padding, canonical positive zeros.
+Brotli SmallestSize is lossless storage only; raw SHA-256 defines compatibility.
+The manifest binds exact profile/parameters, seed vectors, all logical cases, raw and
+physical checksums, lengths, and unchanged R/M/Influence input hashes.
+Normal checks verify references and never replace them; updates require owner authorization.
+
+[Full report](../../../../engine/worldgen/layers/tectonics/e3-final.md) records numerical order,
+independent full oracles, provenance, observations and validation limitations.
+
+| Size | Signed seed | Bytes | Raw SHA-256 |
+| --- | --- | ---: | --- |
+| Small | 0 | 320000 | B6A1558BAFDFE5FFB279992D0786B6A0EE968689DC189E4F0A72C0789CE2ED26 |
+| Small | 1 | 320000 | B0716E1632261A998493941ADD06BF2B799006C2CA2AEC5053AA9D3B30E06C50 |
+| Small | -1 | 320000 | 7096FAF57D7999F0B0E9028C62949451CEEDB5CFBC1FAFB5E86DF4DC71AD7D17 |
+| Small | -9223372036854775808 | 320000 | DDE959AC885046EFD7EA70BD65D7DBF62239F3E2F3F58DFA9A61B68AA6DC687B |
+| Small | 9223372036854775807 | 320000 | EA43D3F2639FBF00FD60B7DB67D6D364B37594B5B4416260CA69D3D973C9C366 |
+| Medium | 0 | 720000 | 0609CEB7117B6F4F2E5970C6656AF97285BEE93470FB93D460AC9B43FAB0640C |
+| Medium | 1 | 720000 | FF5804EB513B6386E9C1E12BD3F8691C9B86A48E67BA8472DF34A6696C050601 |
+| Medium | -1 | 720000 | 796CEF6F54CA9666D1A58C99F6E677C54DFFDDDB7BA58BD5ED8081764721501B |
+| Medium | -9223372036854775808 | 720000 | 48DAD0CB6A3F8DD047E8D52FED30D96CC2905B496B862815C46F164571468588 |
+| Medium | 9223372036854775807 | 720000 | FF455200BAAB8B40E5AF91C2A3ABA2351B60F52CAA978A72D1658EC43FCFE6FE |
+| Large | 0 | 1280000 | 55A41D258C6672F786D1FBDE70E5F4F789EE700D99292799335B00EB27E16A31 |
+| Large | 1 | 1280000 | 2401B7568DC9BF9AA1A7C0456500D6DCFAB4C4FB21F9C3CE831C56EEBBBD04F6 |
+| Large | -1 | 1280000 | CD18C4E6C8E1F70FD85598AE49EBD6BE96B43EE8587A2C141193F32F9C55BA2D |
+| Large | -9223372036854775808 | 1280000 | 4A38DA21F91C3B7D5E0A2CE6F6DB442A6F709284A3F4FE886A49640B4BDB6433 |
+| Large | 9223372036854775807 | 1280000 | BF266CE1408E1397C498742CA42A3FEFF109D2BEBD081FB4C4E468CDA36F43E0 |
+
+## Seed policy vectors
+
+Private state = CORE DeriveSeed(seed,Tectonics) XOR 31544E4D31304757.
+Broad and regional are the first and second private SplitMix64 draws.
+
+| Seed | Private state | Broad draw | Regional draw |
+| --- | --- | --- | --- |
+| 0 | 5F2CD027908922A3 | 9B9FAFEC0E672790 | 54EA5EA49B5F05A0 |
+| 1 | 8FBFC3EC54BEAB30 | D669FDB9A232A8FE | 3F6DD93A3A953447 |
+| -1 | D8CBB62AEAC6C59E | 7D3B69763B36FA12 | C771A03D7A152795 |
+| -9223372036854775808 | F53BE8759700D745 | 1D429957B09720EA | D9D7F9022C252072 |
+| 9223372036854775807 | C3584F0DB1B2BE10 | ED7746413BBF36DE | 27A7913F52AF64EE |

@@ -7,7 +7,7 @@ E2-FINAL is delivered pending architectural review, independent audit and owner
 acceptance; no definitive profile freeze or normal activation is implied.
 The owner subsequently authorized E3-CAL01 at v0.0.45, treating R/M/Influence
 as frozen inputs. Only private Model A calibration is delivered; Mantle
-selection/freezing, E3-FINAL and E4/E5 remain unauthorized.** The original
+selection/freezing, E3-FINAL and E4/E5 were not authorized by CAL01.** The original
 [four-increment A/B/C/D roadmap](roadmap.md) remains historical and active for
 its outstanding acceptance gates. This separate extension neither closes
 Layer 01 nor resolves GATE-01. No branch merge is authorized.
@@ -58,6 +58,15 @@ without Influence or Mantle. GATE-01 remains partially open.
 | Risks | Large cutoff approaches O(SN); float evaluation order and pruning can change values; measured costs must guide approval. |
 
 ## E3 - Mantle convection
+
+**E3-FINAL implementation submitted for review:** the subsequent owner
+authorization selects historical BALANCED Model A/R0/A0, exact frequencies
+2/6, weights 2/2/2 and Vref 1. [Candidate report](e3-final.md) documents the
+strict internal identity, complete vectors, independent A0/R0 oracles,
+60 historical controls and measured phase costs. Candidate revision 1 is
+implemented, not formally frozen or accepted. Normal publication is unchanged;
+MEM-01, PERF-01, E1 MINOR-01 and GATE-01 remain open as detailed in that report.
+E4/E5 require separate authorization after review, audit and owner acceptance.
 
 **E3-CAL02 delivery:** the owner authorized complementary experiments from the
 accepted v0.0.46 base, keeping BALANCED as a conceptual direction only.
@@ -161,4 +170,7 @@ independent audit and express owner acceptance of the proposed profile.
 The later E3-CAL01 authorization permits only the separately recorded Model A
 calibration. Stop after its publication for architectural review, independent
 audit and owner parameter selection. No E3-FINAL/E4/E5, schema-2 publication or
-LAB changes are authorized. GATE-01 is not resolved by this delivery.
+LAB changes were authorized by CAL01. The subsequent E3-CAL02 and E3-FINAL
+authorizations are documented above. Stop after E3-FINAL publication for
+architectural review, independent audit and owner decision; do not begin E4/E5.
+GATE-01 is not resolved by this delivery.

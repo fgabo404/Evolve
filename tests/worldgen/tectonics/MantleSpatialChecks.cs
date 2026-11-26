@@ -131,6 +131,7 @@ internal static class MantleSpatialChecks
             Require(original.SequenceEqual(packed) && packed[1] == 1 && packed[2] == 7 && earlier == TectonicInfluenceVectors.Hash(TectonicInfluenceVectors.Serialize(influence, distances)), "Frozen results/publication changed.");
             Console.WriteLine($"CAL02 REAL {size}/{seed}: complete 15-row operator oracle/replay matrix; exact CAL01 controls and frozen fields preserved.");
         }
+        Console.WriteLine("CAL02-INFO-01: 60/60 complete historical controls automated, including 24 LOW/HIGH cases; candidates remain separate from the selected profile.");
     }
 
     internal static void Oracle(HexGridData grid, Result field, Operator operation)

@@ -1,0 +1,13 @@
+MANTLE FINAL PERF Small/0: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Small/-1: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Small/-9223372036854775808: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Small/9223372036854775807: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Medium/0: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Medium/-1: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Medium/-9223372036854775808: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Medium/9223372036854775807: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Large/0: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Large/-1: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Large/-9223372036854775808: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF Large/9223372036854775807: warmup + 3 samples; complete independent oracle/replay passed.
+MANTLE FINAL PERF: 336 raw rows; 12 cases; 7 phases. MEM-01 remains OPEN.

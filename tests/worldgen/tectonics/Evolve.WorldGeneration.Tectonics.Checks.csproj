@@ -10,9 +10,11 @@
     <None Update="vectors/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Update="motion-vectors/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Update="influence-vectors/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="mantle-candidate-vectors/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/motion-cal01/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/cal01/cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/cal01/profiles.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="experiments/mantle-cal01/raw/results.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="experiments/mantle-cal02/raw/metrics.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

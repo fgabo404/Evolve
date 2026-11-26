@@ -19,6 +19,8 @@ internal static class TectonicCheckEntryPoint
         if (args.Length == 2 && args[0] == "--influence-final-performance") { TectonicInfluenceFinalPerformance.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--mantle-calibration") { MantleCalibrationRunner.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--mantle-spatial-calibration") { MantleSpatialRunner.Run(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--export-mantle-candidate-vectors") { MantleCandidateVectors.Export(args[1]); return 0; }
+        if (args.Length == 2 && args[0] == "--mantle-final-performance") { MantleFinalPerformance.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--compare-motion") { MotionProfileComparison.Run(args[1]); return 0; }
         if (args.Length == 2 && args[0] == "--export-motion-vectors") { TectonicMotionChecks.Export(args[1]); return 0; }
         if (args.SequenceEqual(new[] { "--motion-performance" })) { TectonicMotionChecks.Performance(); return 0; }
@@ -56,7 +58,10 @@ internal static class TectonicCheckEntryPoint
             ("E3-CAL01 complete candidate replay and unchanged R/M/Influence", MantleCalibrationChecks.ReplayAndIntegrity),
             ("E3-CAL02 controlled geometric operators and continuous resolution field", MantleSpatialChecks.Controlled),
             ("E3-CAL02 geometry, octave sampling and shifted seam probes", MantleSpatialChecks.SamplingAndGeometry),
-            ("E3-CAL02 complete alternative oracles and archived controls", MantleSpatialChecks.RealMaps)
+            ("E3-CAL02 complete alternative oracles and archived controls", MantleSpatialChecks.RealMaps),
+            ("E3-FINAL strict candidate identity and immutable output", MantleFinalChecks.Identity),
+            ("E3-FINAL complete independent A0 noise, potential and R0 oracles", MantleFinalChecks.FullOracles),
+            ("E3-FINAL complete candidate vectors and historical bindings", MantleCandidateVectors.Verify)
         ];
         int failures = 0;
         foreach (var (name, check) in checks)

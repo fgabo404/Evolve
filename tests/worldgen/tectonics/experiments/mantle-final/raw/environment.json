@@ -1,0 +1,38 @@
+{
+  "Framework": ".NET 10.0.13",
+  "OS": "Microsoft Windows 10.0.26200",
+  "OSArchitecture": "X64",
+  "ProcessArchitecture": "X64",
+  "Processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "ProcessorCount": 16,
+  "Frequency": 10000000,
+  "Profile": {
+    "Identifier": "tectonic-mantle-balanced-historical-v1",
+    "Revision": 1,
+    "Model": "A",
+    "Operator": "R0",
+    "Sampling": "A0",
+    "NumericPolicy": "sequential-double-potential-and-edges-final-float-v1",
+    "SeedDomain": 3554552099346859863
+  },
+  "Parameters": {
+    "BroadFrequency": 2,
+    "RegionalFrequency": 6,
+    "TectonicWeight": 2,
+    "BroadWeight": 2,
+    "RegionalWeight": 2,
+    "ReferenceSpeed": 1
+  },
+  "WarmupBatchesPerCase": 1,
+  "MeasuredBatchesPerCase": 3,
+  "OperationsPerPhasePerBatch": 1,
+  "Seeds": [
+    0,
+    -1,
+    -9223372036854775808,
+    9223372036854775807
+  ],
+  "FlowTupleStride": 16,
+  "CellValueStride": 16,
+  "Notes": "Single-threaded Release. Input R/M/Influence preparation, delegates and forced GC outside timers. Independent oracle includes its own harness allocations. Signed retained deltas are not simultaneous peak/live-set measurements; MEM-01 remains OPEN. No dedicated-machine guarantee or hardware-independent thresholds."
+}

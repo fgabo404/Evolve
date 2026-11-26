@@ -68,8 +68,8 @@ internal static class MantleSpatialDesign
 
     internal static void VerifyHistorical(string size, long seed, string candidate, string hash)
     {
-        string original = candidate == "CONTROL" ? "BALANCED" : candidate;
-        if (original is not ("BALANCED" or "TECTONIC-DOM" or "BROAD-DOM")) return;
+        string original = candidate switch { "CONTROL" => "BALANCED", "LOW" => "LOW-FREQUENCY", "HIGH" => "HIGH-FREQUENCY", _ => candidate };
+        if (original is not ("BALANCED" or "TECTONIC-DOM" or "BROAD-DOM" or "LOW-FREQUENCY" or "HIGH-FREQUENCY")) return;
         string path = Path.Combine(AppContext.BaseDirectory, "experiments", "mantle-cal01", "raw", "results.csv");
         var rows = File.ReadLines(path).Skip(1).Select(line => line.Split(',').Select(value => value.Trim('"')).ToArray())
             .Where(row => row[0] == size && row[1] == seed.ToString(System.Globalization.CultureInfo.InvariantCulture) && row[2] == original && row[3] == "1").ToArray();

@@ -1,0 +1,7 @@
+PASS relative documentation links: 84
+PASS protected code and historical reference paths unchanged
+PASS existing production C# unchanged; candidate profile is the only new Engine source
+PASS all 4 new C# headers use //
+PASS VERSION and Game ProductVersion: v0.0.48
+All CAL02 seam rows: 288; max: 6.6613381477509392E-16
+Nonzero shift rows: 216; max: 6.106226635438361E-16
